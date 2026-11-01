@@ -27,7 +27,7 @@ export const HomeCommunityPreview: React.FC = () => {
 
   return (
     <section
-      className="home-community-preview relative isolate py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#F8F8F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300 overflow-hidden"
+      className="home-community-preview relative isolate py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#F4F3EF] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300 overflow-hidden"
       aria-label="Community Preview"
     >
       <div className="relative z-10 max-w-7xl mx-auto">
@@ -58,8 +58,8 @@ export const HomeCommunityPreview: React.FC = () => {
         {/* 3-Column Editorial Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Pillar 1: Reading Groups */}
-          <div className="flex flex-col rounded-2xl bg-white dark:bg-[#111413] border border-[#DDE4D9] dark:border-[#26302A] p-6 sm:p-7 shadow-[0_2px_12px_rgba(28,32,29,0.04)] dark:shadow-xs transition-colors duration-200">
-            <div className="flex items-center justify-between pb-4 border-b border-[#DDE4D9] dark:border-[#26302A] mb-5">
+          <div className="flex flex-col rounded-2xl bg-white dark:bg-[#111413] border border-[#E8E8E3] dark:border-[#26302A] p-6 sm:p-7 shadow-[0_2px_12px_rgba(28,32,29,0.04)] dark:shadow-xs transition-colors duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-[#E8E8E3] dark:border-[#26302A] mb-5">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-[#EBF2EC] dark:bg-[#181C1A] text-[#1C442D] dark:text-[#D5B16D] border border-[#C8DBCB] dark:border-[#2B352E] flex items-center justify-center">
                   <Users className="w-4 h-4" />
@@ -82,21 +82,21 @@ export const HomeCommunityPreview: React.FC = () => {
               {loadingGroups ? (
                 <div className="space-y-3">
                   {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="p-3.5 rounded-xl bg-[#F1F3EC] dark:bg-[#161D19] border border-[#DDE4D9] dark:border-[#29332D]/60 animate-pulse space-y-2">
+                    <div key={i} className="p-3.5 rounded-xl bg-[#F4F3EF] dark:bg-[#161D19] border border-[#E8E8E3] dark:border-[#29332D]/60 animate-pulse space-y-2">
                       <div className="h-4 bg-[#E8E2D9] dark:bg-[#212C24] rounded w-3/5" />
                       <div className="h-3 bg-[#E8E2D9] dark:bg-[#212C24] rounded w-4/5" />
                     </div>
                   ))}
                 </div>
               ) : groups.length === 0 ? (
-                <div className="py-8 px-4 text-center rounded-xl bg-[#F1F3EC] dark:bg-[#161D19]/40 border border-dashed border-[#DDE4D9] dark:border-[#29332D]">
+                <div className="py-8 px-4 text-center rounded-xl bg-[#F4F3EF] dark:bg-[#161D19]/40 border border-dashed border-[#E8E8E3] dark:border-[#29332D]">
                   <Users className="w-8 h-8 text-[#636B65]/60 dark:text-[#A5ADA6]/60 mx-auto mb-2.5" />
                   <p className="text-xs font-medium text-[#1C201D] dark:text-[#F3F0E7]">No groups created yet</p>
                   <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6] mt-1 mb-4">
                     Be the first reader to start a discussion circle for your favorite genre.
                   </p>
                   <Link to="/groups">
-                    <Button size="sm" variant="outline" className="text-xs border-[#DDE4D9] dark:border-[#29332D] bg-white dark:bg-[#161D19] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#E8EDE4] dark:hover:bg-[#1C2620]">
+                    <Button size="sm" variant="outline" className="text-xs border-[#E8E8E3] dark:border-[#29332D] bg-white dark:bg-[#161D19] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#F0F0EB] dark:hover:bg-[#1C2620]">
                       Explore Groups
                     </Button>
                   </Link>
@@ -109,13 +109,13 @@ export const HomeCommunityPreview: React.FC = () => {
                       <Link
                         key={group.id}
                         to={`/groups`}
-                        className="group block p-3.5 rounded-xl bg-[#F1F3EC] hover:bg-[#E8EDE4] dark:bg-[#161D19]/60 dark:hover:bg-[#1B251F] border border-[#DDE4D9] hover:border-[#C4D1BE] dark:border-[#29332D] dark:hover:border-[#334E3C] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D]"
+                        className="group block p-3.5 rounded-xl bg-[#F4F3EF] hover:bg-[#F0F0EB] dark:bg-[#161D19]/60 dark:hover:bg-[#1B251F] border border-[#E8E8E3] hover:border-[#C4D1BE] dark:border-[#29332D] dark:hover:border-[#334E3C] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D]"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <h4 className="text-sm font-semibold text-[#1C201D] dark:text-[#F3F0E7] group-hover:text-[#1C442D] dark:group-hover:text-[#D5B16D] transition-colors line-clamp-1">
                             {group.name}
                           </h4>
-                          <span className="shrink-0 text-[10px] font-medium text-[#636B65] dark:text-[#A5ADA6] bg-white dark:bg-[#111614] px-2 py-0.5 rounded-full border border-[#DDE4D9] dark:border-[#29332D]">
+                          <span className="shrink-0 text-[10px] font-medium text-[#636B65] dark:text-[#A5ADA6] bg-white dark:bg-[#111614] px-2 py-0.5 rounded-full border border-[#E8E8E3] dark:border-[#29332D]">
                             {memberCount} {memberCount === 1 ? 'member' : 'members'}
                           </span>
                         </div>
@@ -124,7 +124,7 @@ export const HomeCommunityPreview: React.FC = () => {
                             {group.description}
                           </p>
                         )}
-                        <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-[#DDE4D9] dark:border-[#29332D]/40">
+                        <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-[#E8E8E3] dark:border-[#29332D]/40">
                           <span className="text-[11px] text-[#636B65]/70 dark:text-[#A5ADA6]/70">Discussion circle</span>
                           <span className="text-[11px] font-semibold text-[#1C442D] dark:text-[#D5B16D] group-hover:underline flex items-center gap-1">
                             View group <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
@@ -136,7 +136,7 @@ export const HomeCommunityPreview: React.FC = () => {
                 </div>
               )}
 
-              <div className="pt-3 border-t border-[#DDE4D9] dark:border-[#29332D]/40">
+              <div className="pt-3 border-t border-[#E8E8E3] dark:border-[#29332D]/40">
                 <Link
                   to="/groups"
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-[#636B65] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] transition-colors group"
@@ -149,8 +149,8 @@ export const HomeCommunityPreview: React.FC = () => {
           </div>
 
           {/* Pillar 2: Live Reading Rooms */}
-          <div className="flex flex-col rounded-2xl bg-white dark:bg-[#111413] border border-[#DDE4D9] dark:border-[#26302A] p-6 sm:p-7 shadow-[0_2px_12px_rgba(28,32,29,0.04)] dark:shadow-xs transition-colors duration-200">
-            <div className="flex items-center justify-between pb-4 border-b border-[#DDE4D9] dark:border-[#26302A] mb-5">
+          <div className="flex flex-col rounded-2xl bg-white dark:bg-[#111413] border border-[#E8E8E3] dark:border-[#26302A] p-6 sm:p-7 shadow-[0_2px_12px_rgba(28,32,29,0.04)] dark:shadow-xs transition-colors duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-[#E8E8E3] dark:border-[#26302A] mb-5">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-[#EBF2EC] dark:bg-[#181C1A] text-emerald-600 dark:text-emerald-400 border border-[#C8DBCB] dark:border-[#26382E] flex items-center justify-center relative">
                   <Radio className="w-4 h-4" />
@@ -174,21 +174,21 @@ export const HomeCommunityPreview: React.FC = () => {
               {loadingRooms ? (
                 <div className="space-y-3">
                   {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="p-3.5 rounded-xl bg-[#F1F3EC] dark:bg-[#161D19] border border-[#DDE4D9] dark:border-[#29332D]/60 animate-pulse space-y-2">
+                    <div key={i} className="p-3.5 rounded-xl bg-[#F4F3EF] dark:bg-[#161D19] border border-[#E8E8E3] dark:border-[#29332D]/60 animate-pulse space-y-2">
                       <div className="h-4 bg-[#E8E2D9] dark:bg-[#212C24] rounded w-3/5" />
                       <div className="h-3 bg-[#E8E2D9] dark:bg-[#212C24] rounded w-4/5" />
                     </div>
                   ))}
                 </div>
               ) : rooms.length === 0 ? (
-                <div className="py-8 px-4 text-center rounded-xl bg-[#F1F3EC] dark:bg-[#141816]/60 border border-dashed border-[#DDE4D9] dark:border-[#26302A]">
+                <div className="py-8 px-4 text-center rounded-xl bg-[#F4F3EF] dark:bg-[#141816]/60 border border-dashed border-[#E8E8E3] dark:border-[#26302A]">
                   <Clock className="w-8 h-8 text-[#636B65]/60 dark:text-[#A5ADA6]/60 mx-auto mb-2.5" />
                   <p className="text-xs font-medium text-[#1C201D] dark:text-[#F3F0E7]">No live sprint running right now</p>
                   <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6] mt-1 mb-4">
                     Open a room for any book in your library and invite fellow readers to sprint with you.
                   </p>
                   <Link to="/social?tab=rooms">
-                    <Button size="sm" variant="outline" className="text-xs border-[#DDE4D9] dark:border-[#26302A] bg-white dark:bg-[#141816] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#E8EDE4] dark:hover:bg-[#1C221F]">
+                    <Button size="sm" variant="outline" className="text-xs border-[#E8E8E3] dark:border-[#26302A] bg-white dark:bg-[#141816] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#F0F0EB] dark:hover:bg-[#1C221F]">
                       Open Reading Room
                     </Button>
                   </Link>
@@ -201,7 +201,7 @@ export const HomeCommunityPreview: React.FC = () => {
                       <Link
                         key={room.id}
                         to={`/social?tab=rooms`}
-                        className="group block p-3.5 rounded-xl bg-[#F1F3EC] hover:bg-[#E8EDE4] dark:bg-[#141816] dark:hover:bg-[#19201C] border border-[#DDE4D9] hover:border-[#C4D1BE] dark:border-[#26302A] dark:hover:border-[#38483D] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D]"
+                        className="group block p-3.5 rounded-xl bg-[#F4F3EF] hover:bg-[#F0F0EB] dark:bg-[#141816] dark:hover:bg-[#19201C] border border-[#E8E8E3] hover:border-[#C4D1BE] dark:border-[#26302A] dark:hover:border-[#38483D] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D]"
                       >
                         <div className="flex items-center gap-2 mb-1.5">
                           <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
@@ -224,7 +224,7 @@ export const HomeCommunityPreview: React.FC = () => {
                 </div>
               )}
 
-              <div className="pt-3 border-t border-[#DDE4D9] dark:border-[#26302A]">
+              <div className="pt-3 border-t border-[#E8E8E3] dark:border-[#26302A]">
                 <Link
                   to="/social?tab=rooms"
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-[#636B65] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D] rounded"
@@ -237,8 +237,8 @@ export const HomeCommunityPreview: React.FC = () => {
           </div>
 
           {/* Pillar 3: Reader Marginalia */}
-          <div className="flex flex-col rounded-2xl bg-white dark:bg-[#111413] border border-[#DDE4D9] dark:border-[#26302A] p-6 sm:p-7 shadow-[0_2px_12px_rgba(28,32,29,0.04)] dark:shadow-xs transition-colors duration-200">
-            <div className="flex items-center justify-between pb-4 border-b border-[#DDE4D9] dark:border-[#26302A] mb-5">
+          <div className="flex flex-col rounded-2xl bg-white dark:bg-[#111413] border border-[#E8E8E3] dark:border-[#26302A] p-6 sm:p-7 shadow-[0_2px_12px_rgba(28,32,29,0.04)] dark:shadow-xs transition-colors duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-[#E8E8E3] dark:border-[#26302A] mb-5">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-[#FBF4E6] dark:bg-[#1D1B16] text-[#B68A35] dark:text-[#D5B16D] border border-[#E8D9BF] dark:border-[#383020] flex items-center justify-center">
                   <Quote className="w-4 h-4" />
@@ -261,21 +261,21 @@ export const HomeCommunityPreview: React.FC = () => {
               {loadingMargins ? (
                 <div className="space-y-3">
                   {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="p-3.5 rounded-xl bg-[#F1F3EC] dark:bg-[#161D19] border border-[#DDE4D9] dark:border-[#29332D]/60 animate-pulse space-y-2">
+                    <div key={i} className="p-3.5 rounded-xl bg-[#F4F3EF] dark:bg-[#161D19] border border-[#E8E8E3] dark:border-[#29332D]/60 animate-pulse space-y-2">
                       <div className="h-4 bg-[#E8E2D9] dark:bg-[#212C24] rounded w-3/5" />
                       <div className="h-3 bg-[#E8E2D9] dark:bg-[#212C24] rounded w-4/5" />
                     </div>
                   ))}
                 </div>
               ) : margins.length === 0 ? (
-                <div className="py-8 px-4 text-center rounded-xl bg-[#F1F3EC] dark:bg-[#141816]/60 border border-dashed border-[#DDE4D9] dark:border-[#26302A]">
+                <div className="py-8 px-4 text-center rounded-xl bg-[#F4F3EF] dark:bg-[#141816]/60 border border-dashed border-[#E8E8E3] dark:border-[#26302A]">
                   <Quote className="w-8 h-8 text-[#636B65]/60 dark:text-[#A5ADA6]/60 mx-auto mb-2.5" />
                   <p className="text-xs font-medium text-[#1C201D] dark:text-[#F3F0E7]">No public margin notes yet</p>
                   <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6] mt-1 mb-4">
                     Leave your impressions and highlighted quotes as you read through books.
                   </p>
                   <Link to="/social?tab=margins">
-                    <Button size="sm" variant="outline" className="text-xs border-[#DDE4D9] dark:border-[#26302A] bg-white dark:bg-[#141816] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#E8EDE4] dark:hover:bg-[#1C221F]">
+                    <Button size="sm" variant="outline" className="text-xs border-[#E8E8E3] dark:border-[#26302A] bg-white dark:bg-[#141816] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#F0F0EB] dark:hover:bg-[#1C221F]">
                       Browse Margins
                     </Button>
                   </Link>
@@ -288,7 +288,7 @@ export const HomeCommunityPreview: React.FC = () => {
                       <Link
                         key={note.id}
                         to={`/social?tab=margins`}
-                        className="group block p-3.5 rounded-xl bg-[#F1F3EC] hover:bg-[#E8EDE4] dark:bg-[#141816] dark:hover:bg-[#1C1813] border border-[#DDE4D9] hover:border-[#C4D1BE] dark:border-[#26302A] dark:hover:border-[#D5B16D]/40 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D]"
+                        className="group block p-3.5 rounded-xl bg-[#F4F3EF] hover:bg-[#F0F0EB] dark:bg-[#141816] dark:hover:bg-[#1C1813] border border-[#E8E8E3] hover:border-[#C4D1BE] dark:border-[#26302A] dark:hover:border-[#D5B16D]/40 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D]"
                       >
                         <p className="text-xs italic font-serif text-[#1C201D]/90 dark:text-[#F3F0E7]/90 line-clamp-2 leading-relaxed border-l-2 border-[#B68A35] dark:border-[#D5B16D]/50 pl-2.5 mb-2">
                           "{note.quote}"
@@ -306,7 +306,7 @@ export const HomeCommunityPreview: React.FC = () => {
                 </div>
               )}
 
-              <div className="pt-3 border-t border-[#DDE4D9] dark:border-[#26302A]">
+              <div className="pt-3 border-t border-[#E8E8E3] dark:border-[#26302A]">
                 <Link
                   to="/social?tab=margins"
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-[#636B65] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D] rounded"

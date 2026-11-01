@@ -52,10 +52,10 @@ const Index = () => {
       {/* 1. Animated Hero */}
       <AnimatedHero />
 
-      <div className="sahadhyayi-home-sections bg-[#F8F8F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300">
+      <div className="sahadhyayi-home-sections bg-[#FAFAF8] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300">
         {/* 2. Logged-in: Continue Reading first */}
         {user && (
-          <section className="relative isolate overflow-hidden py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-[#F8F8F2] dark:bg-[#0B0D0C]">
+          <section className="relative isolate overflow-hidden py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-[#FAFAF8] dark:bg-[#0B0D0C]">
             <div className="relative z-10 max-w-7xl mx-auto">
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
                 <div>
@@ -88,7 +88,7 @@ const Index = () => {
 
         {/* 3. Real Book Discovery */}
         <DeferredSection
-          fallback={<div className="min-h-[640px] sm:min-h-[680px] lg:min-h-[720px] bg-[#F8F8F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          fallback={<div className="min-h-[640px] sm:min-h-[680px] lg:min-h-[720px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
           minHeightClassName="min-h-[640px] sm:min-h-[680px] lg:min-h-[720px]"
         >
           <ErrorBoundary fallback={null}>
@@ -98,7 +98,7 @@ const Index = () => {
 
         {/* 4. Real Community Preview */}
         <DeferredSection
-          fallback={<div className="min-h-[1320px] sm:min-h-[1080px] lg:min-h-[820px] bg-[#F8F8F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          fallback={<div className="min-h-[1320px] sm:min-h-[1080px] lg:min-h-[820px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
           minHeightClassName="min-h-[1320px] sm:min-h-[1080px] lg:min-h-[820px]"
         >
           <ErrorBoundary fallback={null}>
@@ -108,7 +108,7 @@ const Index = () => {
 
         {/* 5. Explore the Platform / Capabilities */}
         <DeferredSection
-          fallback={<div className="min-h-[760px] sm:min-h-[650px] lg:min-h-[500px] bg-[#F8F8F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          fallback={<div className="min-h-[760px] sm:min-h-[650px] lg:min-h-[500px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
           minHeightClassName="min-h-[760px] sm:min-h-[650px] lg:min-h-[500px]"
         >
           <ErrorBoundary fallback={null}>
@@ -118,14 +118,14 @@ const Index = () => {
 
         {/* 6. Editorial blogs and community articles are distinct content destinations. */}
         <DeferredSection
-          fallback={<div className="min-h-[640px] sm:min-h-[560px] lg:min-h-[520px] bg-[#F8F8F2] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          fallback={<div className="min-h-[640px] sm:min-h-[560px] lg:min-h-[520px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
           minHeightClassName="min-h-[640px] sm:min-h-[560px] lg:min-h-[520px]"
         >
           <HomeEditorialPreview />
         </DeferredSection>
 
         {/* 7. Atmospheric Final Call-to-Action with warm library aesthetic */}
-        <section className="home-final-cta relative isolate py-20 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#F8F8F2] dark:bg-gradient-to-br dark:from-[#0B0D0C] dark:via-[#121413] dark:to-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden transition-colors duration-300">
+        <section className="home-final-cta relative isolate py-20 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#FAFAF8] dark:bg-gradient-to-br dark:from-[#0B0D0C] dark:via-[#121413] dark:to-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden transition-colors duration-300">
 
           <div className="relative z-10 max-w-3xl mx-auto text-center">
             {/* Cultural Origin Tag */}

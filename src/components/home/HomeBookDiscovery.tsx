@@ -321,7 +321,7 @@ export const HomeBookDiscovery: React.FC = () => {
 
   return (
     <section
-      className="home-book-discovery relative isolate py-16 sm:py-20 lg:py-24 bg-[#F8F8F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden transition-colors duration-300"
+      className="home-book-discovery relative isolate py-16 sm:py-20 lg:py-24 bg-[#FAFAF8] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden transition-colors duration-300"
       aria-label="Book Discovery"
     >
       <style>{`

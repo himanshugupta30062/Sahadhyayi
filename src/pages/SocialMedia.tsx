@@ -103,10 +103,10 @@ const PILLARS = [
 ] as const;
 
 const iconColorMap = {
-  emerald: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30',
-  amber: 'bg-amber-500/15 text-amber-400 border border-amber-500/30',
-  indigo: 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30',
-  fuchsia: 'bg-fuchsia-500/15 text-fuchsia-400 border border-fuchsia-500/30',
+  emerald: 'bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-400 dark:border-emerald-500/30',
+  amber: 'bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-500/15 dark:text-amber-400 dark:border-amber-500/30',
+  indigo: 'bg-indigo-50 text-indigo-800 border border-indigo-200 dark:bg-indigo-500/15 dark:text-indigo-400 dark:border-indigo-500/30',
+  fuchsia: 'bg-fuchsia-50 text-fuchsia-800 border border-fuchsia-200 dark:bg-fuchsia-500/15 dark:text-fuchsia-400 dark:border-fuchsia-500/30',
 };
 
 // ─── Guest (unauthenticated) landing ─────────────────────────────────────────
@@ -124,9 +124,9 @@ const GuestLanding: React.FC = () => {
         url="https://sahadhyayi.com/social"
       />
 
-      <div className="min-h-screen bg-[#FAF7F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-200">
+      <div className="min-h-screen bg-[#FAFAF8] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-200">
         {/* ── Hero Section ── */}
-        <section className="relative overflow-hidden border-b border-[#E8E2D9] dark:border-[#29332D] bg-gradient-to-b from-[#F4EFEA] via-[#FAF7F2] to-[#FAF7F2] dark:from-[#111614] dark:via-[#0B0D0C] dark:to-[#0B0D0C] py-20 px-4 sm:px-6 lg:px-8">
+        <section className="relative overflow-hidden border-b border-[#E8E8E3] dark:border-[#29332D] bg-gradient-to-b from-[#F4EFEA] via-[#FAF7F2] to-[#FAF7F2] dark:from-[#111614] dark:via-[#0B0D0C] dark:to-[#0B0D0C] py-20 px-4 sm:px-6 lg:px-8">
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="absolute -top-32 -right-32 w-[32rem] h-[32rem] rounded-full bg-emerald-500/10 dark:bg-emerald-950/20 blur-3xl" />
             <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-[#B68A35]/10 dark:bg-[#D5B16D]/5 blur-3xl" />
@@ -134,7 +134,7 @@ const GuestLanding: React.FC = () => {
 
           <div className="relative max-w-4xl mx-auto text-center">
             {/* Eyebrow Label */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-[#111614] border border-[#E8E2D9] dark:border-[#29332D] text-[11px] font-semibold uppercase tracking-widest text-[#1C442D] dark:text-[#D5B16D] mb-6 shadow-xs">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-[#111614] border border-[#E8E8E3] dark:border-[#29332D] text-[11px] font-semibold uppercase tracking-widest text-[#1C442D] dark:text-[#D5B16D] mb-6 shadow-xs">
               <Sparkles className="w-3.5 h-3.5" />
               A Reading Community
             </div>
@@ -159,7 +159,7 @@ const GuestLanding: React.FC = () => {
               <SignInLink redirectPath={signInRedirect}>
                 <Button
                   variant="outline"
-                  className="w-full sm:w-auto border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#F4EFEA] dark:hover:bg-[#1B241E] px-7 h-11 text-sm font-medium"
+                  className="w-full sm:w-auto border-[#E8E8E3] dark:border-[#29332D] bg-white dark:bg-[#111614] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#F4F3EF] dark:hover:bg-[#1B241E] px-7 h-11 text-sm font-medium"
                 >
                   Sign in
                 </Button>
@@ -193,7 +193,7 @@ const GuestLanding: React.FC = () => {
                 redirectPath={`/social?tab=${tab}`}
                 className="block group"
               >
-                <Card className="h-full border border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] hover:bg-[#F4EFEA] dark:hover:bg-[#161D19] hover:border-[#1C442D]/40 dark:hover:border-[#315C43] transition-all duration-200 shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs hover:shadow-md cursor-pointer">
+                <Card className="h-full border border-[#E8E8E3] dark:border-[#29332D] bg-white dark:bg-[#111614] hover:bg-[#F4F3EF] dark:hover:bg-[#161D19] hover:border-[#1C442D]/40 dark:hover:border-[#315C43] transition-all duration-200 shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs hover:shadow-md cursor-pointer">
                   <CardContent className="p-5 flex flex-col h-full text-[#1C201D] dark:text-[#F3F0E7]">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${iconColorMap[color]}`}>
                       <Icon className="w-5 h-5" />
@@ -216,7 +216,7 @@ const GuestLanding: React.FC = () => {
         </section>
 
         {/* ── How It Works (3 Steps, Honest) ── */}
-        <section className="bg-[#F4EFEA] dark:bg-[#111614] border-t border-[#E8E2D9] dark:border-[#29332D] py-16 px-4 sm:px-6 lg:px-8">
+        <section className="bg-[#F4F3EF] dark:bg-[#111614] border-t border-[#E8E8E3] dark:border-[#29332D] py-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 mb-3 text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">
               <TrendingUp className="w-4 h-4" />
@@ -243,7 +243,7 @@ const GuestLanding: React.FC = () => {
                   body: 'Open a reading room, annotate a passage, or match your literary DNA.',
                 },
               ].map(({ step, title, body }) => (
-                <div key={step} className="flex flex-col gap-3 p-4 rounded-xl bg-white dark:bg-[#0B0D0C]/50 border border-[#E8E2D9] dark:border-[#29332D]/60 shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-none">
+                <div key={step} className="flex flex-col gap-3 p-4 rounded-xl bg-white dark:bg-[#0B0D0C]/50 border border-[#E8E8E3] dark:border-[#29332D]/60 shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-none">
                   <div className="w-9 h-9 rounded-full bg-[#EBF2EC] dark:bg-[#1C3024] border border-[#C8DBCB] dark:border-[#315C43] text-[#1C442D] dark:text-[#D5B16D] flex items-center justify-center text-sm font-bold shadow-xs">
                     {step}
                   </div>
@@ -338,16 +338,16 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
         url="https://sahadhyayi.com/social"
       />
 
-      <div className="social-experience min-h-screen bg-[#FAF7F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-200">
+      <div className="social-experience min-h-screen bg-[#FAFAF8] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-200">
         {/* ── Main Viewport Content ── */}
         <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <nav aria-label="Social navigation" className="mb-6 flex flex-wrap items-center gap-2 rounded-2xl border border-[#E8E2D9] bg-white p-2 shadow-[0_2px_8px_rgba(28,32,29,0.03)] dark:border-[#29332D] dark:bg-[#111614]">
+            <nav aria-label="Social navigation" className="mb-6 flex flex-wrap items-center gap-2 rounded-2xl border border-[#E8E8E3] bg-white p-2 shadow-[0_2px_8px_rgba(28,32,29,0.03)] dark:border-[#29332D] dark:bg-[#111614]">
               <button
                 type="button"
                 aria-pressed={activeTab === 'feed'}
                 onClick={() => handleTabChange('feed')}
-                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'feed' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAF7F2] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
+                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'feed' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAFAF8] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
               >
                 <BookOpen className="h-4 w-4" aria-hidden="true" />
                 Home
@@ -356,7 +356,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                 type="button"
                 aria-pressed={activeTab === 'friends'}
                 onClick={() => handleTabChange('friends')}
-                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'friends' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAF7F2] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
+                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'friends' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAFAF8] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
               >
                 <Users className="h-4 w-4" aria-hidden="true" />
                 Discover
@@ -365,18 +365,18 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                 type="button"
                 aria-pressed={activeTab === 'groups'}
                 onClick={() => handleTabChange('groups')}
-                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'groups' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAF7F2] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
+                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'groups' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAFAF8] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
               >
                 <UsersIcon className="h-4 w-4" aria-hidden="true" />
                 Groups
               </button>
               <details className="group relative">
-                <summary className="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-xl px-3 text-sm font-medium text-[#636B65] transition-colors hover:bg-[#FAF7F2] hover:text-[#1C201D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7] dark:focus-visible:ring-[#D5B16D]">
+                <summary className="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-xl px-3 text-sm font-medium text-[#636B65] transition-colors hover:bg-[#FAFAF8] hover:text-[#1C201D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7] dark:focus-visible:ring-[#D5B16D]">
                   <BookOpen className="h-4 w-4" aria-hidden="true" />
                   Reading spaces
                   <ChevronRight className="h-3.5 w-3.5 transition-transform group-open:rotate-90" aria-hidden="true" />
                 </summary>
-                <div className="mt-2 flex flex-wrap gap-2 rounded-xl border border-[#E8E2D9] bg-[#FAF7F2] p-2 dark:border-[#29332D] dark:bg-[#0B0D0C] sm:absolute sm:left-0 sm:z-30 sm:min-w-64 sm:shadow-lg">
+                <div className="mt-2 flex flex-wrap gap-2 rounded-xl border border-[#E8E8E3] bg-[#FAFAF8] p-2 dark:border-[#29332D] dark:bg-[#0B0D0C] sm:absolute sm:left-0 sm:z-30 sm:min-w-64 sm:shadow-lg">
                   {[
                     { value: 'rooms', label: 'Live reading rooms' },
                     { value: 'threads', label: 'Chapter discussions' },
@@ -388,7 +388,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                       key={item.value}
                       type="button"
                       onClick={() => handleTabChange(item.value)}
-                      className="min-h-9 rounded-lg border border-[#E8E2D9] bg-white px-3 py-2 text-left text-xs font-medium text-[#1C442D] hover:border-[#C8DBCB] hover:bg-[#EBF2EC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#D5B16D] dark:hover:border-[#315C43] dark:hover:bg-[#1C3024] dark:focus-visible:ring-[#D5B16D]"
+                      className="min-h-9 rounded-lg border border-[#E8E8E3] bg-white px-3 py-2 text-left text-xs font-medium text-[#1C442D] hover:border-[#C8DBCB] hover:bg-[#EBF2EC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#D5B16D] dark:hover:border-[#315C43] dark:hover:bg-[#1C3024] dark:focus-visible:ring-[#D5B16D]"
                     >
                       {item.label}
                     </button>
@@ -411,7 +411,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                 <Link
                   to="/profile"
                   aria-label="Your profile"
-                  className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium text-[#636B65] transition-colors hover:bg-[#FAF7F2] hover:text-[#1C201D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7] dark:focus-visible:ring-[#D5B16D]"
+                  className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium text-[#636B65] transition-colors hover:bg-[#FAFAF8] hover:text-[#1C201D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7] dark:focus-visible:ring-[#D5B16D]"
                 >
                   <UserRound className="h-4 w-4" aria-hidden="true" />
                   <span className="hidden sm:inline">Profile</span>
@@ -441,7 +441,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                 {/* ── Feed Tab ── */}
                 <TabsContent value="feed" className="mt-0 space-y-6">
                   {/* Editorial community heading and primary action */}
-                  <div className="flex flex-col gap-4 border-b border-[#E8E2D9] dark:border-[#29332D] pb-5 sm:flex-row sm:items-end sm:justify-between">
+                  <div className="flex flex-col gap-4 border-b border-[#E8E8E3] dark:border-[#29332D] pb-5 sm:flex-row sm:items-end sm:justify-between">
                     <div>
                       <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#1C442D] dark:text-[#D5B16D]">
                         Your reading life, together
@@ -469,7 +469,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                     </Button>
                   </div>
 
-                  <details className="group rounded-xl border border-[#E8E2D9] bg-white dark:border-[#29332D] dark:bg-[#111614]">
+                  <details className="group rounded-xl border border-[#E8E8E3] bg-white dark:border-[#29332D] dark:bg-[#111614]">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-[#1C442D] outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:text-[#D5B16D] dark:focus-visible:ring-[#D5B16D]">
                       <span>Explore reading spaces</span>
                       <span className="flex items-center gap-2 text-xs font-normal text-[#636B65] dark:text-[#A5ADA6]">
@@ -477,7 +477,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                         <ChevronRight className="h-4 w-4 transition-transform group-open:rotate-90" aria-hidden="true" />
                       </span>
                     </summary>
-                    <nav aria-label="Reading spaces" className="flex flex-wrap gap-2 border-t border-[#E8E2D9] px-3 py-3 dark:border-[#29332D]">
+                    <nav aria-label="Reading spaces" className="flex flex-wrap gap-2 border-t border-[#E8E8E3] px-3 py-3 dark:border-[#29332D]">
                       {[
                         { value: 'rooms', label: 'Reading rooms' },
                         { value: 'threads', label: 'Chapter discussions' },
@@ -490,7 +490,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                           key={item.value}
                           type="button"
                           onClick={() => handleTabChange(item.value)}
-                          className="rounded-full border border-[#E8E2D9] bg-[#FAF7F2] px-3 py-2 text-xs font-medium text-[#1C442D] transition-colors hover:border-[#C8DBCB] hover:bg-[#EBF2EC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:border-[#29332D] dark:bg-[#0B0D0C] dark:text-[#D5B16D] dark:hover:border-[#315C43] dark:hover:bg-[#1C3024] dark:focus-visible:ring-[#D5B16D]"
+                          className="rounded-full border border-[#E8E8E3] bg-[#FAFAF8] px-3 py-2 text-xs font-medium text-[#1C442D] transition-colors hover:border-[#C8DBCB] hover:bg-[#EBF2EC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:border-[#29332D] dark:bg-[#0B0D0C] dark:text-[#D5B16D] dark:hover:border-[#315C43] dark:hover:bg-[#1C3024] dark:focus-visible:ring-[#D5B16D]"
                         >
                           {item.label}
                         </button>
@@ -509,7 +509,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                           variant="outline"
                           size="sm"
                           onClick={() => window.location.reload()}
-                          className="border-[#E8E2D9] dark:border-[#29332D] bg-[#FAF7F2] dark:bg-[#111614] text-[#1C201D] dark:text-[#F3F0E7]"
+                          className="border-[#E8E8E3] dark:border-[#29332D] bg-[#FAFAF8] dark:bg-[#111614] text-[#1C201D] dark:text-[#F3F0E7]"
                         >
                           Reload Feed
                         </Button>
@@ -595,14 +595,14 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
 
                 {/* ── Map Tab ── */}
                 <TabsContent value="map" className="mt-0 space-y-4">
-                  <div className="flex items-center gap-1 p-1 bg-white dark:bg-[#111614] rounded-xl border border-[#E8E2D9] dark:border-[#29332D] shadow-[0_2px_8px_rgba(28,32,29,0.04)] w-fit">
+                  <div className="flex items-center gap-1 p-1 bg-white dark:bg-[#111614] rounded-xl border border-[#E8E8E3] dark:border-[#29332D] shadow-[0_2px_8px_rgba(28,32,29,0.04)] w-fit">
                     <Button
                       size="sm"
                       variant={mapView === 'readers' ? 'default' : 'ghost'}
                       className={
                         mapView === 'readers'
                           ? 'h-8 px-3 text-xs bg-[#1C442D] text-white dark:bg-[#1C3024] dark:border dark:border-[#315C43] dark:text-[#F3F0E7] shadow-xs'
-                          : 'h-8 px-3 text-xs text-[#636B65] hover:text-[#1C201D] hover:bg-[#FAF7F2] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] dark:hover:bg-[#1B241E]'
+                          : 'h-8 px-3 text-xs text-[#636B65] hover:text-[#1C201D] hover:bg-[#FAFAF8] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] dark:hover:bg-[#1B241E]'
                       }
                       onClick={() => setMapView('readers')}
                     >
@@ -615,7 +615,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                       className={
                         mapView === 'friends'
                           ? 'h-8 px-3 text-xs bg-[#1C442D] text-white dark:bg-[#1C3024] dark:border dark:border-[#315C43] dark:text-[#F3F0E7] shadow-xs'
-                          : 'h-8 px-3 text-xs text-[#636B65] hover:text-[#1C201D] hover:bg-[#FAF7F2] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] dark:hover:bg-[#1B241E]'
+                          : 'h-8 px-3 text-xs text-[#636B65] hover:text-[#1C201D] hover:bg-[#FAFAF8] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] dark:hover:bg-[#1B241E]'
                       }
                       onClick={() => setMapView('friends')}
                     >
@@ -624,7 +624,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                     </Button>
                   </div>
 
-                  <Card className="border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] overflow-hidden text-[#1C201D] dark:text-[#F3F0E7] shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-none">
+                  <Card className="border-[#E8E8E3] dark:border-[#29332D] bg-white dark:bg-[#111614] overflow-hidden text-[#1C201D] dark:text-[#F3F0E7] shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-none">
                     <Suspense fallback={<TabLoader />}>
                       {mapView === 'readers' ? <EnhancedReadingMap /> : <FriendsLocationMap />}
                     </Suspense>
@@ -644,7 +644,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                 <div className="sticky top-20 space-y-5">
                   {/* Card 1: Live Reading Rooms */}
                   <SocialSurface className="p-4">
-                    <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#E8E2D9] dark:border-[#29332D]">
+                    <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#E8E8E3] dark:border-[#29332D]">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-xs text-[#1C201D] dark:text-[#F3F0E7]">Reading Rooms</span>
                       </div>
@@ -673,7 +673,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                           size="sm"
                           variant="outline"
                           onClick={() => handleTabChange('rooms')}
-                          className="mt-3 text-xs h-7 border-[#E8E2D9] dark:border-[#29332D] bg-[#F4EFEA] dark:bg-[#16211A] text-[#1C201D] dark:text-[#F3F0E7] hover:border-[#1C442D]/40 dark:hover:border-[#315C43]"
+                          className="mt-3 text-xs h-7 border-[#E8E8E3] dark:border-[#29332D] bg-[#F4F3EF] dark:bg-[#16211A] text-[#1C201D] dark:text-[#F3F0E7] hover:border-[#1C442D]/40 dark:hover:border-[#315C43]"
                         >
                           Explore rooms
                         </Button>
@@ -685,7 +685,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                           return (
                             <div
                               key={room.id}
-                              className="rounded-xl border border-[#E8E2D9] dark:border-[#29332D]/70 bg-[#FAF7F2] dark:bg-[#16211A]/50 p-2.5 flex items-center justify-between gap-2.5 transition-colors hover:border-[#1C442D]/40 dark:hover:border-[#315C43] hover:bg-[#F4EFEA] dark:hover:bg-[#16211A]"
+                              className="rounded-xl border border-[#E8E8E3] dark:border-[#29332D]/70 bg-[#FAFAF8] dark:bg-[#16211A]/50 p-2.5 flex items-center justify-between gap-2.5 transition-colors hover:border-[#1C442D]/40 dark:hover:border-[#315C43] hover:bg-[#F4F3EF] dark:hover:bg-[#16211A]"
                             >
                               <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                 {room.books_library?.cover_image_url ? (
@@ -713,7 +713,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                               <Button
                                 size="sm"
                                 onClick={() => handleTabChange('rooms')}
-                                className="h-7 text-xs px-2.5 border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] hover:bg-[#FAF7F2] dark:hover:bg-[#1C3024] text-[#1C201D] dark:text-[#F3F0E7] shrink-0"
+                                className="h-7 text-xs px-2.5 border-[#E8E8E3] dark:border-[#29332D] bg-white dark:bg-[#111614] hover:bg-[#FAFAF8] dark:hover:bg-[#1C3024] text-[#1C201D] dark:text-[#F3F0E7] shrink-0"
                               >
                                 Explore
                               </Button>
@@ -726,7 +726,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
 
                   {/* Card 2: Popular Groups */}
                   <SocialSurface className="p-4">
-                    <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#E8E2D9] dark:border-[#29332D]">
+                    <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#E8E8E3] dark:border-[#29332D]">
                       <span className="font-semibold text-xs text-[#1C201D] dark:text-[#F3F0E7]">Popular Groups</span>
                       <button
                         type="button"
@@ -757,7 +757,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                           return (
                             <div
                               key={group.id}
-                              className="rounded-xl border border-[#E8E2D9] dark:border-[#29332D]/70 bg-[#FAF7F2] dark:bg-[#111614] p-2.5 flex items-center justify-between gap-2.5 transition-colors hover:border-[#1C442D]/40 dark:hover:border-[#315C43] hover:bg-[#F4EFEA] dark:hover:bg-[#161D19]"
+                              className="rounded-xl border border-[#E8E8E3] dark:border-[#29332D]/70 bg-[#FAFAF8] dark:bg-[#111614] p-2.5 flex items-center justify-between gap-2.5 transition-colors hover:border-[#1C442D]/40 dark:hover:border-[#315C43] hover:bg-[#F4F3EF] dark:hover:bg-[#161D19]"
                             >
                               <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                 {group.image_url ? (
@@ -783,7 +783,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                               <Button
                                 size="sm"
                                 onClick={() => handleTabChange('groups')}
-                                className="h-7 text-xs px-2.5 border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#16211A] hover:bg-[#FAF7F2] dark:hover:bg-[#1C3024] text-[#1C201D] dark:text-[#F3F0E7] shrink-0"
+                                className="h-7 text-xs px-2.5 border-[#E8E8E3] dark:border-[#29332D] bg-white dark:bg-[#16211A] hover:bg-[#FAFAF8] dark:hover:bg-[#1C3024] text-[#1C201D] dark:text-[#F3F0E7] shrink-0"
                               >
                                 Open
                               </Button>
@@ -796,7 +796,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
 
                   {/* Card 3: Suggested Readers */}
                   <SocialSurface className="p-4">
-                    <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#E8E2D9] dark:border-[#29332D]">
+                    <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#E8E8E3] dark:border-[#29332D]">
                       <span className="font-semibold text-xs text-[#1C201D] dark:text-[#F3F0E7]">Suggested Readers</span>
                       <button
                         type="button"
@@ -825,10 +825,10 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                         {allUsers.slice(0, 3).map((reader) => (
                           <div
                             key={reader.id}
-                            className="rounded-xl border border-[#E8E2D9] dark:border-[#29332D]/70 bg-[#FAF7F2] dark:bg-[#111614] p-2.5 flex items-center justify-between gap-2.5 transition-colors hover:border-[#1C442D]/40 dark:hover:border-[#315C43] hover:bg-[#F4EFEA] dark:hover:bg-[#161D19]"
+                            className="rounded-xl border border-[#E8E8E3] dark:border-[#29332D]/70 bg-[#FAFAF8] dark:bg-[#111614] p-2.5 flex items-center justify-between gap-2.5 transition-colors hover:border-[#1C442D]/40 dark:hover:border-[#315C43] hover:bg-[#F4F3EF] dark:hover:bg-[#161D19]"
                           >
                             <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                              <Avatar className="h-8 w-8 border border-[#E8E2D9] dark:border-[#29332D] shrink-0">
+                              <Avatar className="h-8 w-8 border border-[#E8E8E3] dark:border-[#29332D] shrink-0">
                                 <AvatarImage src={reader.profile_photo_url} alt={reader.full_name} />
                                 <AvatarFallback className="bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D] text-xs font-bold">
                                   {reader.full_name?.charAt(0) || 'R'}
@@ -847,7 +847,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                               size="sm"
                               onClick={() => handleSendRequest(reader.id, reader.full_name)}
                               disabled={sendFriendRequest.isPending}
-                              className="h-7 text-xs px-2.5 border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#16211A] hover:bg-[#FAF7F2] dark:hover:bg-[#1C3024] text-[#1C442D] dark:text-[#D5B16D] shrink-0"
+                              className="h-7 text-xs px-2.5 border-[#E8E8E3] dark:border-[#29332D] bg-white dark:bg-[#16211A] hover:bg-[#FAFAF8] dark:hover:bg-[#1C3024] text-[#1C442D] dark:text-[#D5B16D] shrink-0"
                             >
                               Add friend
                             </Button>
@@ -860,7 +860,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                   {/* Card 4: Your Reading Progress (if active) */}
                   {currentProgress && (
                     <SocialSurface className="p-4">
-                      <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#E8E2D9] dark:border-[#29332D]">
+                      <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#E8E8E3] dark:border-[#29332D]">
                         <span className="font-semibold text-xs text-[#1C201D] dark:text-[#F3F0E7]">Your Reading Progress</span>
                         <Link
                           to="/dashboard"
@@ -919,7 +919,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                   )}
 
                   {/* Card 5: Literary Quote Widget (from design mockup) */}
-                  <SocialSurface className="p-4 bg-gradient-to-br from-[#F4EFEA] via-[#FAF7F2] to-[#EBF2EC] dark:from-[#111614] dark:via-[#141A16] dark:to-[#0E1210] border-[#E8E2D9] dark:border-[#29332D]">
+                  <SocialSurface className="p-4 bg-gradient-to-br from-[#F4EFEA] via-[#FAF7F2] to-[#EBF2EC] dark:from-[#111614] dark:via-[#141A16] dark:to-[#0E1210] border-[#E8E8E3] dark:border-[#29332D]">
                     <Quote className="w-5 h-5 text-[#1C442D]/60 dark:text-[#D5B16D]/60 mb-2" />
                     <p className="text-xs italic text-[#1C201D] dark:text-[#F3F0E7] font-serif leading-relaxed">
                       &ldquo;A room full of readers is a room full of friends.&rdquo;
@@ -946,7 +946,7 @@ const SocialMedia: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FAF7F2] dark:bg-[#0B0D0C] flex items-center justify-center text-[#1C201D] dark:text-[#F3F0E7]" role="status" aria-label="Loading social community">
+      <div className="min-h-screen bg-[#FAFAF8] dark:bg-[#0B0D0C] flex items-center justify-center text-[#1C201D] dark:text-[#F3F0E7]" role="status" aria-label="Loading social community">
         <Loader2 className="w-7 h-7 animate-spin text-[#1C442D] dark:text-[#D5B16D]" />
       </div>
     );

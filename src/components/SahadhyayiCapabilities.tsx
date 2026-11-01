@@ -49,7 +49,7 @@ const capabilities: CapabilityItem[] = [
 export const SahadhyayiCapabilities: React.FC = () => {
   return (
     <section
-      className="home-capabilities relative isolate py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#F8F8F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300 overflow-hidden"
+      className="home-capabilities relative isolate py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#FAFAF8] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300 overflow-hidden"
       aria-label="Platform Capabilities"
     >
       <div className="relative z-10 max-w-7xl mx-auto">
@@ -85,10 +85,10 @@ export const SahadhyayiCapabilities: React.FC = () => {
               <Link
                 key={item.id}
                 to={item.href}
-                className="group flex items-center gap-4 p-5 rounded-2xl bg-white dark:bg-[#111413] hover:bg-[#F5EEDC] dark:hover:bg-[#161A18] border border-[#EADFC7] dark:border-[#26302A] hover:border-[#BDA56B]/55 dark:hover:border-[#D5B16D]/50 transition-all duration-300 hover:-translate-y-0.5 shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"
+                className="group flex items-center gap-4 p-5 rounded-2xl bg-white dark:bg-[#111413] hover:bg-[#F4F3EF] dark:hover:bg-[#161A18] border border-[#E8E8E3] dark:border-[#26302A] hover:border-[#BDA56B]/55 dark:hover:border-[#D5B16D]/50 transition-all duration-300 hover:-translate-y-0.5 shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"
               >
                 {/* Glowing Icon Box */}
-                <div className="w-12 h-12 rounded-xl bg-[#F5EEDC] dark:bg-[#161A18] group-hover:bg-[#EBF2EC] dark:group-hover:bg-[#1E1C15] border border-[#EADFC7] dark:border-[#26302A] group-hover:border-[#1C442D]/30 dark:group-hover:border-[#D5B16D]/40 flex items-center justify-center text-[#1C442D] dark:text-[#D5B16D] shrink-0 transition-colors">
+                <div className="w-12 h-12 rounded-xl bg-[#F4F3EF] dark:bg-[#161A18] group-hover:bg-[#EBF2EC] dark:group-hover:bg-[#1E1C15] border border-[#E8E8E3] dark:border-[#26302A] group-hover:border-[#1C442D]/30 dark:group-hover:border-[#D5B16D]/40 flex items-center justify-center text-[#1C442D] dark:text-[#D5B16D] shrink-0 transition-colors">
                   <Icon className="w-5 h-5" />
                 </div>
 

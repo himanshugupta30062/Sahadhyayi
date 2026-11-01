@@ -99,7 +99,7 @@ const Authors = () => {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#FAF7F2] dark:bg-[#0B0D0C]">
+      <div className="flex min-h-screen items-center justify-center bg-[#FAFAF8] dark:bg-[#0B0D0C]">
         <BookFlipLoader size="md" text="Finding authors..." />
       </div>
     );
@@ -107,7 +107,7 @@ const Authors = () => {
 
   if (error) {
     return (
-      <div className="flex min-h-[70vh] items-center justify-center bg-[#FAF7F2] px-4 dark:bg-[#0B0D0C]">
+      <div className="flex min-h-[70vh] items-center justify-center bg-[#FAFAF8] px-4 dark:bg-[#0B0D0C]">
         <div className="mx-auto max-w-md text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-red-200 bg-red-50 text-red-600 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
             <AlertCircle className="h-6 w-6" aria-hidden="true" />
@@ -131,32 +131,32 @@ const Authors = () => {
         url="https://sahadhyayi.com/authors"
       />
 
-      <div className="min-h-screen bg-[#FAF7F2] text-[#1C201D] transition-colors duration-200 dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
+      <div className="min-h-screen bg-[#FAFAF8] text-[#1C201D] transition-colors duration-200 dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
         {/* Photo-led hero: the page starts with a literary atmosphere, not a dashboard. */}
-        <section className="relative isolate overflow-hidden border-b border-[#29332D] bg-[#101711] text-white">
+        <section className="relative isolate overflow-hidden border-b border-[#E8E8E3] bg-[#F4F3EF] text-[#1C201D] dark:border-[#29332D] dark:bg-[#101711] dark:text-white">
           <div
             aria-hidden="true"
-            className="absolute inset-0 bg-cover bg-center"
+            className="absolute inset-0 bg-cover bg-center opacity-0 dark:opacity-100"
             style={{
               backgroundImage: "url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=2400&q=85')",
               backgroundPosition: 'center 42%',
             }}
           />
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#09120D]/95 via-[#09120D]/79 to-[#09120D]/38" />
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#09120D]/70 via-transparent to-[#09120D]/25" />
+          <div aria-hidden="true" className="absolute inset-0 hidden dark:block bg-gradient-to-r from-[#09120D]/95 via-[#09120D]/79 to-[#09120D]/38" />
+          <div aria-hidden="true" className="absolute inset-0 hidden dark:block bg-gradient-to-t from-[#09120D]/70 via-transparent to-[#09120D]/25" />
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:radial-gradient(rgba(255,255,255,0.6)_0.7px,transparent_0.7px)] [background-size:18px_18px] [mask-image:linear-gradient(to_right,black,transparent_80%)]" />
 
           <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-18 lg:px-8 lg:py-24">
             <div className="max-w-3xl">
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#D5B16D]/35 bg-black/25 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#E8CC91] backdrop-blur-sm sm:mb-6">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#D9D9D1] bg-white dark:border-[#D5B16D]/35 dark:bg-black/25 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#1C442D] dark:text-[#E8CC91] backdrop-blur-sm sm:mb-6">
                 <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
                 The people behind the pages
               </div>
-              <h1 className="max-w-3xl font-serif text-4xl font-bold leading-[1.08] tracking-tight text-[#FBF7EF] sm:text-5xl md:text-6xl lg:text-7xl">
+              <h1 className="max-w-3xl font-serif text-4xl font-bold leading-[1.08] tracking-tight text-[#1C201D] dark:text-[#FBF7EF] sm:text-5xl md:text-6xl lg:text-7xl">
                 Meet the minds
-                <span className="block text-[#E4C17B]">behind the books.</span>
+                <span className="block text-[#1C442D] dark:text-[#E4C17B]">behind the books.</span>
               </h1>
-              <p className="mt-5 max-w-2xl text-base leading-7 text-white/80 sm:mt-6 sm:text-lg sm:leading-8">
+              <p className="mt-5 max-w-2xl text-base leading-7 text-[#636B65] dark:text-white/80 sm:mt-6 sm:text-lg sm:leading-8">
                 Discover the writers, ideas, and worlds behind the books you love. Explore by name or genre, then follow the voices you want to hear from.
               </p>
 
@@ -167,7 +167,7 @@ const Authors = () => {
                     placeholder="Search for an author by name…"
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
-                    className="h-12 rounded-xl border border-white/25 bg-white/95 pl-11 pr-11 text-[#1C201D] shadow-xl placeholder:text-[#798179] focus-visible:ring-2 focus-visible:ring-[#D5B16D] sm:h-14"
+                    className="h-12 rounded-xl border border-[#E8E8E3] bg-white dark:border-white/25 pl-11 pr-11 text-[#1C201D] shadow-xl placeholder:text-[#798179] focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] sm:h-14"
                     aria-label="Search authors by name, bio, or genre"
                   />
                   {searchTerm && (
@@ -183,15 +183,15 @@ const Authors = () => {
                 </div>
                 <Link
                   to="/library"
-                  className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D] sm:h-14"
+                  className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl border border-[#D9D9D1] bg-white text-[#1C442D] dark:border-white/25 dark:bg-white/10 dark:text-white px-5 text-sm font-semibold backdrop-blur-md transition text-[#1C442D] hover:bg-[#F4F3EF] dark:hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] sm:h-14"
                 >
                   Explore books <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
               </div>
 
-              <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/75">
-                <span className="inline-flex items-center gap-2"><Users className="h-4 w-4 text-[#E4C17B]" aria-hidden="true" /> <strong className="font-semibold text-white">{authors.length.toLocaleString()}</strong> authors</span>
-                <span className="inline-flex items-center gap-2"><BookOpen className="h-4 w-4 text-[#E4C17B]" aria-hidden="true" /> <strong className="font-semibold text-white">{genres.length.toLocaleString()}</strong> genres represented</span>
+              <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[#636B65] dark:text-white/75">
+                <span className="inline-flex items-center gap-2"><Users className="h-4 w-4 text-[#1C442D] dark:text-[#E4C17B]" aria-hidden="true" /> <strong className="font-semibold text-[#1C201D] dark:text-white">{authors.length.toLocaleString()}</strong> authors</span>
+                <span className="inline-flex items-center gap-2"><BookOpen className="h-4 w-4 text-[#1C442D] dark:text-[#E4C17B]" aria-hidden="true" /> <strong className="font-semibold text-[#1C201D] dark:text-white">{genres.length.toLocaleString()}</strong> genres represented</span>
               </div>
             </div>
           </div>
@@ -202,7 +202,7 @@ const Authors = () => {
           <Breadcrumb items={breadcrumbItems} className="mb-6" />
 
           {/* A single, calm control row replaces the old dense panel and duplicate featured grid. */}
-          <section aria-label="Filter authors" className="mb-8 rounded-2xl border border-[#E5DED2] bg-white p-4 shadow-[0_8px_30px_rgba(28,32,29,0.035)] dark:border-[#29332D] dark:bg-[#111614] dark:shadow-none sm:p-5">
+          <section aria-label="Filter authors" className="mb-8 rounded-2xl border border-[#E8E8E3] bg-white p-4 shadow-[0_8px_30px_rgba(28,32,29,0.035)] dark:border-[#29332D] dark:bg-[#111614] dark:shadow-none sm:p-5">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 text-sm font-semibold text-[#1C201D] dark:text-[#F3F0E7]">
                 <SlidersHorizontal className="h-4 w-4 text-[#1C442D] dark:text-[#D5B16D]" aria-hidden="true" />
@@ -216,7 +216,7 @@ const Authors = () => {
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(170px,0.42fr)]">
               <Select value={selectedGenre} onValueChange={setSelectedGenre}>
-                <SelectTrigger className="h-11 rounded-xl border-[#E5DED2] bg-[#FAF7F2] dark:border-[#29332D] dark:bg-[#0B0D0C]">
+                <SelectTrigger className="h-11 rounded-xl border-[#E8E8E3] bg-[#FAFAF8] dark:border-[#29332D] dark:bg-[#0B0D0C]">
                   <SelectValue placeholder="Filter by genre" />
                 </SelectTrigger>
                 <SelectContent>
@@ -225,7 +225,7 @@ const Authors = () => {
                 </SelectContent>
               </Select>
               <Select value={sortBy} onValueChange={(value: SortMode) => setSortBy(value)}>
-                <SelectTrigger className="h-11 rounded-xl border-[#E5DED2] bg-[#FAF7F2] dark:border-[#29332D] dark:bg-[#0B0D0C]">
+                <SelectTrigger className="h-11 rounded-xl border-[#E8E8E3] bg-[#FAFAF8] dark:border-[#29332D] dark:bg-[#0B0D0C]">
                   <SelectValue placeholder="Sort authors" />
                 </SelectTrigger>
                 <SelectContent>
@@ -241,7 +241,7 @@ const Authors = () => {
                 <button
                   type="button"
                   onClick={() => setSelectedGenre('all')}
-                  className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${selectedGenre === 'all' ? 'border-[#1C442D] bg-[#1C442D] text-white dark:border-[#D5B16D] dark:bg-[#D5B16D] dark:text-[#0B0D0C]' : 'border-[#E5DED2] bg-transparent text-[#636B65] hover:border-[#1C442D]/40 hover:text-[#1C442D] dark:border-[#29332D] dark:text-[#A5ADA6] dark:hover:border-[#D5B16D]/40 dark:hover:text-[#D5B16D]'}`}
+                  className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${selectedGenre === 'all' ? 'border-[#1C442D] bg-[#1C442D] text-white dark:border-[#D5B16D] dark:bg-[#D5B16D] dark:text-[#0B0D0C]' : 'border-[#E8E8E3] bg-transparent text-[#636B65] hover:border-[#1C442D]/40 hover:text-[#1C442D] dark:border-[#29332D] dark:text-[#A5ADA6] dark:hover:border-[#D5B16D]/40 dark:hover:text-[#D5B16D]'}`}
                 >
                   All writers
                 </button>
@@ -250,7 +250,7 @@ const Authors = () => {
                     key={genre}
                     type="button"
                     onClick={() => setSelectedGenre(selectedGenre === genre ? 'all' : genre)}
-                    className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${selectedGenre === genre ? 'border-[#1C442D] bg-[#1C442D] text-white dark:border-[#D5B16D] dark:bg-[#D5B16D] dark:text-[#0B0D0C]' : 'border-[#E5DED2] bg-transparent text-[#636B65] hover:border-[#1C442D]/40 hover:text-[#1C442D] dark:border-[#29332D] dark:text-[#A5ADA6] dark:hover:border-[#D5B16D]/40 dark:hover:text-[#D5B16D]'}`}
+                    className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${selectedGenre === genre ? 'border-[#1C442D] bg-[#1C442D] text-white dark:border-[#D5B16D] dark:bg-[#D5B16D] dark:text-[#0B0D0C]' : 'border-[#E8E8E3] bg-transparent text-[#636B65] hover:border-[#1C442D]/40 hover:text-[#1C442D] dark:border-[#29332D] dark:text-[#A5ADA6] dark:hover:border-[#D5B16D]/40 dark:hover:text-[#D5B16D]'}`}
                   >
                     {genre}
                   </button>
@@ -334,7 +334,7 @@ const AuthorCard = ({ author, books }: { author: Author; books: Book[] }) => {
   const bio = author.bio?.trim() && author.bio !== 'Bio will be updated by the author.' ? author.bio : null;
 
   return (
-    <Card className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#E5DED2] bg-white shadow-[0_6px_24px_rgba(28,32,29,0.035)] transition-all duration-300 hover:-translate-y-1 hover:border-[#B68A35]/50 hover:shadow-[0_18px_45px_rgba(28,32,29,0.09)] dark:border-[#29332D] dark:bg-[#111614] dark:shadow-none dark:hover:border-[#D5B16D]/40">
+    <Card className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#E8E8E3] bg-white shadow-[0_6px_24px_rgba(28,32,29,0.035)] transition-all duration-300 hover:-translate-y-1 hover:border-[#B68A35]/50 hover:shadow-[0_18px_45px_rgba(28,32,29,0.09)] dark:border-[#29332D] dark:bg-[#111614] dark:shadow-none dark:hover:border-[#D5B16D]/40">
       <Link to={profilePath} className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]">
         <div className="relative h-28 overflow-hidden bg-gradient-to-br from-[#10251A] via-[#1C442D] to-[#6C5833] sm:h-32">
           <div aria-hidden="true" className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.7)_0.7px,transparent_0.7px)] [background-size:14px_14px]" />
@@ -378,7 +378,7 @@ const AuthorCard = ({ author, books }: { author: Author; books: Book[] }) => {
           {author.genres?.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-1.5">
               {author.genres.slice(0, 3).map((genre) => (
-                <Badge key={genre} variant="outline" className="rounded-full border-[#DCD5C9] bg-[#FAF7F2] px-2.5 py-1 text-[10px] font-medium text-[#4F5D53] dark:border-[#34443A] dark:bg-[#172019] dark:text-[#B9C9BC]">
+                <Badge key={genre} variant="outline" className="rounded-full border-[#DCD5C9] bg-[#FAFAF8] px-2.5 py-1 text-[10px] font-medium text-[#4F5D53] dark:border-[#34443A] dark:bg-[#172019] dark:text-[#B9C9BC]">
                   {genre}
                 </Badge>
               ))}
