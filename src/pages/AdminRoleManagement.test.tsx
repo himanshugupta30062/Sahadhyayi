@@ -138,7 +138,7 @@ describe('AdminRoleManagement', () => {
 
   it('validates a blank email and grants a role with normalized input', async () => {
     render(<AdminRoleManagement />);
-    fireEvent.click(screen.getByRole('button', { name: 'Grant role' }));
+    fireEvent.submit(screen.getByRole('button', { name: 'Grant role' }).closest('form')!);
     expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Email required' }));
 
     fireEvent.change(screen.getByPlaceholderText('user@example.com'), { target: { value: '  reader@example.com  ' } });
