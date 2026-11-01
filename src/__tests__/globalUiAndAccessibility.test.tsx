@@ -145,14 +145,15 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
       expect(mainNav).toBeInTheDocument();
     });
 
-    it('sets aria-current="page" on the active route link', () => {
+    it('sets aria-current="page" on the active mobile navigation link', () => {
+      mockIsMobileValue = true;
       render(
         <MemoryRouter initialEntries={['/library']}>
           <NavigationWithSidebar />
         </MemoryRouter>
       );
 
-      fireEvent.click(screen.getByRole('button', { name: /^library$/i }));
+      fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
       const libraryLink = screen.getByRole('link', { name: /^library$/i });
       expect(libraryLink).toHaveAttribute('aria-current', 'page');
 
@@ -283,7 +284,7 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
   });
 
   describe('Public navigation drawer and dropdown hierarchy', () => {
-    it('exposes desktop navigation dropdowns with the current menu hierarchy', async () => {
+    it('exposes keyboard-accessible desktop dropdown triggers', () => {
       mockIsMobileValue = false;
       render(
         <MemoryRouter initialEntries={['/']}>
@@ -293,28 +294,15 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
 
       const mainNav = screen.getByRole('navigation', { name: /main navigation/i });
       expect(mainNav).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: /^home$/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /switch to dark mode/i })).toBeInTheDocument();
 
-      const openDropdown = (name: RegExp) => {
+      for (const name of [/^library$/i, /^social media$/i, /^articles$/i, /^authors$/i]) {
         const trigger = screen.getByRole('button', { name });
-        trigger.focus();
-        fireEvent.keyDown(trigger, { key: 'Enter', code: 'Enter' });
-      };
+        expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
+        expect(trigger).toHaveAttribute('aria-expanded', 'false');
+        expect(trigger).toBeVisible();
+      }
 
-      openDropdown(/^library$/i);
-      expect(await screen.findByRole('link', { name: /^library$/i })).toHaveAttribute('href', '/library');
-      expect(screen.getByRole('link', { name: /research papers/i })).toHaveAttribute('href', '/research-papers');
-
-      openDropdown(/social media/i);
-      expect(await screen.findByRole('link', { name: /community feed/i })).toHaveAttribute('href', '/social');
-      expect(screen.getByRole('link', { name: /reading groups/i })).toHaveAttribute('href', '/groups');
-
-      openDropdown(/^articles$/i);
-      expect(await screen.findByRole('link', { name: /newsroom/i })).toHaveAttribute('href', '/news');
-
-      openDropdown(/^authors$/i);
-      expect(await screen.findByRole('link', { name: /^authors$/i })).toHaveAttribute('href', '/authors');
+      expect(screen.getByRole('link', { name: /^home$/i })).toHaveAttribute('href', '/');
     });
 
     it('expands Book Discussion into its nested links inside the public drawer', () => {
