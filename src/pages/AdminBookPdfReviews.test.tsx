@@ -203,6 +203,9 @@ describe('AdminBookPdfReviews', () => {
       error: null,
     });
     renderPage();
+    fireEvent.change(screen.getByLabelText(/Reason/), {
+      target: { value: 'The server says this submission is no longer eligible.' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Reject' }));
 
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
