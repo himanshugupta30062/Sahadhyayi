@@ -84,13 +84,13 @@ const LibraryHero = ({
   ];
 
   return (
-    <div className="relative py-8 sm:py-12 md:py-16 overflow-hidden">
+    <div className="relative py-10 sm:py-14 md:py-16 overflow-hidden bg-[#F4F3EF] dark:bg-[#101711]">
       {/* Background with overlay */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-0 dark:opacity-100"
         style={{ backgroundImage: `url(${libraryBg})` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
+        <div className="absolute inset-0 hidden dark:block bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
       </div>
 
       {/* Floating book icons */}
@@ -119,17 +119,17 @@ const LibraryHero = ({
           {/* Title */}
           <div className="space-y-2 sm:space-y-3">
             <div className="flex items-center justify-center space-x-2 sm:space-x-3 mb-2 sm:mb-4">
-              <div className="p-2 sm:p-3 md:p-3.5 bg-gradient-to-br from-library-primary to-library-secondary rounded-xl sm:rounded-2xl shadow-2xl transform rotate-3">
+              <div className="p-2 sm:p-3 md:p-3.5 bg-[#1C442D] dark:bg-gradient-to-br dark:from-library-primary dark:to-library-secondary rounded-xl shadow-sm dark:shadow-2xl">
                 <BookOpen className="w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 text-white" />
               </div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-[#1C201D] dark:text-white leading-tight">
                 Digital Library
               </h1>
             </div>
-            <p className="text-base sm:text-lg md:text-xl text-white/90 font-medium px-2">
+            <p className="text-base sm:text-lg md:text-xl text-[#3F4741] dark:text-white/90 font-medium px-2">
               Discover Your Next Great Adventure
             </p>
-            <p className="text-xs sm:text-sm md:text-base text-white/80 max-w-2xl mx-auto leading-relaxed px-4">
+            <p className="text-sm sm:text-base text-[#636B65] dark:text-white/80 max-w-2xl mx-auto leading-relaxed px-4">
               Explore our vast collection of verified digital books. From timeless classics and spiritual texts to contemporary literature.
             </p>
           </div>
@@ -158,7 +158,7 @@ const LibraryHero = ({
                         setShowSuggestions(false);
                       }
                     }}
-                    className="pl-10 sm:pl-14 pr-3 sm:pr-32 py-3 sm:py-6 text-sm sm:text-lg bg-white/95 backdrop-blur-sm border-0 rounded-xl sm:rounded-2xl shadow-2xl focus:bg-white focus:shadow-3xl transition-all duration-300 relative z-10 w-full"
+                    className="pl-10 sm:pl-12 pr-3 sm:pr-32 h-12 sm:h-14 text-sm sm:text-base bg-white dark:bg-white/95 border border-[#E8E8E3] dark:border-0 rounded-xl shadow-sm dark:shadow-2xl focus-visible:ring-2 focus-visible:ring-[#1C442D] transition-all duration-200 relative z-10 w-full"
                     autoComplete="off"
                   />
                   <Button
@@ -279,33 +279,33 @@ const LibraryHero = ({
 
           {/* Stats Bar - Sleek compact horizontal strip */}
           <div className="w-full max-w-2xl mx-auto px-4 pt-1">
-            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 py-2 px-4 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-white/90 text-xs sm:text-sm font-medium shadow-md">
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 py-3 px-5 rounded-xl bg-white dark:bg-white/10 border border-[#E8E8E3] dark:border-white/15 text-[#3F4741] dark:text-white/90 text-xs sm:text-sm font-medium shadow-sm dark:shadow-md">
               <div className="flex items-center gap-1.5">
-                <BookOpen className="w-4 h-4 text-emerald-300" aria-hidden="true" />
-                <span><strong className="text-white">{totalBooks != null ? totalBooks.toLocaleString() : '—'}</strong> Books</span>
+                <BookOpen className="w-4 h-4 text-[#1C442D] dark:text-emerald-300" aria-hidden="true" />
+                <span><strong className="text-[#1C201D] dark:text-white">{totalBooks != null ? totalBooks.toLocaleString() : '—'}</strong> Books</span>
               </div>
-              <span className="text-white/40" aria-hidden="true">•</span>
+              <span className="text-[#D9D9D1] dark:text-white/40" aria-hidden="true">•</span>
               <div className="flex items-center gap-1.5">
-                <Users className="w-4 h-4 text-sky-300" aria-hidden="true" />
-                <span><strong className="text-white">{activeReaders && activeReaders > 0 ? activeReaders.toLocaleString() : '—'}</strong> Readers</span>
+                <Users className="w-4 h-4 text-[#526C79] dark:text-sky-300" aria-hidden="true" />
+                <span><strong className="text-[#1C201D] dark:text-white">{activeReaders && activeReaders > 0 ? activeReaders.toLocaleString() : '—'}</strong> Readers</span>
               </div>
               <span className="text-white/40 hidden sm:inline" aria-hidden="true">•</span>
               <div className="flex items-center gap-1.5 hidden sm:flex">
                 {avgRating != null && avgRating > 0 ? (
                   <>
-                    <Star className="w-4 h-4 text-amber-300 fill-amber-300" aria-hidden="true" />
-                    <span><strong className="text-white">{avgRating}</strong> Rating</span>
+                    <Star className="w-4 h-4 text-[#8F681C] fill-[#8F681C] dark:text-amber-300 dark:fill-amber-300" aria-hidden="true" />
+                    <span><strong className="text-[#1C201D] dark:text-white">{avgRating}</strong> Rating</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4 text-amber-300" aria-hidden="true" />
+                    <Sparkles className="w-4 h-4 text-[#8F681C] dark:text-amber-300" aria-hidden="true" />
                     <span>Curated Catalog</span>
                   </>
                 )}
               </div>
               <span className="text-white/40 hidden md:inline" aria-hidden="true">•</span>
               <div className="flex items-center gap-1.5 hidden md:flex">
-                <TrendingUp className="w-4 h-4 text-emerald-300" aria-hidden="true" />
+                <TrendingUp className="w-4 h-4 text-[#1C442D] dark:text-emerald-300" aria-hidden="true" />
                 <span>Free Open Access</span>
               </div>
             </div>
