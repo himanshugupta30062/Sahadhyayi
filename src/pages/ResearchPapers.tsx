@@ -203,22 +203,22 @@ const ResearchPapers = () => {
         canonical="https://sahadhyayi.com/research-papers"
         keywords={['research papers', 'open access research', 'academic papers', 'scientific studies', 'scholarly articles']}
       />
-      <main className="min-h-screen bg-[#FAF7F2] text-[#1C201D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
-        <section className="relative isolate overflow-hidden border-b border-[#29332D] bg-[#101711] text-white">
-          <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-36 h-[28rem] w-[28rem] rounded-full bg-emerald-500/10 blur-3xl" />
-          <div aria-hidden="true" className="pointer-events-none absolute -bottom-48 -left-24 h-96 w-96 rounded-full bg-amber-400/10 blur-3xl" />
+      <main className="min-h-screen bg-[#FAFAF8] text-[#1C201D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
+        <section className="relative isolate overflow-hidden border-b border-[#E8E8E3] bg-[#F4F3EF] text-[#1C201D] dark:border-[#29332D] dark:bg-[#101711] dark:text-white">
+          <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-36 hidden h-[28rem] w-[28rem] rounded-full bg-emerald-500/10 blur-3xl dark:block" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-48 -left-24 hidden h-96 w-96 rounded-full bg-amber-400/10 blur-3xl dark:block" />
           <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
             <div className="mx-auto max-w-3xl text-center">
-              <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/15 bg-white/10 shadow-lg shadow-black/10">
-                <FileText className="h-7 w-7 text-[#D5B16D]" />
+              <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#E8E8E3] bg-white shadow-sm dark:border-white/15 dark:bg-white/10 dark:shadow-lg shadow-black/10">
+                <FileText className="h-7 w-7 text-[#1C442D] dark:text-[#D5B16D]" />
               </div>
               <p className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-[#D5B16D]">The open knowledge collection</p>
               <h1 className="font-serif text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">Research Papers</h1>
-              <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/70 sm:text-lg">
+              <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-[#636B65] dark:text-white/70 sm:text-lg">
                 Explore ideas that move the world forward. Discover influential studies, follow the evidence and read research from its original source.
               </p>
-              <div className="mt-7 flex flex-wrap items-center justify-center gap-2 text-xs text-white/65">
-                <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5">Open-access papers</span>
+              <div className="mt-7 flex flex-wrap items-center justify-center gap-2 text-xs text-[#636B65] dark:text-white/65">
+                <span className="rounded-full border border-[#E8E8E3] bg-white px-3 dark:border-white/15 dark:bg-white/5 py-1.5">Open-access papers</span>
                 <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5">Global research</span>
                 <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5">Citation-ranked discovery</span>
               </div>
@@ -227,7 +227,7 @@ const ResearchPapers = () => {
         </section>
 
         <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-          <div className="mb-8 rounded-2xl border border-[#E8E2D9] bg-white p-4 shadow-sm dark:border-[#26302A] dark:bg-[#141815] sm:p-6">
+          <div className="mb-8 rounded-2xl border border-[#E8E8E3] bg-white p-4 shadow-sm dark:border-[#26302A] dark:bg-[#141815] sm:p-6">
             <div className="flex flex-col gap-3 md:flex-row">
               <div className="relative min-w-0 flex-1">
                 <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7A817B]" />
@@ -236,17 +236,17 @@ const ResearchPapers = () => {
                   onChange={(event) => { setSearchQuery(event.target.value); setPage(1); setActiveTopic(''); }}
                   placeholder="Search papers, topics, authors or keywords..."
                   aria-label="Search research papers"
-                  className="h-12 border-[#E8E2D9] bg-[#FAF7F2] pl-10 text-sm dark:border-[#26302A] dark:bg-[#0B0D0C]"
+                  className="h-12 border-[#E8E8E3] bg-[#FAFAF8] pl-10 text-sm dark:border-[#26302A] dark:bg-[#0B0D0C]"
                 />
               </div>
-              <label className="flex h-12 items-center gap-2 rounded-lg border border-[#E8E2D9] bg-[#FAF7F2] px-3 text-sm dark:border-[#26302A] dark:bg-[#0B0D0C]">
+              <label className="flex h-12 items-center gap-2 rounded-lg border border-[#E8E8E3] bg-[#FAFAF8] px-3 text-sm dark:border-[#26302A] dark:bg-[#0B0D0C]">
                 <span className="whitespace-nowrap text-xs text-[#737B74]">Published</span>
                 <select value={year} onChange={(event) => { setYear(event.target.value); setPage(1); }} aria-label="Filter by publication year" className="min-w-0 bg-transparent font-medium outline-none">
                   <option value="all">Any year</option>
                   {Array.from({ length: 30 }, (_, index) => String(new Date().getFullYear() - index)).map((value) => <option key={value} value={value}>{value}</option>)}
                 </select>
               </label>
-              <Button type="button" variant="outline" onClick={resetFilters} className="h-12 gap-2 border-[#E8E2D9] dark:border-[#344039]">
+              <Button type="button" variant="outline" onClick={resetFilters} className="h-12 gap-2 border-[#E8E8E3] dark:border-[#344039]">
                 <RefreshCw className="h-4 w-4" /> Reset
               </Button>
             </div>
@@ -259,7 +259,7 @@ const ResearchPapers = () => {
                     type="button"
                     onClick={() => chooseTopic(topic)}
                     aria-pressed={activeTopic === topic.label || (!activeTopic && topic.label === 'All research' && !searchQuery)}
-                    className={`shrink-0 rounded-full border px-3.5 py-2 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] ${activeTopic === topic.label ? 'border-[#1C442D] bg-[#1C442D] text-white dark:border-[#D5B16D] dark:bg-[#D5B16D] dark:text-[#101711]' : 'border-[#E8E2D9] bg-white text-[#59635B] hover:border-[#AAB8AC] hover:bg-[#F6F8F5] dark:border-[#344039] dark:bg-[#141815] dark:text-[#C0C8C0] dark:hover:bg-[#1D2821]'}`}
+                    className={`shrink-0 rounded-full border px-3.5 py-2 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] ${activeTopic === topic.label ? 'border-[#1C442D] bg-[#1C442D] text-white dark:border-[#D5B16D] dark:bg-[#D5B16D] dark:text-[#101711]' : 'border-[#E8E8E3] bg-white text-[#59635B] hover:border-[#AAB8AC] hover:bg-[#F6F8F5] dark:border-[#344039] dark:bg-[#141815] dark:text-[#C0C8C0] dark:hover:bg-[#1D2821]'}`}
                   >
                     {topic.label}
                   </button>
@@ -284,7 +284,7 @@ const ResearchPapers = () => {
           {loading ? (
             <div className="grid gap-4" aria-live="polite" aria-busy="true">
               {Array.from({ length: 5 }, (_, index) => (
-                <div key={index} className="animate-pulse rounded-2xl border border-[#E8E2D9] bg-white p-6 dark:border-[#26302A] dark:bg-[#141815]">
+                <div key={index} className="animate-pulse rounded-2xl border border-[#E8E8E3] bg-white p-6 dark:border-[#26302A] dark:bg-[#141815]">
                   <div className="h-3 w-28 rounded bg-[#EAE7E0] dark:bg-[#29332D]" />
                   <div className="mt-4 h-5 w-3/4 rounded bg-[#EAE7E0] dark:bg-[#29332D]" />
                   <div className="mt-3 h-3 w-1/3 rounded bg-[#EAE7E0] dark:bg-[#29332D]" />
@@ -318,7 +318,7 @@ const ResearchPapers = () => {
                   const authors = getAuthors(paper.authorships);
                   const title = paper.display_name || paper.title || 'Untitled research paper';
                   return (
-                    <article key={paper.id} className="group rounded-2xl border border-[#E8E2D9] bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#C9D5CA] hover:shadow-md dark:border-[#26302A] dark:bg-[#141815] dark:hover:border-[#46594A] sm:p-6">
+                    <article key={paper.id} className="group rounded-2xl border border-[#E8E8E3] bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#C9D5CA] hover:shadow-md dark:border-[#26302A] dark:bg-[#141815] dark:hover:border-[#46594A] sm:p-6">
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#F1F4EF] text-[#31583D] dark:bg-[#1D2A20] dark:text-[#D5B16D]">
                           <FileText className="h-5 w-5" />
@@ -354,7 +354,7 @@ const ResearchPapers = () => {
                 })}
               </div>
 
-              <nav aria-label="Research results pagination" className="mt-8 flex flex-col items-center justify-between gap-3 rounded-2xl border border-[#E8E2D9] bg-white p-4 dark:border-[#26302A] dark:bg-[#141815] sm:flex-row">
+              <nav aria-label="Research results pagination" className="mt-8 flex flex-col items-center justify-between gap-3 rounded-2xl border border-[#E8E8E3] bg-white p-4 dark:border-[#26302A] dark:bg-[#141815] sm:flex-row">
                 <p className="text-sm text-[#737B74] dark:text-[#A5ADA6]">Page {page} of {totalPages}</p>
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => { setPage((value) => value - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="gap-1.5"><ArrowLeft className="h-4 w-4" /> Previous</Button>
@@ -364,7 +364,7 @@ const ResearchPapers = () => {
             </>
           )}
 
-          <aside className="mt-12 overflow-hidden rounded-2xl border border-[#E8E2D9] bg-[#F2EEE5] p-6 dark:border-[#26302A] dark:bg-[#141815] sm:p-8">
+          <aside className="mt-12 overflow-hidden rounded-2xl border border-[#E8E8E3] bg-[#F2EEE5] p-6 dark:border-[#26302A] dark:bg-[#141815] sm:p-8">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="max-w-2xl">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8A7350] dark:text-[#D5B16D]">Read beyond the abstract</p>
