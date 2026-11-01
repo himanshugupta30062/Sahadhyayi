@@ -154,6 +154,7 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
       );
 
       fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
+      fireEvent.click(screen.getByRole('button', { name: /library submenu/i }));
       const libraryLink = screen.getByRole('link', { name: /^library$/i });
       expect(libraryLink).toHaveAttribute('aria-current', 'page');
 
