@@ -108,10 +108,10 @@ describe('Editorial Light and Dark Theme Component Validation', () => {
 
     const section = screen.getByLabelText('Platform Capabilities');
     // Verify light background and dark background tokens are both present
-    expect(section.className).toContain('bg-[#F8F8F2]');
+    expect(section.className).toContain('bg-[#FAFAF8]');
     expect(section.className).toContain('dark:bg-[#0B0D0C]');
     const card = screen.getByText('Local Reader Map').closest('a');
-    expect(card?.className).toContain('border-[#EADFC7]');
+    expect(card?.className).toContain('border-[#E8E8E3]');
     expect(card?.className).toContain('dark:border-[#26302A]');
   });
 
@@ -126,7 +126,7 @@ describe('Editorial Light and Dark Theme Component Validation', () => {
 
     const pulseBar = screen.getByLabelText(/Book Pulse/i);
     expect(pulseBar).toBeInTheDocument();
-    expect(pulseBar.className).toContain('border-[#E8E2D9]');
+    expect(pulseBar.className).toContain('border-[#E8E8E3]');
     expect(pulseBar.className).toContain('dark:border-[#29332D]');
     expect(pulseBar.className).toContain('bg-white/80');
     expect(pulseBar.className).toContain('dark:bg-[#111614]/80');
