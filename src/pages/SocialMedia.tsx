@@ -126,30 +126,32 @@ const GuestLanding: React.FC = () => {
 
       <div className="min-h-screen bg-[#FAFAF8] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-200">
         {/* ── Hero Section ── */}
-        <section className="relative overflow-hidden border-b border-[#E8E8E3] dark:border-[#29332D] bg-gradient-to-b from-[#F4EFEA] via-[#FAF7F2] to-[#FAF7F2] dark:from-[#111614] dark:via-[#0B0D0C] dark:to-[#0B0D0C] py-20 px-4 sm:px-6 lg:px-8">
+        <section className="relative isolate overflow-hidden border-b border-[#E8E8E3] bg-[#F4EFEA] px-4 py-16 dark:border-[#29332D] dark:bg-[#111614] sm:px-6 sm:py-20 lg:px-8">
+          <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=2200&q=85" alt="" aria-hidden="true" className="absolute inset-y-0 right-0 h-full w-full object-cover object-center sm:w-[68%]" loading="eager" />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#FAF7F2] via-[#FAF7F2]/95 to-[#FAF7F2]/15 dark:from-[#0B0D0C] dark:via-[#0B0D0C]/90 dark:to-[#0B0D0C]/25" />
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="absolute -top-32 -right-32 w-[32rem] h-[32rem] rounded-full bg-emerald-500/10 dark:bg-emerald-950/20 blur-3xl" />
             <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-[#B68A35]/10 dark:bg-[#D5B16D]/5 blur-3xl" />
           </div>
 
-          <div className="relative max-w-4xl mx-auto text-center">
+          <div className="relative z-10 mx-auto max-w-7xl text-left">
             {/* Eyebrow Label */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-[#111614] border border-[#E8E8E3] dark:border-[#29332D] text-[11px] font-semibold uppercase tracking-widest text-[#1C442D] dark:text-[#D5B16D] mb-6 shadow-xs">
               <Sparkles className="w-3.5 h-3.5" />
               A Reading Community
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-6 tracking-tight leading-[1.15]">
+            <h1 className="max-w-2xl text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-6 tracking-tight leading-[1.15]">
               Where readers connect{' '}
               <span className="text-[#1C442D] dark:text-[#D5B16D]">around books.</span>
             </h1>
 
-            <p className="text-base sm:text-lg text-[#636B65] dark:text-[#A5ADA6] max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
+            <p className="max-w-xl text-base sm:text-lg text-[#636B65] dark:text-[#A5ADA6] mb-10 leading-relaxed font-normal">
               Share what you're reading, explore ideas, join reading rooms, and find people who see the world through books.
             </p>
 
             {/* Action CTAs */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-12">
+            <div className="flex flex-col sm:flex-row gap-3 mb-12">
               <Link to="/signup">
                 <Button className="w-full sm:w-auto bg-[#1C442D] hover:bg-[#143221] text-white dark:bg-[#D5B16D] dark:hover:bg-[#c49f5c] dark:text-[#0B0D0C] font-semibold px-7 h-11 text-sm shadow-md gap-2">
                   Create an account
@@ -167,7 +169,7 @@ const GuestLanding: React.FC = () => {
             </div>
 
             {/* Live Activity Pulse bar */}
-            <div className="max-w-3xl mx-auto">
+            <div className="max-w-3xl">
               <ErrorBoundary fallback={null}>
                 <BookPulseBar />
               </ErrorBoundary>
