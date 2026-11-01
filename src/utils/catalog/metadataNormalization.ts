@@ -78,7 +78,7 @@ export function normalizeTitle(rawTitle: string): NormalizedTitle {
 
   // If subtitle ends with a simple bracket group, extract it without a backtracking regex.
   if (subtitle) {
-    const closingBracket = subtitle.at(-1);
+    const closingBracket = subtitle[subtitle.length - 1];
     const openingBracket = closingBracket === ')' ? '(' : closingBracket === ']' ? '[' : null;
     const openingIndex = openingBracket ? subtitle.lastIndexOf(openingBracket) : -1;
     if (openingIndex >= 0) {

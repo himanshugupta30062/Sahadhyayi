@@ -3,6 +3,7 @@ import {
   LibraryDuplicateAudit,
   AuditGroupSummary,
   UserReferenceCounts,
+  DuplicateResolutionAction,
 } from '@/types/bookCatalog';
 import { detectDuplicateGroups } from './duplicateDetection';
 import { recommendBestEditions } from './editionRecommendation';
@@ -242,7 +243,7 @@ export async function generateLibraryDuplicateAudit(
     totalRedundant += rec.archiveCandidateIds.length;
     totalFieldsToEnrich += Object.keys(rec.proposedMergedMetadata).length;
 
-    let proposedGroupAction = rec.archiveCandidateIds.length > 0
+    let proposedGroupAction: DuplicateResolutionAction = rec.archiveCandidateIds.length > 0
       ? 'merge_and_archive_duplicates' as const
       : 'keep_top_editions' as const;
 

@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
@@ -7,11 +7,11 @@ import path from "path";
 
 // Optional bundle diagnostics. Enable with BUNDLE_ANALYSIS_REPORT=1 for CI/local
 // investigation; keep the report out of normal production deployments.
-function bundleDiagnosticsPlugin() {
+function bundleDiagnosticsPlugin(): Plugin {
   return {
     name: "sahadhyayi-bundle-diagnostics",
-    apply: "build" as const,
-    generateBundle(_options: unknown, bundle: Record<string, any>) {
+    apply: "build",
+    generateBundle(_options, bundle: Record<string, any>) {
       if (process.env.BUNDLE_ANALYSIS_REPORT !== "1") return;
 
       const chunks = Object.values(bundle)

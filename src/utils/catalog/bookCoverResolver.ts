@@ -6,7 +6,11 @@
  */
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client-universal';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { supabase as typedClient } from '@/integrations/supabase/client-universal';
+
+// Cover-repair RPC may not exist in every schema version; probe at runtime.
+const supabase = typedClient as unknown as SupabaseClient<any>;
 import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
 import { normalizeTitle, normalizeAuthor, normalizeIsbn } from '@/utils/catalog/metadataNormalization';
 
