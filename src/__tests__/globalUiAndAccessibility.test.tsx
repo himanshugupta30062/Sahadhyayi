@@ -298,7 +298,8 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
 
       const openDropdown = (name: RegExp) => {
         const trigger = screen.getByRole('button', { name });
-        fireEvent.pointerDown(trigger, { button: 0, ctrlKey: false, pointerType: 'mouse' });
+        trigger.focus();
+        fireEvent.keyDown(trigger, { key: 'Enter', code: 'Enter' });
       };
 
       openDropdown(/^library$/i);
