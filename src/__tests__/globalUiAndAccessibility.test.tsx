@@ -296,19 +296,24 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
       expect(screen.getByRole('link', { name: /^home$/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /switch to dark mode/i })).toBeInTheDocument();
 
-      fireEvent.click(screen.getByRole('button', { name: /^library$/i }));
-      expect(screen.getByRole('link', { name: /^library$/i })).toHaveAttribute('href', '/library');
+      const openDropdown = (name: RegExp) => {
+        const trigger = screen.getByRole('button', { name });
+        fireEvent.pointerDown(trigger, { button: 0, ctrlKey: false, pointerType: 'mouse' });
+      };
+
+      openDropdown(/^library$/i);
+      expect(await screen.findByRole('link', { name: /^library$/i })).toHaveAttribute('href', '/library');
       expect(screen.getByRole('link', { name: /research papers/i })).toHaveAttribute('href', '/research-papers');
 
-      fireEvent.click(screen.getByRole('button', { name: /social media/i }));
-      expect(screen.getByRole('link', { name: /community feed/i })).toHaveAttribute('href', '/social');
+      openDropdown(/social media/i);
+      expect(await screen.findByRole('link', { name: /community feed/i })).toHaveAttribute('href', '/social');
       expect(screen.getByRole('link', { name: /reading groups/i })).toHaveAttribute('href', '/groups');
 
-      fireEvent.click(screen.getByRole('button', { name: /^articles$/i }));
-      expect(screen.getByRole('link', { name: /newsroom/i })).toHaveAttribute('href', '/news');
+      openDropdown(/^articles$/i);
+      expect(await screen.findByRole('link', { name: /newsroom/i })).toHaveAttribute('href', '/news');
 
-      fireEvent.click(screen.getByRole('button', { name: /^authors$/i }));
-      expect(screen.getByRole('link', { name: /^authors$/i })).toHaveAttribute('href', '/authors');
+      openDropdown(/^authors$/i);
+      expect(await screen.findByRole('link', { name: /^authors$/i })).toHaveAttribute('href', '/authors');
     });
 
     it('expands Book Discussion into its nested links inside the public drawer', () => {
