@@ -206,12 +206,12 @@ const ResearchPapers = () => {
       <main className="min-h-screen bg-[#FAFAF8] text-[#1C201D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
         <section className="relative isolate overflow-hidden border-b border-[#E8E8E3] bg-[#F4F3EF] text-[#1C201D] dark:border-[#29332D] dark:bg-[#101711] dark:text-white">
           {/* Visible research photography in light mode; retain the existing dark-mode treatment. */}
-          <img src="https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=2200&q=85" alt="" aria-hidden="true" className="absolute inset-y-0 right-0 hidden h-full w-[62%] object-cover object-center dark:hidden sm:block" loading="eager" />
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#F4F3EF] via-[#F4F3EF]/95 to-[#F4F3EF]/10 dark:hidden" />
+          <img src="https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=2200&q=85" alt="" aria-hidden="true" className="absolute inset-y-0 right-0 h-full w-full object-cover object-center dark:hidden sm:w-[68%]" loading="eager" />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#F4F3EF] via-[#F4F3EF]/72 to-[#F4F3EF]/0 dark:hidden" />
           <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-36 hidden h-[28rem] w-[28rem] rounded-full bg-emerald-500/10 blur-3xl dark:block" />
           <div aria-hidden="true" className="pointer-events-none absolute -bottom-48 -left-24 hidden h-96 w-96 rounded-full bg-amber-400/10 blur-3xl dark:block" />
           <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
-            <div className="mx-auto max-w-3xl text-center">
+            <div className="mx-auto max-w-7xl text-left sm:max-w-3xl sm:ml-0">
               <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#E8E8E3] bg-white shadow-sm dark:border-white/15 dark:bg-white/10 dark:shadow-lg shadow-black/10">
                 <FileText className="h-7 w-7 text-[#1C442D] dark:text-[#D5B16D]" />
               </div>

@@ -128,7 +128,7 @@ const GuestLanding: React.FC = () => {
         {/* ── Hero Section ── */}
         <section className="relative isolate overflow-hidden border-b border-[#E8E8E3] bg-[#F4EFEA] px-4 py-16 dark:border-[#29332D] dark:bg-[#111614] sm:px-6 sm:py-20 lg:px-8">
           <img src="https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=2200&q=85" alt="" aria-hidden="true" className="absolute inset-y-0 right-0 h-full w-full object-cover object-center sm:w-[68%]" loading="eager" />
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#FAF7F2] via-[#FAF7F2]/95 to-[#FAF7F2]/15 dark:from-[#0B0D0C] dark:via-[#0B0D0C]/90 dark:to-[#0B0D0C]/25" />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#FAF7F2] via-[#FAF7F2]/72 to-[#FAF7F2]/0 dark:from-[#0B0D0C]/78 dark:via-[#0B0D0C]/58 dark:to-[#0B0D0C]/12" />
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="absolute -top-32 -right-32 w-[32rem] h-[32rem] rounded-full bg-emerald-500/10 dark:bg-emerald-950/20 blur-3xl" />
             <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-[#B68A35]/10 dark:bg-[#D5B16D]/5 blur-3xl" />

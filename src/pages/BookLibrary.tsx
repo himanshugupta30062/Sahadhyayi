@@ -118,11 +118,11 @@ const BookLibrary = () => {
           fetchPriority="high"
         />
         {/* Keep the photograph clearly visible in light mode while preserving readable text. */}
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#FAFAF8] via-[#FAFAF8]/90 to-[#FAFAF8]/15 dark:from-[#09120D]/78 dark:via-[#09120D]/55 dark:to-[#09120D]/30" />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#FAFAF8] via-[#FAFAF8]/72 to-[#FAFAF8]/0 dark:from-[#09120D]/80 dark:via-[#09120D]/48 dark:to-[#09120D]/12" />
         <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#F4F3EF]/10 via-transparent to-transparent dark:from-[#09120D]/70 dark:via-transparent dark:to-[#09120D]/25" />
         <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
-          <div className="mx-auto max-w-4xl text-center">
-            <div className="flex items-center justify-center space-x-3 mb-8" style={{marginBottom: '30px', marginTop: '20px'}}>
+          <div className="max-w-2xl text-left">
+            <div className="flex items-center justify-start space-x-3 mb-8" style={{marginBottom: '30px', marginTop: '20px'}}>
               <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
                 <BookOpen className="w-8 h-8 text-white" />
               </div>
@@ -136,7 +136,7 @@ const BookLibrary = () => {
             <p className="text-[#59635B] dark:text-white/75 text-lg max-w-3xl mx-auto mb-8 leading-relaxed">
               Browse books across multiple genres and discover your next great read. Reading and PDF availability varies by title; book details show the options currently available.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-[#59635B] dark:text-white/65">
+            <div className="flex flex-wrap items-center justify-start gap-4 text-sm text-[#59635B] dark:text-white/65">
               <span>📚 Books Across Genres</span>
               <span>🌍 Multiple Languages</span>
               <span>👥 Active Reading Community</span>

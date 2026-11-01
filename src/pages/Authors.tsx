@@ -142,7 +142,7 @@ const Authors = () => {
               backgroundPosition: 'center 42%',
             }}
           />
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#F4F3EF] via-[#F4F3EF]/92 to-[#F4F3EF]/10 dark:hidden" />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#F4F3EF] via-[#F4F3EF]/68 to-[#F4F3EF]/0 dark:hidden" />
           <div aria-hidden="true" className="absolute inset-0 hidden dark:block bg-gradient-to-r from-[#09120D]/95 via-[#09120D]/79 to-[#09120D]/38" />
           <div aria-hidden="true" className="absolute inset-0 hidden dark:block bg-gradient-to-t from-[#09120D]/70 via-transparent to-[#09120D]/25" />
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:radial-gradient(rgba(255,255,255,0.6)_0.7px,transparent_0.7px)] [background-size:18px_18px] [mask-image:linear-gradient(to_right,black,transparent_80%)]" />

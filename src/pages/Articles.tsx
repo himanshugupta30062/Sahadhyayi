@@ -110,8 +110,8 @@ const Articles = () => {
               backgroundPosition: 'center 48%',
             }}
           />
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#09120D]/95 via-[#09120D]/82 to-[#09120D]/42" />
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#09120D]/75 via-transparent to-[#09120D]/25" />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#09120D]/78 via-[#09120D]/58 to-[#09120D]/18" />
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#09120D]/45 via-transparent to-[#09120D]/10" />
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.13] [background-image:linear-gradient(rgba(255,255,255,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.14)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:linear-gradient(to_right,black,transparent_78%)]" />
 
           <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-18 lg:px-8 lg:py-24">
