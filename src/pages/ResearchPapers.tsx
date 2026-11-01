@@ -63,7 +63,7 @@ function getAbstract(index?: Record<string, number[]> | null): string {
 function getAuthors(authorships?: OpenAlexAuthor[] | null): string {
   if (!Array.isArray(authorships)) return '';
   const names = authorships
-    .filter((item): item is NonNullable<OpenAlexAuthor> => isRecord(item))
+    .filter((item): item is Exclude<OpenAlexAuthor, null> => item !== null && typeof item === 'object')
     .map((item) => item.author?.display_name)
     .filter((name): name is string => typeof name === 'string' && name.trim().length > 0);
   if (names.length <= 3) return names.join(', ');
@@ -123,7 +123,8 @@ const ResearchPapers = () => {
 
   useEffect(() => {
     const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 18000);
+    let timedOut = false;
+    const timeout = window.setTimeout(() => { timedOut = true; controller.abort(); }, 18000);
 
     async function loadPapers() {
       setLoading(true);
@@ -153,7 +154,13 @@ const ResearchPapers = () => {
         setTotalCount(Number.isFinite(responseData.meta?.count) ? Math.max(0, Number(responseData.meta?.count)) : validPapers.length);
       } catch (loadError) {
         if (controller.signal.aborted) {
-          setError('The research catalogue took too long to respond. Please check your connection and try again.');
+          if (timedOut) {
+            setError('The research catalogue took too long to respond. Please check your connection and try again.');
+            setPapers([]);
+            setTotalCount(0);
+            setLoading(false);
+          }
+          return;
         } else {
           setError(loadError instanceof Error ? loadError.message : 'Unable to load research papers right now.');
         }
@@ -161,8 +168,7 @@ const ResearchPapers = () => {
         setTotalCount(0);
       } finally {
         window.clearTimeout(timeout);
-        if (!controller.signal.aborted || error) setLoading(false);
-        else setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     }
 
