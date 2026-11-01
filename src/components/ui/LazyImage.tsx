@@ -21,6 +21,7 @@ export function LazyImage({
   className,
   loading = "lazy",
   decoding = "async",
+  referrerPolicy = "no-referrer",
   onError,
   ...imageProps
 }: LazyImageProps) {
@@ -54,7 +55,7 @@ export function LazyImage({
         decoding={decoding}
         alt={alt}
         src={resolvedSrc}
-        referrerPolicy="no-referrer"
+        referrerPolicy={referrerPolicy}
         className={className}
         onError={handleError}
       />
