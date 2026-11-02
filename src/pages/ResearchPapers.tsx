@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
-  ArrowLeft, ArrowRight, Atom, BookOpen, Bookmark, BookmarkCheck, BrainCircuit,
-  CheckCircle2, Download, ExternalLink, FileText, HeartPulse, Leaf, Palette,
-  Quote, RefreshCw, Search, Sparkles, Users,
+  ArrowLeft, ArrowRight, BookOpen, Bookmark, BookmarkCheck,
+  CheckCircle2, Download, ExternalLink, FileText,
+  Quote, RefreshCw, Search,
 } from 'lucide-react';
 import SEO from '@/components/SEO';
 import { Input } from '@/components/ui/input';
@@ -47,56 +47,6 @@ const TOPICS: Topic[] = [
   { label: 'Physics', query: 'physics' },
 ];
 
-const RESEARCH_AREAS = [
-  {
-    label: 'AI & Computing',
-    description: 'Artificial intelligence, machine learning, software, data and human-computer interaction.',
-    query: 'artificial intelligence computer science',
-    icon: BrainCircuit,
-    tone: 'from-emerald-50 to-teal-50 dark:from-emerald-950/35 dark:to-teal-950/20',
-    iconTone: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200',
-  },
-  {
-    label: 'Health & Life Sciences',
-    description: 'Medicine, public health, biology, neuroscience and the science of living systems.',
-    query: 'medicine biology health sciences',
-    icon: HeartPulse,
-    tone: 'from-rose-50 to-orange-50 dark:from-rose-950/30 dark:to-orange-950/20',
-    iconTone: 'bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-200',
-  },
-  {
-    label: 'Climate & Environment',
-    description: 'Climate change, sustainability, biodiversity, energy and environmental research.',
-    query: 'climate change environmental science',
-    icon: Leaf,
-    tone: 'from-lime-50 to-green-50 dark:from-lime-950/30 dark:to-green-950/20',
-    iconTone: 'bg-lime-100 text-lime-900 dark:bg-lime-900/50 dark:text-lime-200',
-  },
-  {
-    label: 'Physics & Space',
-    description: 'Physics, mathematics, astronomy, materials and the fundamental laws of nature.',
-    query: 'physics astronomy mathematics',
-    icon: Atom,
-    tone: 'from-sky-50 to-indigo-50 dark:from-sky-950/35 dark:to-indigo-950/20',
-    iconTone: 'bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-200',
-  },
-  {
-    label: 'Mind & Society',
-    description: 'Psychology, education, economics, sociology and the way people shape society.',
-    query: 'psychology sociology social sciences',
-    icon: Users,
-    tone: 'from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/20',
-    iconTone: 'bg-amber-100 text-amber-900 dark:bg-amber-900/50 dark:text-amber-200',
-  },
-  {
-    label: 'Humanities & Culture',
-    description: 'History, philosophy, languages, literature, arts and cultural studies.',
-    query: 'humanities history philosophy literature',
-    icon: Palette,
-    tone: 'from-violet-50 to-fuchsia-50 dark:from-violet-950/30 dark:to-fuchsia-950/20',
-    iconTone: 'bg-violet-100 text-violet-800 dark:bg-violet-900/50 dark:text-violet-200',
-  },
-];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
