@@ -55,6 +55,19 @@ describe('ResearchPapers', () => {
     vi.restoreAllMocks();
   });
 
+  it('shows research areas and turns an area selection into a search', async () => {
+    renderPage();
+    expect(screen.getByRole('heading', { name: 'Areas of Research' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /AI & Computing/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Health & Life Sciences/ })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /AI & Computing/ }));
+    await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
+      'search-research-papers',
+      { body: { query: 'artificial intelligence computer science', year: 'all', page: 1, perPage: 12 } },
+    ));
+  });
+
   it('renders metadata, abstract, author summary and paper links', async () => {
     renderPage();
     expect(await screen.findByRole('heading', { name: 'A Test Research Paper' })).toBeInTheDocument();
