@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Newspaper, Plus, RefreshCw, ExternalLink, Pencil, X } from "lucide-react";
+import { Newspaper, Plus, RefreshCw, ExternalLink, Pencil, X, ImageUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client-universal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +32,7 @@ export default function AdminNews() {
   const [sourceUrl, setSourceUrl] = useState("");
   const [authorName, setAuthorName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [featured, setFeatured] = useState(false);
+  const [featured, setFeatured] = useState(false);\n  const [coverFile, setCoverFile] = useState<File | null>(null);\n  const [uploadingCover, setUploadingCover] = useState(false);
 
   const newsQuery = useQuery({
     queryKey: ["admin-news"],
@@ -47,9 +47,9 @@ export default function AdminNews() {
     mutationFn: async (publishNow: boolean) => {
       if (title.trim().length < 5 || content.trim().length < 30) throw new Error("Add a headline and at least 30 characters of story content.");
       if (sourceUrl.trim()) { const url = new URL(sourceUrl); if (!["http:", "https:"].includes(url.protocol)) throw new Error("Source URL must use HTTP or HTTPS."); }
-      const payload: Record<string, unknown> = {
+      let coverUrl = cover.trim() || null;\n      if (coverFile) {\n        setUploadingCover(true);\n        const ext = coverFile.name.split(".").pop()?.toLowerCase() || "jpg";\n        const path = `news/${crypto.randomUUID()}.${ext}`;\n        const { error: uploadError } = await supabase.storage.from("news-covers").upload(path, coverFile, { contentType: coverFile.type, cacheControl: "3600", upsert: false });\n        setUploadingCover(false);\n        if (uploadError) throw uploadError;\n        coverUrl = supabase.storage.from("news-covers").getPublicUrl(path).data.publicUrl;\n      }\n      const payload: Record<string, unknown> = {
         title: title.trim(), summary: summary.trim() || null, content: content.trim(),
-        category, cover_image_url: cover.trim() || null, source_name: sourceName.trim() || null,
+        category, cover_image_url: coverUrl, source_name: sourceName.trim() || null,
         source_url: sourceUrl.trim() || null, author_name: authorName.trim() || null,
         status: publishNow ? "published" : "draft", published_at: publishNow ? new Date().toISOString() : null,
         is_featured: featured,
@@ -63,7 +63,7 @@ export default function AdminNews() {
     },
     onSuccess: async (_data, publishNow) => {
       toast({ title: publishNow ? "News published" : "Draft saved" });
-      setTitle(""); setSummary(""); setContent(""); setCover(""); setSourceName(""); setSourceUrl(""); setAuthorName(""); setEditingId(null); setFeatured(false);
+      setTitle(""); setSummary(""); setContent(""); setCover(""); setCoverFile(null); setSourceName(""); setSourceUrl(""); setAuthorName(""); setEditingId(null); setFeatured(false);
       await queryClient.invalidateQueries({ queryKey: ["admin-news"] });
     },
     onError: (error: Error) => toast({ title: "Could not save news", description: error.message, variant: "destructive" }),
@@ -85,8 +85,8 @@ export default function AdminNews() {
         <div className="grid gap-4 sm:grid-cols-2"><label className="grid gap-1.5 text-sm font-medium">Headline<Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={200} required placeholder="Write a clear, factual headline" /></label><label className="grid gap-1.5 text-sm font-medium">Category<Select value={category} onValueChange={setCategory}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{NEWS_CATEGORIES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent></Select></label></div>
         <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} /> Feature this story on the Newsroom</label><label className="grid gap-1.5 text-sm font-medium">Short summary<Textarea value={summary} onChange={(e) => setSummary(e.target.value)} maxLength={400} rows={2} placeholder="A concise summary for news cards and search" /></label>
         <label className="grid gap-1.5 text-sm font-medium">Story content<Textarea value={content} onChange={(e) => setContent(e.target.value)} rows={10} placeholder="Write the original story, context and key details..." required /></label>
-        <div className="grid gap-4 sm:grid-cols-2"><label className="grid gap-1.5 text-sm font-medium">Cover image URL (optional)<Input type="url" value={cover} onChange={(e) => setCover(e.target.value)} placeholder="https://..." /></label><label className="grid gap-1.5 text-sm font-medium">Byline / reporter (optional)<Input value={authorName} onChange={(e) => setAuthorName(e.target.value)} placeholder="Sahadhyayi Editorial Desk" /></label><label className="grid gap-1.5 text-sm font-medium">Source name (optional)<Input value={sourceName} onChange={(e) => setSourceName(e.target.value)} placeholder="Publisher, university or news outlet" /></label><label className="grid gap-1.5 text-sm font-medium">Original source URL (optional)<Input type="url" value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} placeholder="https://..." /></label></div>
-        <div className="flex flex-wrap items-center justify-end gap-2 border-t pt-4"><Button type="button" variant="outline" disabled={saveMutation.isPending} onClick={() => { saveMutation.mutate(false); }}>Save draft</Button><Button type="submit" disabled={saveMutation.isPending} >{saveMutation.isPending ? "Saving..." : editingId ? "Save & publish" : "Publish story"}</Button>{editingId && <Button type="button" variant="ghost" onClick={() => { setEditingId(null); setTitle(""); setSummary(""); setContent(""); setCover(""); setSourceName(""); setSourceUrl(""); setAuthorName(""); setFeatured(false); }}><X className="mr-1 h-4 w-4"/>Cancel edit</Button>}</div>
+        <div className="grid gap-4 sm:grid-cols-2"><div className="grid gap-2"><label className="grid gap-1.5 text-sm font-medium">Cover image URL (optional)<Input type="url" value={cover} onChange={(e) => { setCover(e.target.value); setCoverFile(null); }} placeholder="https://..." /></label><label className="grid gap-1.5 text-sm font-medium">Or upload cover image (JPG, PNG, WebP · max 5 MB)<Input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => { const f = e.target.files?.[0] || null; if (f && (f.size > 5 * 1024 * 1024 || !["image/jpeg","image/png","image/webp"].includes(f.type))) { toast({ title: "Invalid cover image", description: "Use JPG, PNG or WebP under 5 MB.", variant: "destructive" }); e.target.value = ""; return; } setCoverFile(f); }} /></label>{coverFile && <p className="text-xs text-muted-foreground">Selected: {coverFile.name}</p>}</div><label className="grid gap-1.5 text-sm font-medium">Byline / reporter (optional)<Input value={authorName} onChange={(e) => setAuthorName(e.target.value)} placeholder="Sahadhyayi Editorial Desk" /></label><label className="grid gap-1.5 text-sm font-medium">Source name (optional)<Input value={sourceName} onChange={(e) => setSourceName(e.target.value)} placeholder="Publisher, university or news outlet" /></label><label className="grid gap-1.5 text-sm font-medium">Original source URL (optional)<Input type="url" value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} placeholder="https://..." /></label></div>
+        <div className="flex flex-wrap items-center justify-end gap-2 border-t pt-4"><Button type="button" variant="outline" disabled={saveMutation.isPending || uploadingCover} onClick={() => { saveMutation.mutate(false); }}>Save draft</Button><Button type="submit" disabled={saveMutation.isPending || uploadingCover} >{uploadingCover ? "Uploading image..." : saveMutation.isPending ? "Saving..." : editingId ? "Save & publish" : "Publish story"}</Button>{editingId && <Button type="button" variant="ghost" onClick={() => { setEditingId(null); setTitle(""); setSummary(""); setContent(""); setCover(""); setSourceName(""); setSourceUrl(""); setAuthorName(""); setFeatured(false); }}><X className="mr-1 h-4 w-4"/>Cancel edit</Button>}</div>
       </form>
     </section>
     <section className="rounded-2xl border bg-card p-5 sm:p-7"><h2 className="text-xl font-semibold">Recent stories</h2><p className="mb-4 mt-1 text-sm text-muted-foreground">Manage drafts, published stories and archived items.</p>
