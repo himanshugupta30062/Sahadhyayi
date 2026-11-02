@@ -68,6 +68,18 @@ describe('ResearchPapers', () => {
     ));
   });
 
+  it('filters results by research paper type', async () => {
+    renderPage();
+    await screen.findByRole('heading', { name: 'A Test Research Paper' });
+    fireEvent.change(screen.getByRole('combobox', { name: 'Filter by paper type' }), {
+      target: { value: 'review' },
+    });
+    await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
+      'search-research-papers',
+      { body: { query: '', year: 'all', type: 'review', page: 1, perPage: 12 } },
+    ));
+  });
+
   it('renders metadata, abstract, author summary and paper links', async () => {
     renderPage();
     expect(await screen.findByRole('heading', { name: 'A Test Research Paper' })).toBeInTheDocument();
