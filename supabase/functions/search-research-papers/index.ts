@@ -43,6 +43,8 @@ Deno.serve(async (req: Request) => {
     const page = Number.isInteger(input.page) ? Number(input.page) : 1;
     const perPage = Number.isInteger(input.perPage) ? Number(input.perPage) : 12;
     const year = input.year === "all" || input.year == null ? "all" : String(input.year);
+    const allowedTypes = new Set(["article", "review", "preprint", "conference-paper", "book-chapter"]);
+    const type = typeof input.type === "string" && allowedTypes.has(input.type) ? input.type : "all";
 
     if (page < 1 || page > 10000) return jsonResponse({ error: "Page must be between 1 and 10,000." }, 400);
     if (perPage < 1 || perPage > 25) return jsonResponse({ error: "Page size must be between 1 and 25." }, 400);
@@ -50,6 +52,7 @@ Deno.serve(async (req: Request) => {
 
     const filters = ["open_access.is_oa:true"];
     if (year !== "all") filters.push(`publication_year:${year}`);
+    if (type !== "all") filters.push(`type:${type}`);
 
     const params = new URLSearchParams({
       per_page: String(perPage),
@@ -60,7 +63,7 @@ Deno.serve(async (req: Request) => {
     });
     if (query) params.set("search", query);
 
-    const cacheKey = JSON.stringify({ query, page, perPage, year });
+    const cacheKey = JSON.stringify({ query, page, perPage, year, type });
     const cached = responseCache.get(cacheKey);
     if (cached && cached.expiresAt > Date.now()) {
       return jsonResponse(cached.payload, 200, true);
