@@ -6,7 +6,6 @@ import {
   Quote, RefreshCw, Search, Sparkles, Users,
 } from 'lucide-react';
 import SEO from '@/components/SEO';
-import ResearchScientistsHub from '@/components/research/ResearchScientistsHub';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -156,6 +155,7 @@ const ResearchPapers = () => {
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [activeTopic, setActiveTopic] = useState('');
   const [year, setYear] = useState('all');
+  const [paperType, setPaperType] = useState('all');
   const [page, setPage] = useState(1);
   const [papers, setPapers] = useState<OpenAlexWork[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -243,7 +243,7 @@ const ResearchPapers = () => {
       setError('');
       try {
         const { data, error: functionError } = await supabase.functions.invoke('search-research-papers', {
-          body: { query: debouncedQuery, year, page, perPage: PAGE_SIZE },
+          body: { query: debouncedQuery, year, type: paperType, page, perPage: PAGE_SIZE },
         });
         if (functionError) throw functionError;
         const payload: unknown = data;
@@ -264,7 +264,7 @@ const ResearchPapers = () => {
     }
     void loadPapers();
     return () => { active = false; };
-  }, [debouncedQuery, year, page, retry]);
+  }, [debouncedQuery, year, paperType, page, retry]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const resultLabel = useMemo(() => totalCount.toLocaleString('en-US'), [totalCount]);
@@ -279,6 +279,7 @@ const ResearchPapers = () => {
     setSearchQuery('');
     setActiveTopic('All research');
     setYear('all');
+    setPaperType('all');
     setPage(1);
   };
 
@@ -291,73 +292,16 @@ const ResearchPapers = () => {
         keywords={['research papers', 'open access research', 'academic papers', 'scientific studies', 'scholarly articles']}
       />
       <main className="min-h-screen bg-[#FAFAF8] text-[#1C201D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
-        <section className="relative isolate overflow-hidden border-b border-[#E8E8E3] bg-[#F4F3EF] text-[#1C201D] dark:border-[#29332D] dark:bg-[#101711] dark:text-white">
-          {/* Visible research photography in light mode; retain the existing dark-mode treatment. */}
-          <img src="https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=2200&q=85" alt="" aria-hidden="true" className="absolute inset-y-0 right-0 h-full w-full object-cover object-center dark:hidden sm:w-[68%]" loading="eager" />
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#F4F3EF] via-[#F4F3EF]/72 to-[#F4F3EF]/0 dark:hidden" />
-          <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-36 hidden h-[28rem] w-[28rem] rounded-full bg-emerald-500/10 blur-3xl dark:block" />
-          <div aria-hidden="true" className="pointer-events-none absolute -bottom-48 -left-24 hidden h-96 w-96 rounded-full bg-amber-400/10 blur-3xl dark:block" />
-          <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
-            <div className="mx-auto max-w-7xl text-left sm:max-w-3xl sm:ml-0">
-              <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#E8E8E3] bg-white shadow-sm dark:border-white/15 dark:bg-white/10 dark:shadow-lg shadow-black/10">
-                <FileText className="h-7 w-7 text-[#1C442D] dark:text-[#D5B16D]" />
-              </div>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.24em] text-[#1C442D] dark:text-[#D5B16D]">The open knowledge collection</p>
-              <h1 className="font-serif text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">Research Papers</h1>
-              <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-[#636B65] dark:text-white/70 sm:text-lg">
-                Explore ideas that move the world forward. Discover influential studies, follow the evidence and read research from its original source.
-              </p>
-              <div className="mt-7 flex flex-wrap items-center justify-center gap-2 text-xs text-[#636B65] dark:text-white/65">
-                <span className="rounded-full border border-[#E8E8E3] bg-white px-3 dark:border-white/15 dark:bg-white/5 py-1.5">Open-access papers</span>
-                <span className="rounded-full border border-[#E8E8E3] bg-white px-3 py-1.5 dark:border-white/15 dark:bg-white/5">Global research</span>
-                <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5">Citation-ranked discovery</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <ResearchScientistsHub />
-
-        <section aria-labelledby="research-areas-heading" className="mx-auto max-w-7xl px-4 pt-9 sm:px-6 sm:pt-12 lg:px-8">
-          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8A7350] dark:text-[#D5B16D]">Explore the knowledge landscape</p>
-              <h2 id="research-areas-heading" className="mt-2 font-serif text-3xl font-semibold text-[#1C201D] dark:text-[#F3F0E7] sm:text-4xl">Areas of Research</h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#737B74] dark:text-[#A5ADA6]">Follow a question across disciplines. Choose an area to discover open-access studies and the ideas shaping it.</p>
-            </div>
-            <span className="text-xs font-medium text-[#8A7350] dark:text-[#D5B16D]">Six discovery pathways</span>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {RESEARCH_AREAS.map((area) => {
-              const AreaIcon = area.icon;
-              const isActive = activeTopic === area.label;
-              return (
-                <button
-                  key={area.label}
-                  type="button"
-                  onClick={() => {
-                    chooseTopic({ label: area.label, query: area.query });
-                    document.getElementById('research-catalogue')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }}
-                  aria-pressed={isActive}
-                  className={`group relative overflow-hidden rounded-2xl border p-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${isActive ? 'border-[#1C442D] ring-2 ring-[#1C442D]/15 dark:border-[#D5B16D] dark:ring-[#D5B16D]/20' : 'border-[#E8E8E3] dark:border-[#26302A]'} bg-gradient-to-br ${area.tone}`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${area.iconTone}`}>
-                      <AreaIcon className="h-5 w-5" aria-hidden="true" />
-                    </span>
-                    <span className="text-xs font-semibold text-[#7A817B] transition-transform group-hover:translate-x-1 dark:text-[#A5ADA6]" aria-hidden="true">Explore ↗</span>
-                  </div>
-                  <h3 className="mt-5 font-serif text-xl font-semibold text-[#1C201D] dark:text-[#F3F0E7]">{area.label}</h3>
-                  <p className="mt-2 min-h-[3rem] text-sm leading-6 text-[#59635B] dark:text-[#A5ADA6]">{area.description}</p>
-                </button>
-              );
-            })}
+        <section className="border-b border-[#E8E8E3] bg-[#F4F3EF] dark:border-[#29332D] dark:bg-[#101711]">
+          <div className="mx-auto max-w-7xl px-4 py-9 sm:px-6 sm:py-12 lg:px-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8A7350] dark:text-[#D5B16D]">Explore scholarly knowledge</p>
+            <h1 className="mt-2 font-serif text-3xl font-bold tracking-tight sm:text-4xl">Research Papers</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#636B65] dark:text-white/70 sm:text-base">Find research, compare evidence and read papers from their original sources.</p>
           </div>
         </section>
 
         <section id="research-catalogue" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-          <div className="mb-8 rounded-2xl border border-[#E8E8E3] bg-white p-4 shadow-sm dark:border-[#26302A] dark:bg-[#141815] sm:p-6">
+          <div className="mb-5 rounded-2xl border border-[#E8E8E3] bg-white p-4 shadow-sm dark:border-[#26302A] dark:bg-[#141815] sm:p-6">
             <div className="flex flex-col gap-3 md:flex-row">
               <div className="relative min-w-0 flex-1">
                 <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7A817B]" />
@@ -376,12 +320,23 @@ const ResearchPapers = () => {
                   {Array.from({ length: 30 }, (_, index) => String(new Date().getFullYear() - index)).map((value) => <option key={value} value={value}>{value}</option>)}
                 </select>
               </label>
+              <label className="flex h-12 items-center gap-2 rounded-lg border border-[#E8E8E3] bg-[#FAFAF8] px-3 text-sm dark:border-[#26302A] dark:bg-[#0B0D0C]">
+                <span className="whitespace-nowrap text-xs text-[#737B74]">Type</span>
+                <select value={paperType} onChange={(event) => { setPaperType(event.target.value); setPage(1); }} aria-label="Filter by paper type" className="min-w-0 bg-transparent font-medium outline-none">
+                  <option value="all">All types</option>
+                  <option value="article">Research articles</option>
+                  <option value="review">Review papers</option>
+                  <option value="preprint">Preprints</option>
+                  <option value="conference-paper">Conference papers</option>
+                  <option value="book-chapter">Book chapters</option>
+                </select>
+              </label>
               <Button type="button" variant="outline" onClick={resetFilters} className="h-12 gap-2 border-[#E8E8E3] dark:border-[#344039]">
                 <RefreshCw className="h-4 w-4" /> Reset
               </Button>
             </div>
             <div className="mt-5">
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#899189]">Explore by subject</p>
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#899189]">Browse subjects</p>
               <div className="flex gap-2 overflow-x-auto pb-1">
                 {TOPICS.map((topic) => (
                   <button
@@ -499,16 +454,6 @@ const ResearchPapers = () => {
             </>
           )}
 
-          <aside className="mt-12 overflow-hidden rounded-2xl border border-[#E8E8E3] bg-[#F2EEE5] p-6 dark:border-[#26302A] dark:bg-[#141815] sm:p-8">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-              <div className="max-w-2xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8A7350] dark:text-[#D5B16D]">Read beyond the abstract</p>
-                <h2 className="mt-2 font-serif text-2xl font-semibold">Ideas are stronger with context</h2>
-                <p className="mt-2 text-sm leading-6 text-[#667068] dark:text-[#A5ADA6]">Explore books alongside original research to connect discoveries, evidence and the bigger picture.</p>
-              </div>
-              <a href="/library" className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg border border-[#D9E1DA] bg-white px-4 text-sm font-semibold text-[#1C442D] hover:bg-[#F3F6F2] dark:border-[#344039] dark:bg-[#1D2821] dark:text-[#D5B16D]">Explore the book library <ExternalLink className="ml-2 h-3.5 w-3.5" /></a>
-            </div>
-          </aside>
           <p className="mt-6 text-center text-xs text-[#899189] dark:text-[#7E897F]">Research metadata provided by OpenAlex. Full-text availability depends on the original publisher or repository.</p>
         </section>
       </main>
