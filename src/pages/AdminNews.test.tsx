@@ -35,8 +35,11 @@ vi.mock('@tanstack/react-query', () => ({
 }));
 
 vi.mock('@/integrations/supabase/client-universal', () => ({
-  supabase: { from: () => ({ select: () => ({ order: () => ({ limit: async () => ({ data: mocks.stories, error: mocks.queryError }) }) }),
-    insert: (...args: unknown[]) => mocks.insert(...args), update: (...args: unknown[]) => mocks.update(...args) },
+  supabase: { from: () => ({
+    select: () => ({ order: () => ({ limit: async () => ({ data: mocks.stories, error: mocks.queryError }) }) }),
+    insert: (...args: unknown[]) => mocks.insert(...args),
+    update: (...args: unknown[]) => mocks.update(...args),
+  }) },
 }));
 vi.mock('@/hooks/use-toast', () => ({ toast: mocks.toast }));
 vi.mock('@/components/ui/button', () => ({ Button: ({ children, ...props }: any) => <button {...props}>{children}</button> }));
@@ -114,7 +117,8 @@ describe('AdminNews', () => {
     mocks.insert.mockResolvedValueOnce({ error: new Error('insert denied') });
     fireEvent.change(screen.getByPlaceholderText('Write a clear, factual headline'), { target: { value: 'Another sufficiently long headline' } });
     fireEvent.change(screen.getByPlaceholderText('Write the original story, context and key details...'), { target: { value: 'This story contains more than thirty characters of useful original content.' } });
-    fireEvent.click(screen.getByrole?.('button') ?? screen.getByRole('button', { name: 'Publish story' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Publish story' }));
+    await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Could not save news', description: 'insert denied' })));
   });
 
   it('updates draft and published story statuses', async () => {
