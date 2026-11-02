@@ -6,6 +6,7 @@ import {
   Quote, RefreshCw, Search, Sparkles, Users,
 } from 'lucide-react';
 import SEO from '@/components/SEO';
+import ResearchScientistsHub from '@/components/research/ResearchScientistsHub';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -314,6 +315,8 @@ const ResearchPapers = () => {
             </div>
           </div>
         </section>
+
+        <ResearchScientistsHub />
 
         <section aria-labelledby="research-areas-heading" className="mx-auto max-w-7xl px-4 pt-9 sm:px-6 sm:pt-12 lg:px-8">
           <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
