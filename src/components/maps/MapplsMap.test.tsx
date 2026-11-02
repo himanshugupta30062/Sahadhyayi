@@ -1,7 +1,16 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { MapplsMap, createFriendInfoContent } from '@/components/maps/MapplsMap';
+import { MapplsMap } from '@/components/maps/MapplsMap';
+import { createFriendInfoContent } from '@/components/social/FriendsLocationMap';
+
+vi.mock('@/components/ui/card', () => ({ Card: ({ children }: any) => <div>{children}</div>, CardContent: ({ children }: any) => <div>{children}</div>, CardHeader: ({ children }: any) => <div>{children}</div>, CardTitle: ({ children }: any) => <h2>{children}</h2> }));
+vi.mock('@/components/ui/button', () => ({ Button: ({ children, ...props }: any) => <button {...props}>{children}</button> }));
+vi.mock('@/hooks/useFriends', () => ({ useFriends: () => ({ friends: [], loading: false, refresh: vi.fn() }) }));
+vi.mock('@/contexts/authHelpers', () => ({ useAuth: () => ({ user: null }) }));
+vi.mock('@/lib/locationService', () => ({ getCurrentLocation: vi.fn() }));
+vi.mock('@/components/social/LocationConsentModal', () => ({ LocationConsentModal: () => null }));
+vi.mock('@/components/social/LocationPermissionModal', () => ({ LocationPermissionModal: () => null }));
 
 describe('MapplsMap', () => {
   afterEach(() => {
