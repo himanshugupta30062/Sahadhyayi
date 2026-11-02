@@ -2,12 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Download, ExternalLink,
-  FileText, Quote, RefreshCw, Search, Sparkles,
+  Bookmark, BookmarkCheck, FileText, Quote, RefreshCw, Search, Sparkles,
 } from 'lucide-react';
 import SEO from '@/components/SEO';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Bookmark, BookmarkCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 
@@ -123,14 +122,18 @@ const ResearchPapers = () => {
   useEffect(() => {
     let active = true;
     const loadBookmarks = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user || !active) return;
-      const { data, error: bookmarkLoadError } = await supabase
-        .from('research_paper_bookmarks')
-        .select('openalex_id')
-        .eq('user_id', user.id);
-      if (!bookmarkLoadError && active) {
-        setSavedIds(new Set((data ?? []).map((item) => item.openalex_id)));
+      try {
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user || !active) return;
+        const { data, error: bookmarkLoadError } = await supabase
+          .from('research_paper_bookmarks')
+          .select('openalex_id')
+          .eq('user_id', user.id);
+        if (!bookmarkLoadError && active) {
+          setSavedIds(new Set((data ?? []).map((item) => item.openalex_id)));
+        }
+      } catch (loadError) {
+        if (active) setBookmarkError(loadError instanceof Error ? loadError.message : 'Unable to load saved papers.');
       }
     };
     void loadBookmarks();
