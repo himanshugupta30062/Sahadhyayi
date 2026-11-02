@@ -247,6 +247,10 @@ const ResearchPapers = () => {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8A7350] dark:text-[#D5B16D]">Explore scholarly knowledge</p>
             <h1 className="mt-2 font-serif text-3xl font-bold tracking-tight sm:text-4xl">Research Papers</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-[#636B65] dark:text-white/70 sm:text-base">Find research, compare evidence and read papers from their original sources.</p>
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              <a href="/research-papers/submit?kind=publish" className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#1C442D] px-4 text-sm font-semibold text-white hover:bg-[#163824] dark:bg-[#D5B16D] dark:text-[#101711] dark:hover:bg-[#E3C58B]">Publish Research Paper</a>
+              <a href="/research-papers/submit?kind=contribute" className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[#C9D2CA] bg-white px-4 text-sm font-semibold text-[#1C442D] hover:bg-[#F3F6F2] dark:border-[#344039] dark:bg-[#1D2821] dark:text-[#D5B16D]">Add Research Paper</a>
+            </div>
           </div>
         </section>
 
