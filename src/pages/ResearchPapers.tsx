@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
-  ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Download, ExternalLink,
-  Bookmark, BookmarkCheck, FileText, Quote, RefreshCw, Search, Sparkles,
+  ArrowLeft, ArrowRight, Atom, BookOpen, Bookmark, BookmarkCheck, BrainCircuit,
+  CheckCircle2, Download, ExternalLink, FileText, HeartPulse, Leaf, Palette,
+  Quote, RefreshCw, Search, Sparkles, Users,
 } from 'lucide-react';
 import SEO from '@/components/SEO';
 import { Input } from '@/components/ui/input';
@@ -44,6 +45,57 @@ const TOPICS: Topic[] = [
   { label: 'Psychology', query: 'psychology' },
   { label: 'Medicine', query: 'medicine' },
   { label: 'Physics', query: 'physics' },
+];
+
+const RESEARCH_AREAS = [
+  {
+    label: 'AI & Computing',
+    description: 'Artificial intelligence, machine learning, software, data and human-computer interaction.',
+    query: 'artificial intelligence computer science',
+    icon: BrainCircuit,
+    tone: 'from-emerald-50 to-teal-50 dark:from-emerald-950/35 dark:to-teal-950/20',
+    iconTone: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200',
+  },
+  {
+    label: 'Health & Life Sciences',
+    description: 'Medicine, public health, biology, neuroscience and the science of living systems.',
+    query: 'medicine biology health sciences',
+    icon: HeartPulse,
+    tone: 'from-rose-50 to-orange-50 dark:from-rose-950/30 dark:to-orange-950/20',
+    iconTone: 'bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-200',
+  },
+  {
+    label: 'Climate & Environment',
+    description: 'Climate change, sustainability, biodiversity, energy and environmental research.',
+    query: 'climate change environmental science',
+    icon: Leaf,
+    tone: 'from-lime-50 to-green-50 dark:from-lime-950/30 dark:to-green-950/20',
+    iconTone: 'bg-lime-100 text-lime-900 dark:bg-lime-900/50 dark:text-lime-200',
+  },
+  {
+    label: 'Physics & Space',
+    description: 'Physics, mathematics, astronomy, materials and the fundamental laws of nature.',
+    query: 'physics astronomy mathematics',
+    icon: Atom,
+    tone: 'from-sky-50 to-indigo-50 dark:from-sky-950/35 dark:to-indigo-950/20',
+    iconTone: 'bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-200',
+  },
+  {
+    label: 'Mind & Society',
+    description: 'Psychology, education, economics, sociology and the way people shape society.',
+    query: 'psychology sociology social sciences',
+    icon: Users,
+    tone: 'from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/20',
+    iconTone: 'bg-amber-100 text-amber-900 dark:bg-amber-900/50 dark:text-amber-200',
+  },
+  {
+    label: 'Humanities & Culture',
+    description: 'History, philosophy, languages, literature, arts and cultural studies.',
+    query: 'humanities history philosophy literature',
+    icon: Palette,
+    tone: 'from-violet-50 to-fuchsia-50 dark:from-violet-950/30 dark:to-fuchsia-950/20',
+    iconTone: 'bg-violet-100 text-violet-800 dark:bg-violet-900/50 dark:text-violet-200',
+  },
 ];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -263,7 +315,45 @@ const ResearchPapers = () => {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        <section aria-labelledby="research-areas-heading" className="mx-auto max-w-7xl px-4 pt-9 sm:px-6 sm:pt-12 lg:px-8">
+          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8A7350] dark:text-[#D5B16D]">Explore the knowledge landscape</p>
+              <h2 id="research-areas-heading" className="mt-2 font-serif text-3xl font-semibold text-[#1C201D] dark:text-[#F3F0E7] sm:text-4xl">Areas of Research</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#737B74] dark:text-[#A5ADA6]">Follow a question across disciplines. Choose an area to discover open-access studies and the ideas shaping it.</p>
+            </div>
+            <span className="text-xs font-medium text-[#8A7350] dark:text-[#D5B16D]">Six discovery pathways</span>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {RESEARCH_AREAS.map((area) => {
+              const AreaIcon = area.icon;
+              const isActive = activeTopic === area.label;
+              return (
+                <button
+                  key={area.label}
+                  type="button"
+                  onClick={() => {
+                    chooseTopic({ label: area.label, query: area.query });
+                    document.getElementById('research-catalogue')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }}
+                  aria-pressed={isActive}
+                  className={`group relative overflow-hidden rounded-2xl border p-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${isActive ? 'border-[#1C442D] ring-2 ring-[#1C442D]/15 dark:border-[#D5B16D] dark:ring-[#D5B16D]/20' : 'border-[#E8E8E3] dark:border-[#26302A]'} bg-gradient-to-br ${area.tone}`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${area.iconTone}`}>
+                      <AreaIcon className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                    <span className="text-xs font-semibold text-[#7A817B] transition-transform group-hover:translate-x-1 dark:text-[#A5ADA6]" aria-hidden="true">Explore ↗</span>
+                  </div>
+                  <h3 className="mt-5 font-serif text-xl font-semibold text-[#1C201D] dark:text-[#F3F0E7]">{area.label}</h3>
+                  <p className="mt-2 min-h-[3rem] text-sm leading-6 text-[#59635B] dark:text-[#A5ADA6]">{area.description}</p>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <section id="research-catalogue" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
           <div className="mb-8 rounded-2xl border border-[#E8E8E3] bg-white p-4 shadow-sm dark:border-[#26302A] dark:bg-[#141815] sm:p-6">
             <div className="flex flex-col gap-3 md:flex-row">
               <div className="relative min-w-0 flex-1">
