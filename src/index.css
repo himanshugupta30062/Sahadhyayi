@@ -375,8 +375,8 @@ input:-webkit-autofill:active {
 /* Legacy page surfaces: translate common light palette utilities into
    the same forest-black / warm-ink system used by editorial pages. */
 .dark .bg-white,
-.dark .bg-white\\/95,
-.dark .bg-white\\/90 { background-color: var(--editorial-surface) !important; }
+.dark [class~="bg-white/95"],
+.dark [class~="bg-white/90"] { background-color: var(--editorial-surface) !important; }
 .dark .bg-gray-50,
 .dark .bg-slate-50,
 .dark .bg-zinc-50,
