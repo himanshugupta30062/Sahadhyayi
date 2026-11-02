@@ -55,6 +55,15 @@ describe('ResearchPapers', () => {
     vi.restoreAllMocks();
   });
 
+  it('renders the curated landmark research collection with original paper links', () => {
+    renderPage();
+    expect(screen.getByRole('heading', { name: 'Landmark Research' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'On the Electrodynamics of Moving Bodies' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /A Particle Consistent with the Higgs Boson/ })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Molecular Structure of Nucleic Acids/ })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Read original paper/ })).toHaveAttribute('href', 'https://doi.org/10.1002/andp.19053221004');
+  });
+
   it('shows research areas and turns an area selection into a search', async () => {
     renderPage();
     expect(screen.getByRole('heading', { name: 'Areas of Research' })).toBeInTheDocument();
