@@ -4,6 +4,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 
 vi.mock('@/components/SEO', () => ({ default: () => null }));
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: {
+    auth: { getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }) },
+    functions: { invoke: vi.fn() },
+    from: vi.fn(),
+  },
+}));
+import { supabase } from '@/integrations/supabase/client';
 import ResearchPapers from '@/pages/ResearchPapers';
 
 const paper = {
@@ -30,23 +38,20 @@ const paper = {
 const renderPage = (initialEntry = '/research-papers') =>
   render(<MemoryRouter initialEntries={[initialEntry]}><ResearchPapers /></MemoryRouter>);
 
-const jsonResponse = (body: unknown, status = 200) =>
-  Promise.resolve(new Response(JSON.stringify(body), {
-    status,
-    headers: { 'content-type': 'application/json' },
-  }));
+const searchResult = (results = [paper], count = results.length) => ({
+  data: { meta: { count }, results },
+  error: null,
+});
 
 describe('ResearchPapers', () => {
   beforeEach(() => {
-    vi.stubGlobal('fetch', vi.fn().mockImplementation(() => jsonResponse({
-      meta: { count: 1 }, results: [paper],
-    })));
+    vi.mocked(supabase.functions.invoke).mockResolvedValue(searchResult() as never);
+    vi.mocked(supabase.auth.getUser).mockResolvedValue({ data: { user: null }, error: null } as never);
     vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
   });
 
   afterEach(() => {
     cleanup();
-    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
@@ -61,64 +66,68 @@ describe('ResearchPapers', () => {
   });
 
   it('renders an empty state and supports clearing filters', async () => {
-    vi.mocked(fetch).mockImplementationOnce(() => jsonResponse({ meta: { count: 0 }, results: [] }));
+    vi.mocked(supabase.functions.invoke).mockResolvedValueOnce(searchResult([], 0) as never);
     renderPage();
     expect(await screen.findByRole('heading', { name: 'No matching papers found' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(screen.getByRole('textbox', { name: 'Search research papers' })).toHaveValue('');
   });
 
-  it('shows a rate-limit error and retries successfully', async () => {
-    vi.mocked(fetch)
-      .mockImplementationOnce(() => jsonResponse({}, 429))
-      .mockImplementationOnce(() => jsonResponse({ meta: { count: 1 }, results: [paper] }));
+  it('shows a provider error and retries successfully', async () => {
+    vi.mocked(supabase.functions.invoke)
+      .mockResolvedValueOnce({ data: null, error: new Error('The research catalogue is busy. Please wait a moment and try again.') } as never)
+      .mockResolvedValueOnce(searchResult() as never);
     renderPage();
-    expect(await screen.findByRole('alert')).toHaveTextContent('receiving many requests');
+    expect(await screen.findByRole('alert')).toHaveTextContent('research catalogue is busy');
     fireEvent.click(screen.getByRole('button', { name: /Try again/i }));
     expect(await screen.findByRole('heading', { name: 'A Test Research Paper' })).toBeInTheDocument();
-    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(supabase.functions.invoke).toHaveBeenCalledTimes(2);
   });
 
   it('ignores malformed work records and uses the title fallback', async () => {
-    vi.mocked(fetch).mockImplementationOnce(() => jsonResponse({
-      meta: { count: 2 },
-      results: [
-        { id: 'not-an-openalex-id', display_name: 'Invalid record' },
-        { id: 'https://openalex.org/W124', title: 'Valid fallback title' },
-      ],
-    }));
+    vi.mocked(supabase.functions.invoke).mockResolvedValueOnce(searchResult([
+      { id: 'not-an-openalex-id', display_name: 'Invalid record' },
+      { id: 'https://openalex.org/W124', title: 'Valid fallback title' },
+    ], 2) as never);
     renderPage();
     expect(await screen.findByRole('heading', { name: 'Valid fallback title' })).toBeInTheDocument();
     expect(screen.queryByText('Invalid record')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Read paper/ })).toHaveAttribute('href', 'https://openalex.org/W124');
   });
 
-  it('updates the search query and publication year sent to OpenAlex', async () => {
+  it('sends search query and publication year to the Edge Function', async () => {
     renderPage();
     await screen.findByRole('heading', { name: 'A Test Research Paper' });
     fireEvent.change(screen.getByRole('textbox', { name: 'Search research papers' }), {
       target: { value: 'quantum computing' },
     });
-    await waitFor(() => expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('search=quantum+computing'), expect.anything(),
-    ), { timeout: 2000 });
+    await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith(
+      'search-research-papers',
+      { body: { query: 'quantum computing', year: 'all', page: 1, perPage: 12 } },
+    ));
     fireEvent.change(screen.getByRole('combobox', { name: 'Filter by publication year' }), {
       target: { value: '2024' },
     });
-    await waitFor(() => expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('publication_year%3A2024'), expect.anything(),
+    await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
+      'search-research-papers',
+      { body: { query: 'quantum computing', year: '2024', page: 1, perPage: 12 } },
     ));
   });
 
   it('supports subject selection and pagination', async () => {
-    vi.mocked(fetch).mockImplementation(() => jsonResponse({ meta: { count: 24 }, results: [paper] }));
+    vi.mocked(supabase.functions.invoke).mockResolvedValue(searchResult([paper], 24) as never);
     renderPage();
     await screen.findByRole('heading', { name: 'A Test Research Paper' });
     fireEvent.click(screen.getByRole('button', { name: 'Artificial intelligence' }));
-    await waitFor(() => expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('search=artificial+intelligence'), expect.anything(),
+    await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
+      'search-research-papers',
+      { body: { query: 'artificial intelligence', year: 'all', page: 1, perPage: 12 } },
     ));
     fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
     expect(await screen.findByText('Page 2 of 2')).toBeInTheDocument();
+    await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
+      'search-research-papers',
+      { body: { query: 'artificial intelligence', year: 'all', page: 2, perPage: 12 } },
+    ));
   });
 });
