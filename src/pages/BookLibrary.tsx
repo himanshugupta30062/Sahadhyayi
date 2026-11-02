@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { BookOpen, Users } from 'lucide-react';
 import { SearchBar } from '@/components/ui/search-bar';
 import FilterPopup from '@/components/library/FilterPopup';
@@ -30,16 +30,6 @@ const BookLibrary = () => {
     return [0, 100];
   });
 
-  useEffect(() => {
-    const stored = sessionStorage.getItem('scroll-/library');
-    if (stored) {
-      const y = Number.parseInt(stored, 10);
-      window.scrollTo(0, y);
-    }
-    return () => {
-      sessionStorage.setItem('scroll-/library', String(window.scrollY));
-    };
-  }, []);
 
   // Sync filter state -> URL for shareable searches
   useEffect(() => {
