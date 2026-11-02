@@ -315,6 +315,46 @@ const ResearchPapers = () => {
           </div>
         </section>
 
+        <section aria-labelledby="landmark-research-heading" className="mx-auto max-w-7xl px-4 pt-9 sm:px-6 sm:pt-12 lg:px-8">
+          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8A7350] dark:text-[#D5B16D]">Ideas that changed our world</p>
+              <h2 id="landmark-research-heading" className="mt-2 font-serif text-3xl font-semibold text-[#1C201D] dark:text-[#F3F0E7] sm:text-4xl">Landmark Research</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#737B74] dark:text-[#A5ADA6]">Start with the discoveries that reshaped how we understand the universe, life and technology. Original papers and publication records, curated for curious minds.</p>
+            </div>
+            <span className="text-xs font-medium text-[#8A7350] dark:text-[#D5B16D]">A living reading list · 10 milestones</span>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {[
+              { year: '1905', area: 'Physics · Space & time', title: 'On the Electrodynamics of Moving Bodies', author: 'Albert Einstein', impact: 'Introduced special relativity and transformed our understanding of space and time.', doi: '10.1002/andp.19053221004', accent: 'border-sky-200 dark:border-sky-900/60' },
+              { year: '1916', area: 'Physics · Gravity', title: 'The Foundation of the General Theory of Relativity', author: 'Albert Einstein', impact: 'Recast gravity as the curvature of spacetime; a foundation for modern cosmology.', doi: '10.1002/andp.19163540702', accent: 'border-indigo-200 dark:border-indigo-900/60' },
+              { year: '1925', area: 'Physics · Quantum theory', title: 'On Quantum-Theoretical Reinterpretation of Kinematic and Mechanical Relations', author: 'Werner Heisenberg', impact: 'Helped launch matrix mechanics, one of the first formulations of quantum mechanics.', doi: '10.1007/BF01328377', accent: 'border-violet-200 dark:border-violet-900/60' },
+              { year: '1929', area: 'Astronomy · Cosmology', title: 'A Relation between Distance and Radial Velocity among Extra-Galactic Nebulae', author: 'Edwin Hubble', impact: 'Provided key observational evidence that the universe is expanding.', doi: '10.1073/pnas.15.3.168', accent: 'border-fuchsia-200 dark:border-fuchsia-900/60' },
+              { year: '1936', area: 'Computing · Mathematics', title: 'On Computable Numbers, with an Application to the Entscheidungsproblem', author: 'Alan Turing', impact: 'Established foundational ideas about computation and the limits of algorithms.', doi: '10.1112/plms/s2-42.1.230', accent: 'border-emerald-200 dark:border-emerald-900/60' },
+              { year: '1953', area: 'Biology · Genetics', title: 'Molecular Structure of Nucleic Acids: A Structure for Deoxyribose Nucleic Acid', author: 'James Watson & Francis Crick', impact: 'Proposed the DNA double-helix structure, reshaping genetics and molecular biology.', doi: '10.1038/171737a0', accent: 'border-rose-200 dark:border-rose-900/60' },
+              { year: '1929', area: 'Medicine · Antibiotics', title: 'On the Antibacterial Action of Cultures of a Penicillium', author: 'Alexander Fleming', impact: 'Reported penicillin’s antibacterial action, opening a path to antibiotic medicine.', doi: '10.1098/rspb.1929.0013', accent: 'border-amber-200 dark:border-amber-900/60' },
+              { year: '2012', area: 'Biotechnology · CRISPR', title: 'A Programmable Dual-RNA-Guided DNA Endonuclease in Adaptive Bacterial Immunity', author: 'Jennifer Doudna, Emmanuelle Charpentier & colleagues', impact: 'Demonstrated programmable CRISPR-Cas9 DNA targeting, accelerating gene-editing research.', doi: '10.1126/science.1225829', accent: 'border-lime-200 dark:border-lime-900/60' },
+              { year: '2012', area: 'Particle physics · CERN', title: 'A Particle Consistent with the Higgs Boson Observed with the ATLAS Detector', author: 'ATLAS Collaboration', impact: 'Reported evidence for a Higgs-like particle, a major confirmation of the Standard Model.', doi: '10.1126/science.1232005', accent: 'border-cyan-200 dark:border-cyan-900/60' },
+              { year: '2016', area: 'Astrophysics · Gravitational waves', title: 'Observation of Gravitational Waves from a Binary Black Hole Merger', author: 'LIGO Scientific Collaboration & Virgo Collaboration', impact: 'Announced the first direct detection of gravitational waves, opening a new way to observe the cosmos.', doi: '10.1103/PhysRevLett.116.061102', accent: 'border-orange-200 dark:border-orange-900/60' },
+            ].map((paper) => (
+              <article key={paper.doi} className={`flex h-full flex-col rounded-2xl border bg-white p-5 transition-all hover:-translate-y-0.5 hover:shadow-md dark:bg-[#141815] ${paper.accent}`}>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="rounded-full bg-[#F4F3EF] px-2.5 py-1 text-xs font-semibold text-[#6B756C] dark:bg-white/5 dark:text-[#B7C0B8]">{paper.year}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8A7350] dark:text-[#D5B16D]">Landmark</span>
+                </div>
+                <p className="mt-3 text-xs font-medium text-[#7A817B] dark:text-[#A5ADA6]">{paper.area}</p>
+                <h3 className="mt-2 font-serif text-lg font-semibold leading-6 text-[#1C201D] dark:text-[#F3F0E7]">{paper.title}</h3>
+                <p className="mt-2 text-xs text-[#737B74] dark:text-[#A5ADA6]">{paper.author}</p>
+                <p className="mt-3 flex-1 text-sm leading-6 text-[#59635B] dark:text-[#B7C0B8]">{paper.impact}</p>
+                <a href={`https://doi.org/${paper.doi}`} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#1C442D] hover:underline dark:text-[#D5B16D]">
+                  Read original paper <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                </a>
+              </article>
+            ))}
+          </div>
+          <p className="mt-4 text-xs leading-5 text-[#737B74] dark:text-[#A5ADA6]">Curated as influential milestones, not a definitive ranking. Some links lead to publisher records; access may vary by paper.</p>
+        </section>
+
         <section aria-labelledby="research-areas-heading" className="mx-auto max-w-7xl px-4 pt-9 sm:px-6 sm:pt-12 lg:px-8">
           <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
