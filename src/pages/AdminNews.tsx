@@ -15,6 +15,8 @@ const NEWS_CATEGORIES = [
   { value: "authors", label: "Authors News" },
   { value: "education", label: "Study & Education News" },
   { value: "research", label: "Research & Science News" },
+  { value: "events", label: "Events & Community" },
+  { value: "platform", label: "Sahadhyayi Updates" },
 ];
 
 const slugify = (value: string) => value.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 90) + "-" + Date.now().toString(36);
