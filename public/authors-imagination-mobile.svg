@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 620" fill="none">
+<defs><linearGradient id="night" x2="0" y2="1"><stop stop-color="#15243a"/><stop offset="1" stop-color="#091321"/></linearGradient><linearGradient id="gold" x2="0" y2="1"><stop stop-color="#ffe5a1"/><stop offset="1" stop-color="#c78c42"/></linearGradient><radialGradient id="aura"><stop stop-color="#f5b95f" stop-opacity=".35"/><stop offset="1" stop-color="#f5b95f" stop-opacity="0"/></radialGradient></defs>
+<rect width="700" height="620" rx="28" fill="url(#night)"/><circle cx="460" cy="190" r="260" fill="url(#aura)"/>
+<!-- thought bubble / imagined castle -->
+<path d="M330 205C330 95 430 35 535 70C630 100 654 190 605 260C570 310 490 330 420 300L370 340L382 285C345 265 330 238 330 205Z" fill="#182b43" stroke="#e9bb70" stroke-width="4"/>
+<circle cx="355" cy="345" r="15" fill="#e9bb70"/><circle cx="330" cy="370" r="8" fill="#e9bb70"/>
+<circle cx="475" cy="170" r="90" fill="#28415c" opacity=".65"/>
+<path d="M430 245V165H455V135H485V165H515V245Z" fill="url(#gold)"/><path d="M418 165L442 140L466 165M475 135L500 108L525 135" stroke="#ffe5a1" stroke-width="6"/><rect x="470" y="205" width="18" height="40" fill="#69482e"/><path d="M535 245V200M510 205Q535 150 560 205Q552 230 535 230Q518 230 510 205Z" fill="#c9a15e"/><path d="M390 250Q450 220 500 250T600 250" stroke="#e9bb70" stroke-width="3"/>
+<!-- writer -->
+<ellipse cx="265" cy="400" rx="72" ry="85" fill="#d8a17c"/><path d="M195 400Q175 300 265 290Q350 310 330 405L300 355L210 365Z" fill="#221f2b"/><path d="M220 485Q280 485 335 540L380 600H140L180 535Z" fill="#263c55"/><path d="M230 480L340 550" stroke="#d8a17c" stroke-width="23" stroke-linecap="round"/><path d="M340 550L400 510" stroke="#d8a17c" stroke-width="18" stroke-linecap="round"/>
+<!-- desk / manuscript -->
+<path d="M90 535H600L660 590H45Z" fill="#6c4930"/><path d="M90 535H600L620 555H70Z" fill="#b47b4a"/><path d="M380 520Q450 490 520 520V560Q450 535 380 560Z" fill="#f3e4bf"/><path d="M380 520Q450 490 450 520V560Q450 535 380 560Z" fill="#fff1d2"/>
+<!-- lamp -->
+<path d="M585 475V535M550 475L620 475L600 440H570Z" fill="#d5a45b" stroke="#f4d38b" stroke-width="4"/><circle cx="585" cy="435" r="45" fill="#f5bd62" opacity=".12"/>
+<g fill="#ffe5a1"><circle cx="410" cy="95" r="4"/><circle cx="590" cy="145" r="4"/><path d="M565 95v18m-9-9h18" stroke="#ffe5a1" stroke-width="3"/></g>
+</svg>
