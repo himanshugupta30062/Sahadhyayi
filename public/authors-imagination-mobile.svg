@@ -1,1 +1,62 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 620" fill="none"><defs><linearGradient id="night" x2="0" y2="1"><stop stop-color="#15243a"/><stop offset="1" stop-color="#091321"/></linearGradient><linearGradient id="gold" x2="0" y2="1"><stop stop-color="#ffe5a1"/><stop offset="1" stop-color="#c78c42"/></linearGradient><radialGradient id="aura"><stop stop-color="#f5b95f" stop-opacity=".35"/><stop offset="1" stop-color="#f5b95f" stop-opacity="0"/></radialGradient></defs><rect width="700" height="620" rx="28" fill="url(#night)"/><circle cx="460" cy="190" r="260" fill="url(#aura)"/><path d="M330 205C330 95 430 35 535 70C630 100 654 190 605 260C570 310 490 330 420 300L370 340L382 285C345 265 330 238 330 205Z" fill="#182b43" stroke="#e9bb70" stroke-width="4"/><circle cx="355" cy="345" r="15" fill="#e9bb70"/><circle cx="330" cy="370" r="8" fill="#e9bb70"/><circle cx="475" cy="170" r="90" fill="#28415c" opacity=".65"/><path d="M430 245V165H455V135H485V165H515V245Z" fill="url(#gold)"/><path d="M418 165L442 140L466 165M475 135L500 108L525 135" stroke="#ffe5a1" stroke-width="6"/><rect x="470" y="205" width="18" height="40" fill="#69482e"/><path d="M535 245V200M510 205Q535 150 560 205Q552 230 535 230Q518 230 510 205Z" fill="#c9a15e"/><path d="M390 250Q450 220 500 250T600 250" stroke="#e9bb70" stroke-width="3"/><ellipse cx="265" cy="400" rx="72" ry="85" fill="#d8a17c"/><path d="M195 400Q175 300 265 290Q350 310 330 405L300 355L210 365Z" fill="#221f2b"/><path d="M220 485Q280 485 335 540L380 600H140L180 535Z" fill="#263c55"/><path d="M230 480L340 550" stroke="#d8a17c" stroke-width="23" stroke-linecap="round"/><path d="M340 550L400 510" stroke="#d8a17c" stroke-width="18" stroke-linecap="round"/><path d="M90 535H600L660 590H45Z" fill="#6c4930"/><path d="M90 535H600L620 555H70Z" fill="#b47b4a"/><path d="M380 520Q450 490 520 520V560Q450 535 380 560Z" fill="#f3e4bf"/><path d="M380 520Q450 490 450 520V560Q450 535 380 560Z" fill="#fff1d2"/><path d="M585 475V535M550 475L620 475L600 440H570Z" fill="#d5a45b" stroke="#f4d38b" stroke-width="4"/><circle cx="585" cy="435" r="45" fill="#f5bd62" opacity=".12"/><g fill="#ffe5a1"><circle cx="410" cy="95" r="4"/><circle cx="590" cy="145" r="4"/><path d="M565 95v18m-9-9h18" stroke="#ffe5a1" stroke-width="3"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 780">
+<defs>
+ <linearGradient id="bg" x2="0" y2="1"><stop stop-color="#10233b"/><stop offset=".58" stop-color="#101d31"/><stop offset="1" stop-color="#07111f"/></linearGradient>
+ <radialGradient id="glow"><stop stop-color="#f9b75b" stop-opacity=".5"/><stop offset="1" stop-color="#f9b75b" stop-opacity="0"/></radialGradient>
+ <linearGradient id="gold" x2="0" y2="1"><stop stop-color="#ffe6a2"/><stop offset=".5" stop-color="#e8a64d"/><stop offset="1" stop-color="#9b5727"/></linearGradient>
+ <linearGradient id="shirt" x2="1" y2="1"><stop stop-color="#d8b18c"/><stop offset="1" stop-color="#8e654c"/></linearGradient>
+ <linearGradient id="wood" x2="0" y2="1"><stop stop-color="#9c6339"/><stop offset="1" stop-color="#38251d"/></linearGradient>
+ <filter id="blur"><feGaussianBlur stdDeviation="28"/></filter>
+</defs>
+<rect width="900" height="780" rx="32" fill="url(#bg)"/>
+<circle cx="610" cy="280" r="280" fill="url(#glow)"/>
+<!-- starry thought-world, glowing organic outline -->
+<path d="M355 238C340 132 427 55 553 70C688 86 790 174 770 286C754 371 665 411 562 375L500 426L520 360C421 333 368 293 355 238Z" fill="#162c49" stroke="#f4b85e" stroke-width="7"/>
+<path d="M370 225C390 120 475 95 580 115S740 190 720 280" stroke="#ffd78b" stroke-opacity=".55" stroke-width="2" fill="none"/>
+<!-- moon and clouds -->
+<path d="M450 170a40 40 0 1 0 48-49a31 31 0 1 1-48 49" fill="#ffe39b"/>
+<g fill="#91b8e5" opacity=".28"><ellipse cx="585" cy="235" rx="115" ry="38"/><ellipse cx="650" cy="260" rx="82" ry="25"/></g>
+<!-- castle -->
+<g fill="#263e5b" stroke="#e7b968" stroke-width="3">
+<path d="M535 305V225h32v-48h34v48h32v-75h37v75h28v80Z"/>
+<path d="M520 225l31-30 31 30M596 177l22-28 22 28M663 225l25-28 25 28" fill="#314d6c"/>
+</g>
+<g fill="#f6d18a"><rect x="550" y="258" width="12" height="26"/><rect x="615" y="235" width="12" height="30"/><rect x="677" y="252" width="12" height="28"/></g>
+<!-- fantasy tree and golden hills -->
+<path d="M400 320Q520 285 620 325T755 315" stroke="#e8ae5b" stroke-width="4" fill="none"/>
+<path d="M660 325l-12-65 12-45 18 45-10 65" fill="#76502d"/>
+<g fill="#dca94f"><ellipse cx="650" cy="240" rx="55" ry="38"/><ellipse cx="690" cy="260" rx="55" ry="36"/><ellipse cx="635" cy="275" rx="50" ry="30"/></g>
+<!-- sparks -->
+<g stroke="#ffdf98" stroke-width="3"><path d="M420 125v20m-10-10h20M735 150v16m-8-8h16M520 95v14m-7-7h14"/></g>
+<!-- background shelves -->
+<g opacity=".22" stroke="#7890a9" stroke-width="8"><path d="M30 410H330M30 475H330M30 540H330"/><path d="M70 380v180M150 380v180M245 380v180"/></g>
+<!-- writer silhouette and curls -->
+<path d="M220 510Q180 425 240 365Q300 315 365 375Q420 435 365 510Z" fill="#171923"/>
+<path d="M245 415Q260 350 330 385Q365 410 352 455L310 475L255 460Z" fill="#c98c65"/>
+<g fill="#191923"><circle cx="255" cy="380" r="34"/><circle cx="285" cy="358" r="32"/><circle cx="320" cy="365" r="30"/><circle cx="345" cy="390" r="26"/><circle cx="235" cy="405" r="27"/></g>
+<!-- glasses / face -->
+<path d="M278 420l30 7m-5-6l4 18" stroke="#2a2020" stroke-width="5" stroke-linecap="round"/>
+<path d="M294 448q22 10 36-4" stroke="#503326" stroke-width="5" fill="none"/>
+<!-- vest and shirt -->
+<path d="M205 500Q260 465 350 500L430 690H140Z" fill="#20374f"/>
+<path d="M260 485L300 535L338 488Q380 515 392 570L350 690H220L180 570Q205 515 260 485Z" fill="url(#shirt)"/>
+<path d="M270 500l30 35 32-38" stroke="#f2d0a8" stroke-width="5" fill="none"/>
+<!-- writing arm -->
+<path d="M350 555Q430 585 500 615" stroke="#c98c65" stroke-width="42" stroke-linecap="round"/>
+<path d="M490 615l35-24" stroke="#c98c65" stroke-width="27" stroke-linecap="round"/>
+<!-- desk -->
+<path d="M55 650H830L875 700H25Z" fill="url(#wood)"/><path d="M55 650H830l20 18H40Z" fill="#bd814b"/>
+<!-- book pages -->
+<path d="M410 610Q500 580 590 610V660Q500 630 410 660Z" fill="#f4e5c6"/><path d="M500 610Q500 580 590 610V660Q500 630 500 660Z" fill="#fff4d9"/>
+<g stroke="#c6a77a" stroke-width="2"><path d="M425 625l60-8m-60 20l60-8m25-4l55-8m-55 20l55-8"/></g>
+<!-- feather pen -->
+<path d="M520 610l-35-85" stroke="#392a21" stroke-width="7" stroke-linecap="round"/><path d="M485 525q-30-25-12-52q30 17 12 52Z" fill="#f0c77a"/>
+<!-- lamp -->
+<path d="M755 535V650M720 540h70l-18-48h-34Z" stroke="#e7b968" stroke-width="8" fill="#9a6838"/><ellipse cx="755" cy="492" rx="55" ry="18" fill="#ffcc6d" opacity=".18" filter="url(#blur)"/>
+<!-- steaming cup -->
+<path d="M635 605h65l-8 42h-48Z" fill="#e9c98f"/><path d="M700 615q35-5 25 20q-7 15-25 10" stroke="#e9c98f" stroke-width="8" fill="none"/><path d="M650 590q-15-20 0-35m20 35q-15-20 0-35" stroke="#e6d3b0" stroke-width="4" opacity=".6"/>
+<!-- books -->
+<g><rect x="65" y="605" width="205" height="26" rx="4" fill="#21354b" stroke="#d69c4c" stroke-width="3"/><rect x="85" y="575" width="185" height="28" rx="4" fill="#6e3e2a" stroke="#e8b15e" stroke-width="3"/><rect x="100" y="545" width="170" height="27" rx="4" fill="#273f5a" stroke="#d69c4c" stroke-width="3"/></g>
+<!-- light trails connecting imagination to writer -->
+<path d="M520 360C480 420 420 440 385 480" stroke="#f7b95f" stroke-width="5" stroke-linecap="round" opacity=".8"/><path d="M520 360C480 420 420 440 385 480" stroke="#ffe6a2" stroke-width="2" stroke-linecap="round"/>
+<g fill="#ffe6a2"><circle cx="480" cy="420" r="5"/><circle cx="430" cy="450" r="4"/><circle cx="395" cy="480" r="5"/></g>
+</svg>
