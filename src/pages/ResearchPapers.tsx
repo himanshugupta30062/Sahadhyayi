@@ -7,6 +7,9 @@ import {
 import SEO from '@/components/SEO';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Bookmark, BookmarkCheck } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 
 type OpenAlexAuthor = { author?: { display_name?: string | null } | null } | null;
 type OpenAlexLocation = {
@@ -108,11 +111,67 @@ const ResearchPapers = () => {
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
   const [debouncedQuery, setDebouncedQuery] = useState(searchParams.get('search') || '');
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [bookmarkError, setBookmarkError] = useState('');
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedQuery(searchQuery.trim()), 350);
     return () => window.clearTimeout(timer);
   }, [searchQuery]);
+
+  useEffect(() => {
+    let active = true;
+    const loadBookmarks = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !active) return;
+      const { data, error: bookmarkLoadError } = await supabase
+        .from('research_paper_bookmarks')
+        .select('openalex_id')
+        .eq('user_id', user.id);
+      if (!bookmarkLoadError && active) {
+        setSavedIds(new Set(data.map((item) => item.openalex_id)));
+      }
+    };
+    void loadBookmarks();
+    return () => { active = false; };
+  }, []);
+
+  const toggleBookmark = async (paper: OpenAlexWork) => {
+    if (!paper.id) return;
+    setSavingId(paper.id);
+    setBookmarkError('');
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        window.location.assign('/signin');
+        return;
+      }
+      if (savedIds.has(paper.id)) {
+        const { error: deleteError } = await supabase
+          .from('research_paper_bookmarks')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('openalex_id', paper.id);
+        if (deleteError) throw deleteError;
+        setSavedIds((current) => {
+          const next = new Set(current);
+          next.delete(paper.id!);
+          return next;
+        });
+      } else {
+        const { error: insertError } = await supabase
+          .from('research_paper_bookmarks')
+          .insert({ user_id: user.id, openalex_id: paper.id, paper: paper as unknown as Json });
+        if (insertError) throw insertError;
+        setSavedIds((current) => new Set(current).add(paper.id!));
+      }
+    } catch (bookmarkSaveError) {
+      setBookmarkError(bookmarkSaveError instanceof Error ? bookmarkSaveError.message : 'Unable to update your saved papers.');
+    } finally {
+      setSavingId(null);
+    }
+  };
 
   useEffect(() => {
     const next = new URLSearchParams(searchParams);
@@ -122,61 +181,33 @@ const ResearchPapers = () => {
   }, [searchQuery, searchParams, setSearchParams]);
 
   useEffect(() => {
-    const controller = new AbortController();
-    let timedOut = false;
-    const timeout = window.setTimeout(() => { timedOut = true; controller.abort(); }, 18000);
-
+    let active = true;
     async function loadPapers() {
       setLoading(true);
       setError('');
       try {
-        const params = new URLSearchParams({
-          per_page: String(PAGE_SIZE),
-          page: String(page),
-          sort: 'cited_by_count:desc',
-          filter: year === 'all' ? 'open_access.is_oa:true' : `open_access.is_oa:true,publication_year:${year}`,
-          select: 'id,doi,display_name,title,publication_year,publication_date,type,cited_by_count,authorships,primary_location,best_oa_location,open_access,abstract_inverted_index',
+        const { data, error: functionError } = await supabase.functions.invoke('search-research-papers', {
+          body: { query: debouncedQuery, year, page, perPage: PAGE_SIZE },
         });
-        if (debouncedQuery) params.set('search', debouncedQuery);
-        const response = await fetch(`${API_URL}?${params.toString()}`, {
-          signal: controller.signal,
-          headers: { Accept: 'application/json' },
-        });
-        if (!response.ok) {
-          if (response.status === 429) throw new Error('The research catalogue is receiving many requests. Please wait a moment and retry.');
-          throw new Error(`The research catalogue returned an error (${response.status}).`);
-        }
-        const payload: unknown = await response.json();
+        if (functionError) throw functionError;
+        const payload: unknown = data;
         if (!isRecord(payload)) throw new Error('The research catalogue returned an unexpected response.');
         const responseData = payload as OpenAlexResponse;
         const validPapers = Array.isArray(responseData.results) ? responseData.results.filter(isUsableWork) : [];
+        if (!active) return;
         setPapers(validPapers);
         setTotalCount(Number.isFinite(responseData.meta?.count) ? Math.max(0, Number(responseData.meta?.count)) : validPapers.length);
       } catch (loadError) {
-        if (controller.signal.aborted) {
-          if (timedOut) {
-            setError('The research catalogue took too long to respond. Please check your connection and try again.');
-            setPapers([]);
-            setTotalCount(0);
-            setLoading(false);
-          }
-          return;
-        } else {
-          setError(loadError instanceof Error ? loadError.message : 'Unable to load research papers right now.');
-        }
+        if (!active) return;
+        setError(loadError instanceof Error ? loadError.message : 'Unable to load research papers right now.');
         setPapers([]);
         setTotalCount(0);
       } finally {
-        window.clearTimeout(timeout);
-        if (!controller.signal.aborted) setLoading(false);
+        if (active) setLoading(false);
       }
     }
-
     void loadPapers();
-    return () => {
-      window.clearTimeout(timeout);
-      controller.abort();
-    };
+    return () => { active = false; };
   }, [debouncedQuery, year, page, retry]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
@@ -271,6 +302,7 @@ const ResearchPapers = () => {
             </div>
           </div>
 
+          {bookmarkError && <p role="alert" className="mb-4 text-sm text-red-600 dark:text-red-400">{bookmarkError}</p>}
           <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -349,6 +381,10 @@ const ResearchPapers = () => {
                           <div className="mt-5 flex flex-wrap gap-2">
                             {paperUrl && <a href={paperUrl} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#1C442D] px-3.5 text-xs font-semibold text-white transition-colors hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#101711] dark:hover:bg-[#E3C483]"><BookOpen className="h-3.5 w-3.5" /> Read paper <ExternalLink className="h-3 w-3" /></a>}
                             {pdfUrl && <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#D9E1DA] px-3.5 text-xs font-semibold text-[#31583D] hover:bg-[#F3F6F2] dark:border-[#344039] dark:text-[#D5B16D] dark:hover:bg-[#1D2821]"><Download className="h-3.5 w-3.5" /> PDF</a>}
+                            <Button type="button" variant="outline" disabled={savingId === paper.id} onClick={() => void toggleBookmark(paper)} className="h-9 gap-2 border-[#D9E1DA] px-3.5 text-xs dark:border-[#344039]">
+                              {savedIds.has(paper.id || '') ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
+                              {savingId === paper.id ? 'Saving…' : savedIds.has(paper.id || '') ? 'Saved' : 'Save paper'}
+                            </Button>
                           </div>
                         </div>
                       </div>
