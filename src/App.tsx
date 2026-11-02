@@ -84,6 +84,7 @@ const CommunityStories = lazy(() => import('./pages/CommunityStories'));
 const LifeStories = lazy(() => import('./pages/LifeStories'));
 const BookLibrary = lazy(() => import('./pages/BookLibrary'));
 const ResearchPapers = lazy(() => import('./pages/ResearchPapers'));
+const ResearchPaperSubmission = lazy(() => import('./pages/ResearchPaperSubmission'));
 const DmcaPolicy = lazy(() => import('./pages/DmcaPolicy'));
 const OpenSourceLicenses = lazy(() => import('./pages/OpenSourceLicenses'));
 const SignIn = lazy(() => import('./pages/SignIn'));
@@ -320,6 +321,16 @@ const App = memo(() => {
                             <Suspense fallback={<LoadingFallback message="Loading research papers..." />}>
                               <ResearchPapers />
                             </Suspense>
+                          }
+                        />
+                        <Route
+                          path="/research-papers/submit"
+                          element={
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading submission form..." />}>
+                                <ResearchPaperSubmission />
+                              </Suspense>
+                            </ProtectedRoute>
                           }
                         />
                         <Route
