@@ -14,7 +14,7 @@ type NewsCategory = "books" | "authors" | "education" | "research";
 type NewsItem = {
   id: string; title: string; slug: string; summary: string | null; content: string;
   cover_image_url: string | null; category: NewsCategory; source_name: string | null;
-  source_url: string | null; author_name: string | null; published_at: string;
+  source_url: string | null; author_name: string | null; published_at: string; related_book_ids?: string[]; related_author_names?: string[]; related_paper_ids?: string[];
 };
 
 const categories: { value: NewsCategory | "all"; label: string; icon: typeof Newspaper }[] = [
@@ -34,7 +34,7 @@ export default function Newsroom() {
     queryKey: ["newsroom", "published"],
     queryFn: async () => {
       const { data, error } = await (supabase as any).from("news_articles")
-        .select("id,title,slug,summary,content,cover_image_url,category,source_name,source_url,author_name,published_at")
+        .select("id,title,slug,summary,content,cover_image_url,category,source_name,source_url,author_name,published_at,related_book_ids,related_author_names,related_paper_ids")
         .eq("status", "published").order("published_at", { ascending: false }).limit(100);
       if (error) throw error;
       return (data || []) as NewsItem[];
@@ -62,7 +62,7 @@ export default function Newsroom() {
         {article.summary && <p className="mt-4 text-lg leading-8 text-muted-foreground">{article.summary}</p>}
         {article.cover_image_url && <img src={article.cover_image_url} alt="" className="mt-8 max-h-[520px] w-full rounded-2xl object-cover" loading="lazy" />}
         <div className="prose prose-lg dark:prose-invert mt-9 max-w-none whitespace-pre-wrap leading-8">{article.content}</div>
-        <div className="mt-10 border-t pt-5 text-sm text-muted-foreground">
+        <div className="mt-10 border-t pt-5 text-sm text-muted-foreground">\n          {(article.related_book_ids?.length || article.related_author_names?.length || article.related_paper_ids?.length) ? <section className="mb-6 rounded-xl bg-muted/40 p-4"><h2 className="mb-3 font-semibold text-foreground">Related on Sahadhyayi</h2>{article.related_book_ids?.length ? <div className="mb-2"><span className="font-medium text-foreground">Books: </span>{article.related_book_ids.map((id, i) => <Link key={id} className="mr-2 underline" to={"/book/" + id}>Book {i + 1}</Link>)}</div> : null}{article.related_author_names?.length ? <p className="mb-2"><span className="font-medium text-foreground">Authors: </span>{article.related_author_names.join(", ")}</p> : null}{article.related_paper_ids?.length ? <p><span className="font-medium text-foreground">Research: </span>{article.related_paper_ids.map((doi, i) => <a key={doi} className="mr-2 underline" href={doi.startsWith("http") ? doi : "https://doi.org/" + doi} target="_blank" rel="noreferrer">Paper {i + 1}</a>)}</p> : null}</section> : null}
           {article.author_name && <span>By {article.author_name}</span>}
           {article.source_name && <span className="ml-3">Source: {article.source_name}</span>}
           {article.source_url && <a className="ml-3 inline-flex items-center gap-1 underline" href={article.source_url} target="_blank" rel="noreferrer">Original source <ExternalLink className="h-3 w-3" /></a>}
