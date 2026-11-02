@@ -350,7 +350,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
         className="relative flex flex-col w-full h-full sm:w-[95vw] sm:max-w-[1600px] sm:h-[92vh] sm:max-h-[94vh] my-auto rounded-none sm:rounded-2xl border-0 sm:border border-white/[0.09] bg-[#0B0D0C] text-stone-100 shadow-2xl overflow-hidden min-w-0"
       >
         {/* Sticky Fixed Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 md:px-8 py-3 sm:py-4 border-b border-white/[0.08] bg-[#0E1210]/95 flex-shrink-0 min-w-0 z-20">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 md:px-8 py-3 sm:py-4 border-b border-white/[0.08] bg-[#0E1210]/95 flex-shrink-0 min-w-0 z-20">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#16201b] border border-[#27392f] flex items-center justify-center text-[#D5B16D] shadow-inner flex-shrink-0">
               <BarChart3 className="w-5 h-5" />
@@ -405,7 +405,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
           </div>
 
           {/* Header Controls: Timeframe Selector & Actions */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 ml-2">
+          <div className="flex items-center justify-end gap-2 sm:gap-3 flex-shrink-0 ml-0 sm:ml-2 w-full sm:w-auto">
             <div className="relative">
               <select
                 value={timeframe}
