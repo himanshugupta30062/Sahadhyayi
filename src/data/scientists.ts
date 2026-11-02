@@ -62,6 +62,62 @@ export interface ScientistProfile {
 
 export const scientists: ScientistProfile[] = [
   {
+    slug: 'meghnad-saha',
+    name: 'Meghnad Saha',
+    initials: 'MS',
+    region: 'india',
+    discipline: 'Astrophysics · Physics',
+    lifespan: '1893–1956',
+    headline: 'The physicist whose ionization theory explained stellar spectra.',
+    summary: 'An Indian astrophysicist best known for the Saha ionization equation, which connected the physical conditions inside stars with the spectral lines observed by astronomers.',
+    birthplace: 'Shaoratoli, near Dhaka, Bengal Presidency (now Bangladesh)',
+    knownFor: ['Saha ionization equation', 'Stellar spectroscopy', 'Scientific institution-building'],
+    lifeStory: [
+      'Meghnad Saha was born on 6 October 1893 in a village near Dhaka. Despite barriers associated with his family background and colonial-era education, he excelled in mathematics and physics and studied at Presidency College in Calcutta.',
+      'Saha pursued theoretical physics and astrophysics at a time when atomic physics was transforming astronomy. His work on thermal ionization provided a way to infer the temperature and physical state of stars from their spectra, helping turn stellar classification into a quantitative science.',
+      'He later became an influential public intellectual and institution-builder, advocating scientific planning, river management and the use of science in national development. He founded the journal Science and Culture and was elected to India’s Parliament in 1952.'
+    ],
+    work: [
+      { title: 'Saha ionization equation', description: 'Related the ionization state of atoms in a gas to temperature, pressure and atomic properties. The equation became a foundational tool for interpreting stellar spectra and estimating stellar conditions.' },
+      { title: 'Stellar spectroscopy', description: 'Applied ideas from thermodynamics and atomic physics to explain why spectral lines vary between stars, linking observed spectra to physical conditions.' },
+      { title: 'Science for public policy', description: 'Promoted scientific planning, river-valley development and technical education, and helped establish institutions for scientific communication.' }
+    ],
+    milestones: [
+      { year: '1893', title: 'Born near Dhaka', description: 'Born on 6 October in the Bengal Presidency.' },
+      { year: '1920', title: 'Ionization papers', description: 'Published the work that developed the thermal ionization theory now associated with his name.' },
+      { year: '1938', title: 'Professor at Calcutta', description: 'Joined the University of Calcutta as a professor of physics.' },
+      { year: '1948', title: 'Founded Science and Culture', description: 'Established a journal to connect scientific research with public and national life.' },
+      { year: '1952', title: 'Elected to Parliament', description: 'Entered India’s Lok Sabha as an independent member.' },
+      { year: '1956', title: 'A lasting scientific legacy', description: 'Died on 16 February; his ionization equation remains central to astrophysics.' }
+    ],
+    publications: [
+      {
+        title: 'On the Ionization in the Solar Chromosphere',
+        year: '1920',
+        venue: 'Philosophical Magazine',
+        authors: 'Meghnad Saha',
+        url: 'https://scholar.google.com/scholar?q=Meghnad+Saha+On+the+Ionization+in+the+Solar+Chromosphere',
+        access: 'catalogue',
+        note: 'Searchable bibliographic entry for Saha’s early ionization work; verify the original issue and page range before adding a definitive citation.'
+      }
+    ],
+    archives: [
+      {
+        title: 'Meghnad Saha biography and institutional records',
+        institution: 'Saha Institute of Nuclear Physics',
+        url: 'https://www.saha.ac.in/',
+        material: 'Institutional history and biographical context',
+        note: 'The institute named in Saha’s honour provides institutional context; use its historical resources to locate primary documents.'
+      }
+    ],
+    legacy: 'The Saha ionization equation remains a cornerstone of stellar astrophysics, allowing astronomers to interpret the light of stars in terms of temperature and atomic physics. His public work also reflected a conviction that scientific knowledge should guide education and national development.',
+    sources: [
+      { label: 'Meghnad Saha', publisher: 'Encyclopaedia Britannica', url: 'https://www.britannica.com/biography/Meghnad-Saha' },
+      { label: 'Saha Institute of Nuclear Physics', publisher: 'SINP', url: 'https://www.saha.ac.in/' },
+      { label: 'Meghnad Saha ionization research', publisher: 'Google Scholar catalogue search', url: 'https://scholar.google.com/scholar?q=Meghnad+Saha+ionization+equation' }
+    ]
+  },
+  {
     slug: 'jagadish-chandra-bose',
     name: 'Jagadish Chandra Bose',
     initials: 'JCB',
