@@ -14,6 +14,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      research_paper_bookmarks: {
+        Row: { id: string; user_id: string; openalex_id: string; paper: Json; created_at: string }
+        Insert: { id?: string; user_id: string; openalex_id: string; paper?: Json; created_at?: string }
+        Update: { id?: string; user_id?: string; openalex_id?: string; paper?: Json; created_at?: string }
+        Relationships: []
+      }
       scientists: {
         Row: { created_at: string; discipline: string; id: string; lifespan: string; name: string; profile_data: Json; region: string; slug: string; sort_order: number; status: string; summary: string; updated_at: string }
         Insert: { created_at?: string; discipline: string; id?: string; lifespan: string; name: string; profile_data?: Json; region: string; slug: string; sort_order?: number; status?: string; summary: string; updated_at?: string }
