@@ -62,6 +62,61 @@ export interface ScientistProfile {
 
 export const scientists: ScientistProfile[] = [
   {
+    slug: 'homi-j-bhabha',
+    name: 'Homi Jehangir Bhabha',
+    initials: 'HJB',
+    region: 'india',
+    discipline: 'Physics · Nuclear Science',
+    lifespan: '1909–1966',
+    headline: 'The architect of India’s early atomic-energy programme.',
+    summary: 'A theoretical physicist and institution-builder who helped establish India’s modern research ecosystem and laid the foundations of its civilian nuclear programme.',
+    birthplace: 'Bombay, Bombay Presidency (now Mumbai, India)',
+    knownFor: ['Bhabha scattering', 'Cosmic-ray physics', 'TIFR', 'India’s atomic-energy programme'],
+    lifeStory: [
+      'Homi Jehangir Bhabha was born in Bombay on 30 October 1909. He studied at Cambridge, initially in engineering before turning to theoretical physics, and worked on quantum theory and cosmic rays.',
+      'His early research included the theory of electron–positron scattering, now known as Bhabha scattering, and investigations of cosmic-ray showers. During the Second World War he returned to India and joined the Indian Institute of Science in Bengaluru.',
+      'Bhabha argued that India needed strong scientific institutions and long-term investment in fundamental research. He founded the Tata Institute of Fundamental Research in 1945 and became the first chair of the Atomic Energy Commission of India in 1948, shaping a national programme that connected basic science, engineering and energy.'
+    ],
+    work: [
+      { title: 'Bhabha scattering', description: 'Developed the quantum-electrodynamic description of electron–positron scattering, a process that became an important test of particle physics.' },
+      { title: 'Cosmic-ray research', description: 'Studied high-energy cosmic rays and particle cascades in the atmosphere, contributing to the understanding of extensive air showers.' },
+      { title: 'Scientific institution-building', description: 'Established TIFR and helped build the institutional framework for India’s atomic-energy research and development.' }
+    ],
+    milestones: [
+      { year: '1909', title: 'Born in Bombay', description: 'Born on 30 October into a prominent Parsi family.' },
+      { year: '1935', title: 'Bhabha scattering paper', description: 'Published influential work on electron–positron scattering.' },
+      { year: '1945', title: 'Founded TIFR', description: 'Established the Tata Institute of Fundamental Research in Bombay.' },
+      { year: '1948', title: 'Atomic Energy Commission', description: 'Became its first chair and helped direct India’s atomic-energy programme.' },
+      { year: '1966', title: 'Died in an air crash', description: 'Died on 24 January near Mont Blanc while travelling to a scientific meeting.' }
+    ],
+    publications: [
+      {
+        title: 'The scattering of positrons by electrons with exchange on Dirac’s theory',
+        year: '1936',
+        venue: 'Proceedings of the Royal Society A, 154, 195–206',
+        authors: 'Homi J. Bhabha',
+        url: 'https://doi.org/10.1098/rspa.1936.0047',
+        access: 'publisher',
+        note: 'A foundational paper associated with Bhabha scattering; publisher record supplies the bibliographic details.'
+      }
+    ],
+    archives: [
+      {
+        title: 'Homi Bhabha collection and institutional history',
+        institution: 'Tata Institute of Fundamental Research',
+        url: 'https://www.tifr.res.in/',
+        material: 'Institutional history and research context',
+        note: 'TIFR is the institution Bhabha founded; consult its history and archival resources for further primary material.'
+      }
+    ],
+    legacy: 'Bhabha’s legacy lies both in particle physics and in the research institutions he helped create. TIFR and the wider atomic-energy ecosystem made sustained, high-level scientific work possible in independent India.',
+    sources: [
+      { label: 'Homi Jehangir Bhabha', publisher: 'Tata Institute of Fundamental Research', url: 'https://www.tifr.res.in/' },
+      { label: 'The scattering of positrons by electrons with exchange on Dirac’s theory', publisher: 'The Royal Society', url: 'https://doi.org/10.1098/rspa.1936.0047' },
+      { label: 'Homi Bhabha', publisher: 'Encyclopaedia Britannica', url: 'https://www.britannica.com/biography/Homi-Bhabha' }
+    ]
+  },
+  {
     slug: 'jagadish-chandra-bose',
     name: 'Jagadish Chandra Bose',
     initials: 'JCB',
