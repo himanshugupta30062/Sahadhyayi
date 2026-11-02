@@ -351,6 +351,94 @@ input:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s;
 }
 
+/* App-wide dark theme harmonization for legacy Tailwind surfaces.
+   Keeps pages that still use light utility colors readable without per-page hacks. */
+.dark {
+  color-scheme: dark;
+  --background: 150 8% 6%;
+  --foreground: 45 20% 94%;
+  --card: 150 7% 10%;
+  --card-foreground: 45 20% 94%;
+  --popover: 150 7% 10%;
+  --popover-foreground: 45 20% 94%;
+  --secondary: 150 6% 16%;
+  --secondary-foreground: 45 20% 94%;
+  --muted: 150 6% 16%;
+  --muted-foreground: 140 5% 68%;
+  --accent: 145 15% 18%;
+  --accent-foreground: 45 20% 94%;
+  --border: 150 6% 21%;
+  --input: 150 6% 21%;
+  --ring: 38 55% 62%;
+}
+
+/* Legacy page surfaces: translate common light palette utilities into
+   the same forest-black / warm-ink system used by editorial pages. */
+.dark .bg-white,
+.dark .bg-white\\/95,
+.dark .bg-white\\/90 { background-color: var(--editorial-surface) !important; }
+.dark .bg-gray-50,
+.dark .bg-slate-50,
+.dark .bg-zinc-50,
+.dark .bg-neutral-50 { background-color: var(--editorial-bg-alt) !important; }
+.dark .bg-gray-100,
+.dark .bg-slate-100,
+.dark .bg-zinc-100,
+.dark .bg-neutral-100 { background-color: var(--editorial-surface-muted) !important; }
+.dark .bg-gray-200,
+.dark .bg-slate-200,
+.dark .bg-zinc-200,
+.dark .bg-neutral-200 { background-color: #202722 !important; }
+.dark .text-black,
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-zinc-900,
+.dark .text-neutral-900 { color: var(--editorial-ink) !important; }
+.dark .text-gray-700,
+.dark .text-gray-600,
+.dark .text-slate-700,
+.dark .text-slate-600,
+.dark .text-zinc-700,
+.dark .text-zinc-600,
+.dark .text-neutral-700,
+.dark .text-neutral-600 { color: var(--editorial-ink-secondary) !important; }
+.dark .text-gray-500,
+.dark .text-slate-500,
+.dark .text-zinc-500,
+.dark .text-neutral-500 { color: var(--editorial-muted) !important; }
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .border-zinc-100,
+.dark .border-zinc-200,
+.dark .border-neutral-100,
+.dark .border-neutral-200 { border-color: var(--editorial-border) !important; }
+.dark input:not([type="checkbox"]):not([type="radio"]),
+.dark textarea,
+.dark select { color: var(--editorial-ink); background-color: var(--editorial-surface-elevated); border-color: var(--editorial-border-strong); }
+.dark input::placeholder,
+.dark textarea::placeholder { color: var(--editorial-muted); opacity: 1; }
+.dark .shadow,
+.dark .shadow-sm,
+.dark .shadow-md,
+.dark .shadow-lg,
+.dark .shadow-xl { --tw-shadow-color: rgb(0 0 0 / 0.35); }
+.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: var(--editorial-border); }
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #161D19 inset !important;
+  -webkit-text-fill-color: #F3F0E7 !important;
+}
+
+/* Respect dark surfaces in native controls and browser chrome. */
+.dark body { color-scheme: dark; }
+
 /* Focus improvements for accessibility */
 :focus-visible {
   outline: 2px solid hsl(var(--ring));
