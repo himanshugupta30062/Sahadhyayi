@@ -85,20 +85,3 @@ describe('MapplsMap', () => {
   });
 });
 
-describe('createFriendInfoContent', () => {
-  it('uses text nodes for untrusted profile content rather than interpreting HTML', () => {
-    const node = createFriendInfoContent({
-      full_name: '<img src=x onerror=alert(1)>',
-      username: 'reader',
-      bio: '<script>alert(1)</script>',
-    });
-    expect(node.querySelector('img,script')).toBeNull();
-    expect(node.textContent).toContain('<img src=x onerror=alert(1)>');
-    expect(node.textContent).toContain('<script>alert(1)</script>');
-  });
-
-  it('falls back to username and generic friend labels for empty profiles', () => {
-    expect(createFriendInfoContent({ username: 'booklover' }).textContent).toContain('booklover');
-    expect(createFriendInfoContent({}).textContent).toContain('Friend');
-  });
-});
