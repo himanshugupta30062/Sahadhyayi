@@ -6,16 +6,25 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+const responseCache = new Map<string, { expiresAt: number; payload: unknown }>();
+const CACHE_TTL_MS = 5 * 60 * 1000;
+const MAX_CACHE_ENTRIES = 100;
+
 const SELECT_FIELDS = [
   "id", "doi", "display_name", "title", "publication_year", "publication_date",
   "type", "cited_by_count", "authorships", "primary_location", "best_oa_location",
   "open_access", "abstract_inverted_index",
 ].join(",");
 
-function jsonResponse(body: unknown, status = 200): Response {
+function jsonResponse(body: unknown, status = 200, cacheHit = false): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "public, max-age=60, stale-while-revalidate=120" },
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/json",
+      "Cache-Control": "public, max-age=60, stale-while-revalidate=120",
+      "X-Research-Cache": cacheHit ? "HIT" : "MISS",
+    },
   });
 }
 
@@ -51,6 +60,13 @@ Deno.serve(async (req: Request) => {
     });
     if (query) params.set("search", query);
 
+    const cacheKey = JSON.stringify({ query, page, perPage, year });
+    const cached = responseCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      return jsonResponse(cached.payload, 200, true);
+    }
+    if (cached) responseCache.delete(cacheKey);
+
     const apiKey = Deno.env.get("OPENALEX_API_KEY");
     const mailto = Deno.env.get("OPENALEX_MAILTO");
     if (apiKey) params.set("api_key", apiKey);
@@ -73,6 +89,11 @@ Deno.serve(async (req: Request) => {
     if (!payload || typeof payload !== "object" || !Array.isArray((payload as Record<string, unknown>).results)) {
       return jsonResponse({ error: "The research provider returned an unexpected response.", code: "INVALID_UPSTREAM_RESPONSE" }, 502);
     }
+    if (responseCache.size >= MAX_CACHE_ENTRIES) {
+      const oldestKey = responseCache.keys().next().value;
+      if (oldestKey) responseCache.delete(oldestKey);
+    }
+    responseCache.set(cacheKey, { expiresAt: Date.now() + CACHE_TTL_MS, payload });
     return jsonResponse(payload);
   } catch (error) {
     if (error instanceof DOMException && error.name === "TimeoutError") {
