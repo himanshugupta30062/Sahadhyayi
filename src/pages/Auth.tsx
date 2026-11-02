@@ -259,9 +259,9 @@ const Auth = () => {
   };
 
   const inputClass =
-    'pl-10 h-11 bg-white dark:bg-[#161D19] border-[#E8E2D9] dark:border-[#26302A] text-foreground rounded-xl focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:focus-visible:ring-[#D5B16D] transition-all';
+    'pl-10 h-11 bg-white dark:bg-[#161D19] border-[#E8E2D9] dark:border-[#26302A] text-[#1C201D] dark:text-[#F3F0E7] placeholder:text-muted-foreground dark:placeholder:text-[#9AA69D] caret-[#8F681C] dark:caret-[#D5B16D] rounded-xl focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:focus-visible:ring-[#D5B16D] transition-all';
   const inputToggleClass =
-    'pl-10 pr-10 h-11 bg-white dark:bg-[#161D19] border-[#E8E2D9] dark:border-[#26302A] text-foreground rounded-xl focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:focus-visible:ring-[#D5B16D] transition-all';
+    'pl-10 pr-10 h-11 bg-white dark:bg-[#161D19] border-[#E8E2D9] dark:border-[#26302A] text-[#1C201D] dark:text-[#F3F0E7] placeholder:text-muted-foreground dark:placeholder:text-[#9AA69D] caret-[#8F681C] dark:caret-[#D5B16D] rounded-xl focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:focus-visible:ring-[#D5B16D] transition-all';
 
   return (
     <>
