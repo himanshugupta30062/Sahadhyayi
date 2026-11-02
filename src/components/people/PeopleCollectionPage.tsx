@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client-universal";
 import { ArrowUpRight, BookOpen, Search, Sparkles } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
 import SEO from "@/components/SEO";
@@ -32,8 +34,26 @@ const accentStyles = {
 } as const;
 
 export function PeopleCollectionPage({ collectionKey }: { collectionKey: PeopleCollectionKey }) {
-  const collection = peopleCollections[collectionKey];
+  const fallback = peopleCollections[collectionKey];
   const [search, setSearch] = useState("");
+  const { data: backendCollection, isLoading } = useQuery({
+    queryKey: ["people-collection", collectionKey],
+    queryFn: async () => {
+      const [metadataResult, profilesResult] = await Promise.all([
+        supabase.from("people_collections").select("*").eq("id", collectionKey).single(),
+        supabase.from("people_profiles").select("*").eq("collection_id", collectionKey).eq("published", true).order("display_order", { ascending: true }),
+      ]);
+      if (metadataResult.error) throw metadataResult.error;
+      if (profilesResult.error) throw profilesResult.error;
+      return { ...metadataResult.data, people: (profilesResult.data || []).map((person: any) => ({
+        slug: person.slug, name: person.name, lifespan: person.lifespan, origin: person.origin, role: person.role,
+        summary: person.summary, story: person.story || [], milestones: person.milestones || [],
+        themes: person.themes || [], sources: person.sources || [],
+      })) };
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+  const collection = backendCollection?.people?.length ? backendCollection : fallback;
   const accent = accentStyles[collection.accent];
 
   const visiblePeople = useMemo(() => {
@@ -120,7 +140,7 @@ export function PeopleCollectionPage({ collectionKey }: { collectionKey: PeopleC
             </div>
           </div>
 
-          {visiblePeople.length > 0 ? (
+          {isLoading && !backendCollection ? <div className="rounded-xl border p-8 text-center text-sm text-muted-foreground">Loading profiles…</div> : visiblePeople.length > 0 ? (
             <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
               {visiblePeople.map((person) => (
                 <article key={person.slug} className="overflow-hidden rounded-2xl border border-[#E5DED2] bg-white shadow-[0_6px_24px_rgba(28,32,29,0.035)] transition-shadow hover:shadow-lg dark:border-[#29332D] dark:bg-[#111614] dark:shadow-none">
