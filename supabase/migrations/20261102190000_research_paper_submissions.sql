@@ -23,7 +23,8 @@ create index if not exists research_paper_submissions_user_idx on public.researc
 create index if not exists research_paper_submissions_status_idx on public.research_paper_submissions(status,created_at);
 alter table public.research_paper_submissions enable row level security;
 revoke all on public.research_paper_submissions from anon, authenticated;
-grant select on public.research_paper_submissions to authenticated;
+grant select, insert on public.research_paper_submissions to authenticated;
+create policy "Users create own pending submissions" on public.research_paper_submissions for insert to authenticated with check (submitter_id = (select auth.uid()) and status = 'pending_review' and moderator_id is null and reviewed_at is null);
 create policy "Submitters read own research submissions" on public.research_paper_submissions for select to authenticated using (submitter_id = (select auth.uid()) or public.is_admin());
 create policy "Admins moderate research submissions" on public.research_paper_submissions for update to authenticated using (public.is_admin()) with check (public.is_admin());
 insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types) values ('research-paper-quarantine','research-paper-quarantine',false,52428800,array['application/pdf']) on conflict(id) do update set public=false,file_size_limit=52428800,allowed_mime_types=array['application/pdf'];
