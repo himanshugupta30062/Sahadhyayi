@@ -194,6 +194,7 @@ const Authors = () => {
                 <span className="inline-flex items-center gap-2"><BookOpen className="h-4 w-4 text-[#1C442D] dark:text-[#E4C17B]" aria-hidden="true" /> <strong className="font-semibold text-[#1C201D] dark:text-white">{genres.length.toLocaleString()}</strong> genres represented</span>
               </div>
             </div>
+            <div aria-hidden="true" className="mt-7 h-56 w-full rounded-2xl bg-contain bg-center bg-no-repeat sm:hidden" style={{ backgroundImage: "url('/authors-imagination-mobile.svg')" }} />
           </div>
         </section>
 
