@@ -130,7 +130,7 @@ const ResearchPapers = () => {
         .select('openalex_id')
         .eq('user_id', user.id);
       if (!bookmarkLoadError && active) {
-        setSavedIds(new Set(data.map((item) => item.openalex_id)));
+        setSavedIds(new Set((data ?? []).map((item) => item.openalex_id)));
       }
     };
     void loadBookmarks();
