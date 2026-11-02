@@ -62,6 +62,70 @@ export interface ScientistProfile {
 
 export const scientists: ScientistProfile[] = [
   {
+    slug: 'jagadish-chandra-bose',
+    name: 'Jagadish Chandra Bose',
+    initials: 'JCB',
+    region: 'india',
+    discipline: 'Physics · Plant Science',
+    lifespan: '1858–1937',
+    headline: 'A pioneer who explored the invisible waves of radio and the responses of living plants.',
+    summary: 'Jagadish Chandra Bose was an Indian physicist and biologist whose pioneering experiments advanced radio and microwave science and helped establish experimental plant physiology.',
+    birthplace: 'Mymensingh, Bengal Presidency (now in Bangladesh)',
+    knownFor: ['Radio and microwave research', 'Wireless experiments', 'Crescograph', 'Plant physiology'],
+    lifeStory: [
+      'Jagadish Chandra Bose was born on 30 November 1858 in Mymensingh, then part of the Bengal Presidency. He studied in India and later at the University of Cambridge, where he pursued natural sciences before returning to teach and conduct research in Calcutta.',
+      'In the 1890s, Bose investigated electromagnetic waves at very short wavelengths. He designed sensitive apparatus to generate, detect and study millimetre-wave radiation, demonstrating experiments involving reflection, refraction, polarization and transmission through materials. His work helped develop the experimental foundations of radio and microwave science.',
+      'Bose later turned to the responses of plants to mechanical and electrical stimuli. With instruments including the crescograph, he measured minute movements and growth, arguing through experiments that plants respond to their environment in measurable ways. He founded the Bose Institute in Calcutta in 1917 to pursue interdisciplinary research.'
+    ],
+    work: [
+      { title: 'Radio and microwave experiments', description: 'Bose developed compact apparatus for producing and detecting millimetre waves and studied their optical-like properties. His demonstrations contributed to the early experimental science of electromagnetic radiation; radio history also includes independent work by other researchers.' },
+      { title: 'The crescograph', description: 'An instrument designed to magnify and record very small movements in plant growth, allowing Bose to investigate how plants respond to stimuli such as light, temperature and chemicals.' },
+      { title: 'Plant response research', description: 'Bose used electrical and mechanical measurements to study responses in plants and proposed that living tissues show measurable reactions to environmental changes.' }
+    ],
+    milestones: [
+      { year: '1858', title: 'Born in Mymensingh', description: 'Born on 30 November in the Bengal Presidency.' },
+      { year: '1885', title: 'Returned to India', description: 'Joined Presidency College in Calcutta as a physics teacher after completing studies in Britain.' },
+      { year: '1895', title: 'Wireless demonstrations', description: 'Presented experiments with electromagnetic waves in Calcutta, including transmission across a distance and through obstacles.' },
+      { year: '1901', title: 'Plant response experiments', description: 'Presented research showing electrical responses in plants and continued developing instruments for physiological measurements.' },
+      { year: '1917', title: 'Founded Bose Institute', description: 'Established the institute in Calcutta as a centre for interdisciplinary scientific research.' },
+      { year: '1937', title: 'A lasting scientific legacy', description: 'Died on 23 November; his work remains part of the history of radio science and plant physiology.' }
+    ],
+    legacy: 'Bose helped bridge physics and biology through inventive instruments and experimental methods. His radio-wave research belongs to the international development of wireless science, while his plant studies helped open new approaches to measuring biological responses. The Bose Institute continues his commitment to interdisciplinary research.',
+    publications: [
+      {
+        title: 'On the Polarisation of Electric Rays by Double-Refraction',
+        year: '1897',
+        venue: 'Proceedings of the Royal Society of London, 60, 167–178',
+        authors: 'J. C. Bose',
+        url: 'https://royalsocietypublishing.org/',
+        access: 'catalogue',
+        note: 'Early paper on the optical properties of electromagnetic waves; verify the exact article record and DOI against the Royal Society archive before linking a full-text edition.'
+      }
+    ],
+    archives: [
+      {
+        title: 'Acharya Jagadish Chandra Bose — institutional archive',
+        institution: 'Bose Institute',
+        url: 'https://www.boseinst.ac.in/',
+        material: 'Institutional history and research archive',
+        note: 'Bose Institute preserves the institutional legacy of Bose and provides authoritative background on its founder.'
+      }
+    ],
+    portrait: {
+      imageUrl: 'https://commons.wikimedia.org/wiki/Special:FilePath/Jagadish_Chandra_Bose.jpg',
+      alt: 'Portrait of Jagadish Chandra Bose',
+      credit: 'Historical portrait; image source and rights should be verified on Wikimedia Commons',
+      rights: 'Check the source file page for jurisdiction-specific reuse terms',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/Category:Jagadish_Chandra_Bose'
+    },
+    sources: [
+      { label: 'Jagadish Chandra Bose', publisher: 'Bose Institute', url: 'https://www.boseinst.ac.in/' },
+      { label: 'Jagadish Chandra Bose', publisher: 'Encyclopaedia Britannica', url: 'https://www.britannica.com/biography/Jagadish-Chandra-Bose' },
+      { label: 'Jagadish Chandra Bose', publisher: 'Science History Institute', url: 'https://www.sciencehistory.org/' }
+    ]
+  },
+
+  {
     slug: 'amal-kumar-raychaudhuri',
     name: 'Amal Kumar Raychaudhuri',
     initials: 'AKR',
