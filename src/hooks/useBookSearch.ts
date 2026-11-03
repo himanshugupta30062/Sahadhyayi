@@ -293,7 +293,14 @@ export const useBookSearch = () => {
         }
       }
 
-      const finalResults = Array.from(combinedMap.values());
+      // Rank actual access ahead of catalog-only metadata so the first
+      // search hits are usable files whenever a provider has one.
+      const finalResults = Array.from(combinedMap.values()).sort((a, b) => {
+        const rank = (book: BookSearchResult) =>
+          book.pdf_url ? 0 : book.epub_url ? 1 : book.reader_url ? 2 :
+          book.preview_url ? 3 : 4;
+        return rank(a) - rank(b);
+      });
 
       setSearchResults(finalResults);
       setError(null);
