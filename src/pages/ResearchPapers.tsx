@@ -365,7 +365,7 @@ const ResearchPapers = () => {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="mb-3 flex flex-wrap items-center gap-2">
-                            {paper.open_access?.is_oa && (
+                            {Boolean(paper.open_access?.is_oa) && (
                               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
                                 <CheckCircle2 className="h-3 w-3" /> Open access
                               </span>
