@@ -59,7 +59,7 @@ const BookSelectionModal = ({
   const addToLibraryMutation = useAddToPersonalLibrary();
   const { saveSelectedBooks, loading: isSaving } = useBookSearch();
 
-  const [selectedBooks, setSelectedBooks] = useState<Set<string>>(() => new Set(books.map((b) => b.id)));
+  const [selectedBooks, setSelectedBooks] = useState<Set<string>>(() => new Set(books.filter((b) => b.source !== 'sahadhyayi').map((b) => b.id)));
   const [savedOutcomes, setSavedOutcomes] = useState<Map<string, BookSaveResult>>(new Map());
   const [savingBookId, setSavingBookId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -109,7 +109,7 @@ const BookSelectionModal = ({
 
   const handleSelectAllOnPage = () => {
     const unSavedOnPage = paginatedBooks.filter(
-      (b) => savedOutcomes.get(b.id)?.status !== 'inserted'
+      (b) => b.source !== 'sahadhyayi' && !['inserted', 'already_exists', 'enriched'].includes(savedOutcomes.get(b.id)?.status || '')
     );
     const allSelected = unSavedOnPage.every((b) => selectedBooks.has(b.id));
     const nextSelection = new Set(selectedBooks);
@@ -122,10 +122,11 @@ const BookSelectionModal = ({
   };
 
   const handleSelectAllBooks = () => {
-    if (selectedBooks.size === filteredBooks.length) {
+    const addableBooks = filteredBooks.filter((book) => book.source !== 'sahadhyayi' && !['inserted', 'already_exists', 'enriched'].includes(savedOutcomes.get(book.id)?.status || ''));
+    if (selectedBooks.size === addableBooks.length) {
       setSelectedBooks(new Set());
     } else {
-      setSelectedBooks(new Set(filteredBooks.map((book) => book.id)));
+      setSelectedBooks(new Set(addableBooks.map((book) => book.id)));
     }
   };
 
@@ -428,6 +429,7 @@ const BookSelectionModal = ({
         {/* Books List */}
         <div className="grid gap-3.5 mt-3">
           {paginatedBooks.map((book) => {
+            const isAlreadyInCatalog = book.source === 'sahadhyayi';
             const isSelected = selectedBooks.has(book.id);
             const outcome = savedOutcomes.get(book.id);
 
@@ -445,7 +447,7 @@ const BookSelectionModal = ({
                       <Checkbox
                         checked={isSelected}
                         onCheckedChange={(checked) => handleBookSelection(book.id, !!checked)}
-                        disabled={outcome?.status === 'inserted'}
+                        disabled={isAlreadyInCatalog || ['inserted', 'already_exists', 'enriched'].includes(outcome?.status || '')}
                       />
                     </div>
 
@@ -512,8 +514,9 @@ const BookSelectionModal = ({
                           </div>
 
                           {/* Outcome Indicators */}
-                          {outcome && (
+                          {(outcome || isAlreadyInCatalog) && (
                             <div className="mt-2">
+                              {isAlreadyInCatalog && <Badge variant="outline" className="text-emerald-700 border-emerald-300 text-[11px]">Already in Sahadhyayi catalog</Badge>}
                               {outcome.status === 'inserted' && (
                                 <Badge className="bg-emerald-600 text-white text-[11px]">
                                   <Check className="w-3 h-3 mr-1" />
@@ -561,10 +564,10 @@ const BookSelectionModal = ({
                         {/* Action Buttons */}
                         <div className="flex flex-row sm:flex-col gap-1.5 flex-shrink-0 self-start mt-2 sm:mt-0">
                           {/* Direct Single-Book Add to Library Button */}
-                          {outcome?.status === 'inserted' || outcome?.status === 'already_exists' || outcome?.status === 'enriched' ? (
+                          {isAlreadyInCatalog || outcome?.status === 'inserted' || outcome?.status === 'already_exists' || outcome?.status === 'enriched' ? (
                             <Badge className="text-xs h-8 px-2.5 bg-emerald-700/10 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 flex items-center justify-center gap-1 font-medium">
                               <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                              {outcome.status === 'enriched' ? 'Enriched' : 'In Library'}
+                              {isAlreadyInCatalog ? 'Already Added' : outcome.status === 'enriched' ? 'Enriched' : 'In Library'}
                             </Badge>
                           ) : (
                             <Button
