@@ -15,6 +15,7 @@ type NewsItem = {
   id: string; title: string; slug: string; summary: string | null; content: string;
   cover_image_url: string | null; category: NewsCategory; source_name: string | null;
   source_url: string | null; author_name: string | null; published_at: string;
+  related_book_ids?: string[]; related_author_names?: string[]; related_paper_ids?: string[];
 };
 
 const categories: { value: NewsCategory | "all"; label: string; icon: typeof Newspaper }[] = [
@@ -34,7 +35,7 @@ export default function Newsroom() {
     queryKey: ["newsroom", "published"],
     queryFn: async () => {
       const { data, error } = await (supabase as any).from("news_articles")
-        .select("id,title,slug,summary,content,cover_image_url,category,source_name,source_url,author_name,published_at")
+        .select("id,title,slug,summary,content,cover_image_url,category,source_name,source_url,author_name,published_at,related_book_ids,related_author_names,related_paper_ids")
         .eq("status", "published").order("published_at", { ascending: false }).limit(100);
       if (error) throw error;
       return (data || []) as NewsItem[];
@@ -62,6 +63,11 @@ export default function Newsroom() {
         {article.summary && <p className="mt-4 text-lg leading-8 text-muted-foreground">{article.summary}</p>}
         {article.cover_image_url && <img src={article.cover_image_url} alt="" className="mt-8 max-h-[520px] w-full rounded-2xl object-cover" loading="lazy" />}
         <div className="prose prose-lg dark:prose-invert mt-9 max-w-none whitespace-pre-wrap leading-8">{article.content}</div>
+        {(article.related_book_ids?.length || article.related_author_names?.length || article.related_paper_ids?.length) ? <section className="mt-10 rounded-2xl border p-5"><h2 className="font-serif text-xl font-semibold">Explore related knowledge</h2>
+          {article.related_book_ids?.length ? <div className="mt-3"><h3 className="text-sm font-semibold">Books</h3><ul className="mt-1 list-disc pl-5">{article.related_book_ids.map((id) => <li key={id}><Link className="underline" to={"/book/" + id}>{id}</Link></li>)}</ul></div> : null}
+          {article.related_author_names?.length ? <div className="mt-3"><h3 className="text-sm font-semibold">Authors</h3><p>{article.related_author_names.join(" · ")}</p></div> : null}
+          {article.related_paper_ids?.length ? <div className="mt-3"><h3 className="text-sm font-semibold">Research papers</h3><ul className="mt-1 list-disc pl-5">{article.related_paper_ids.map((paper) => <li key={paper}><a className="underline" href={/^https?:\\/\\//i.test(paper) ? paper : "https://doi.org/" + paper} target="_blank" rel="noreferrer">{paper}</a></li>)}</ul></div> : null}
+        </section> : null}
         <div className="mt-10 border-t pt-5 text-sm text-muted-foreground">
           {article.author_name && <span>By {article.author_name}</span>}
           {article.source_name && <span className="ml-3">Source: {article.source_name}</span>}
