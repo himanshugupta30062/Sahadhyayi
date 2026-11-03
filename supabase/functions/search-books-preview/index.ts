@@ -97,7 +97,7 @@ serve(async (req) => {
       { name: 'internetArchive', fn: () => searchInternetArchive(cleanQuery) },
       { name: 'standardEbooks', fn: () => searchStandardEbooks(cleanQuery) },
       { name: 'openAlex', fn: () => searchOpenAlex(cleanQuery) },
-      { name: 'wikisource', fn: () => searchWikisource(cleanQuery) },
+      { name: 'wikisource', fn: () => searchWikisource(cleanQuery) },\n      { name: 'oapen', fn: () => searchOapen(cleanQuery) },
     ];
 
     const metrics: Record<string, ProviderMetric> = {};
@@ -135,7 +135,7 @@ serve(async (req) => {
     const archiveBooks = settledResults[3].status === 'fulfilled' ? settledResults[3].value : [];
     const standardEbooks = settledResults[4].status === 'fulfilled' ? settledResults[4].value : [];
     const openAlexBooks = settledResults[5].status === 'fulfilled' ? settledResults[5].value : [];
-    const wikisourceBooks = settledResults[6].status === 'fulfilled' ? settledResults[6].value : [];
+    const wikisourceBooks = settledResults[6].status === 'fulfilled' ? settledResults[6].value : [];\n    const oapenBooks = settledResults[7].status === 'fulfilled' ? settledResults[7].value : [];
 
     // Merge book data across providers without saving
     const mergedBooks = mergeBookData(
@@ -159,7 +159,7 @@ serve(async (req) => {
         archive: metrics.internetArchive?.count || 0,
         standardEbooks: metrics.standardEbooks?.count || 0,
         openAlex: metrics.openAlex?.count || 0,
-        wikisource: metrics.wikisource?.count || 0,
+        wikisource: metrics.wikisource?.count || 0,\n        oapen: metrics.oapen?.count || 0,
       },
       metrics,
     };
@@ -471,7 +471,56 @@ async function searchOpenAlex(searchTerm: string): Promise<BookData[]> {
     .filter((b: BookData) => b.title && b.title !== 'Unknown Title');
 }
 
-async function searchWikisource(searchTerm: string): Promise<BookData[]> {
+
+// OAPEN is a repository (not just a metadata index) and exposes bitstreams via its
+// documented REST API. Only an actual PDF bitstream is returned as pdf_url.
+async function searchOapen(searchTerm: string): Promise<BookData[]> {
+  const url = `https://library.oapen.org/rest/search?query=${encodeURIComponent(searchTerm)}&expand=metadata,bitstreams&limit=15`;
+  const response = await fetchWithTimeout(url, 4500, { headers: { Accept: 'application/json' } });
+  if (!response.ok) return [];
+  const payload = await response.json();
+  const items = payload?.searchResults?.items || payload?.items || payload?.results || [];
+  if (!Array.isArray(items)) return [];
+
+  const metadataValue = (metadata: any, key: string): string | undefined => {
+    const value = metadata?.[key];
+    if (Array.isArray(value)) return value[0]?.value || value[0];
+    return typeof value === 'string' ? value : value?.value;
+  };
+
+  return items.slice(0, 15).map((item: any) => {
+    const metadata = item.metadata || item;
+    const bitstreams = item.bitstreams || item.expand?.bitstreams || [];
+    const pdf = Array.isArray(bitstreams) ? bitstreams.find((file: any) =>
+      (file.name || file.bundleName || '').toLowerCase().endsWith('.pdf') &&
+      (file.bundleName === 'ORIGINAL' || file.bundle === 'ORIGINAL' || !file.bundleName)
+    ) : undefined;
+    const handle = item.handle || metadataValue(metadata, 'dc.identifier.uri') || metadataValue(metadata, 'dc.identifier');
+    const pdfUrl = pdf?.retrieveLink || pdf?.link || pdf?.url ||
+      (pdf?.uuid ? `https://library.oapen.org/bitstream/${handle}/${encodeURIComponent(pdf.name || '')}` : undefined);
+    const title = metadataValue(metadata, 'dc.title') || item.name || item.title;
+    const author = metadataValue(metadata, 'dc.contributor.author') || metadataValue(metadata, 'dc.creator');
+    const year = metadataValue(metadata, 'dc.date.issued');
+    const license = metadataValue(metadata, 'dc.rights') || metadataValue(metadata, 'dc.rights.uri');
+    const itemUrl = handle ? (String(handle).startsWith('http') ? handle : `https://library.oapen.org/handle/${handle}`) : undefined;
+    return {
+      title: String(title || '').trim(),
+      author: author ? String(author).trim() : undefined,
+      description: metadataValue(metadata, 'dc.description.abstract'),
+      publication_year: year ? Number.parseInt(String(year).slice(0, 4), 10) : undefined,
+      language: metadataValue(metadata, 'dc.language') || 'English',
+      pdf_url: pdfUrl,
+      reader_url: itemUrl,
+      source: 'oapen',
+      access_type: pdfUrl ? 'full_download' as AccessType : itemUrl ? 'official_reader' as AccessType : 'metadata_only' as AccessType,
+      formats: pdfUrl ? ['pdf'] : itemUrl ? ['reader'] : [],
+      provider_id: handle ? `oapen:${String(handle).replace(/^.*\//, '')}` : undefined,
+      // OAPEN exposes license metadata; retain it in description for transparent attribution.
+      ...(license ? { genre: `License: ${license}` } : {}),
+    };
+  }).filter((book: BookData) => book.title);
+}
+\nasync function searchWikisource(searchTerm: string): Promise<BookData[]> {
   const url = `https://en.wikisource.org/w/api.php?action=opensearch&search=${encodeURIComponent(searchTerm)}&limit=10&namespace=0&format=json`;
   const response = await fetchWithTimeout(url, 4000);
   if (!response.ok) return [];
@@ -520,7 +569,7 @@ function mergeBookData(
     ...googleBooksData,  // High priority: cover images, previews
     ...openAlexBooks,    // Academic open books
     ...archiveBooks,     // Archive scans
-    ...wikisourceBooks,  // Public domain transcriptions
+    ...oapenBooks,       // Peer-reviewed open-access books with hosted full text\n    ...wikisourceBooks,  // Public domain transcriptions
   ];
 
   const mergedMap = new Map<string, BookData>();
