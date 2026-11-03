@@ -137,7 +137,7 @@ const Authors = () => {
           {/* Keep the full-scene illustration off small screens so it never sits
               behind the copy/search. On desktop it stays in a dedicated right panel. */}
           {/* Actual CC0 Victor Hugo at his writing desk artwork. */}
-          <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 hidden w-[54%] bg-cover bg-[center_35%] bg-no-repeat opacity-90 sm:block" style={{ backgroundImage: "url('https://commons.wikimedia.org/wiki/Special:FilePath/Victor_Hugo_%C3%A0_son_bureau_de_travail._2017.0.3693.jpg?width=1400')" />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 hidden w-[54%] bg-cover bg-[center_35%] bg-no-repeat opacity-90 sm:block" style={{ backgroundImage: "url('https://commons.wikimedia.org/wiki/Special:FilePath/Victor_Hugo_%C3%A0_son_bureau_de_travail._2017.0.3693.jpg?width=1400')" }} />
           <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#F4F3EF] via-[#F4F3EF]/95 to-[#F4F3EF]/55 dark:hidden" />
           <div aria-hidden="true" className="absolute inset-0 hidden dark:block bg-gradient-to-r from-[#09120D]/95 via-[#09120D]/79 to-[#09120D]/38" />
           <div aria-hidden="true" className="absolute inset-0 hidden dark:block bg-gradient-to-t from-[#09120D]/70 via-transparent to-[#09120D]/25" />
