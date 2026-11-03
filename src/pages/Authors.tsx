@@ -136,11 +136,8 @@ const Authors = () => {
         <section className="relative isolate overflow-hidden border-b border-[#E8E8E3] bg-[#F4F3EF] text-[#1C201D] dark:border-[#29332D] dark:bg-[#101711] dark:text-white">
           {/* Keep the full-scene illustration off small screens so it never sits
               behind the copy/search. On desktop it stays in a dedicated right panel. */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 right-0 hidden h-full w-[58%] bg-contain bg-right bg-no-repeat opacity-75 sm:block"
-            style={{ backgroundImage: "url('/authors-imagination.svg')" }}
-          />
+          {/* Actual CC0 Victor Hugo at his writing desk artwork. */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 hidden w-[54%] bg-cover bg-[center_35%] bg-no-repeat opacity-90 sm:block" style={{ backgroundImage: "url('https://commons.wikimedia.org/wiki/Special:FilePath/Victor_Hugo_%C3%A0_son_bureau_de_travail._2017.0.3693.jpg?width=1400')" />
           <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#F4F3EF] via-[#F4F3EF]/95 to-[#F4F3EF]/55 dark:hidden" />
           <div aria-hidden="true" className="absolute inset-0 hidden dark:block bg-gradient-to-r from-[#09120D]/95 via-[#09120D]/79 to-[#09120D]/38" />
           <div aria-hidden="true" className="absolute inset-0 hidden dark:block bg-gradient-to-t from-[#09120D]/70 via-transparent to-[#09120D]/25" />
@@ -194,7 +191,7 @@ const Authors = () => {
                 <span className="inline-flex items-center gap-2"><BookOpen className="h-4 w-4 text-[#1C442D] dark:text-[#E4C17B]" aria-hidden="true" /> <strong className="font-semibold text-[#1C201D] dark:text-white">{genres.length.toLocaleString()}</strong> genres represented</span>
               </div>
             </div>
-            <div aria-hidden="true" className="mt-4 h-[300px] w-full bg-cover bg-center bg-no-repeat sm:hidden rounded-2xl" style={{ backgroundImage: "url('/authors-imagination-mobile.svg')" }} />
+            <div aria-hidden="true" className="relative mt-5 h-[390px] w-full overflow-hidden rounded-2xl sm:hidden"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/Victor_Hugo_%C3%A0_son_bureau_de_travail._2017.0.3693.jpg?width=1000" alt="" className="h-full w-full object-cover object-[center_30%]" loading="lazy" /></div>
           </div>
         </section>
 
