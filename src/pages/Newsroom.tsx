@@ -112,25 +112,21 @@ export default function Newsroom() {
       <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <div className="mb-5 flex items-center justify-between border-b pb-3"><h2 className="text-lg font-bold">{category === "all" ? "Top stories" : categoryLabel(category)}</h2><span className="text-xs text-muted-foreground">{filtered.length} {filtered.length === 1 ? "update" : "updates"}</span></div>
         {filtered.length === 0 ? <div className="rounded-xl border border-dashed p-10 text-center"><Newspaper className="mx-auto h-8 w-8 text-muted-foreground" /><h3 className="mt-3 font-semibold">No news in this section</h3><p className="mt-1 text-sm text-muted-foreground">New updates will appear here when published.</p></div> : <>
-          {lead && <section className="mb-10">
-            <div className="mb-4 flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" /><p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Editor’s picks</p></div>
-            <article className="grid overflow-hidden rounded-2xl border bg-card md:grid-cols-[minmax(0,1fr)_320px]">
-              <div className="flex min-w-0 flex-col justify-center p-5 sm:p-8">
-                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><Badge>{categoryLabel(lead.category)}</Badge><span>{dateLabel(lead.published_at)}</span><span>·</span><span>{lead.source_name || "Sahadhyayi"}</span></div>
-                <h3 className="mt-4"><StoryTitle item={lead} prominent /></h3>
-                {lead.summary && <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">{lead.summary}</p>}
-                <div className="mt-5"><SourceLink item={lead} prominent /></div>
-              </div>
-              <div className="p-4 md:pl-0">
-                {lead.source_url ? <a href={lead.source_url} target="_blank" rel="noopener noreferrer" aria-label={`Open source for ${lead.title}`} className="block overflow-hidden rounded-xl"><StoryArtwork item={lead} large /></a> : <StoryArtwork item={lead} large />}
-              </div>
+          {lead && <div className="mb-8 grid gap-6 border-b pb-8 md:grid-cols-[minmax(0,1.65fr)_minmax(260px,1fr)]">
+            <article className="min-w-0">
+              {lead.source_url ? <a href={lead.source_url} target="_blank" rel="noopener noreferrer" aria-label={`Open source for ${lead.title}`} className="mb-4 block overflow-hidden rounded-xl"><StoryArtwork item={lead} large /></a> : <div className="mb-4"><StoryArtwork item={lead} large /></div>}
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><Badge>{categoryLabel(lead.category)}</Badge><span>{dateLabel(lead.published_at)}</span><span aria-hidden="true">·</span><span>{lead.source_name || "Sahadhyayi"}</span></div>
+              <h3 className="mt-3"><StoryTitle item={lead} prominent /></h3>
+              {lead.summary && <p className="mt-3 text-base leading-7 text-muted-foreground">{lead.summary}</p>}
+              <div className="mt-4"><SourceLink item={lead} prominent /></div>
             </article>
-            {secondary.length > 0 && <div className="mt-4 grid gap-3 sm:grid-cols-3">{secondary.map((item, index) => <article key={item.id} className="min-w-0 rounded-xl border bg-background p-4 transition-colors hover:bg-muted/40">
-              <div className="mb-2 flex items-center gap-2 text-[11px] text-muted-foreground"><span className="font-semibold text-primary">0{index + 2}</span><span>·</span><span>{categoryLabel(item.category)}</span></div>
-              <h3><StoryTitle item={item} /></h3>{item.summary && <p className="mt-2 line-clamp-2 text-sm leading-5 text-muted-foreground">{item.summary}</p>}
-              <div className="mt-3"><SourceLink item={item} /></div>
-            </article>)}</div>}
-          </section>}
+            <aside aria-label="More top stories" className="divide-y rounded-lg border md:border-0 md:rounded-none md:divide-y">
+              {secondary.map((item) => <article key={item.id} className="p-4 first:pt-0 md:px-0 md:py-4">
+                <div className="text-xs text-muted-foreground">{categoryLabel(item.category)} · {dateLabel(item.published_at)}</div><h3 className="mt-2"><StoryTitle item={item} /></h3>{item.summary && <p className="mt-1 line-clamp-2 text-sm leading-5 text-muted-foreground">{item.summary}</p>}<div className="mt-2"><SourceLink item={item} /></div>
+              </article>)}
+              {secondary.length === 0 && <p className="text-sm text-muted-foreground md:pt-2">More headlines will appear here as news is published.</p>}
+            </aside>
+          </div>}
           {rest.length > 0 && <div className="grid gap-x-6 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">{visibleRest.map((item) => <article key={item.id} className="group min-w-0 overflow-hidden rounded-xl border bg-card transition hover:-translate-y-0.5 hover:shadow-md">
             {item.source_url ? <a href={item.source_url} target="_blank" rel="noopener noreferrer" aria-label={`Open source for ${item.title}`} className="block overflow-hidden"><StoryArtwork item={item} /></a> : <StoryArtwork item={item} />}
             <div className="p-4"><div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><Badge variant="secondary">{categoryLabel(item.category)}</Badge><span>{dateLabel(item.published_at)}</span></div><h3 className="mt-2"><StoryTitle item={item} /></h3>{item.summary && <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">{item.summary}</p>}<div className="mt-4 flex items-center justify-between gap-2 border-t pt-3"><span className="truncate text-xs text-muted-foreground">{item.source_name || "Sahadhyayi"}</span><SourceLink item={item} /></div></div>
