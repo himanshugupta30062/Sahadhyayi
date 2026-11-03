@@ -1,4 +1,3 @@
-
 import { useNavigate, useLocation } from "react-router-dom";
 import UserDropdownMenu from "./UserDropdownMenu";
 import { useAuth } from "@/contexts/authHelpers";
@@ -14,14 +13,21 @@ const AuthSection = () => {
 
   const handleSignInClick = () => {
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem('redirectScrollY', String(window.scrollY));
+      try {
+        sessionStorage.setItem('redirectScrollY', String(window.scrollY));
+      } catch {
+        // Continue to sign-in even when browser storage is unavailable.
+      }
     }
     const redirect = `${location.pathname}${location.search}${location.hash}`;
-    navigate(`/auth?redirect=${encodeURIComponent(redirect)}`, { state: { from: redirect } });
+    const query = new URLSearchParams({ redirect }).toString();
+    // Navigate directly to the actual sign-in route instead of relying on
+    // the legacy /auth redirect (which adds an unnecessary routing hop).
+    navigate(`/signin?${query}`, { state: { from: redirect } });
   };
 
   const handleSignUpClick = () => {
-    navigate('/auth?tab=signup');
+    navigate('/signup');
   };
 
   return user ? (
@@ -33,8 +39,9 @@ const AuthSection = () => {
   ) : (
     <div className="flex items-center space-x-2 flex-shrink-0">
       <Button
-        variant="ghost" 
+        variant="ghost"
         size="sm"
+        type="button"
         onClick={handleSignInClick}
         className="text-orange-700 hover:text-orange-800 hover:bg-orange-50 font-medium border border-orange-300 hover:border-orange-400 transition-all duration-200 flex-shrink-0 whitespace-nowrap"
       >
@@ -43,6 +50,7 @@ const AuthSection = () => {
       </Button>
       <Button
         size="sm"
+        type="button"
         onClick={handleSignUpClick}
         className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 flex-shrink-0 whitespace-nowrap"
       >
