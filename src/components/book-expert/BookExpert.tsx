@@ -423,9 +423,9 @@ const BookExpert = () => {
         aria-label="Open the Sahadhyayi Reading Room"
         aria-expanded={false}
         aria-controls="book-expert-panel"
-        className="fixed bottom-5 right-4 z-50 flex items-center gap-3 rounded-full border border-border/80 bg-background/95 p-2 pr-4 text-foreground shadow-xl shadow-black/10 backdrop-blur transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:bottom-6 sm:right-6"
+        className="fixed bottom-4 right-3 z-50 flex items-center gap-2 rounded-full border border-border/80 bg-background/95 p-1.5 text-foreground shadow-xl shadow-black/10 backdrop-blur transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:bottom-6 sm:right-6 sm:gap-3 sm:p-2 sm:pr-4"
       >
-        <span className="reader-room-launcher-icon relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-primary/10">
+        <span className="reader-room-launcher-icon relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 sm:h-12 sm:w-12">
           <img src={bookIcon} alt="" loading="eager" decoding="async" className="h-full w-full object-cover" draggable={false} />
           <span className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-emerald-500" aria-hidden="true" />
         </span>
@@ -433,7 +433,7 @@ const BookExpert = () => {
           <span className="block text-sm font-semibold leading-tight">Reading Room</span>
           <span className="mt-0.5 block text-[11px] text-muted-foreground">Talk books with us</span>
         </span>
-        <MessageCircle className="ml-1 h-4 w-4 text-primary" aria-hidden="true" />
+        <MessageCircle className="hidden h-4 w-4 text-primary sm:ml-1 sm:block" aria-hidden="true" />
       </button>
     );
   }
