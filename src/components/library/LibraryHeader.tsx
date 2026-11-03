@@ -41,12 +41,12 @@ const LibraryHeader = ({
           </div>
 
           {/* Controls */}
-          <div className="flex items-center gap-4">
+          <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:gap-4">
             {/* Sort Dropdown */}
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-none">
               <SortAsc className="w-5 h-5 text-gray-500" />
               <Select value={sortBy} onValueChange={onSortChange}>
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-full min-w-0 sm:w-48">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
