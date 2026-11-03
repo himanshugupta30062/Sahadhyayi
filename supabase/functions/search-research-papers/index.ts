@@ -68,7 +68,7 @@ Deno.serve(async (req: Request) => {
     if (cached && cached.expiresAt > Date.now()) {
       return jsonResponse(cached.payload, 200, true);
     }
-    if (cached) responseCache.delete(cacheKey);
+    // Keep expired entries as stale fallback while refreshing upstream.
 
     const apiKey = Deno.env.get("OPENALEX_API_KEY");
     const mailto = Deno.env.get("OPENALEX_MAILTO");
