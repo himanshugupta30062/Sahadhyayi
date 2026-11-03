@@ -146,21 +146,21 @@ const Authors = () => {
           <div aria-hidden="true" className="absolute inset-0 hidden dark:block bg-gradient-to-t from-[#09120D]/70 via-transparent to-[#09120D]/25" />
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:radial-gradient(rgba(255,255,255,0.6)_0.7px,transparent_0.7px)] [background-size:18px_18px] [mask-image:linear-gradient(to_right,black,transparent_80%)]" />
 
-          <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-18 lg:px-8 lg:py-24">
+          <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-18 lg:px-8 lg:py-24">
             <div className="max-w-3xl">
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#D9D9D1] bg-white dark:border-[#D5B16D]/35 dark:bg-black/25 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#1C442D] dark:text-[#E8CC91] backdrop-blur-sm sm:mb-6">
                 <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
                 The people behind the pages
               </div>
-              <h1 className="max-w-3xl font-serif text-4xl font-bold leading-[1.08] tracking-tight text-[#1C201D] dark:text-[#FBF7EF] sm:text-5xl md:text-6xl lg:text-7xl">
+              <h1 className="max-w-3xl font-serif text-3xl font-bold leading-[1.08] tracking-tight sm:text-5xl text-[#1C201D] dark:text-[#FBF7EF] sm:text-5xl md:text-6xl lg:text-7xl">
                 Meet the minds
                 <span className="block text-[#1C442D] dark:text-[#E4C17B]">behind the books.</span>
               </h1>
-              <p className="mt-5 max-w-2xl text-base leading-7 text-[#636B65] dark:text-white/80 sm:mt-6 sm:text-lg sm:leading-8">
+              <p className="mt-4 max-w-2xl text-sm leading-6 text-[#636B65] dark:text-white/80 sm:mt-6 sm:text-lg sm:leading-8">
                 Discover the writers, ideas, and worlds behind the books you love. Explore by name or genre, then follow the voices you want to hear from.
               </p>
 
-              <div className="mt-8 flex w-full max-w-2xl flex-col gap-3 sm:mt-9 sm:flex-row">
+              <div className="mt-5 flex w-full max-w-2xl flex-col gap-3 sm:mt-9 sm:flex-row">
                 <div className="relative min-w-0 flex-1">
                   <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#69756D]" aria-hidden="true" />
                   <Input
@@ -189,12 +189,12 @@ const Authors = () => {
                 </Link>
               </div>
 
-              <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[#636B65] dark:text-white/75">
+              <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[#636B65] dark:text-white/75">
                 <span className="inline-flex items-center gap-2"><Users className="h-4 w-4 text-[#1C442D] dark:text-[#E4C17B]" aria-hidden="true" /> <strong className="font-semibold text-[#1C201D] dark:text-white">{authors.length.toLocaleString()}</strong> authors</span>
                 <span className="inline-flex items-center gap-2"><BookOpen className="h-4 w-4 text-[#1C442D] dark:text-[#E4C17B]" aria-hidden="true" /> <strong className="font-semibold text-[#1C201D] dark:text-white">{genres.length.toLocaleString()}</strong> genres represented</span>
               </div>
             </div>
-            <div aria-hidden="true" className="mt-5 h-[360px] w-full bg-contain bg-center bg-no-repeat sm:hidden" style={{ backgroundImage: "url('/authors-imagination-mobile.svg')" }} />
+            <div aria-hidden="true" className="mt-4 h-[300px] w-full bg-cover bg-center bg-no-repeat sm:hidden rounded-2xl" style={{ backgroundImage: "url('/authors-imagination-mobile.svg')" }} />
           </div>
         </section>
 
