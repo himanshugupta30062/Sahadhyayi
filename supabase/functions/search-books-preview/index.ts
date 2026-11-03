@@ -241,7 +241,7 @@ async function searchGoogleBooks(searchTerm: string): Promise<BookData[]> {
       const info = item.volumeInfo || {};
       const access = item.accessInfo || {};
       const isbnObj = info.industryIdentifiers?.find((id: any) => id.type === 'ISBN_13' || id.type === 'ISBN_10');
-      const isPdfDownload = Boolean(access.pdf?.isAvailable && access.pdf?.downloadLink);
+      // Google only exposes a true full-book PDF when all pages are viewable and the access status is FULL.\n      const isPdfDownload = Boolean(access.pdf?.isAvailable && access.pdf?.downloadLink && info.accessViewStatus === 'FULL' && access.viewability === 'ALL_PAGES');
       const isEpubDownload = Boolean(access.epub?.isAvailable && access.epub?.downloadLink);
       const coverUrl = info.imageLinks?.thumbnail?.replace('http:', 'https:') || info.imageLinks?.smallThumbnail?.replace('http:', 'https:');
 
@@ -257,7 +257,7 @@ async function searchGoogleBooks(searchTerm: string): Promise<BookData[]> {
         cover_image_url: coverUrl,
         description: info.description,
         isbn: isbnObj?.identifier,
-        publication_year: info.publishedDate ? Number.Number.parseInt(info.publishedDate.split('-')[0]) : undefined,
+        publication_year: info.publishedDate ? Number.parseInt(info.publishedDate.split('-')[0]) : undefined,
         pages: info.pageCount,
         language: info.language === 'en' ? 'English' : info.language,
         // Crucial fix: DO NOT represent preview URLs as direct downloadable PDFs
@@ -382,7 +382,7 @@ async function getPublicArchivePdfUrl(identifier: string): Promise<string | unde
       file.private !== 'true' && file.private !== true &&
       !file.name.toLowerCase().includes('_text.pdf')
     );
-    if (!pdf || item.metadata?.access === 'restricted' || item.metadata?.is_dark === true) return undefined;
+    if (!pdf || item.metadata?.access === 'restricted' || item.metadata?.is_dark === true || item.metadata?.is_dark === 'true' || item.metadata?.is_private === true || item.metadata?.is_private === 'true') return undefined;
     const encodedPath = pdf.name.split('/').map(encodeURIComponent).join('/');
     return `https://archive.org/download/${encodeURIComponent(identifier)}/${encodedPath}`;
   } catch {
