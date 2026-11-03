@@ -517,24 +517,24 @@ const BookSelectionModal = ({
                           {(outcome || isAlreadyInCatalog) && (
                             <div className="mt-2">
                               {isAlreadyInCatalog && <Badge variant="outline" className="text-emerald-700 border-emerald-300 text-[11px]">Already in Sahadhyayi catalog</Badge>}
-                              {outcome.status === 'inserted' && (
+                              {outcome?.status === 'inserted' && (
                                 <Badge className="bg-emerald-600 text-white text-[11px]">
                                   <Check className="w-3 h-3 mr-1" />
                                   Saved to catalog
                                 </Badge>
                               )}
-                              {outcome.status === 'enriched' && (
+                              {outcome?.status === 'enriched' && (
                                 <Badge className="bg-blue-600 text-white text-[11px]">
                                   <Check className="w-3 h-3 mr-1" />
                                   Enriched existing record ({outcome.enrichedFields?.join(', ')})
                                 </Badge>
                               )}
-                              {outcome.status === 'already_exists' && (
+                              {outcome?.status === 'already_exists' && (
                                 <Badge variant="outline" className="text-zinc-600 border-zinc-300 dark:text-zinc-400 text-[11px]">
                                   Already in catalog
                                 </Badge>
                               )}
-                              {outcome.status === 'failed' && (
+                              {outcome?.status === 'failed' && (
                                 <div className="inline-flex items-center gap-2">
                                   <Badge className="bg-rose-600 text-white text-[11px]">
                                     <AlertCircle className="w-3 h-3 mr-1" />
