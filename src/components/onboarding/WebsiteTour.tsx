@@ -168,9 +168,9 @@ export default function WebsiteTour() {
         size="sm"
         onClick={startTour}
         aria-label="Start the Sahadhyayi guided tour"
-        className="fixed bottom-5 left-4 z-[90] rounded-full border-[#D7C9AD] bg-background/95 shadow-lg backdrop-blur hover:bg-accent"
+        className="fixed bottom-4 left-3 z-[90] rounded-full border-[#D7C9AD] bg-background/95 p-2.5 shadow-lg backdrop-blur hover:bg-accent sm:bottom-5 sm:left-4 sm:px-3 sm:py-2"
       >
-        <HelpCircle className="mr-2 h-4 w-4" /> Take a tour
+        <HelpCircle className="h-4 w-4 sm:mr-2" /> <span className="hidden sm:inline">Take a tour</span>
       </Button>
 
       {open && (
