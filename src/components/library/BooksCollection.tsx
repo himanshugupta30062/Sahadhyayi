@@ -206,20 +206,23 @@ const BooksCollection = ({
     <div className="space-y-6">
       {/* Books Collection with Tabs */}
       <Tabs defaultValue="all-books" className="w-full">
-        <TabsList className={`grid w-full ${user ? 'grid-cols-3' : 'grid-cols-2'}`}>
-          <TabsTrigger value="all-books" className="flex items-center gap-2">
-            <BookOpen className="w-4 h-4" />
+        <TabsList
+          aria-label="Library sections"
+          className={`flex w-full flex-nowrap items-stretch justify-start gap-1 overflow-x-auto rounded-xl p-1 sm:grid ${user ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}
+        >
+          <TabsTrigger value="all-books" className="flex min-h-10 flex-none items-center justify-center gap-2 whitespace-nowrap px-3 sm:flex-1">
+            <BookOpen className="h-4 w-4 shrink-0" />
             <span>Browse Catalog ({paginatedData?.totalCount ?? 0})</span>
           </TabsTrigger>
-          <TabsTrigger value="external-finder" className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#B68A35] dark:text-[#D5B16D]" />
+          <TabsTrigger value="external-finder" className="flex min-h-10 flex-none items-center justify-center gap-2 whitespace-nowrap px-3 sm:flex-1">
+            <Sparkles className="h-4 w-4 shrink-0 text-[#B68A35] dark:text-[#D5B16D]" />
             <span>Ultimate Book Finder</span>
           </TabsTrigger>
           {user && (
-            <TabsTrigger value="my-library" className="flex items-center gap-2">
-              <div className="p-1 bg-gradient-to-br from-amber-500 to-orange-600 rounded">
-                <Library className="w-3 h-3 text-white" />
-              </div>
+            <TabsTrigger value="my-library" className="flex min-h-10 flex-none items-center justify-center gap-2 whitespace-nowrap px-3 sm:flex-1">
+              <span className="flex shrink-0 rounded bg-gradient-to-br from-amber-500 to-orange-600 p-1">
+                <Library className="h-3 w-3 text-white" />
+              </span>
               <span>My Personal Library</span>
             </TabsTrigger>
           )}
