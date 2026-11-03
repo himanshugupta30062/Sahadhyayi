@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, BookOpen, Bookmark, BookmarkCheck,
   CheckCircle2, Download, ExternalLink, FileText,
-  Quote, RefreshCw, Search,
+  Quote, RefreshCw, Search, Sparkles,
 } from 'lucide-react';
 import SEO from '@/components/SEO';
 import { Input } from '@/components/ui/input';
