@@ -251,7 +251,7 @@ const BooksCollection = ({
                       </Badge>
                     </div>
                     <p className="text-xs sm:text-sm text-[#636B65] dark:text-[#A5ADA6] font-normal mt-0.5">
-                      Federated search across Open Library, Project Gutenberg, Google Books, and Internet Archive. Anyone can import books directly to the library.
+                      Federated discovery across OAPEN, Project Gutenberg, Internet Archive, Open Library, Google Books, and more. Direct PDF downloads rank first; previews and metadata are clearly fallback access.
                     </p>
                   </div>
                 </div>
@@ -327,7 +327,7 @@ const BooksCollection = ({
                     </span>
                     <div className="flex flex-wrap gap-1.5 mt-1">
                       <Badge variant="outline" className="text-[11px] bg-white dark:bg-[#1A201C] border-[#E8E2D9] dark:border-[#26302A]">
-                        Open Library (20M+ editions)
+                        OAPEN (Peer-reviewed open-access PDFs)
                       </Badge>
                       <Badge variant="outline" className="text-[11px] bg-white dark:bg-[#1A201C] border-[#E8E2D9] dark:border-[#26302A]">
                         Project Gutenberg (70,000+ public domain)
