@@ -536,5 +536,14 @@ function mergeBookData(
     }
   }
 
-  return Array.from(mergedMap.values());
+  // Put genuine file access ahead of metadata-only matches. Keep metadata as
+  // fallback, but never let a metadata-only record occupy the first result.
+  const accessRank = (book: BookData) => {
+    if (book.pdf_url && book.formats?.includes('pdf')) return 0;
+    if (book.epub_url && book.formats?.includes('epub')) return 1;
+    if (book.reader_url) return 2;
+    if (book.preview_url) return 3;
+    return 4;
+  };
+  return Array.from(mergedMap.values()).sort((a, b) => accessRank(a) - accessRank(b));
 }
