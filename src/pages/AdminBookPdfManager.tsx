@@ -58,13 +58,22 @@ export default function AdminBookPdfManager() {
   const { data: books = [], isLoading, error } = useQuery({
     queryKey: ['admin-book-pdf-manager-books'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('books_library')
-        .select('id,title,author,isbn,publication_year,pdf_url,cover_image_url')
-        .order('title', { ascending: true })
-        .limit(2000);
-      if (error) throw error;
-      return (data || []) as BookRecord[];
+      // PostgREST applies a server-side max-row cap (commonly 1,000).
+      // Fetch in bounded pages so the manager doesn't silently omit catalog books.
+      const pageSize = 1000;
+      const allBooks: BookRecord[] = [];
+      for (let offset = 0; ; offset += pageSize) {
+        const { data, error } = await supabase
+          .from('books_library')
+          .select('id,title,author,isbn,publication_year,pdf_url,cover_image_url')
+          .order('title', { ascending: true })
+          .range(offset, offset + pageSize - 1);
+        if (error) throw error;
+        const page = (data || []) as BookRecord[];
+        allBooks.push(...page);
+        if (page.length < pageSize) break;
+      }
+      return allBooks;
     },
   });
 
@@ -188,7 +197,7 @@ export default function AdminBookPdfManager() {
             </div>
             <div className="mt-4 max-h-[440px] space-y-2 overflow-y-auto" aria-live="polite">
               {isLoading && <p className="py-8 text-center text-sm text-muted-foreground">Loading catalog…</p>}
-              {error && <p role="alert" className="text-sm text-destructive">Could not load books. Please refresh and try again.</p>}
+              {error && <p role="alert" className="text-sm text-destructive">Could not load books: {error instanceof Error ? error.message : 'Unknown catalog error'}. Check administrator access and the books_library API permissions, then retry.</p>}
               {!isLoading && !error && filteredBooks.length === 0 && <p className="py-8 text-center text-sm text-muted-foreground">No matching books found.</p>}
               {filteredBooks.map((book) => (
                 <button key={book.id} type="button" onClick={() => setSelectedId(book.id)} className={`w-full rounded-xl border p-3 text-left transition-colors ${selectedId === book.id ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}>
