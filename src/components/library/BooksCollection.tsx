@@ -99,7 +99,11 @@ const BooksCollection = ({
 
   const handleSearch = async (searchTerm: string) => {
     const results = await searchBooks(searchTerm);
-    const external: ExternalBook[] = [];
+    // Include verified open-access PDF discovery (the utility calls the
+    // search-books-preview provider aggregator and filters for actual PDF URLs).
+    const external: ExternalBook[] = useExternalSources
+      ? await searchExternalSources(searchTerm)
+      : [];
     let libgenBooks: LibgenBook[] = [];
     
     // Concurrently search Libgen if external sources enabled
