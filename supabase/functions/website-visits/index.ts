@@ -93,6 +93,7 @@ Deno.serve(async(req:Request)=>{
       .split(',')
       .map((value)=>normalizeIp(value.trim()))
       .filter((value): value is string => value!==null);
+    const supabase=createClient(supabaseUrl,serviceRoleKey,{auth:{persistSession:false,autoRefreshToken:false}});
     // Database-backed allowlist makes owner QA traffic manageable without
     // redeploying the function whenever a residential public IP changes.
     const {data: ownerIpRows, error: ownerIpConfigError}=await supabase
@@ -114,7 +115,6 @@ Deno.serve(async(req:Request)=>{
     const visitorUuid=isUuid(visitorId)?visitorId:null, sessionUuid=isUuid(sessionId)?sessionId:null;
     const eventName=clean(body.event_name,100), screenResolution=clean(body.screenResolution,32);
     const language=clean(body.language,32), timezone=clean(body.timezone,64), eventId=clean(body.event_id,100);
-    const supabase=createClient(supabaseUrl,serviceRoleKey,{auth:{persistSession:false,autoRefreshToken:false}});
     let authUserId:string|null=null;
     const authorization=req.headers.get('authorization');
     if(authorization?.startsWith('Bearer ')){const token=authorization.slice(7).trim();if(token&&token!==Deno.env.get('SUPABASE_ANON_KEY')){try{const {data}=await supabase.auth.getUser(token);authUserId=data.user?.id??null;}catch{authUserId=null;}}}
