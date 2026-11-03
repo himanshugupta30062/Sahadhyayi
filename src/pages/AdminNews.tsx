@@ -35,7 +35,9 @@ export default function AdminNews() {
   const [featured, setFeatured] = useState(false);
   const [relatedBooks, setRelatedBooks] = useState("");
   const [relatedAuthors, setRelatedAuthors] = useState("");
-  const [relatedPapers, setRelatedPapers] = useState("");\n  const [coverFile, setCoverFile] = useState<File | null>(null);\n  const [uploadingCover, setUploadingCover] = useState(false);
+  const [relatedPapers, setRelatedPapers] = useState("");
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   const newsQuery = useQuery({
     queryKey: ["admin-news"],
@@ -50,7 +52,17 @@ export default function AdminNews() {
     mutationFn: async (publishNow: boolean) => {
       if (title.trim().length < 5 || content.trim().length < 30) throw new Error("Add a headline and at least 30 characters of story content.");
       if (sourceUrl.trim()) { const url = new URL(sourceUrl); if (!["http:", "https:"].includes(url.protocol)) throw new Error("Source URL must use HTTP or HTTPS."); }
-      let coverUrl = cover.trim() || null;\n      if (coverFile) {\n        setUploadingCover(true);\n        const ext = coverFile.name.split(".").pop()?.toLowerCase() || "jpg";\n        const path = `news/${crypto.randomUUID()}.${ext}`;\n        const { error: uploadError } = await supabase.storage.from("news-covers").upload(path, coverFile, { contentType: coverFile.type, cacheControl: "3600", upsert: false });\n        setUploadingCover(false);\n        if (uploadError) throw uploadError;\n        coverUrl = supabase.storage.from("news-covers").getPublicUrl(path).data.publicUrl;\n      }\n      const payload: Record<string, unknown> = {
+      let coverUrl = cover.trim() || null;
+      if (coverFile) {
+        setUploadingCover(true);
+        const ext = coverFile.name.split(".").pop()?.toLowerCase() || "jpg";
+        const path = `news/${crypto.randomUUID()}.${ext}`;
+        const { error: uploadError } = await supabase.storage.from("news-covers").upload(path, coverFile, { contentType: coverFile.type, cacheControl: "3600", upsert: false });
+        setUploadingCover(false);
+        if (uploadError) throw uploadError;
+        coverUrl = supabase.storage.from("news-covers").getPublicUrl(path).data.publicUrl;
+      }
+      const payload: Record<string, unknown> = {
         title: title.trim(), summary: summary.trim() || null, content: content.trim(),
         category, cover_image_url: coverUrl, source_name: sourceName.trim() || null,
         source_url: sourceUrl.trim() || null, author_name: authorName.trim() || null,
