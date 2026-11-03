@@ -143,7 +143,7 @@ export const validatePassword = (password: string): { isValid: boolean; message?
   
   // Check for common weak patterns
   const weakPatterns = [
-    /(.)\1{2,}/,  // Repeated characters (aaa, 111)
+    /(.)\1\1+/,  // Repeated characters (aaa, 111)
     /^(?:password|123456|qwerty|abc123|admin|user|guest|test)/i,  // Common passwords
     /^\d+$/,  // Only numbers
     /^[a-zA-Z]+$/  // Only letters
