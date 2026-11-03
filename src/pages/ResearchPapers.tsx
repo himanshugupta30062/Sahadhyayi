@@ -365,7 +365,7 @@ const ResearchPapers = () => {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="mb-3 flex flex-wrap items-center gap-2">
-                            {paper.open_access?.is_oa && (
+                            {Boolean(paper.open_access?.is_oa) && (
                               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
                                 <CheckCircle2 className="h-3 w-3" /> Open access
                               </span>
@@ -386,7 +386,7 @@ const ResearchPapers = () => {
                           <div className="mt-5 flex flex-wrap gap-2">
                             {paperUrl && <a href={paperUrl} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#1C442D] px-3.5 text-xs font-semibold text-white transition-colors hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#101711] dark:hover:bg-[#E3C483]"><BookOpen className="h-3.5 w-3.5" /> Read paper <ExternalLink className="h-3 w-3" /></a>}
                             {pdfUrl && <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#D9E1DA] px-3.5 text-xs font-semibold text-[#31583D] hover:bg-[#F3F6F2] dark:border-[#344039] dark:text-[#D5B16D] dark:hover:bg-[#1D2821]"><Download className="h-3.5 w-3.5" /> PDF</a>}
-                            <Button type="button" variant="outline" disabled={savingId === paper.id} onClick={() => void toggleBookmark(paper)} className="h-9 gap-2 border-[#D9E1DA] px-3.5 text-xs dark:border-[#344039]">
+                            <Button type="button" variant="outline" disabled={savingId === paper.id} onClick={() => { toggleBookmark(paper).catch((bookmarkSaveError: unknown) => { setBookmarkError(bookmarkSaveError instanceof Error ? bookmarkSaveError.message : 'Unable to update your saved papers.'); }); }} className="h-9 gap-2 border-[#D9E1DA] px-3.5 text-xs dark:border-[#344039]">
                               {savedIds.has(paper.id || '') ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
                               {savingId === paper.id ? 'Saving…' : savedIds.has(paper.id || '') ? 'Saved' : 'Save paper'}
                             </Button>
