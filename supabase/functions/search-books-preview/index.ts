@@ -334,15 +334,16 @@ async function searchInternetArchive(searchTerm: string): Promise<BookData[]> {
 
   if (!data.response?.docs || !Array.isArray(data.response.docs)) return [];
 
-  return data.response.docs
-    .map((item: any) => {
+  return await Promise.all(data.response.docs
+    .map(async (item: any) => {
       const id = item.identifier;
       const formats: string[] = Array.isArray(item.format) ? item.format : item.format ? [item.format] : [];
       const hasTextPdf = formats.some((f: string) => f.toLowerCase().includes('text pdf') || f.toLowerCase() === 'pdf');
       const hasEpub = formats.some((f: string) => f.toLowerCase().includes('epub'));
+      const pdfUrl = id ? await getPublicArchivePdfUrl(id) : undefined;
 
       const availableFormats: string[] = [];
-      if (hasTextPdf) availableFormats.push('pdf');
+      if (pdfUrl) availableFormats.push('pdf');
       if (hasEpub) availableFormats.push('epub');
       availableFormats.push('web_reader');
 
@@ -359,14 +360,34 @@ async function searchInternetArchive(searchTerm: string): Promise<BookData[]> {
         description: Array.isArray(item.description) ? item.description[0] : item.description,
         publication_year: item.date ? Number.Number.parseInt(item.date.split('-')[0]) : undefined,
         language: 'English',
+        pdf_url: pdfUrl,
         reader_url: readerUrl,
         source: 'internet_archive',
-        access_type: (hasTextPdf || hasEpub ? 'full_download' : 'borrow') as AccessType,
+        access_type: (pdfUrl || hasEpub ? 'full_download' : 'borrow') as AccessType,
         formats: availableFormats,
         provider_id: id ? `archive:${id}` : undefined,
       };
     })
-    .filter((b: BookData) => b.title && b.title !== 'Unknown Title');
+    .filter((b: BookData) => b.title && b.title !== 'Unknown Title'));
+}
+
+async function getPublicArchivePdfUrl(identifier: string): Promise<string | undefined> {
+  try {
+    const response = await fetchWithTimeout(`https://archive.org/metadata/${encodeURIComponent(identifier)}`, 3500);
+    if (!response.ok) return undefined;
+    const item = await response.json();
+    const files = Array.isArray(item.files) ? item.files : [];
+    const pdf = files.find((file: any) =>
+      typeof file.name === 'string' && file.name.toLowerCase().endsWith('.pdf') &&
+      file.private !== 'true' && file.private !== true &&
+      !file.name.toLowerCase().includes('_text.pdf')
+    );
+    if (!pdf || item.metadata?.access === 'restricted' || item.metadata?.is_dark === true) return undefined;
+    const encodedPath = pdf.name.split('/').map(encodeURIComponent).join('/');
+    return `https://archive.org/download/${encodeURIComponent(identifier)}/${encodedPath}`;
+  } catch {
+    return undefined;
+  }
 }
 
 async function searchStandardEbooks(searchTerm: string): Promise<BookData[]> {
