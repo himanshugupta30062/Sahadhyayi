@@ -97,7 +97,8 @@ serve(async (req) => {
       { name: 'internetArchive', fn: () => searchInternetArchive(cleanQuery) },
       { name: 'standardEbooks', fn: () => searchStandardEbooks(cleanQuery) },
       { name: 'openAlex', fn: () => searchOpenAlex(cleanQuery) },
-      { name: 'wikisource', fn: () => searchWikisource(cleanQuery) },\n      { name: 'oapen', fn: () => searchOapen(cleanQuery) },
+      { name: 'wikisource', fn: () => searchWikisource(cleanQuery) },
+      { name: 'oapen', fn: () => searchOapen(cleanQuery) },
     ];
 
     const metrics: Record<string, ProviderMetric> = {};
@@ -135,7 +136,8 @@ serve(async (req) => {
     const archiveBooks = settledResults[3].status === 'fulfilled' ? settledResults[3].value : [];
     const standardEbooks = settledResults[4].status === 'fulfilled' ? settledResults[4].value : [];
     const openAlexBooks = settledResults[5].status === 'fulfilled' ? settledResults[5].value : [];
-    const wikisourceBooks = settledResults[6].status === 'fulfilled' ? settledResults[6].value : [];\n    const oapenBooks = settledResults[7].status === 'fulfilled' ? settledResults[7].value : [];
+    const wikisourceBooks = settledResults[6].status === 'fulfilled' ? settledResults[6].value : [];
+    const oapenBooks = settledResults[7].status === 'fulfilled' ? settledResults[7].value : [];
 
     // Merge book data across providers without saving
     const mergedBooks = mergeBookData(
@@ -159,7 +161,8 @@ serve(async (req) => {
         archive: metrics.internetArchive?.count || 0,
         standardEbooks: metrics.standardEbooks?.count || 0,
         openAlex: metrics.openAlex?.count || 0,
-        wikisource: metrics.wikisource?.count || 0,\n        oapen: metrics.oapen?.count || 0,
+        wikisource: metrics.wikisource?.count || 0,
+        oapen: metrics.oapen?.count || 0,
       },
       metrics,
     };
@@ -241,7 +244,8 @@ async function searchGoogleBooks(searchTerm: string): Promise<BookData[]> {
       const info = item.volumeInfo || {};
       const access = item.accessInfo || {};
       const isbnObj = info.industryIdentifiers?.find((id: any) => id.type === 'ISBN_13' || id.type === 'ISBN_10');
-      // Google only exposes a true full-book PDF when all pages are viewable and the access status is FULL.\n      const isPdfDownload = Boolean(access.pdf?.isAvailable && access.pdf?.downloadLink && info.accessViewStatus === 'FULL' && access.viewability === 'ALL_PAGES');
+      // Google only exposes a true full-book PDF when all pages are viewable and the access status is FULL.
+      const isPdfDownload = Boolean(access.pdf?.isAvailable && access.pdf?.downloadLink && info.accessViewStatus === 'FULL' && access.viewability === 'ALL_PAGES');
       const isEpubDownload = Boolean(access.epub?.isAvailable && access.epub?.downloadLink);
       const coverUrl = info.imageLinks?.thumbnail?.replace('http:', 'https:') || info.imageLinks?.smallThumbnail?.replace('http:', 'https:');
 
@@ -520,7 +524,8 @@ async function searchOapen(searchTerm: string): Promise<BookData[]> {
     };
   }).filter((book: BookData) => book.title);
 }
-\nasync function searchWikisource(searchTerm: string): Promise<BookData[]> {
+
+async function searchWikisource(searchTerm: string): Promise<BookData[]> {
   const url = `https://en.wikisource.org/w/api.php?action=opensearch&search=${encodeURIComponent(searchTerm)}&limit=10&namespace=0&format=json`;
   const response = await fetchWithTimeout(url, 4000);
   if (!response.ok) return [];
@@ -569,7 +574,8 @@ function mergeBookData(
     ...googleBooksData,  // High priority: cover images, previews
     ...openAlexBooks,    // Academic open books
     ...archiveBooks,     // Archive scans
-    ...oapenBooks,       // Peer-reviewed open-access books with hosted full text\n    ...wikisourceBooks,  // Public domain transcriptions
+    ...oapenBooks,       // Peer-reviewed open-access books with hosted full text
+    ...wikisourceBooks,  // Public domain transcriptions
   ];
 
   const mergedMap = new Map<string, BookData>();
