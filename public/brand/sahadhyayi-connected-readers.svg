@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Sahadhyayi connected readers</title>
+  <defs>
+    <linearGradient id="book" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7554c8"/>
+      <stop offset="1" stop-color="#39216f"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4cf83"/>
+      <stop offset="1" stop-color="#d99a35"/>
+    </linearGradient>
+  </defs>
+  <!-- Shared reading network -->
+  <path d="M28 43 Q64 7 100 43" fill="none" stroke="url(#gold)" stroke-width="4.5" stroke-linecap="round"/>
+  <path d="M28 43 Q39 59 52 48 M100 43 Q89 59 76 48" fill="none" stroke="#8a70c9" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Readers: one shared center, two connected peers -->
+  <circle cx="28" cy="39" r="8.5" fill="#6b4bb2"/>
+  <circle cx="100" cy="39" r="8.5" fill="#6b4bb2"/>
+  <circle cx="64" cy="27" r="11" fill="#4b2d8a" stroke="#f1c36d" stroke-width="2.5"/>
+  <path d="M15 61 Q28 48 41 61 M87 61 Q100 48 113 61 M46 58 Q64 43 82 58" fill="none" stroke="#6b4bb2" stroke-width="5" stroke-linecap="round"/>
+  <!-- Open book: two pages meeting at a shared spine -->
+  <path d="M13 70 Q38 61 61 76 L64 79 L64 111 Q39 94 13 101 Z" fill="url(#book)"/>
+  <path d="M115 70 Q90 61 67 76 L64 79 L64 111 Q89 94 115 101 Z" fill="url(#book)"/>
+  <path d="M17 75 Q39 69 59 82 M17 86 Q39 80 59 93 M111 75 Q89 69 69 82 M111 86 Q89 80 69 93" fill="none" stroke="#fff" stroke-opacity=".78" stroke-width="2.8" stroke-linecap="round"/>
+  <path d="M64 79 V111" stroke="url(#gold)" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M64 109 L64 119 L72 113 L80 119 L80 104" fill="url(#gold)" opacity=".95"/>
+</svg>
