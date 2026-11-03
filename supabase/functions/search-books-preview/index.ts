@@ -98,6 +98,7 @@ serve(async (req) => {
       { name: 'standardEbooks', fn: () => searchStandardEbooks(cleanQuery) },
       { name: 'openAlex', fn: () => searchOpenAlex(cleanQuery) },
       { name: 'wikisource', fn: () => searchWikisource(cleanQuery) },
+      { name: 'oapen', fn: () => searchOapen(cleanQuery) },
     ];
 
     const metrics: Record<string, ProviderMetric> = {};
@@ -136,6 +137,7 @@ serve(async (req) => {
     const standardEbooks = settledResults[4].status === 'fulfilled' ? settledResults[4].value : [];
     const openAlexBooks = settledResults[5].status === 'fulfilled' ? settledResults[5].value : [];
     const wikisourceBooks = settledResults[6].status === 'fulfilled' ? settledResults[6].value : [];
+    const oapenBooks = settledResults[7].status === 'fulfilled' ? settledResults[7].value : [];
 
     // Merge book data across providers without saving
     const mergedBooks = mergeBookData(
@@ -160,6 +162,7 @@ serve(async (req) => {
         standardEbooks: metrics.standardEbooks?.count || 0,
         openAlex: metrics.openAlex?.count || 0,
         wikisource: metrics.wikisource?.count || 0,
+        oapen: metrics.oapen?.count || 0,
       },
       metrics,
     };
@@ -241,7 +244,8 @@ async function searchGoogleBooks(searchTerm: string): Promise<BookData[]> {
       const info = item.volumeInfo || {};
       const access = item.accessInfo || {};
       const isbnObj = info.industryIdentifiers?.find((id: any) => id.type === 'ISBN_13' || id.type === 'ISBN_10');
-      const isPdfDownload = Boolean(access.pdf?.isAvailable && access.pdf?.downloadLink);
+      // Google only exposes a true full-book PDF when all pages are viewable and the access status is FULL.
+      const isPdfDownload = Boolean(access.pdf?.isAvailable && access.pdf?.downloadLink && info.accessViewStatus === 'FULL' && access.viewability === 'ALL_PAGES');
       const isEpubDownload = Boolean(access.epub?.isAvailable && access.epub?.downloadLink);
       const coverUrl = info.imageLinks?.thumbnail?.replace('http:', 'https:') || info.imageLinks?.smallThumbnail?.replace('http:', 'https:');
 
@@ -257,7 +261,7 @@ async function searchGoogleBooks(searchTerm: string): Promise<BookData[]> {
         cover_image_url: coverUrl,
         description: info.description,
         isbn: isbnObj?.identifier,
-        publication_year: info.publishedDate ? Number.Number.parseInt(info.publishedDate.split('-')[0]) : undefined,
+        publication_year: info.publishedDate ? Number.parseInt(info.publishedDate.split('-')[0]) : undefined,
         pages: info.pageCount,
         language: info.language === 'en' ? 'English' : info.language,
         // Crucial fix: DO NOT represent preview URLs as direct downloadable PDFs
@@ -382,7 +386,7 @@ async function getPublicArchivePdfUrl(identifier: string): Promise<string | unde
       file.private !== 'true' && file.private !== true &&
       !file.name.toLowerCase().includes('_text.pdf')
     );
-    if (!pdf || item.metadata?.access === 'restricted' || item.metadata?.is_dark === true) return undefined;
+    if (!pdf || item.metadata?.access === 'restricted' || item.metadata?.is_dark === true || item.metadata?.is_dark === 'true' || item.metadata?.is_private === true || item.metadata?.is_private === 'true') return undefined;
     const encodedPath = pdf.name.split('/').map(encodeURIComponent).join('/');
     return `https://archive.org/download/${encodeURIComponent(identifier)}/${encodedPath}`;
   } catch {
@@ -471,6 +475,56 @@ async function searchOpenAlex(searchTerm: string): Promise<BookData[]> {
     .filter((b: BookData) => b.title && b.title !== 'Unknown Title');
 }
 
+
+// OAPEN is a repository (not just a metadata index) and exposes bitstreams via its
+// documented REST API. Only an actual PDF bitstream is returned as pdf_url.
+async function searchOapen(searchTerm: string): Promise<BookData[]> {
+  const url = `https://library.oapen.org/rest/search?query=${encodeURIComponent(searchTerm)}&expand=metadata,bitstreams&limit=15`;
+  const response = await fetchWithTimeout(url, 4500, { headers: { Accept: 'application/json' } });
+  if (!response.ok) return [];
+  const payload = await response.json();
+  const items = payload?.searchResults?.items || payload?.items || payload?.results || [];
+  if (!Array.isArray(items)) return [];
+
+  const metadataValue = (metadata: any, key: string): string | undefined => {
+    const value = metadata?.[key];
+    if (Array.isArray(value)) return value[0]?.value || value[0];
+    return typeof value === 'string' ? value : value?.value;
+  };
+
+  return items.slice(0, 15).map((item: any) => {
+    const metadata = item.metadata || item;
+    const bitstreams = item.bitstreams || item.expand?.bitstreams || [];
+    const pdf = Array.isArray(bitstreams) ? bitstreams.find((file: any) =>
+      (file.name || file.bundleName || '').toLowerCase().endsWith('.pdf') &&
+      (file.bundleName === 'ORIGINAL' || file.bundle === 'ORIGINAL' || !file.bundleName)
+    ) : undefined;
+    const handle = item.handle || metadataValue(metadata, 'dc.identifier.uri') || metadataValue(metadata, 'dc.identifier');
+    const pdfUrl = pdf?.retrieveLink || pdf?.link || pdf?.url ||
+      (pdf?.uuid ? `https://library.oapen.org/bitstream/${handle}/${encodeURIComponent(pdf.name || '')}` : undefined);
+    const title = metadataValue(metadata, 'dc.title') || item.name || item.title;
+    const author = metadataValue(metadata, 'dc.contributor.author') || metadataValue(metadata, 'dc.creator');
+    const year = metadataValue(metadata, 'dc.date.issued');
+    const license = metadataValue(metadata, 'dc.rights') || metadataValue(metadata, 'dc.rights.uri');
+    const itemUrl = handle ? (String(handle).startsWith('http') ? handle : `https://library.oapen.org/handle/${handle}`) : undefined;
+    return {
+      title: String(title || '').trim(),
+      author: author ? String(author).trim() : undefined,
+      description: metadataValue(metadata, 'dc.description.abstract'),
+      publication_year: year ? Number.parseInt(String(year).slice(0, 4), 10) : undefined,
+      language: metadataValue(metadata, 'dc.language') || 'English',
+      pdf_url: pdfUrl,
+      reader_url: itemUrl,
+      source: 'oapen',
+      access_type: pdfUrl ? 'full_download' as AccessType : itemUrl ? 'official_reader' as AccessType : 'metadata_only' as AccessType,
+      formats: pdfUrl ? ['pdf'] : itemUrl ? ['reader'] : [],
+      provider_id: handle ? `oapen:${String(handle).replace(/^.*\//, '')}` : undefined,
+      // OAPEN exposes license metadata; retain it in description for transparent attribution.
+      ...(license ? { genre: `License: ${license}` } : {}),
+    };
+  }).filter((book: BookData) => book.title);
+}
+
 async function searchWikisource(searchTerm: string): Promise<BookData[]> {
   const url = `https://en.wikisource.org/w/api.php?action=opensearch&search=${encodeURIComponent(searchTerm)}&limit=10&namespace=0&format=json`;
   const response = await fetchWithTimeout(url, 4000);
@@ -520,6 +574,7 @@ function mergeBookData(
     ...googleBooksData,  // High priority: cover images, previews
     ...openAlexBooks,    // Academic open books
     ...archiveBooks,     // Archive scans
+    ...oapenBooks,       // Peer-reviewed open-access books with hosted full text
     ...wikisourceBooks,  // Public domain transcriptions
   ];
 
