@@ -13,10 +13,16 @@ Deno.serve(async req=>{
  try{
   const body=await req.json(); if(!body||typeof body!=="object") return respond({error:"Invalid body"},400);
   const title=String(body.title??"").trim(),authors=String(body.authors??"").trim(),abstract=String(body.abstract??"").trim();
-  const doi=String(body.doi??"").trim().toLowerCase().replace(/^https?:\\/\\/(dx\\.)?doi\\.org\\//,"");
+  const rawDoi=String(body.doi??"").trim().toLowerCase();
+  const doiPrefixes=["https://doi.org/","http://doi.org/","https://dx.doi.org/","http://dx.doi.org/"];
+  const doi=doiPrefixes.reduce((value,prefix)=>value.startsWith(prefix)?value.slice(prefix.length):value,rawDoi);
   const sourceUrl=String(body.source_url??"").trim(),kind=body.submission_kind==="publish"?"publish":"contribute";
   if(title.length<3||title.length>300||authors.length<2||authors.length>2000||abstract.length>12000) return respond({error:"Title, authors or abstract are invalid."},400);
-  if(doi&&!/^10\\.\\d{4,9}\\/[\\w.();/:+-]+$/i.test(doi)) return respond({error:"Please enter a valid DOI."},400);
+  const doiSeparator=doi.indexOf("/");
+  const doiRegistrant=doi.slice(0,doiSeparator);
+  const doiSuffix=doi.slice(doiSeparator+1);
+  const validDoi=!doi||(doiSeparator>0&&doiRegistrant.startsWith("10.")&&/^\d{4,9}$/.test(doiRegistrant.slice(3))&&doiSuffix.length>0&&/^[\w.();:+-]+$/i.test(doiSuffix));
+  if(!validDoi) return respond({error:"Please enter a valid DOI."},400);
   if(sourceUrl){try{const u=new URL(sourceUrl);if(!["https:","http:"].includes(u.protocol))throw 0;}catch{return respond({error:"Source URL must be a valid http(s) link."},400);}}
   const year=body.publication_year==null||body.publication_year===""?null:Number(body.publication_year);
   if(year!==null&&(!Number.isInteger(year)||year<1600||year>new Date().getFullYear()+1)) return respond({error:"Publication year is invalid."},400);
