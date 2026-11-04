@@ -52,7 +52,7 @@ Deno.serve(async (req: Request) => {
       preprint: "type:preprint",
       "conference-paper": "type:conference-paper",
       "book-chapter": "type:book-chapter",
-      other: "type:other",
+      other: "type:!article,type:!review,type:!preprint,type:!conference-paper,type:!book-chapter",
     };
 
     if (page < 1 || page > 10000) return jsonResponse({ error: "Page must be between 1 and 10,000." }, 400);
