@@ -39,6 +39,7 @@ type ResearchPaperCategory = {
   name: string;
   description: string | null;
   display_order: number;
+  openalex_types: string[];
 };
 type CategoryQueryResult = {
   data: ResearchPaperCategory[] | null;
@@ -53,22 +54,20 @@ type CategoryQueryClient = {
 };
 
 const DEFAULT_CATEGORIES: ResearchPaperCategory[] = [
-  { slug: 'article', name: 'Research article', description: 'Original scholarly research', display_order: 1 },
-  { slug: 'review', name: 'Review paper', description: 'Synthesis of existing research', display_order: 2 },
-  { slug: 'preprint', name: 'Preprint', description: 'Research shared before peer review', display_order: 3 },
-  { slug: 'conference-paper', name: 'Conference paper', description: 'Research published in conference proceedings', display_order: 4 },
-  { slug: 'book-chapter', name: 'Book chapter', description: 'Scholarly chapter in an edited volume', display_order: 5 },
-  { slug: 'other', name: 'Other research', description: 'Other scholarly work types', display_order: 6 },
+  { slug: 'article', name: 'Research article', description: 'Original scholarly research', display_order: 1, openalex_types: ['article', 'journal-article', 'research-article'] },
+  { slug: 'review', name: 'Review paper', description: 'Synthesis of existing research', display_order: 2, openalex_types: ['review'] },
+  { slug: 'preprint', name: 'Preprint', description: 'Research shared before peer review', display_order: 3, openalex_types: ['preprint'] },
+  { slug: 'conference-paper', name: 'Conference paper', description: 'Research published in conference proceedings', display_order: 4, openalex_types: ['conference-paper', 'proceedings-article'] },
+  { slug: 'book-chapter', name: 'Book chapter', description: 'Scholarly chapter in an edited volume', display_order: 5, openalex_types: ['book-chapter'] },
+  { slug: 'other', name: 'Other research', description: 'Other scholarly work types', display_order: 6, openalex_types: ['book', 'book-review', 'conference-abstract', 'data-paper', 'dataset', 'dissertation', 'editorial', 'erratum', 'letter', 'libguides', 'other', 'paratext', 'peer-review', 'reference-entry', 'report', 'retraction', 'software', 'software-paper', 'standard', 'supplementary-materials'] },
 ];
 
-function getCategorySlug(paper: OpenAlexWork): string {
+function getCategorySlug(paper: OpenAlexWork, categoryList: ResearchPaperCategory[]): string {
   const type = (paper.type || '').toLowerCase().replace(/_/g, '-');
   const sourceType = (paper.primary_location?.source?.type || '').toLowerCase();
-  if (type.includes('review')) return 'review';
-  if (type.includes('preprint')) return 'preprint';
-  if (type.includes('book-chapter')) return 'book-chapter';
-  if (type === 'conference-paper' || type === 'proceedings-article' || (type === 'article' && sourceType === 'conference')) return 'conference-paper';
-  if (type === 'article' || type === 'journal-article' || type === 'research-article') return 'article';
+  const matchedCategory = categoryList.find((item) => item.openalex_types?.includes(type));
+  if (matchedCategory) return matchedCategory.slug;
+  if (type === 'article' && sourceType === 'conference') return 'conference-paper';
   return 'other';
 }
 
@@ -167,7 +166,7 @@ const ResearchPapers = () => {
         const categoryClient = supabase as unknown as CategoryQueryClient;
         const { data, error: categoryError } = await categoryClient
           .from('research_paper_categories')
-          .select('slug,name,description,display_order')
+          .select('slug,name,description,display_order,openalex_types')
           .order('display_order', { ascending: true });
         if (categoryError) throw categoryError;
         if (active && Array.isArray(data) && data.length > 0) setCategories(data);
@@ -451,7 +450,7 @@ const ResearchPapers = () => {
                           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[#737B74] dark:text-[#A5ADA6]">
                             <span className="inline-flex items-center gap-1.5"><Quote className="h-3.5 w-3.5" /> {Number(paper.cited_by_count || 0).toLocaleString('en-US')} citations</span>
                             <span className="inline-flex rounded-full border border-[#D7E1D6] bg-[#F1F5EF] px-2.5 py-1 text-[11px] font-semibold capitalize text-[#31583D] dark:border-[#344039] dark:bg-[#1D2821] dark:text-[#D5B16D]">
-                              {categories.find((item) => item.slug === getCategorySlug(paper))?.name || 'Other research'}
+                              {categories.find((item) => item.slug === getCategorySlug(paper, categories))?.name || 'Other research'}
                             </span>
                             <span>Paper {((page - 1) * PAGE_SIZE) + index + 1}</span>
                           </div>
