@@ -40,6 +40,7 @@ const ArticleWrite = () => {
   const [content, setContent] = useState('');
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
+  const [articleKind, setArticleKind] = useState<'essay'|'book-review'|'literary-criticism'>('essay');
   const [coverUrl, setCoverUrl] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [preview, setPreview] = useState(false);
@@ -70,7 +71,8 @@ const ArticleWrite = () => {
       setTitle(data.title || '');
       setSubtitle(data.subtitle || '');
       setContent(data.content || '');
-      setTags(data.tags || []);
+      setTags((data.tags || []).filter((t:string)=>!['book-review','literary-criticism'].includes(t)));
+      setArticleKind((data.tags || []).includes('book-review')?'book-review':(data.tags || []).includes('literary-criticism')?'literary-criticism':'essay');
       setCoverUrl(data.cover_image_url || '');
       setOriginalIsPublished(!!data.is_published);
       setLoadingArticle(false);
@@ -88,7 +90,8 @@ const ArticleWrite = () => {
         if (parsed.title) setTitle(parsed.title);
         if (parsed.subtitle) setSubtitle(parsed.subtitle);
         if (parsed.content) setContent(parsed.content);
-        if (parsed.tags) setTags(parsed.tags);
+        if (parsed.tags) setTags((parsed.tags || []).filter((t:string)=>!['book-review','literary-criticism'].includes(t)));
+        setArticleKind((parsed.tags || []).includes('book-review')?'book-review':(parsed.tags || []).includes('literary-criticism')?'literary-criticism':'essay');
         if (parsed.coverUrl) setCoverUrl(parsed.coverUrl);
       } catch { /* ignore */ }
       sessionStorage.removeItem('article_draft');
@@ -215,7 +218,9 @@ const ArticleWrite = () => {
       return;
     }
 
-    const result = articleSchema.safeParse({ title, subtitle, content, tags });
+    const categoryTag = articleKind === 'essay' ? [] : [articleKind];
+    const articleTags = [...tags.filter(t=>!['book-review','literary-criticism'].includes(t)), ...categoryTag].slice(0,5);
+    const result = articleSchema.safeParse({ title, subtitle, content, tags: articleTags });
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
       result.error.errors.forEach((e) => {
@@ -232,7 +237,7 @@ const ArticleWrite = () => {
         title: DOMPurify.sanitize(title.trim()),
         subtitle: subtitle.trim() ? DOMPurify.sanitize(subtitle.trim()) : null,
         content: DOMPurify.sanitize(content.trim()),
-        tags,
+        tags: articleTags,
         cover_image_url: coverUrl.trim() || null,
         is_published: publish,
         // preserve published_at if it was already published; useUpdateArticle only sets it on first publish
@@ -245,7 +250,7 @@ const ArticleWrite = () => {
       title: DOMPurify.sanitize(title.trim()),
       subtitle: subtitle.trim() ? DOMPurify.sanitize(subtitle.trim()) : undefined,
       content: DOMPurify.sanitize(content.trim()),
-      tags,
+      tags: articleTags,
       cover_image_url: coverUrl.trim() || undefined,
       is_published: publish,
     });
@@ -382,6 +387,9 @@ const ArticleWrite = () => {
                   <img src={coverUrl} alt="" className="mt-2 w-full h-48 object-cover rounded-lg" />
                 )}
               </div>
+
+              {/* Article format */}
+              <div className="space-y-2"><label className="text-sm font-medium text-muted-foreground">Article format</label><div className="flex flex-wrap gap-2">{([{value:'essay',label:'Essay / Story'},{value:'book-review',label:'Book Review'},{value:'literary-criticism',label:'Literary Criticism'}] as const).map(option=><Button key={option.value} type="button" size="sm" variant={articleKind===option.value?'default':'outline'} onClick={()=>setArticleKind(option.value)}>{option.label}</Button>)}</div><p className="text-xs text-muted-foreground">This category helps readers discover reviews and critical essays separately from general articles.</p></div>
 
               {/* Title */}
               <div>

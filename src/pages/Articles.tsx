@@ -32,6 +32,7 @@ const Articles = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [activeKind, setActiveKind] = useState<'all'|'book-review'|'literary-criticism'>('all');
   const [sortMode, setSortMode] = useState<SortMode>('latest');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
@@ -81,7 +82,7 @@ const Articles = () => {
       );
     }
     return list;
-  }, [articles, search, activeTag, sortMode]);
+  }, [articles, search, activeTag, activeKind, sortMode]);
 
   const featured = sortMode === 'latest' && !search && !activeTag ? filtered[0] : null;
   const rest = featured ? filtered.slice(1) : filtered;
@@ -168,6 +169,8 @@ const Articles = () => {
             </div>
           </div>
         </section>
+
+        <div className="border-b border-border bg-background"><div className="mx-auto max-w-6xl px-4 py-3 flex flex-wrap gap-2" aria-label="Article formats">{([{value:'all',label:'All articles'},{value:'book-review',label:'Book Reviews'},{value:'literary-criticism',label:'Literary Criticism'}] as const).map(item=><Button key={item.value} size="sm" variant={activeKind===item.value?'default':'outline'} onClick={()=>{setActiveKind(item.value);setActiveTag(null);}} className="rounded-full">{item.label}</Button>)}</div></div>
 
         {/* Tag filter bar */}
         {topTags.length > 0 && (
