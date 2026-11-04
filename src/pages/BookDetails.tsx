@@ -25,6 +25,7 @@ import { generateBookSchema, generateBreadcrumbSchema } from '@/utils/schema';
 import { logBookEvent } from '@/lib/supabase/events';
 import { BookEditionTransparency } from '@/components/books/BookEditionTransparency';
 import BookReviews from '@/components/books/BookReviews';
+import BookLiteraryVoices from '@/components/books/BookLiteraryVoices';
 
 
 const VALID_BOOK_TABS = ['connect', 'create', 'feedback', 'read'] as const;
@@ -370,6 +371,7 @@ const BookDetails = () => {
 
           <div className="mb-8">
             <BookReviews bookId={book.id} />
+          <BookLiteraryVoices bookId={book.id} />
           </div>
 
           {/* Guest CTA */}
