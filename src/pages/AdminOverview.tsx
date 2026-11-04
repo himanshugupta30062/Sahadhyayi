@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Activity, ArrowUpRight, BookOpen, FileCheck2, MessageSquare, ShieldCheck, Users, UserRoundCog, WandSparkles } from "lucide-react";
+import { Activity, ArrowUpRight, BookOpen, CalendarDays, FileCheck2, MessageSquare, ShieldCheck, Users, UserRoundCog, WandSparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client-universal";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-const shortcuts = [
+const shortcuts = [\n  { title: "Manage book events", description: "Create, verify and publish book fairs and literary events.", href: "/admin/events", icon: CalendarDays },
   { title: "Review PDF submissions", description: "Inspect quarantined uploads and verification results.", href: "/admin/book-pdf-reviews", icon: FileCheck2 },
   { title: "Manage the library", description: "Review library quality and archived records.", href: "/admin/library-quality", icon: BookOpen },
   { title: "Manage platform access", description: "Assign roles and configure granular permissions.", href: "/admin/roles", icon: UserRoundCog },

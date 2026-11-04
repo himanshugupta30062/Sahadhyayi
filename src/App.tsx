@@ -505,6 +505,7 @@ const App = memo(() => {
                             </Suspense>
                           }
                         />
+                        <Route path="/events/:slug" element={<Suspense fallback={<LoadingFallback message="Loading event..." />}><EventDetails /></Suspense>} />
                         <Route
                           path="/games"
                           element={
@@ -614,6 +615,7 @@ const App = memo(() => {
                             </AdminRoute>
                           }
                         />
+                        <Route path="/admin/events" element={<AdminRoute><Suspense fallback={<LoadingFallback message="Loading event manager..." />}><AdminEvents /></Suspense></AdminRoute>} />
                         <Route
                           path="/admin/book-pdfs"
                           element={
