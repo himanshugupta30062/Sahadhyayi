@@ -46,6 +46,21 @@ const searchResult = (results = [paper], count = results.length) => ({
 describe('ResearchPapers', () => {
   beforeEach(() => {
     vi.mocked(supabase.functions.invoke).mockResolvedValue(searchResult() as never);
+    vi.mocked(supabase.from).mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        order: vi.fn().mockResolvedValue({
+          data: [
+            { slug: 'article', name: 'Research article', description: 'Original scholarly research', display_order: 1 },
+            { slug: 'review', name: 'Review paper', description: 'Synthesis of existing research', display_order: 2 },
+            { slug: 'preprint', name: 'Preprint', description: 'Before peer review', display_order: 3 },
+            { slug: 'conference-paper', name: 'Conference paper', description: 'Conference proceedings', display_order: 4 },
+            { slug: 'book-chapter', name: 'Book chapter', description: 'Edited volume chapter', display_order: 5 },
+            { slug: 'other', name: 'Other research', description: 'Other scholarly work', display_order: 6 },
+          ],
+          error: null,
+        }),
+      }),
+    } as never);
     vi.mocked(supabase.auth.getUser).mockResolvedValue({ data: { user: null }, error: null } as never);
     vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
   });
@@ -59,12 +74,12 @@ describe('ResearchPapers', () => {
     renderPage();
     expect(screen.getByRole('heading', { name: 'Research Papers' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Search research papers' })).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: 'Filter by paper type' })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Filter by research category' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Artificial intelligence' }));
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
       'search-research-papers',
-      { body: { query: 'artificial intelligence', year: 'all', type: 'all', page: 1, perPage: 12 } },
+      { body: { query: 'artificial intelligence', year: 'all', category: 'all', page: 1, perPage: 12 } },
     ));
   });
 
@@ -76,7 +91,7 @@ describe('ResearchPapers', () => {
     });
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
       'search-research-papers',
-      { body: { query: '', year: 'all', type: 'review', page: 1, perPage: 12 } },
+      { body: { query: '', year: 'all', category: 'review', page: 1, perPage: 12 } },
     ));
   });
 
@@ -128,14 +143,14 @@ describe('ResearchPapers', () => {
     });
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith(
       'search-research-papers',
-      { body: { query: 'quantum computing', year: 'all', type: 'all', page: 1, perPage: 12 } },
+      { body: { query: 'quantum computing', year: 'all', category: 'all', page: 1, perPage: 12 } },
     ));
     fireEvent.change(screen.getByRole('combobox', { name: 'Filter by publication year' }), {
       target: { value: '2024' },
     });
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
       'search-research-papers',
-      { body: { query: 'quantum computing', year: '2024', type: 'all', page: 1, perPage: 12 } },
+      { body: { query: 'quantum computing', year: '2024', category: 'all', page: 1, perPage: 12 } },
     ));
   });
 
@@ -146,13 +161,13 @@ describe('ResearchPapers', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Artificial intelligence' }));
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
       'search-research-papers',
-      { body: { query: 'artificial intelligence', year: 'all', type: 'all', page: 1, perPage: 12 } },
+      { body: { query: 'artificial intelligence', year: 'all', category: 'all', page: 1, perPage: 12 } },
     ));
     fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
     expect(await screen.findByText('Page 2 of 2')).toBeInTheDocument();
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
       'search-research-papers',
-      { body: { query: 'artificial intelligence', year: 'all', type: 'all', page: 2, perPage: 12 } },
+      { body: { query: 'artificial intelligence', year: 'all', category: 'all', page: 2, perPage: 12 } },
     ));
   });
 });
