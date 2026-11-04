@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, BookOpen, Bookmark, BookmarkCheck,
-  CheckCircle2, Download, ExternalLink, FileText,
+  CheckCircle2, Download, ExternalLink, FileText, GitBranch,
   Quote, RefreshCw, Search, Sparkles,
 } from 'lucide-react';
 import SEO from '@/components/SEO';
@@ -480,6 +480,7 @@ const ResearchPapers = () => {
                           </div>
                           <div className="mt-5 flex flex-wrap gap-2">
                             {paperUrl && <a href={paperUrl} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#1C442D] px-3.5 text-xs font-semibold text-white transition-colors hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#101711] dark:hover:bg-[#E3C483]"><BookOpen className="h-3.5 w-3.5" /> Read paper <ExternalLink className="h-3 w-3" /></a>}
+                            {paper.id && <a href={`/research-network/${paper.id.split('/').pop()}`} className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#D9E1DA] px-3.5 text-xs font-semibold text-[#31583D] hover:bg-[#F3F6F2] dark:border-[#344039] dark:text-[#D5B16D] dark:hover:bg-[#1D2821]"><GitBranch className="h-3.5 w-3.5" /> Citation network</a>}
                             {pdfUrl && <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#D9E1DA] px-3.5 text-xs font-semibold text-[#31583D] hover:bg-[#F3F6F2] dark:border-[#344039] dark:text-[#D5B16D] dark:hover:bg-[#1D2821]"><Download className="h-3.5 w-3.5" /> PDF</a>}
                             <Button type="button" variant="outline" disabled={savingId === paper.id} onClick={() => { toggleBookmark(paper).catch((bookmarkSaveError: unknown) => { setBookmarkError(bookmarkSaveError instanceof Error ? bookmarkSaveError.message : 'Unable to update your saved papers.'); }); }} className="h-9 gap-2 border-[#D9E1DA] px-3.5 text-xs dark:border-[#344039]">
                               {savedIds.has(paper.id || '') ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
