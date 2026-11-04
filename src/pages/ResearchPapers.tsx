@@ -71,6 +71,7 @@ function getCategorySlug(paper: OpenAlexWork, categoryList: ResearchPaperCategor
 
 const API_URL = 'https://api.openalex.org/works';
 const PAGE_SIZE = 12;
+const MAX_NUMBERED_PAGES = 10000;
 const TOPICS: Topic[] = [
   { label: 'All research', query: '' },
   { label: 'Artificial intelligence', query: 'artificial intelligence' },
@@ -141,7 +142,7 @@ const ResearchPapers = () => {
   const [year, setYear] = useState(searchParams.get('year') || 'all');
   const [category, setCategory] = useState(searchParams.get('category') || 'all');
   const [categories, setCategories] = useState<ResearchPaperCategory[]>(DEFAULT_CATEGORIES);
-  const [page, setPage] = useState(() => Math.max(1, Number(searchParams.get('page')) || 1));
+  const [page, setPage] = useState(() => Math.max(1, Math.min(MAX_NUMBERED_PAGES, Number(searchParams.get('page')) || 1)));
   const [papers, setPapers] = useState<OpenAlexWork[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -240,7 +241,7 @@ const ResearchPapers = () => {
     setSearchQuery(urlParams.get('search') || '');
     setYear(urlParams.get('year') || 'all');
     setCategory(urlParams.get('category') || 'all');
-    setPage(Math.max(1, Number(urlParams.get('page')) || 1));
+    setPage(Math.max(1, Math.min(MAX_NUMBERED_PAGES, Number(urlParams.get('page')) || 1)));
   }, [serializedSearchParams]);
 
   useEffect(() => {
@@ -287,7 +288,7 @@ const ResearchPapers = () => {
     return () => { active = false; };
   }, [debouncedQuery, year, category, page, retry]);
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.min(MAX_NUMBERED_PAGES, Math.ceil(totalCount / PAGE_SIZE)));
   const pageNumbers = useMemo(() => {
     const first = Math.max(1, Math.min(page - 2, totalPages - 4));
     return Array.from({ length: Math.min(5, totalPages) }, (_, index) => first + index);
@@ -512,6 +513,11 @@ const ResearchPapers = () => {
             </>
           )}
 
+          {totalCount > MAX_NUMBERED_PAGES * PAGE_SIZE && (
+            <p role="note" className="mt-3 text-center text-xs text-[#8A7350] dark:text-[#D5B16D]">
+              OpenAlex supports numbered navigation through page 10,000 (the first 120,000 matches). Refine your search to explore a narrower set of results.
+            </p>
+          )}
           <p className="mt-6 text-center text-xs text-[#899189] dark:text-[#7E897F]">Research metadata provided by OpenAlex. Full-text availability depends on the original publisher or repository.</p>
         </section>
       </main>
