@@ -65,9 +65,9 @@ const DEFAULT_CATEGORIES: ResearchPaperCategory[] = [
 function getCategorySlug(paper: OpenAlexWork, categoryList: ResearchPaperCategory[]): string {
   const type = (paper.type || '').toLowerCase().replace(/_/g, '-');
   const sourceType = (paper.primary_location?.source?.type || '').toLowerCase();
+  if (type === 'article' && sourceType === 'conference') return 'conference-paper';
   const matchedCategory = categoryList.find((item) => item.openalex_types?.includes(type));
   if (matchedCategory) return matchedCategory.slug;
-  if (type === 'article' && sourceType === 'conference') return 'conference-paper';
   return 'other';
 }
 
@@ -235,6 +235,17 @@ const ResearchPapers = () => {
       setSavingId(null);
     }
   };
+
+  useEffect(() => {
+    const urlSearch = searchParams.get('search') || '';
+    const urlYear = searchParams.get('year') || 'all';
+    const urlCategory = searchParams.get('category') || 'all';
+    const urlPage = Math.max(1, Number(searchParams.get('page')) || 1);
+    if (urlSearch !== searchQuery) setSearchQuery(urlSearch);
+    if (urlYear !== year) setYear(urlYear);
+    if (urlCategory !== category) setCategory(urlCategory);
+    if (urlPage !== page) setPage(urlPage);
+  }, [searchParams]);
 
   useEffect(() => {
     const next = new URLSearchParams(searchParams);
