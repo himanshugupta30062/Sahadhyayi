@@ -1,22 +1,21 @@
 /**
- * Canonical Library taxonomy. Keep labels stable even when providers use
- * inconsistent genre/subject strings. Unknown metadata stays uncategorized;
- * we intentionally avoid guessing from a title alone.
+ * Canonical Library taxonomy. Keep labels stable across inconsistent provider metadata.
+ * Unknown metadata is not guessed from a title alone.
  */
 export const BOOK_GENRE_TAXONOMY = [
   'Fiction', 'Literary Fiction', 'Fantasy', 'Science Fiction', 'Mystery & Thriller',
-  'Romance', 'Horror', 'Historical Fiction', 'Poetry', 'Drama',
-  'Non-Fiction', 'Biography & Memoir', 'History', 'Philosophy', 'Psychology',
-  'Self-Help', 'Religion & Spirituality', 'Politics & Society', 'Economics & Business',
-  'Science', 'Technology & Engineering', 'Education', 'Health & Medicine',
-  'Travel', 'Art & Photography', 'Comics & Graphic Novels', 'Children & Young Adult',
+  'Romance', 'Horror', 'Historical Fiction', 'Poetry', 'Drama', 'Non-Fiction',
+  'Biography & Memoir', 'History', 'Philosophy', 'Psychology', 'Self-Help',
+  'Religion & Spirituality', 'Politics & Society', 'Economics & Business', 'Science',
+  'Technology & Engineering', 'Education', 'Health & Medicine', 'Travel',
+  'Art & Photography', 'Comics & Graphic Novels', 'Children & Young Adult',
   'Reference', 'Academic & Research', 'Other',
 ] as const;
 
 const aliases: Record<string, string> = {
-  novel: 'Fiction', novels: 'Fiction', fiction: 'Fiction', general fiction: 'Fiction',
+  novel: 'Fiction', novels: 'Fiction', fiction: 'Fiction', 'general fiction': 'Fiction',
   'literary fiction': 'Literary Fiction', classics: 'Literary Fiction', classic: 'Literary Fiction',
-  fantasy: 'Fantasy', 'science fiction': 'Science Fiction', sci fi: 'Science Fiction',
+  fantasy: 'Fantasy', 'science fiction': 'Science Fiction', 'sci fi': 'Science Fiction',
   scifi: 'Science Fiction', 'speculative fiction': 'Science Fiction',
   thriller: 'Mystery & Thriller', thrillers: 'Mystery & Thriller', mystery: 'Mystery & Thriller',
   crime: 'Mystery & Thriller', detective: 'Mystery & Thriller',
@@ -41,22 +40,21 @@ const aliases: Record<string, string> = {
   research: 'Academic & Research',
 };
 
-const key = (value: string) => value.trim().toLowerCase().replace(/[_/]+/g, ' ').replace(/\\s+/g, ' ');
+const key = (value: string) => value.trim().toLowerCase().replace(/[_]+/g, ' ').replace(/\s+/g, ' ');
 
-/** Normalize one provider/database genre into a Library category. */
 export function normalizeBookGenre(value?: string | null): string {
   if (!value?.trim()) return 'Other';
+  const hierarchy = value.split(/[\/]/).map(key).filter(Boolean);
+  for (const part of hierarchy.reverse()) if (aliases[part]) return aliases[part];
   const normalized = key(value);
   if (aliases[normalized]) return aliases[normalized];
   const exact = BOOK_GENRE_TAXONOMY.find((genre) => key(genre) === normalized);
   if (exact) return exact;
-  // Providers often send hierarchical subjects such as "Fiction / Fantasy".
   const parts = normalized.split(/[;,|]/).map((part) => part.trim()).filter(Boolean);
   for (const part of parts) if (aliases[part]) return aliases[part];
   return 'Other';
 }
 
-/** Map multi-subject provider metadata to unique, canonical category labels. */
 export function normalizeBookGenres(values?: string[] | string | null): string[] {
   const list = Array.isArray(values) ? values : values ? values.split(/[;,|]/) : [];
   return [...new Set(list.map(normalizeBookGenre).filter((genre) => genre !== 'Other'))];
