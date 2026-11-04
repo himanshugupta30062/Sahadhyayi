@@ -62,7 +62,7 @@ export default function MySavedResearch() {
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">My Saved Research</h1>
             <p className="mt-2 text-muted-foreground">A personal reading list for papers you want to revisit.</p>
           </div>
-          <div className="flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-4 py-2 text-sm dark:border-emerald-900 dark:bg-[#172019]"><BookmarkCheck className="h-4 w-4 text-emerald-600" /> {papers.length} saved</div>
+          <div className="flex flex-wrap items-center gap-2"><Button asChild variant="outline"><Link to="/recommended-research">Recommended for you</Link></Button><div className="flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-4 py-2 text-sm dark:border-emerald-900 dark:bg-[#172019]"><BookmarkCheck className="h-4 w-4 text-emerald-600" /> {papers.length} saved</div></div>
         </header>
         {error && <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">{error}</p>}
         {!user ? <section className="rounded-2xl border bg-white p-8 text-center dark:bg-[#172019]"><BookmarkCheck className="mx-auto mb-3 h-8 w-8 text-emerald-600" /><h2 className="text-xl font-semibold">Sign in to see your saved papers</h2><p className="mt-2 text-muted-foreground">Save papers from Research Papers and keep them here.</p><Button asChild className="mt-5"><Link to="/signin">Sign in</Link></Button></section>
