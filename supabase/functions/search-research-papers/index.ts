@@ -43,16 +43,24 @@ Deno.serve(async (req: Request) => {
     const page = Number.isInteger(input.page) ? Number(input.page) : 1;
     const perPage = Number.isInteger(input.perPage) ? Number(input.perPage) : 12;
     const year = input.year === "all" || input.year == null ? "all" : String(input.year);
-    const allowedTypes = new Set(["article", "review", "preprint", "conference-paper", "book-chapter"]);
-    const type = typeof input.type === "string" && allowedTypes.has(input.type) ? input.type : "all";
+    const allowedCategories = new Set(["article", "review", "preprint", "conference-paper", "book-chapter", "other"]);
+    const category = typeof input.category === "string" && allowedCategories.has(input.category) ? input.category : "all";
+    const categoryFilters: Record<string, string> = {
+      article: "type:article",
+      review: "type:review",
+      preprint: "type:preprint",
+      "conference-paper": "primary_location.source.type:conference",
+      "book-chapter": "type:book-chapter",
+      other: "type:other",
+    };
 
     if (page < 1 || page > 10000) return jsonResponse({ error: "Page must be between 1 and 10,000." }, 400);
     if (perPage < 1 || perPage > 25) return jsonResponse({ error: "Page size must be between 1 and 25." }, 400);
-    if (year !== "all" && !/^\\d{4}$/.test(year)) return jsonResponse({ error: "Publication year is invalid." }, 400);
+    if (year !== "all" && !/^\d{4}$/.test(year)) return jsonResponse({ error: "Publication year is invalid." }, 400);
 
     const filters = ["open_access.is_oa:true"];
     if (year !== "all") filters.push(`publication_year:${year}`);
-    if (type !== "all") filters.push(`type:${type}`);
+    if (category !== "all") filters.push(categoryFilters[category]);
 
     const params = new URLSearchParams({
       per_page: String(perPage),
@@ -63,12 +71,12 @@ Deno.serve(async (req: Request) => {
     });
     if (query) params.set("search", query);
 
-    const cacheKey = JSON.stringify({ query, page, perPage, year, type });
+    const cacheKey = JSON.stringify({ query, page, perPage, year, category });
     const cached = responseCache.get(cacheKey);
     if (cached && cached.expiresAt > Date.now()) {
       return jsonResponse(cached.payload, 200, true);
     }
-    // Keep expired entries as stale fallback while refreshing upstream.
+    // Keep expired entries available as a fallback while refreshing upstream.
 
     const apiKey = Deno.env.get("OPENALEX_API_KEY");
     const mailto = Deno.env.get("OPENALEX_MAILTO");
@@ -81,10 +89,15 @@ Deno.serve(async (req: Request) => {
     });
 
     if (upstream.status === 429) {
-      return jsonResponse({ error: "The research catalogue is busy. Please wait a moment and try again.", code: "RATE_LIMITED" }, 429);
+      if (cached) {
+        console.warn("OpenAlex rate limited; serving stale research results");
+        return jsonResponse(cached.payload, 200, true);
+      }
+      return jsonResponse({ error: "The research catalogue is busy. Please retry shortly.", code: "RATE_LIMITED", retryAfter: upstream.headers.get("retry-after") }, 429);
     }
     if (!upstream.ok) {
       console.error("OpenAlex request failed", upstream.status);
+      if (cached) return jsonResponse(cached.payload, 200, true);
       return jsonResponse({ error: "The research catalogue is temporarily unavailable.", code: "UPSTREAM_ERROR" }, 502);
     }
 
