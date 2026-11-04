@@ -200,4 +200,15 @@ describe('ResearchPapers URL pagination', () => {
     ));
     expect(await screen.findByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page');
   });
+
+  it('caps numbered navigation at the OpenAlex page limit', async () => {
+    vi.mocked(supabase.functions.invoke).mockResolvedValue(searchResult([paper], 250000) as never);
+    renderPage('/research-papers?page=10001');
+    await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith(
+      'search-research-papers',
+      { body: { query: '', year: 'all', category: 'all', page: 10000, perPage: 12 } },
+    ));
+    expect(await screen.findByText(/first 120,000 matches/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
+  });
 });
