@@ -46,6 +46,7 @@ const EnhancedFriendsManager = lazy(() => import('@/components/social/EnhancedFr
 const SpoilerThreadsFeed = lazy(() => import('@/components/social/threads/SpoilerThreadsFeed'));
 const ReadingRoomsPanel = lazy(() => import('@/components/social/rooms/ReadingRoomsPanel'));
 const ReadingDnaPanel = lazy(() => import('@/components/social/dna/ReadingDnaPanel'));
+const BookReviewsFeed = lazy(() => import('@/components/social/BookReviewsFeed'));
 
 const VALID_SOCIAL_TABS = ['feed', 'reviews', 'rooms', 'threads', 'margins', 'dna', 'friends', 'map', 'groups'] as const;
 const SOCIAL_TAB_LABELS: Record<string, string> = {
@@ -537,23 +538,12 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
 
                 <TabsContent value="reviews" className="mt-0 space-y-6">
                   <section className="rounded-2xl border border-[#E8E8E3] bg-white p-6 dark:border-[#29332D] dark:bg-[#111614] sm:p-8">
-                    <div className="flex items-start gap-3">
-                      <div className="rounded-xl bg-[#EBF2EC] p-3 text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]"><Star className="h-5 w-5" /></div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1C442D] dark:text-[#D5B16D]">Read · Reflect · Recommend</p>
-                        <h2 className="mt-1 font-serif text-2xl font-bold">Book Reviews</h2>
-                        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Discover reader experiences and thoughtful perspectives. Reviews are connected to their books so every opinion has context.</p>
-                      </div>
-                    </div>
-                    <div className="mt-6 flex flex-wrap gap-3">
-                      <Button asChild className="bg-[#1C442D] text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C]"><Link to="/library">Find a book to review <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
-                      <Button asChild variant="outline"><Link to="/reviewers-critics">Discover reviewers & critics</Link></Button>
-                    </div>
-                    <div className="mt-6 rounded-xl border border-dashed border-[#C8DBCB] bg-[#FAFAF8] p-5 text-sm text-[#636B65] dark:border-[#315C43] dark:bg-[#0B0D0C] dark:text-[#A5ADA6]">
-                      <p className="font-semibold text-[#1C442D] dark:text-[#D5B16D]">Reviews are available on each book page</p>
-                      <p className="mt-1">Choose a book in the Library to read community reviews, add your own experience, and use spoiler controls. A unified cross-book review feed will be added after the review API and public visibility rules are finalized.</p>
-                    </div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1C442D] dark:text-[#D5B16D]">Read · Reflect · Recommend</p>
+                    <h2 className="mt-1 font-serif text-2xl font-bold">Reviews from across the Library</h2>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">Honest reader experiences, connected to each book. Spoiler warnings stay visible.</p>
+                    <div className="mt-4 flex flex-wrap gap-2"><Button asChild variant="outline"><Link to="/reviewers-critics">Discover reviewers & critics</Link></Button><Button asChild><Link to="/library">Find a book to review</Link></Button></div>
                   </section>
+                  <Suspense fallback={<TabLoader />}><BookReviewsFeed /></Suspense>
                 </TabsContent>
 
                 {/* ── Reading Rooms Tab ── */}
