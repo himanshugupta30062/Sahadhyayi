@@ -132,10 +132,22 @@ const Scientists = () => {
                     className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#E5DED2] bg-white shadow-[0_8px_30px_rgba(28,32,29,0.035)] transition duration-300 hover:-translate-y-1 hover:border-[#A7B4A1] hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-2 dark:border-[#29332D] dark:bg-[#111614] dark:shadow-none"
                   >
                     <div className="relative flex min-h-[190px] items-end overflow-hidden bg-gradient-to-br from-[#1D3829] via-[#315640] to-[#A17A3C] p-5 sm:min-h-[210px]">
+                      {scientist.portrait?.imageUrl && (
+                        <img
+                          src={scientist.portrait.imageUrl}
+                          alt={scientist.portrait.alt || scientist.name}
+                          loading="lazy"
+                          decoding="async"
+                          referrerPolicy="no-referrer"
+                          className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
+                          onError={(event) => { event.currentTarget.style.display = 'none'; }}
+                        />
+                      )}
+                      <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#09120D]/85 via-[#09120D]/25 to-transparent" />
                       <div aria-hidden="true" className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.7)_0.8px,transparent_0.8px)] [background-size:16px_16px]" />
                       <div aria-hidden="true" className="absolute -right-8 -top-12 h-48 w-48 rounded-full border border-white/20" />
                       <div aria-hidden="true" className="absolute -right-2 -top-6 h-36 w-36 rounded-full border border-white/20" />
-                      <span className="relative z-10 font-serif text-6xl font-bold tracking-tight text-white/90 sm:text-7xl">{scientist.initials}</span>
+                      <span className="relative z-10 font-serif text-6xl font-bold tracking-tight text-white/90 drop-shadow sm:text-7xl">{scientist.portrait?.imageUrl ? "" : scientist.initials}</span>
                       <span className="absolute right-5 top-5 rounded-full border border-white/25 bg-black/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/90 backdrop-blur-sm">{scientist.region === 'india' ? 'India' : 'Global'}</span>
                     </div>
                     <div className="flex flex-1 flex-col p-5 sm:p-6">
