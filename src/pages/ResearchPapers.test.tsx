@@ -101,7 +101,7 @@ describe('ResearchPapers', () => {
     expect(screen.getByText('Ada Lovelace, Alan Turing, Grace Hopper and 1 more')).toBeInTheDocument();
     expect(screen.getByText('Evidence matters greatly')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Read paper/ })).toHaveAttribute('href', 'https://publisher.example/paper');
-    expect(screen.getByText('Research article')).toBeInTheDocument();
+    expect(screen.getByText('Research article', { selector: 'span' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'PDF' })).toHaveAttribute('href', 'https://publisher.example/paper.pdf');
     expect(screen.getByText('42 citations')).toBeInTheDocument();
   });
