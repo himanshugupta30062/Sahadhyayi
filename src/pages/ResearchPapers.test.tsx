@@ -19,7 +19,7 @@ const paper = {
   display_name: 'A Test Research Paper',
   publication_year: 2025,
   cited_by_count: 42,
-  type: 'journal-article',
+  type: 'article',
   authorships: [
     { author: { display_name: 'Ada Lovelace' } },
     { author: { display_name: 'Alan Turing' } },
@@ -46,6 +46,21 @@ const searchResult = (results = [paper], count = results.length) => ({
 describe('ResearchPapers', () => {
   beforeEach(() => {
     vi.mocked(supabase.functions.invoke).mockResolvedValue(searchResult() as never);
+    vi.mocked(supabase.from).mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        order: vi.fn().mockResolvedValue({
+          data: [
+            { slug: 'article', name: 'Research article', description: 'Original scholarly research', display_order: 1, openalex_types: ['article'] },
+            { slug: 'review', name: 'Review paper', description: 'Synthesis of existing research', display_order: 2, openalex_types: ['review'] },
+            { slug: 'preprint', name: 'Preprint', description: 'Before peer review', display_order: 3, openalex_types: ['preprint'] },
+            { slug: 'conference-paper', name: 'Conference paper', description: 'Conference proceedings', display_order: 4, openalex_types: ['conference-paper'] },
+            { slug: 'book-chapter', name: 'Book chapter', description: 'Edited volume chapter', display_order: 5, openalex_types: ['book-chapter'] },
+            { slug: 'other', name: 'Other research', description: 'Other scholarly work', display_order: 6, openalex_types: ['other','dataset','book','book-review','conference-abstract','data-paper','dissertation','editorial','erratum','letter','libguides','paratext','peer-review','reference-entry','report','retraction','software','software-paper','standard','supplementary-materials'] },
+          ],
+          error: null,
+        }),
+      }),
+    } as never);
     vi.mocked(supabase.auth.getUser).mockResolvedValue({ data: { user: null }, error: null } as never);
     vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
   });
@@ -59,24 +74,24 @@ describe('ResearchPapers', () => {
     renderPage();
     expect(screen.getByRole('heading', { name: 'Research Papers' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Search research papers' })).toBeInTheDocument();
-    expect(screen.getByRole('combobox', { name: 'Filter by paper type' })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Filter by research category' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Artificial intelligence' }));
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
       'search-research-papers',
-      { body: { query: 'artificial intelligence', year: 'all', type: 'all', page: 1, perPage: 12 } },
+      { body: { query: 'artificial intelligence', year: 'all', category: 'all', page: 1, perPage: 12 } },
     ));
   });
 
-  it('filters results by research paper type', async () => {
+  it('filters results by database-backed research category', async () => {
     renderPage();
     await screen.findByRole('heading', { name: 'A Test Research Paper' });
-    fireEvent.change(screen.getByRole('combobox', { name: 'Filter by paper type' }), {
+    fireEvent.change(screen.getByRole('combobox', { name: 'Filter by research category' }), {
       target: { value: 'review' },
     });
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
       'search-research-papers',
-      { body: { query: '', year: 'all', type: 'review', page: 1, perPage: 12 } },
+      { body: { query: '', year: 'all', category: 'review', page: 1, perPage: 12 } },
     ));
   });
 
@@ -86,6 +101,7 @@ describe('ResearchPapers', () => {
     expect(screen.getByText('Ada Lovelace, Alan Turing, Grace Hopper and 1 more')).toBeInTheDocument();
     expect(screen.getByText('Evidence matters greatly')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Read paper/ })).toHaveAttribute('href', 'https://publisher.example/paper');
+    expect(screen.getByText('Research article', { selector: 'span' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'PDF' })).toHaveAttribute('href', 'https://publisher.example/paper.pdf');
     expect(screen.getByText('42 citations')).toBeInTheDocument();
   });
@@ -128,14 +144,14 @@ describe('ResearchPapers', () => {
     });
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith(
       'search-research-papers',
-      { body: { query: 'quantum computing', year: 'all', type: 'all', page: 1, perPage: 12 } },
+      { body: { query: 'quantum computing', year: 'all', category: 'all', page: 1, perPage: 12 } },
     ));
     fireEvent.change(screen.getByRole('combobox', { name: 'Filter by publication year' }), {
       target: { value: '2024' },
     });
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
       'search-research-papers',
-      { body: { query: 'quantum computing', year: '2024', type: 'all', page: 1, perPage: 12 } },
+      { body: { query: 'quantum computing', year: '2024', category: 'all', page: 1, perPage: 12 } },
     ));
   });
 
@@ -146,13 +162,54 @@ describe('ResearchPapers', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Artificial intelligence' }));
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
       'search-research-papers',
-      { body: { query: 'artificial intelligence', year: 'all', type: 'all', page: 1, perPage: 12 } },
+      { body: { query: 'artificial intelligence', year: 'all', category: 'all', page: 1, perPage: 12 } },
     ));
     fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
     expect(await screen.findByText('Page 2 of 2')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByText(/Showing 13–24 of 24 papers/)).toBeInTheDocument();
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
       'search-research-papers',
-      { body: { query: 'artificial intelligence', year: 'all', type: 'all', page: 2, perPage: 12 } },
+      { body: { query: 'artificial intelligence', year: 'all', category: 'all', page: 2, perPage: 12 } },
     ));
+  });
+});
+
+
+describe('ResearchPapers URL pagination', () => {
+  beforeEach(() => {
+    vi.mocked(supabase.functions.invoke).mockResolvedValue(searchResult([paper], 36) as never);
+    vi.mocked(supabase.from).mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        order: vi.fn().mockResolvedValue({ data: [], error: null }),
+      }),
+    } as never);
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it('loads the requested page from the URL', async () => {
+    renderPage('/research-papers?page=2&category=review&year=2024');
+    await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith(
+      'search-research-papers',
+      { body: { query: '', year: '2024', category: 'review', page: 2, perPage: 12 } },
+    ));
+    expect(await screen.findByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('caps numbered navigation at the OpenAlex 10000-result limit', async () => {
+    vi.mocked(supabase.functions.invoke).mockResolvedValue(searchResult([paper], 250000) as never);
+    renderPage('/research-papers?page=10001');
+    await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith(
+      'search-research-papers',
+      { body: { query: '', year: 'all', category: 'all', page: 833, perPage: 12 } },
+    ));
+    expect(await screen.findByText(/first 10,000 results/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
+    expect(await screen.findByText('Page 833 of 833')).toBeInTheDocument();
   });
 });
