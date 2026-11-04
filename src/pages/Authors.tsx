@@ -340,7 +340,7 @@ const AuthorCard = ({ author, books }: { author: Author; books: Book[] }) => {
   return (
     <Card className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#E8E8E3] bg-white shadow-[0_6px_24px_rgba(28,32,29,0.035)] transition-all duration-300 hover:-translate-y-1 hover:border-[#B68A35]/50 hover:shadow-[0_18px_45px_rgba(28,32,29,0.09)] dark:border-[#29332D] dark:bg-[#111614] dark:shadow-none dark:hover:border-[#D5B16D]/40">
       <Link to={profilePath} className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]">
-        <div className="relative h-28 overflow-hidden bg-gradient-to-br from-[#10251A] via-[#1C442D] to-[#6C5833] sm:h-32">
+        <div className="relative h-28 overflow-hidden bg-gradient-to-br from-[#10251A] via-[#1C442D] to-[#6C5833] sm:h-32" aria-label={`${author.name} author card`}>
           <div aria-hidden="true" className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.7)_0.7px,transparent_0.7px)] [background-size:14px_14px]" />
           <div aria-hidden="true" className="absolute -right-8 -top-12 h-40 w-40 rounded-full border border-white/15" />
           <div aria-hidden="true" className="absolute -right-2 -top-6 h-28 w-28 rounded-full border border-white/15" />
@@ -351,7 +351,7 @@ const AuthorCard = ({ author, books }: { author: Author; books: Book[] }) => {
           )}
           <div className="absolute bottom-0 left-5 translate-y-1/2">
             <Avatar className="h-16 w-16 border-4 border-white shadow-md dark:border-[#111614] sm:h-[4.5rem] sm:w-[4.5rem]">
-              <AvatarImage src={author.profile_image_url || ''} alt={author.name} />
+              <AvatarImage src={author.profile_image_url || ''} alt={`${author.name} portrait`} className="object-cover" />
               <AvatarFallback className="bg-[#D5B16D] text-base font-bold text-[#14251B]">{initials}</AvatarFallback>
             </Avatar>
           </div>
