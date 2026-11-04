@@ -12,7 +12,8 @@ import { toast } from "@/hooks/use-toast";
 
 type Social={id:string;creator_id:string;platform:string;label:string|null;handle:string|null;url:string;sort_order:number};
 type Publication={id:string;creator_id:string;title:string;publication_type:string;source_url:string;excerpt:string|null;published_at:string|null;status:string;book_id:string|null};
-\ntype Creator={id:string;name:string;slug:string;bio:string|null;avatar_url:string|null;creator_roles:string[];genres:string[];languages:string[];website_url:string|null;featured:boolean;verified:boolean;status:"draft"|"published"|"archived"};
+
+type Creator={id:string;name:string;slug:string;bio:string|null;avatar_url:string|null;creator_roles:string[];genres:string[];languages:string[];website_url:string|null;featured:boolean;verified:boolean;status:"draft"|"published"|"archived"};
 type Form={name:string;slug:string;bio:string;avatar_url:string;roles:string[];genres:string;languages:string;website_url:string;featured:boolean;verified:boolean;status:"draft"|"published"|"archived"};
 const blank:Form={name:"",slug:"",bio:"",avatar_url:"",roles:["reviewer"],genres:"",languages:"",website_url:"",featured:false,verified:false,status:"draft"};
 const roles=[["reviewer","Book Reviewer"],["critic","Literary Critic"],["booktuber","BookTuber"],["bookstagrammer","Bookstagrammer"],["booktok","BookTok Creator"],["blogger","Literary Blogger"]];
