@@ -11,6 +11,7 @@ import {
   filterPublicBooks,
 } from '@/utils/catalog/bookVisibility';
 import { normalizeAuthor, normalizeTitle } from '@/utils/catalog/metadataNormalization';
+import { normalizeBookGenre } from '@/utils/catalog/bookGenreTaxonomy';
 
 import type { AccessStatus, LicenseEvidence } from '@/types/bookCatalog';
 
@@ -767,7 +768,7 @@ const mapBook = (book: any): Book => ({
   id: book.id,
   title: book.title,
   author: book.author || 'Unknown Author',
-  genre: book.genre,
+  genre: normalizeBookGenre(book.genre),
   cover_image_url: book.cover_image_url,
   description: book.description,
   publication_year: book.publication_year,
