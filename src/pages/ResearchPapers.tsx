@@ -71,7 +71,8 @@ function getCategorySlug(paper: OpenAlexWork, categoryList: ResearchPaperCategor
 
 const API_URL = 'https://api.openalex.org/works';
 const PAGE_SIZE = 12;
-const MAX_NUMBERED_PAGES = 10000;
+const MAX_OPENALEX_BASIC_RESULTS = 10000;
+const MAX_NUMBERED_PAGES = Math.floor(MAX_OPENALEX_BASIC_RESULTS / PAGE_SIZE);
 const TOPICS: Topic[] = [
   { label: 'All research', query: '' },
   { label: 'Artificial intelligence', query: 'artificial intelligence' },
@@ -515,7 +516,7 @@ const ResearchPapers = () => {
 
           {totalCount > MAX_NUMBERED_PAGES * PAGE_SIZE && (
             <p role="note" className="mt-3 text-center text-xs text-[#8A7350] dark:text-[#D5B16D]">
-              OpenAlex supports numbered navigation through page 10,000 (the first 120,000 matches). Refine your search to explore a narrower set of results.
+              OpenAlex basic pagination is limited to the first 10,000 results. Refine your search to explore a narrower set of results.
             </p>
           )}
           <p className="mt-6 text-center text-xs text-[#899189] dark:text-[#7E897F]">Research metadata provided by OpenAlex. Full-text availability depends on the original publisher or repository.</p>
