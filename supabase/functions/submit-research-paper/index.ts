@@ -13,10 +13,10 @@ Deno.serve(async req=>{
  try{
   const body=await req.json(); if(!body||typeof body!=="object") return respond({error:"Invalid body"},400);
   const title=String(body.title??"").trim(),authors=String(body.authors??"").trim(),abstract=String(body.abstract??"").trim();
-  const doi=String(body.doi??"").trim().toLowerCase().replace(/^https?:\\/\\/(dx\\.)?doi\\.org\\//,"");
+  const doi=String(body.doi??"").trim().toLowerCase().replace(/^https?:\/\/(dx\.)?doi\.org\//,"");
   const sourceUrl=String(body.source_url??"").trim(),kind=body.submission_kind==="publish"?"publish":"contribute";
   if(title.length<3||title.length>300||authors.length<2||authors.length>2000||abstract.length>12000) return respond({error:"Title, authors or abstract are invalid."},400);
-  if(doi&&!/^10\\.\\d{4,9}\\/[\\w.();/:+-]+$/i.test(doi)) return respond({error:"Please enter a valid DOI."},400);
+  if(doi&&!/^10\.\d{4,9}\/[\w.();/:+-]+$/i.test(doi)) return respond({error:"Please enter a valid DOI."},400);
   if(sourceUrl){try{const u=new URL(sourceUrl);if(!["https:","http:"].includes(u.protocol))throw 0;}catch{return respond({error:"Source URL must be a valid http(s) link."},400);}}
   const year=body.publication_year==null||body.publication_year===""?null:Number(body.publication_year);
   if(year!==null&&(!Number.isInteger(year)||year<1600||year>new Date().getFullYear()+1)) return respond({error:"Publication year is invalid."},400);
