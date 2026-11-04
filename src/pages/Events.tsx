@@ -62,7 +62,10 @@ export default function Events() {
   const [city, setCity] = useState("");
   const [category, setCategory] = useState("all");
   const [mode, setMode] = useState<"all" | "online" | "in-person">("all");
+  const [visibleCount, setVisibleCount] = useState(9);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => { setVisibleCount(9); }, [query, city, category, mode]);
 
   useEffect(() => {
     let active = true;
@@ -101,6 +104,7 @@ export default function Events() {
   }), [events, query, city, category, mode, categories]);
   const featured = filtered.filter((event) => event.featured).slice(0, 3);
   const remaining = filtered.filter((event) => !featured.includes(event));
+  const visibleRemaining = remaining.slice(0, visibleCount);
 
   return (
     <>
@@ -136,7 +140,7 @@ export default function Events() {
             filtered.length === 0 ? <Card className="border-dashed"><CardContent className="flex flex-col items-center py-14 text-center"><div className="rounded-full bg-primary/10 p-4"><CalendarDays className="h-8 w-8 text-primary"/></div><h3 className="mt-4 text-xl font-semibold">No upcoming events found</h3><p className="mt-2 max-w-md text-sm text-muted-foreground">Try another city or category. We're building a verified calendar of book fairs, festivals and reading experiences.</p><Button variant="outline" className="mt-5" onClick={() => {setQuery("");setCity("");setCategory("all");setMode("all");}}>Reset search</Button></CardContent></Card> :
             <>
               {featured.length > 0 && <section className="mb-10"><div className="mb-4 flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary"/><h3 className="text-xl font-semibold">Featured events</h3></div><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{featured.map((event) => <EventCard key={event.id} event={event} category={categoryNameById.get(event.category_id)}/>)}</div></section>}
-              <section><h3 className="mb-4 text-xl font-semibold">{featured.length ? "More upcoming events" : "Upcoming events"}</h3><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{(featured.length ? remaining : filtered).map((event) => <EventCard key={event.id} event={event} category={categoryNameById.get(event.category_id)}/>)}</div></section>
+              <section><h3 className="mb-4 text-xl font-semibold">{featured.length ? "More upcoming events" : "Upcoming events"}</h3><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{(featured.length ? visibleRemaining : filtered.slice(0, visibleCount)).map((event) => <EventCard key={event.id} event={event} category={categoryNameById.get(event.category_id)}/>)}</div>{(featured.length ? remaining.length : filtered.length) > visibleCount && <div className="mt-8 flex justify-center"><Button variant="outline" onClick={() => setVisibleCount((count) => count + 9)}>Load more events <span className="ml-2 text-xs text-muted-foreground">({Math.min(visibleCount + 9, featured.length ? remaining.length : filtered.length)} of {featured.length ? remaining.length : filtered.length})</span></Button></div></section>
             </>
           }
           <section className="mt-12 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 sm:p-8"><div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-sm font-semibold text-primary">KNOW AN EVENT?</p><h3 className="mt-1 text-xl font-bold">Help readers discover it.</h3><p className="mt-2 max-w-xl text-sm text-muted-foreground">Event submissions and organizer tools are coming soon. For now, share an official event source with our team.</p></div><Button asChild variant="outline"><Link to="/feedback">Suggest an event <ArrowUpRight className="ml-2 h-4 w-4"/></Link></Button></div></section>
