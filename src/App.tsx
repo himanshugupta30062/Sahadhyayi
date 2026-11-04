@@ -505,6 +505,7 @@ const App = memo(() => {
                             </Suspense>
                           }
                         />
+                        <Route path="/events/:slug" element={<Suspense fallback={<LoadingFallback message="Loading event..." />}><EventDetails /></Suspense>} />
                         <Route
                           path="/games"
                           element={
