@@ -377,6 +377,7 @@ const ResearchPapers = () => {
           </div>
 
           {bookmarkError && <p role="alert" className="mb-4 text-sm text-red-600 dark:text-red-400">{bookmarkError}</p>}
+          {error && papers.length > 0 && <p role="alert" className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">Showing the last successfully loaded papers. The latest refresh failed: {error}</p>}
           <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -390,7 +391,7 @@ const ResearchPapers = () => {
             <p className="text-sm text-[#737B74] dark:text-[#A5ADA6]">{loading ? 'Searching the catalogue…' : `${resultLabel} matching papers`}</p>
           </div>
 
-          {loading ? (
+          {loading && papers.length === 0 ? (
             <div className="grid gap-4" aria-live="polite" aria-busy="true">
               {Array.from({ length: 5 }, (_, index) => (
                 <div key={index} className="animate-pulse rounded-2xl border border-[#E8E8E3] bg-white p-6 dark:border-[#26302A] dark:bg-[#141815]">
@@ -402,7 +403,7 @@ const ResearchPapers = () => {
                 </div>
               ))}
             </div>
-          ) : error ? (
+          ) : error && papers.length === 0 ? (
             <div role="alert" className="rounded-2xl border border-red-200 bg-white px-6 py-12 text-center dark:border-red-900 dark:bg-[#141815]">
               <FileText className="mx-auto h-9 w-9 text-red-400" />
               <h3 className="mt-4 font-serif text-xl font-semibold">We couldn't reach the research index</h3>
