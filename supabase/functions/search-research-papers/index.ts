@@ -9,6 +9,36 @@ const corsHeaders = {
 const responseCache = new Map<string, { expiresAt: number; payload: unknown }>();
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const MAX_CACHE_ENTRIES = 100;
+const CATEGORY_CACHE_TTL_MS = 10 * 60 * 1000;
+type ResearchCategory = { slug: string; openalex_types: unknown };
+let categoryCache: { expiresAt: number; rows: ResearchCategory[] } | null = null;
+
+async function getResearchCategories(): Promise<ResearchCategory[]> {
+  if (categoryCache && categoryCache.expiresAt > Date.now()) return categoryCache.rows;
+  const previous = categoryCache;
+  try {
+    const url = Deno.env.get("SUPABASE_URL");
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    if (!url || !anonKey) throw new Error("Research category database configuration is missing.");
+    const baseUrl = url.endsWith("/") ? url.slice(0, -1) : url;
+    const query = new URLSearchParams({ select: "slug,openalex_types" });
+    const response = await fetch(`${baseUrl}/rest/v1/research_paper_categories?${query.toString()}`, {
+      headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}`, Accept: "application/json" },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!response.ok) throw new Error(`Research category lookup failed with HTTP ${response.status}.`);
+    const rows = await response.json() as ResearchCategory[];
+    if (!Array.isArray(rows) || rows.length === 0) throw new Error("Research categories are not configured.");
+    categoryCache = { rows, expiresAt: Date.now() + CATEGORY_CACHE_TTL_MS };
+    return rows;
+  } catch (error) {
+    if (previous) {
+      console.warn("Unable to refresh research category taxonomy; using stale taxonomy.", error);
+      return previous.rows;
+    }
+    throw error;
+  }
+}
 
 const SELECT_FIELDS = [
   "id", "doi", "display_name", "title", "publication_year", "publication_date",
@@ -32,6 +62,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return jsonResponse({ error: "Method not allowed" }, 405);
 
+  let stalePayload: unknown = null;
   try {
     const body: unknown = await req.json();
     if (!body || typeof body !== "object" || Array.isArray(body)) {
@@ -43,16 +74,35 @@ Deno.serve(async (req: Request) => {
     const page = Number.isInteger(input.page) ? Number(input.page) : 1;
     const perPage = Number.isInteger(input.perPage) ? Number(input.perPage) : 12;
     const year = input.year === "all" || input.year == null ? "all" : String(input.year);
-    const allowedTypes = new Set(["article", "review", "preprint", "conference-paper", "book-chapter"]);
-    const type = typeof input.type === "string" && allowedTypes.has(input.type) ? input.type : "all";
+    // Keep compatibility with previously deployed frontends that still send "type".
+    const requestedCategory = input.category ?? input.type;
+    const category = typeof requestedCategory === "string" ? requestedCategory.trim() : "all";
 
     if (page < 1 || page > 10000) return jsonResponse({ error: "Page must be between 1 and 10,000." }, 400);
     if (perPage < 1 || perPage > 25) return jsonResponse({ error: "Page size must be between 1 and 25." }, 400);
-    if (year !== "all" && !/^\\d{4}$/.test(year)) return jsonResponse({ error: "Publication year is invalid." }, 400);
+    if (year !== "all" && !/^\d{4}$/.test(year)) return jsonResponse({ error: "Publication year is invalid." }, 400);
+
+    const cacheKey = JSON.stringify({ query, page, perPage, year, category });
+    const cached = responseCache.get(cacheKey);
+    if (cached) stalePayload = cached.payload;
+    if (cached && cached.expiresAt > Date.now()) {
+      return jsonResponse(cached.payload, 200, true);
+    }
 
     const filters = ["open_access.is_oa:true"];
     if (year !== "all") filters.push(`publication_year:${year}`);
-    if (type !== "all") filters.push(`type:${type}`);
+    if (category !== "all") {
+      const categories = await getResearchCategories();
+      const selected = categories.find((item) => item.slug === category);
+      if (!selected || !Array.isArray(selected.openalex_types)) {
+        return jsonResponse({ error: "Choose a valid research category.", code: "INVALID_CATEGORY" }, 400);
+      }
+      const types = selected.openalex_types.filter((value): value is string =>
+        typeof value === "string" && /^[a-z0-9-]+$/.test(value),
+      );
+      if (types.length === 0) return jsonResponse({ error: "This category has no searchable work types.", code: "EMPTY_CATEGORY" }, 400);
+      filters.push(`type:${types.join("|")}`);
+    }
 
     const params = new URLSearchParams({
       per_page: String(perPage),
@@ -63,12 +113,7 @@ Deno.serve(async (req: Request) => {
     });
     if (query) params.set("search", query);
 
-    const cacheKey = JSON.stringify({ query, page, perPage, year, type });
-    const cached = responseCache.get(cacheKey);
-    if (cached && cached.expiresAt > Date.now()) {
-      return jsonResponse(cached.payload, 200, true);
-    }
-    // Keep expired entries as stale fallback while refreshing upstream.
+    // Keep expired entries available as a fallback while refreshing upstream.
 
     const apiKey = Deno.env.get("OPENALEX_API_KEY");
     const mailto = Deno.env.get("OPENALEX_MAILTO");
@@ -81,10 +126,15 @@ Deno.serve(async (req: Request) => {
     });
 
     if (upstream.status === 429) {
-      return jsonResponse({ error: "The research catalogue is busy. Please wait a moment and try again.", code: "RATE_LIMITED" }, 429);
+      if (cached) {
+        console.warn("OpenAlex rate limited; serving stale research results");
+        return jsonResponse(cached.payload, 200, true);
+      }
+      return jsonResponse({ error: "The research catalogue is busy. Please retry shortly.", code: "RATE_LIMITED", retryAfter: upstream.headers.get("retry-after") }, 429);
     }
     if (!upstream.ok) {
       console.error("OpenAlex request failed", upstream.status);
+      if (cached) return jsonResponse(cached.payload, 200, true);
       return jsonResponse({ error: "The research catalogue is temporarily unavailable.", code: "UPSTREAM_ERROR" }, 502);
     }
 
@@ -99,6 +149,10 @@ Deno.serve(async (req: Request) => {
     responseCache.set(cacheKey, { expiresAt: Date.now() + CACHE_TTL_MS, payload });
     return jsonResponse(payload);
   } catch (error) {
+    if (stalePayload) {
+      console.warn("Research search failed; serving stale cached results");
+      return jsonResponse(stalePayload, 200, true);
+    }
     if (error instanceof DOMException && error.name === "TimeoutError") {
       return jsonResponse({ error: "The research catalogue took too long to respond. Please try again.", code: "UPSTREAM_TIMEOUT" }, 504);
     }
