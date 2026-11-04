@@ -15,7 +15,7 @@ type OpenAlexAuthor = { author?: { display_name?: string | null } | null } | nul
 type OpenAlexLocation = {
   landing_page_url?: string | null;
   pdf_url?: string | null;
-  source?: { display_name?: string | null; type?: string | null } | null;
+  source?: { display_name?: string | null } | null;
 } | null;
 type OpenAlexWork = {
   id?: string;
@@ -54,18 +54,16 @@ type CategoryQueryClient = {
 };
 
 const DEFAULT_CATEGORIES: ResearchPaperCategory[] = [
-  { slug: 'article', name: 'Research article', description: 'Original scholarly research', display_order: 1, openalex_types: ['article', 'journal-article', 'research-article'] },
+  { slug: 'article', name: 'Research article', description: 'Original scholarly research', display_order: 1, openalex_types: ['article'] },
   { slug: 'review', name: 'Review paper', description: 'Synthesis of existing research', display_order: 2, openalex_types: ['review'] },
   { slug: 'preprint', name: 'Preprint', description: 'Research shared before peer review', display_order: 3, openalex_types: ['preprint'] },
-  { slug: 'conference-paper', name: 'Conference paper', description: 'Research published in conference proceedings', display_order: 4, openalex_types: ['conference-paper', 'proceedings-article'] },
+  { slug: 'conference-paper', name: 'Conference paper', description: 'Research published in conference proceedings', display_order: 4, openalex_types: ['conference-paper'] },
   { slug: 'book-chapter', name: 'Book chapter', description: 'Scholarly chapter in an edited volume', display_order: 5, openalex_types: ['book-chapter'] },
   { slug: 'other', name: 'Other research', description: 'Other scholarly work types', display_order: 6, openalex_types: ['book', 'book-review', 'conference-abstract', 'data-paper', 'dataset', 'dissertation', 'editorial', 'erratum', 'letter', 'libguides', 'other', 'paratext', 'peer-review', 'reference-entry', 'report', 'retraction', 'software', 'software-paper', 'standard', 'supplementary-materials'] },
 ];
 
 function getCategorySlug(paper: OpenAlexWork, categoryList: ResearchPaperCategory[]): string {
   const type = (paper.type || '').toLowerCase().replace(/_/g, '-');
-  const sourceType = (paper.primary_location?.source?.type || '').toLowerCase();
-  if (type === 'article' && sourceType === 'conference') return 'conference-paper';
   const matchedCategory = categoryList.find((item) => item.openalex_types?.includes(type));
   if (matchedCategory) return matchedCategory.slug;
   return 'other';
