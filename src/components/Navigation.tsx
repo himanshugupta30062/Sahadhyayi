@@ -90,6 +90,7 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
     href: "/social",
     items: [
       { name: "Community Feed", href: "/social", tourTarget: "community" },
+      { name: "Book Reviews", href: "/social?tab=reviews" },
       { name: "Discover Friends", href: "/social?tab=friends" },
       { name: "Reading Groups", href: "/groups" },
       { name: "Reader's Map", href: "/social?tab=map" },
@@ -119,6 +120,7 @@ const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
     href: "/social",
     items: [
       { name: "Community Feed", href: "/social", tourTarget: "community" },
+      { name: "Book Reviews", href: "/social?tab=reviews" },
       { name: "Discover Friends", href: "/social?tab=friends" },
       { name: "Reading Groups", href: "/groups" },
       { name: "Reader's Map", href: "/social?tab=map" },
@@ -153,6 +155,7 @@ const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
     href: "/authors",
     items: [
       { name: "Authors", href: "/authors" },
+      { name: "Reviewers & Critics", href: "/reviewers-critics" },
       { name: "Scientists", href: "/scientists" },
       { name: "Social Activists", href: "/social-activists" },
       { name: "Freedom Fighters", href: "/freedom-fighters" },
@@ -829,6 +832,7 @@ const Navigation = () => {
                 <>
                   {[...NAVIGATION_SECTIONS].sort((a, b) => NAVIGATION_ORDER.indexOf(a.name) - NAVIGATION_ORDER.indexOf(b.name)).map(renderDrawerSection)}
                   {renderDrawerLink({ name: "Authors", href: "/authors" })}
+                  {renderDrawerLink({ name: "Reviewers & Critics", href: "/reviewers-critics" })}
                   {renderDrawerLink({ name: "Events", href: "/events" })}
                   {renderDrawerLink({ name: "Games", href: "/games" })}
                   {renderPublicDrawerItem({ name: "More", href: "/about", children: PEOPLE_AND_MORE }, "authenticated-more")}
