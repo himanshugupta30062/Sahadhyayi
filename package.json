@@ -29,7 +29,8 @@
     "generate:licenses": "node scripts/generateLicenseList.js",
     "generate:sbom": "npm sbom --sbom-format=cyclonedx --sbom-type=application --output-file=sbom.json",
     "verify:licenses": "node scripts/verifyLicenses.js",
-    "size": "size-limit"
+    "size": "size-limit",
+    "test:coverage": "vitest run --coverage.enabled=true"
   },
   "size-limit": [
     {
