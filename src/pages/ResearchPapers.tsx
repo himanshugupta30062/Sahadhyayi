@@ -47,7 +47,7 @@ type CategoryQueryResult = {
 type CategoryQueryClient = {
   from: (table: string) => {
     select: (columns: string) => {
-      order: (column: string, options: { ascending: boolean }) => Promise<CategoryQueryResult>;
+      order: (column: string, options: { ascending: boolean }) => PromiseLike<CategoryQueryResult>;
     };
   };
 };
