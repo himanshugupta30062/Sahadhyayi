@@ -16,8 +16,19 @@ Deno.serve(async req=>{
   const rawDoi=String(body.doi??"").trim().toLowerCase();
   const doiPrefixes=["https://doi.org/","http://doi.org/","https://dx.doi.org/","http://dx.doi.org/"];
   const doi=doiPrefixes.reduce((value,prefix)=>value.startsWith(prefix)?value.slice(prefix.length):value,rawDoi);
-  const sourceUrl=String(body.source_url??"").trim(),kind=body.submission_kind==="publish"?"publish":"contribute";
-  if(title.length<3||title.length>300||authors.length<2||authors.length>2000||abstract.length>12000) return respond({error:"Title, authors or abstract are invalid."},400);
+  const sourceUrl=String(body.source_url??"").trim();
+  const kind=body.submission_kind;
+  if(kind!=="publish"&&kind!=="contribute") return respond({error:"Invalid submission type."},400);
+  const filePath=typeof body.file_path==="string"?body.file_path.trim():"";
+  if(title.length<3||title.length>300||authors.length<2||authors.length>2000||abstract.length>12000||sourceUrl.length>2048) return respond({error:"Title, authors, abstract or source URL are invalid."},400);
+  if(kind==="publish"&&!filePath) return respond({error:"Upload your manuscript PDF before publishing."},400);
+  if(kind==="contribute"&&filePath) return respond({error:"PDF uploads are only accepted for publish submissions."},400);
+  if(filePath){
+    const parts=filePath.split("/");
+    if(parts.length!==3||parts[0]!==user.id||parts.some(part=>!part||part==="."||part===".."||part.includes(String.fromCharCode(92)))) return respond({error:"Invalid manuscript upload path."},400);
+    const {data:uploadedFiles,error:storageError}=await db.storage.from("research-paper-quarantine").list(`${user.id}/${parts[1]}`,{search:parts[2]});
+    if(storageError||!uploadedFiles?.some(file=>file.name===parts[2])) return respond({error:"The uploaded manuscript could not be verified. Please upload it again."},400);
+  }
   const doiSeparator=doi.indexOf("/");
   const doiRegistrant=doi.slice(0,doiSeparator);
   const doiSuffix=doi.slice(doiSeparator+1);
@@ -28,9 +39,10 @@ Deno.serve(async req=>{
   if(year!==null&&(!Number.isInteger(year)||year<1600||year>new Date().getFullYear()+1)) return respond({error:"Publication year is invalid."},400);
   const {data:existing}=await db.from("research_paper_submissions").select("id,status").eq("doi",doi||"__none__").maybeSingle();
   if(existing) return respond({error:"A submission with this DOI already exists.",duplicate:true},409);
-  const type=String(body.paper_type||"article");
-  if(!["article","review","preprint","conference-paper","book-chapter","other"].includes(type)) return respond({error:"Invalid paper type."},400);
-  const {data,error}=await db.from("research_paper_submissions").insert({submitter_id:user.id,submission_kind:kind,title,authors,abstract:abstract||null,doi:doi||null,source_url:sourceUrl||null,publication_year:year,paper_type:type,file_path:body.file_path||null}).select("id,title,status,created_at").single();
+  const categorySlug=String(body.paper_type||"article");
+  const {data:category,error:categoryError}=await db.from("research_paper_categories").select("slug").eq("slug",categorySlug).maybeSingle();
+  if(categoryError||!category) return respond({error:"Choose a valid research category."},400);
+  const {data,error}=await db.from("research_paper_submissions").insert({submitter_id:user.id,submission_kind:kind,title,authors,abstract:abstract||null,doi:doi||null,source_url:sourceUrl||null,publication_year:year,paper_type:category.slug,file_path:filePath||null}).select("id,title,status,created_at").single();
   if(error){if(error.code==="23505")return respond({error:"This DOI has already been submitted."},409);console.error(error);return respond({error:"Could not save submission."},500);}
   return respond({submission:data},201);
  }catch(e){console.error(e);return respond({error:"Invalid request."},400);}
