@@ -79,6 +79,7 @@ const ReviewersCritics = lazy(() => import('./pages/ReviewersCritics'));
 const LiteraryCreatorProfile = lazy(() => import('./pages/LiteraryCreatorProfile'));
 const EventDetails = lazy(() => import('./pages/EventDetails'));
 const AdminEvents = lazy(() => import('./pages/AdminEvents'));
+const AdminLiteraryCreators = lazy(() => import('./pages/AdminLiteraryCreators'));
 
 const AuthorConnect = lazy(() => import('./pages/AuthorConnect'));
 const AuthorProfilePage = lazy(() => import('./pages/AuthorProfile'));
@@ -623,6 +624,7 @@ const App = memo(() => {
                             </AdminRoute>
                           }
                         />
+                        <Route path="/admin/literary-voices" element={<AdminRoute><Suspense fallback={<LoadingFallback message="Loading literary creator manager..." />}><AdminLiteraryCreators /></Suspense></AdminRoute>} />
                         <Route path="/admin/events" element={<AdminRoute><Suspense fallback={<LoadingFallback message="Loading event manager..." />}><AdminEvents /></Suspense></AdminRoute>} />
                         <Route
                           path="/admin/book-pdfs"
