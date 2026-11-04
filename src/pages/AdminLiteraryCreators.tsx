@@ -1,0 +1,39 @@
+import { useEffect, useState } from "react";
+import { Pencil, Plus, Save, Trash2, Users } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "@/hooks/use-toast";
+
+type Creator={id:string;name:string;slug:string;bio:string|null;avatar_url:string|null;creator_roles:string[];genres:string[];languages:string[];website_url:string|null;featured:boolean;verified:boolean;status:"draft"|"published"|"archived"};
+type Form={name:string;slug:string;bio:string;avatar_url:string;roles:string[];genres:string;languages:string;website_url:string;featured:boolean;verified:boolean;status:"draft"|"published"|"archived"};
+const blank:Form={name:"",slug:"",bio:"",avatar_url:"",roles:["reviewer"],genres:"",languages:"",website_url:"",featured:false,verified:false,status:"draft"};
+const roles=[["reviewer","Book Reviewer"],["critic","Literary Critic"],["booktuber","BookTuber"],["bookstagrammer","Bookstagrammer"],["booktok","BookTok Creator"],["blogger","Literary Blogger"]];
+const slugify=(v:string)=>v.toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+const split=(v:string)=>v.split(",").map(x=>x.trim()).filter(Boolean);
+export default function AdminLiteraryCreators(){
+ const [rows,setRows]=useState<Creator[]>([]);const [form,setForm]=useState<Form>(blank);const [editing,setEditing]=useState<string|null>(null);const [loading,setLoading]=useState(true);const [saving,setSaving]=useState(false);
+ const refresh=async()=>{setLoading(true);const {data,error}=await (supabase as any).from("literary_creators").select("*").order("updated_at",{ascending:false}).limit(500);if(error)toast({title:"Could not load creators",description:error.message,variant:"destructive"});else setRows((data??[]) as Creator[]);setLoading(false);};
+ useEffect(()=>{void refresh();},[]);
+ const reset=()=>{setEditing(null);setForm(blank);};
+ const edit=(r:Creator)=>{setEditing(r.id);setForm({name:r.name,slug:r.slug,bio:r.bio??"",avatar_url:r.avatar_url??"",roles:r.creator_roles??[],genres:(r.genres??[]).join(", "),languages:(r.languages??[]).join(", "),website_url:r.website_url??"",featured:r.featured,verified:r.verified,status:r.status});window.scrollTo({top:0,behavior:"smooth"});};
+ const save=async(e:React.FormEvent)=>{e.preventDefault();if(!form.name.trim()||form.roles.length===0){toast({title:"Name and at least one role are required",variant:"destructive"});return;}setSaving(true);const payload={name:form.name.trim(),slug:form.slug.trim()||slugify(form.name),bio:form.bio.trim()||null,avatar_url:form.avatar_url.trim()||null,creator_roles:form.roles,genres:split(form.genres),languages:split(form.languages),website_url:form.website_url.trim()||null,featured:form.featured,verified:form.verified,status:form.status,updated_at:new Date().toISOString()};const result=editing?await (supabase as any).from("literary_creators").update(payload).eq("id",editing):await (supabase as any).from("literary_creators").insert(payload);setSaving(false);if(result.error){toast({title:"Creator could not be saved",description:result.error.message,variant:"destructive"});return;}toast({title:editing?"Creator updated":"Creator created"});reset();await refresh();};
+ const remove=async(id:string)=>{if(!window.confirm("Delete this creator and their linked publications/social links?"))return;const {error}=await (supabase as any).from("literary_creators").delete().eq("id",id);if(error)toast({title:"Delete failed",description:error.message,variant:"destructive"});else{toast({title:"Creator deleted"});await refresh();}};
+ const set=(k:keyof Form,v:Form[keyof Form])=>setForm(p=>({...p,[k]:v}));
+ return <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6"><header><Badge variant="outline">Admin · Content</Badge><h1 className="mt-2 text-3xl font-bold">Literary voices</h1><p className="mt-2 text-muted-foreground">Curate reviewer and critic profiles shown in the public directory.</p></header>
+ <Card><CardHeader><CardTitle className="flex items-center gap-2"><Users className="h-5 w-5"/>{editing?"Edit profile":"Add literary voice"}</CardTitle></CardHeader><CardContent><form onSubmit={save} className="grid gap-4 md:grid-cols-2">
+ <div className="space-y-2"><Label>Name *</Label><Input required value={form.name} onChange={e=>set("name",e.target.value)} /></div><div className="space-y-2"><Label>Slug (auto if blank)</Label><Input value={form.slug} onChange={e=>set("slug",e.target.value)} placeholder="name-in-lowercase"/></div>
+ <div className="space-y-2 md:col-span-2"><Label>Bio</Label><Textarea rows={4} value={form.bio} onChange={e=>set("bio",e.target.value)} /></div>
+ <div className="space-y-2"><Label>Avatar URL</Label><Input type="url" value={form.avatar_url} onChange={e=>set("avatar_url",e.target.value)} /></div><div className="space-y-2"><Label>Website URL</Label><Input type="url" value={form.website_url} onChange={e=>set("website_url",e.target.value)} /></div>
+ <div className="space-y-2"><Label>Genres (comma-separated)</Label><Input value={form.genres} onChange={e=>set("genres",e.target.value)} placeholder="Literary fiction, Poetry"/></div><div className="space-y-2"><Label>Languages (comma-separated)</Label><Input value={form.languages} onChange={e=>set("languages",e.target.value)} placeholder="English, Hindi"/></div>
+ <fieldset className="space-y-2 md:col-span-2"><legend className="text-sm font-medium">Creator roles *</legend><div className="flex flex-wrap gap-2">{roles.map(([value,label])=><Button key={value} type="button" size="sm" variant={form.roles.includes(value)?"default":"outline"} onClick={()=>set("roles",form.roles.includes(value)?form.roles.filter(x=>x!==value):[...form.roles,value])}>{label}</Button>)}</div></fieldset>
+ <div className="flex items-center gap-3"><Switch checked={form.featured} onCheckedChange={v=>set("featured",v)}/><Label>Featured profile</Label></div><div className="flex items-center gap-3"><Switch checked={form.verified} onCheckedChange={v=>set("verified",v)}/><Label>Verified identity / profile</Label></div>
+ <div className="space-y-2"><Label>Publication status</Label><div className="flex gap-2">{(["draft","published","archived"] as const).map(v=><Button key={v} type="button" size="sm" variant={form.status===v?"default":"outline"} onClick={()=>set("status",v)}>{v}</Button>)}</div></div>
+ <div className="flex flex-wrap gap-2 md:col-span-2"><Button type="submit" disabled={saving}><Save className="mr-2 h-4 w-4"/>{saving?"Saving…":"Save profile"}</Button>{editing&&<Button type="button" variant="outline" onClick={reset}>Cancel edit</Button>}</div></form></CardContent></Card>
+ <Card><CardHeader><CardTitle>Profiles ({rows.length})</CardTitle></CardHeader><CardContent>{loading?<p className="text-sm text-muted-foreground">Loading…</p>:rows.length===0?<p className="text-sm text-muted-foreground">No profiles yet. Add a curated voice above.</p>:<div className="divide-y">{rows.map(r=><div key={r.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center"><div className="min-w-0 flex-1"><p className="font-medium">{r.name}</p><p className="text-sm text-muted-foreground">{r.slug} · {r.status} · {(r.creator_roles??[]).join(", ")}</p></div><div className="flex gap-2"><Button size="sm" variant="outline" onClick={()=>edit(r)}><Pencil className="mr-1 h-4 w-4"/>Edit</Button><Button size="sm" variant="destructive" onClick={()=>void remove(r.id)}><Trash2 className="mr-1 h-4 w-4"/>Delete</Button></div></div>)}</div>}</CardContent></Card></main>;
+}
