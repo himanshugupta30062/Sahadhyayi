@@ -830,12 +830,14 @@ const Navigation = () => {
                   {[...NAVIGATION_SECTIONS].sort((a, b) => NAVIGATION_ORDER.indexOf(a.name) - NAVIGATION_ORDER.indexOf(b.name)).map(renderDrawerSection)}
                   {renderDrawerLink({ name: "Authors", href: "/authors" })}
                   {renderDrawerLink({ name: "Events", href: "/events" })}
+                  {renderDrawerLink({ name: "Events", href: "/events" })}
                   {renderDrawerLink({ name: "Games", href: "/games" })}
                   {renderPublicDrawerItem({ name: "More", href: "/about", children: PEOPLE_AND_MORE }, "authenticated-more")}
                 </>
               ) : (
                 <>
                   {PUBLIC_NAVIGATION_SECTIONS.map(renderPublicDrawerSection)}
+                  {renderDrawerLink({ name: "Events", href: "/events" })}
                   {renderDrawerLink({ name: "Games", href: "/games" })}
                 </>
               )}
