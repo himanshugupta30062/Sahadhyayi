@@ -34,9 +34,45 @@ type OpenAlexWork = {
 };
 type OpenAlexResponse = { meta?: { count?: number }; results?: OpenAlexWork[] };
 type Topic = { label: string; query: string };
+type ResearchPaperCategory = {
+  slug: string;
+  name: string;
+  description: string | null;
+  display_order: number;
+  openalex_types: string[];
+};
+type CategoryQueryResult = {
+  data: ResearchPaperCategory[] | null;
+  error: { message: string } | null;
+};
+type CategoryQueryClient = {
+  from: (table: string) => {
+    select: (columns: string) => {
+      order: (column: string, options: { ascending: boolean }) => PromiseLike<CategoryQueryResult>;
+    };
+  };
+};
+
+const DEFAULT_CATEGORIES: ResearchPaperCategory[] = [
+  { slug: 'article', name: 'Research article', description: 'Original scholarly research', display_order: 1, openalex_types: ['article'] },
+  { slug: 'review', name: 'Review paper', description: 'Synthesis of existing research', display_order: 2, openalex_types: ['review'] },
+  { slug: 'preprint', name: 'Preprint', description: 'Research shared before peer review', display_order: 3, openalex_types: ['preprint'] },
+  { slug: 'conference-paper', name: 'Conference paper', description: 'Research published in conference proceedings', display_order: 4, openalex_types: ['conference-paper'] },
+  { slug: 'book-chapter', name: 'Book chapter', description: 'Scholarly chapter in an edited volume', display_order: 5, openalex_types: ['book-chapter'] },
+  { slug: 'other', name: 'Other research', description: 'Other scholarly work types', display_order: 6, openalex_types: ['book', 'book-review', 'conference-abstract', 'data-paper', 'dataset', 'dissertation', 'editorial', 'erratum', 'letter', 'libguides', 'other', 'paratext', 'peer-review', 'reference-entry', 'report', 'retraction', 'software', 'software-paper', 'standard', 'supplementary-materials'] },
+];
+
+function getCategorySlug(paper: OpenAlexWork, categoryList: ResearchPaperCategory[]): string {
+  const type = (paper.type || '').toLowerCase().replace(/_/g, '-');
+  const matchedCategory = categoryList.find((item) => item.openalex_types?.includes(type));
+  if (matchedCategory) return matchedCategory.slug;
+  return 'other';
+}
 
 const API_URL = 'https://api.openalex.org/works';
 const PAGE_SIZE = 12;
+const MAX_OPENALEX_BASIC_RESULTS = 10000;
+const MAX_NUMBERED_PAGES = Math.floor(MAX_OPENALEX_BASIC_RESULTS / PAGE_SIZE);
 const TOPICS: Topic[] = [
   { label: 'All research', query: '' },
   { label: 'Artificial intelligence', query: 'artificial intelligence' },
@@ -104,9 +140,10 @@ const ResearchPapers = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [activeTopic, setActiveTopic] = useState('');
-  const [year, setYear] = useState('all');
-  const [paperType, setPaperType] = useState('all');
-  const [page, setPage] = useState(1);
+  const [year, setYear] = useState(searchParams.get('year') || 'all');
+  const [category, setCategory] = useState(searchParams.get('category') || 'all');
+  const [categories, setCategories] = useState<ResearchPaperCategory[]>(DEFAULT_CATEGORIES);
+  const [page, setPage] = useState(() => Math.max(1, Math.min(MAX_NUMBERED_PAGES, Number(searchParams.get('page')) || 1)));
   const [papers, setPapers] = useState<OpenAlexWork[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -121,6 +158,26 @@ const ResearchPapers = () => {
     const timer = window.setTimeout(() => setDebouncedQuery(searchQuery.trim()), 350);
     return () => window.clearTimeout(timer);
   }, [searchQuery]);
+
+  useEffect(() => {
+    let active = true;
+    const loadCategories = async () => {
+      try {
+        const categoryClient = supabase as unknown as CategoryQueryClient;
+        const { data, error: categoryError } = await categoryClient
+          .from('research_paper_categories')
+          .select('slug,name,description,display_order,openalex_types')
+          .order('display_order', { ascending: true });
+        if (categoryError) throw categoryError;
+        if (active && Array.isArray(data) && data.length > 0) setCategories(data);
+      } catch (categoryLoadError) {
+        // Keep the built-in taxonomy available if the database is temporarily unavailable.
+        console.warn('Unable to load research paper categories:', categoryLoadError);
+      }
+    };
+    void loadCategories();
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -179,12 +236,29 @@ const ResearchPapers = () => {
     }
   };
 
+  const serializedSearchParams = searchParams.toString();
   useEffect(() => {
-    const next = new URLSearchParams(searchParams);
-    if (searchQuery.trim()) next.set('search', searchQuery.trim());
-    else next.delete('search');
-    if (next.toString() !== searchParams.toString()) setSearchParams(next, { replace: true });
-  }, [searchQuery, searchParams, setSearchParams]);
+    const urlParams = new URLSearchParams(serializedSearchParams);
+    setSearchQuery(urlParams.get('search') || '');
+    setYear(urlParams.get('year') || 'all');
+    setCategory(urlParams.get('category') || 'all');
+    setPage(Math.max(1, Math.min(MAX_NUMBERED_PAGES, Number(urlParams.get('page')) || 1)));
+  }, [serializedSearchParams]);
+
+  useEffect(() => {
+    setSearchParams((currentParams) => {
+      const next = new URLSearchParams(currentParams);
+      if (searchQuery.trim()) next.set('search', searchQuery.trim());
+      else next.delete('search');
+      if (year !== 'all') next.set('year', year);
+      else next.delete('year');
+      if (category !== 'all') next.set('category', category);
+      else next.delete('category');
+      if (page > 1) next.set('page', String(page));
+      else next.delete('page');
+      return next.toString() === currentParams.toString() ? currentParams : next;
+    }, { replace: true });
+  }, [searchQuery, year, category, page, setSearchParams]);
 
   useEffect(() => {
     let active = true;
@@ -193,7 +267,7 @@ const ResearchPapers = () => {
       setError('');
       try {
         const { data, error: functionError } = await supabase.functions.invoke('search-research-papers', {
-          body: { query: debouncedQuery, year, type: paperType, page, perPage: PAGE_SIZE },
+          body: { query: debouncedQuery, year, category, page, perPage: PAGE_SIZE },
         });
         if (functionError) throw functionError;
         const payload: unknown = data;
@@ -206,18 +280,39 @@ const ResearchPapers = () => {
       } catch (loadError) {
         if (!active) return;
         setError(loadError instanceof Error ? loadError.message : 'Unable to load research papers right now.');
-        setPapers([]);
-        setTotalCount(0);
+        // Keep the last successful page visible during transient upstream failures.
       } finally {
         if (active) setLoading(false);
       }
     }
     void loadPapers();
     return () => { active = false; };
-  }, [debouncedQuery, year, paperType, page, retry]);
+  }, [debouncedQuery, year, category, page, retry]);
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.min(MAX_NUMBERED_PAGES, Math.ceil(totalCount / PAGE_SIZE)));
+  const pageNumbers = useMemo(() => {
+    const first = Math.max(1, Math.min(page - 2, totalPages - 4));
+    return Array.from({ length: Math.min(5, totalPages) }, (_, index) => first + index);
+  }, [page, totalPages]);
+  const firstResult = totalCount === 0 ? 0 : ((page - 1) * PAGE_SIZE) + 1;
+  const lastResult = Math.min(page * PAGE_SIZE, totalCount);
   const resultLabel = useMemo(() => totalCount.toLocaleString('en-US'), [totalCount]);
+
+  useEffect(() => {
+    if (!loading && page > totalPages) setPage(totalPages);
+  }, [loading, page, totalPages]);
+
+  const goToPage = (nextPage: number) => {
+    const safePage = Math.max(1, Math.min(totalPages, nextPage));
+    setPage(safePage);
+    setSearchParams((currentParams) => {
+      const next = new URLSearchParams(currentParams);
+      if (safePage > 1) next.set('page', String(safePage));
+      else next.delete('page');
+      return next;
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const chooseTopic = (topic: Topic) => {
     setActiveTopic(topic.label);
@@ -229,7 +324,7 @@ const ResearchPapers = () => {
     setSearchQuery('');
     setActiveTopic('All research');
     setYear('all');
-    setPaperType('all');
+    setCategory('all');
     setPage(1);
   };
 
@@ -275,14 +370,10 @@ const ResearchPapers = () => {
                 </select>
               </label>
               <label className="flex h-12 items-center gap-2 rounded-lg border border-[#E8E8E3] bg-[#FAFAF8] px-3 text-sm dark:border-[#26302A] dark:bg-[#0B0D0C]">
-                <span className="whitespace-nowrap text-xs text-[#737B74]">Type</span>
-                <select value={paperType} onChange={(event) => { setPaperType(event.target.value); setPage(1); }} aria-label="Filter by paper type" className="min-w-0 bg-transparent font-medium outline-none">
-                  <option value="all">All types</option>
-                  <option value="article">Research articles</option>
-                  <option value="review">Review papers</option>
-                  <option value="preprint">Preprints</option>
-                  <option value="conference-paper">Conference papers</option>
-                  <option value="book-chapter">Book chapters</option>
+                <span className="whitespace-nowrap text-xs text-[#737B74]">Category</span>
+                <select value={category} onChange={(event) => { setCategory(event.target.value); setPage(1); }} aria-label="Filter by research category" className="min-w-0 bg-transparent font-medium outline-none">
+                  <option value="all">All categories</option>
+                  {categories.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}
                 </select>
               </label>
               <Button type="button" variant="outline" onClick={resetFilters} className="h-12 gap-2 border-[#E8E8E3] dark:border-[#344039]">
@@ -308,6 +399,7 @@ const ResearchPapers = () => {
           </div>
 
           {bookmarkError && <p role="alert" className="mb-4 text-sm text-red-600 dark:text-red-400">{bookmarkError}</p>}
+          {error && papers.length > 0 && <p role="alert" className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">Showing the last successfully loaded papers. The latest refresh failed: {error}</p>}
           <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -321,7 +413,7 @@ const ResearchPapers = () => {
             <p className="text-sm text-[#737B74] dark:text-[#A5ADA6]">{loading ? 'Searching the catalogue…' : `${resultLabel} matching papers`}</p>
           </div>
 
-          {loading ? (
+          {loading && papers.length === 0 ? (
             <div className="grid gap-4" aria-live="polite" aria-busy="true">
               {Array.from({ length: 5 }, (_, index) => (
                 <div key={index} className="animate-pulse rounded-2xl border border-[#E8E8E3] bg-white p-6 dark:border-[#26302A] dark:bg-[#141815]">
@@ -333,7 +425,7 @@ const ResearchPapers = () => {
                 </div>
               ))}
             </div>
-          ) : error ? (
+          ) : error && papers.length === 0 ? (
             <div role="alert" className="rounded-2xl border border-red-200 bg-white px-6 py-12 text-center dark:border-red-900 dark:bg-[#141815]">
               <FileText className="mx-auto h-9 w-9 text-red-400" />
               <h3 className="mt-4 font-serif text-xl font-semibold">We couldn't reach the research index</h3>
@@ -380,7 +472,9 @@ const ResearchPapers = () => {
                           {abstract && <p className="mt-3 line-clamp-3 max-w-5xl text-sm leading-6 text-[#737B74] dark:text-[#A5ADA6]">{abstract}</p>}
                           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[#737B74] dark:text-[#A5ADA6]">
                             <span className="inline-flex items-center gap-1.5"><Quote className="h-3.5 w-3.5" /> {Number(paper.cited_by_count || 0).toLocaleString('en-US')} citations</span>
-                            {typeof paper.type === 'string' && <span className="capitalize">{paper.type.replace(/_/g, ' ')}</span>}
+                            <span className="inline-flex rounded-full border border-[#D7E1D6] bg-[#F1F5EF] px-2.5 py-1 text-[11px] font-semibold capitalize text-[#31583D] dark:border-[#344039] dark:bg-[#1D2821] dark:text-[#D5B16D]">
+                              {categories.find((item) => item.slug === getCategorySlug(paper, categories))?.name || 'Other research'}
+                            </span>
                             <span>Paper {((page - 1) * PAGE_SIZE) + index + 1}</span>
                           </div>
                           <div className="mt-5 flex flex-wrap gap-2">
@@ -399,15 +493,32 @@ const ResearchPapers = () => {
               </div>
 
               <nav aria-label="Research results pagination" className="mt-8 flex flex-col items-center justify-between gap-3 rounded-2xl border border-[#E8E8E3] bg-white p-4 dark:border-[#26302A] dark:bg-[#141815] sm:flex-row">
-                <p className="text-sm text-[#737B74] dark:text-[#A5ADA6]">Page {page} of {totalPages}</p>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => { setPage((value) => value - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="gap-1.5"><ArrowLeft className="h-4 w-4" /> Previous</Button>
-                  <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => { setPage((value) => value + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="gap-1.5">Next <ArrowRight className="h-4 w-4" /></Button>
+                <div className="text-center sm:text-left">
+                  <p className="text-sm font-medium text-[#344139] dark:text-[#DCE4DC]">
+                    Showing {firstResult.toLocaleString('en-US')}–{lastResult.toLocaleString('en-US')} of {resultLabel} papers
+                  </p>
+                  <p className="mt-1 text-xs text-[#737B74] dark:text-[#A5ADA6]">Page {page} of {totalPages}</p>
+                </div>
+                <div className="flex flex-wrap items-center justify-center gap-1.5">
+                  <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => goToPage(1)} aria-label="First page">«</Button>
+                  <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => goToPage(page - 1)} className="gap-1.5"><ArrowLeft className="h-4 w-4" /> Previous</Button>
+                  {pageNumbers.map((number) => (
+                    <Button key={number} size="sm" variant={number === page ? 'default' : 'outline'} aria-current={number === page ? 'page' : undefined} aria-label={`Page ${number}`} onClick={() => goToPage(number)}>
+                      {number}
+                    </Button>
+                  ))}
+                  <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => goToPage(page + 1)} className="gap-1.5">Next <ArrowRight className="h-4 w-4" /></Button>
+                  <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => goToPage(totalPages)} aria-label="Last page">»</Button>
                 </div>
               </nav>
             </>
           )}
 
+          {totalCount > MAX_NUMBERED_PAGES * PAGE_SIZE && (
+            <p role="note" className="mt-3 text-center text-xs text-[#8A7350] dark:text-[#D5B16D]">
+              OpenAlex basic pagination is limited to the first 10,000 results. Refine your search to explore a narrower set of results.
+            </p>
+          )}
           <p className="mt-6 text-center text-xs text-[#899189] dark:text-[#7E897F]">Research metadata provided by OpenAlex. Full-text availability depends on the original publisher or repository.</p>
         </section>
       </main>
