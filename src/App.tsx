@@ -74,6 +74,9 @@ const AdminNews = lazy(() => import('./pages/AdminNews'));
 const ArticleWrite = lazy(() => import('./pages/ArticleWrite'));
 const ArticleDetail = lazy(() => import('./pages/ArticleDetail'));
 const MyArticles = lazy(() => import('./pages/MyArticles'));
+const Events = lazy(() => import('./pages/Events'));
+const EventDetails = lazy(() => import('./pages/EventDetails'));
+const AdminEvents = lazy(() => import('./pages/AdminEvents'));
 
 const AuthorConnect = lazy(() => import('./pages/AuthorConnect'));
 const AuthorProfilePage = lazy(() => import('./pages/AuthorProfile'));
@@ -505,7 +508,8 @@ const App = memo(() => {
                             </Suspense>
                           }
                         />
-                        <Route path="/events/:slug" element={<Suspense fallback={<LoadingFallback message="Loading event..." />}><EventDetails /></Suspense>} />
+                        <Route path="/events" element={<Suspense fallback={<LoadingFallback message="Loading events..." />}><Events /></Suspense>} />
+        <Route path="/events/:slug" element={<Suspense fallback={<LoadingFallback message="Loading event..." />}><EventDetails /></Suspense>} />
                         <Route
                           path="/games"
                           element={
