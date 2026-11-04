@@ -70,7 +70,7 @@ const GlobalFooter = () => {
             <div className="md:col-span-5">
               <div className="flex items-center gap-3">
                 <img
-                  src="/optimized-assets/site-logo.webp"
+                  src="/brand/sahadhyayi-connected-readers.svg"
                   alt="Sahadhyayi"
                   className="h-8 w-8 dark:invert"
                   width={32}
