@@ -300,6 +300,18 @@ const ResearchPapers = () => {
     if (!loading && page > totalPages) setPage(totalPages);
   }, [loading, page, totalPages]);
 
+  const goToPage = (nextPage: number) => {
+    const safePage = Math.max(1, Math.min(totalPages, nextPage));
+    setPage(safePage);
+    setSearchParams((currentParams) => {
+      const next = new URLSearchParams(currentParams);
+      if (safePage > 1) next.set('page', String(safePage));
+      else next.delete('page');
+      return next;
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const chooseTopic = (topic: Topic) => {
     setActiveTopic(topic.label);
     setSearchQuery(topic.query);
@@ -486,15 +498,15 @@ const ResearchPapers = () => {
                   <p className="mt-1 text-xs text-[#737B74] dark:text-[#A5ADA6]">Page {page} of {totalPages}</p>
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-1.5">
-                  <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => { setPage(1); window.scrollTo({ top: 0, behavior: 'smooth' }); }} aria-label="First page">«</Button>
-                  <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => { setPage((value) => value - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="gap-1.5"><ArrowLeft className="h-4 w-4" /> Previous</Button>
+                  <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => goToPage(1)} aria-label="First page">«</Button>
+                  <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => goToPage(page - 1)} className="gap-1.5"><ArrowLeft className="h-4 w-4" /> Previous</Button>
                   {pageNumbers.map((number) => (
-                    <Button key={number} size="sm" variant={number === page ? 'default' : 'outline'} aria-current={number === page ? 'page' : undefined} aria-label={`Page ${number}`} onClick={() => { setPage(number); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+                    <Button key={number} size="sm" variant={number === page ? 'default' : 'outline'} aria-current={number === page ? 'page' : undefined} aria-label={`Page ${number}`} onClick={() => goToPage(number)}>
                       {number}
                     </Button>
                   ))}
-                  <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => { setPage((value) => value + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="gap-1.5">Next <ArrowRight className="h-4 w-4" /></Button>
-                  <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => { setPage(totalPages); window.scrollTo({ top: 0, behavior: 'smooth' }); }} aria-label="Last page">»</Button>
+                  <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => goToPage(page + 1)} className="gap-1.5">Next <ArrowRight className="h-4 w-4" /></Button>
+                  <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => goToPage(totalPages)} aria-label="Last page">»</Button>
                 </div>
               </nav>
             </>
