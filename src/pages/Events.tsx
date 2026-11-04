@@ -71,8 +71,8 @@ export default function Events() {
       setError(null);
       try {
         const [categoryResult, eventResult] = await Promise.all([
-          (supabase as any).from("book_event_categories").select("id,name,slug,description").eq("is_active", true).order("sort_order"),
-          (supabase as any).from("book_events").select("*").eq("status", "published").gte("start_at", new Date().toISOString()).order("featured", { ascending: false }).order("start_at").limit(100),
+          (supabase as any).from("literary_event_categories").select("id,name,slug,description").eq("is_active", true).order("sort_order"),
+          (supabase as any).from("literary_events").select("*").eq("status", "published").gte("start_at", new Date().toISOString()).order("featured", { ascending: false }).order("start_at").limit(100),
         ]);
         if (categoryResult.error) throw categoryResult.error;
         if (eventResult.error) throw eventResult.error;

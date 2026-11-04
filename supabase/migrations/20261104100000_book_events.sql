@@ -1,5 +1,5 @@
 -- Sahadhyayi book and literary events: curated, source-verified listings.
-create table if not exists public.book_event_categories (
+create table if not exists public.literary_event_categories (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   slug text not null unique,
@@ -10,12 +10,12 @@ create table if not exists public.book_event_categories (
   created_at timestamptz not null default now()
 );
 
-create table if not exists public.book_events (
+create table if not exists public.literary_events (
   id uuid primary key default gen_random_uuid(),
   title text not null check (length(trim(title)) between 3 and 300),
   slug text not null unique,
   description text,
-  category_id uuid not null references public.book_event_categories(id) on delete restrict,
+  category_id uuid not null references public.literary_event_categories(id) on delete restrict,
   start_at timestamptz not null,
   end_at timestamptz,
   timezone text not null default 'Asia/Kolkata',
@@ -37,34 +37,34 @@ create table if not exists public.book_events (
   updated_by uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  constraint book_events_end_after_start check (end_at is null or end_at >= start_at),
-  constraint book_events_location check (is_online or city is not null or venue is not null)
+  constraint literary_events_end_after_start check (end_at is null or end_at >= start_at),
+  constraint literary_events_location check (is_online or city is not null or venue is not null)
 );
 
-create index if not exists book_events_published_start_idx on public.book_events(start_at) where status = 'published';
-create index if not exists book_events_category_start_idx on public.book_events(category_id,start_at) where status = 'published';
-create index if not exists book_events_city_start_idx on public.book_events(lower(city),start_at) where status = 'published';
-create index if not exists book_events_featured_idx on public.book_events(start_at) where status = 'published' and featured = true;
+create index if not exists literary_events_published_start_idx on public.literary_events(start_at) where status = 'published';
+create index if not exists literary_events_category_start_idx on public.literary_events(category_id,start_at) where status = 'published';
+create index if not exists literary_events_city_start_idx on public.literary_events(lower(city),start_at) where status = 'published';
+create index if not exists literary_events_featured_idx on public.literary_events(start_at) where status = 'published' and featured = true;
 
-alter table public.book_event_categories enable row level security;
-alter table public.book_events enable row level security;
-revoke all on public.book_event_categories from anon, authenticated;
-revoke all on public.book_events from anon, authenticated;
-grant select on public.book_event_categories to anon, authenticated;
-grant select on public.book_events to anon, authenticated;
-grant insert, update, delete on public.book_events to authenticated;
-grant insert, update, delete on public.book_event_categories to authenticated;
+alter table public.literary_event_categories enable row level security;
+alter table public.literary_events enable row level security;
+revoke all on public.literary_event_categories from anon, authenticated;
+revoke all on public.literary_events from anon, authenticated;
+grant select on public.literary_event_categories to anon, authenticated;
+grant select on public.literary_events to anon, authenticated;
+grant insert, update, delete on public.literary_events to authenticated;
+grant insert, update, delete on public.literary_event_categories to authenticated;
 
 create policy "Anyone can view active event categories"
-  on public.book_event_categories for select to anon, authenticated using (is_active = true or public.is_admin());
+  on public.literary_event_categories for select to anon, authenticated using (is_active = true or public.is_admin());
 create policy "Anyone can view published book events"
-  on public.book_events for select to anon, authenticated using (status = 'published' or public.is_admin());
+  on public.literary_events for select to anon, authenticated using (status = 'published' or public.is_admin());
 create policy "Admins manage event categories"
-  on public.book_event_categories for all to authenticated using (public.is_admin()) with check (public.is_admin());
+  on public.literary_event_categories for all to authenticated using (public.is_admin()) with check (public.is_admin());
 create policy "Admins manage book events"
-  on public.book_events for all to authenticated using (public.is_admin()) with check (public.is_admin());
+  on public.literary_events for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
-insert into public.book_event_categories (name,slug,description,icon,sort_order) values
+insert into public.literary_event_categories (name,slug,description,icon,sort_order) values
  ('Book Fairs & Exhibitions','book-fair','Book fairs, expos and publisher exhibitions','book-open',10),
  ('Literature Festivals','literature-festival','Literary festivals and cultural celebrations','landmark',20),
  ('Book Launches & Signings','book-launch','New releases, launch events and signing sessions','book-marked',30),
