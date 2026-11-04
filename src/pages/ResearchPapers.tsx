@@ -67,7 +67,7 @@ function getCategorySlug(paper: OpenAlexWork): string {
   if (type.includes('review')) return 'review';
   if (type.includes('preprint')) return 'preprint';
   if (type.includes('book-chapter')) return 'book-chapter';
-  if (type.includes('conference') || type.includes('proceedings') || sourceType === 'conference') return 'conference-paper';
+  if (type === 'conference-paper' || type === 'proceedings-article' || (type === 'article' && sourceType === 'conference')) return 'conference-paper';
   if (type === 'article' || type === 'journal-article' || type === 'research-article') return 'article';
   return 'other';
 }
