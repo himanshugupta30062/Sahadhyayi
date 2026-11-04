@@ -19,7 +19,7 @@ const paper = {
   display_name: 'A Test Research Paper',
   publication_year: 2025,
   cited_by_count: 42,
-  type: 'journal-article',
+  type: 'article',
   authorships: [
     { author: { display_name: 'Ada Lovelace' } },
     { author: { display_name: 'Alan Turing' } },
