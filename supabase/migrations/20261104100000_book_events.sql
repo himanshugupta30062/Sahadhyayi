@@ -52,6 +52,8 @@ revoke all on public.book_event_categories from anon, authenticated;
 revoke all on public.book_events from anon, authenticated;
 grant select on public.book_event_categories to anon, authenticated;
 grant select on public.book_events to anon, authenticated;
+grant insert, update, delete on public.book_events to authenticated;
+grant insert, update, delete on public.book_event_categories to authenticated;
 
 create policy "Anyone can view active event categories"
   on public.book_event_categories for select to anon, authenticated using (is_active = true or public.is_admin());
