@@ -21,5 +21,20 @@ export default defineConfig({
     restoreMocks: true,
     unstubEnvs: true,
     testTimeout: 10_000,
+    coverage: {
+      provider: 'v8',
+      enabled: false,
+      reporter: ['text', 'lcov', 'json-summary'],
+      reportsDirectory: './coverage',
+      reportOnFailure: true,
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/**/*.d.ts',
+        'src/**/*.{test,spec}.{ts,tsx}',
+        'src/**/__tests__/**',
+        'src/integrations/supabase/types.ts',
+        'archive/**',
+      ],
+    },
   },
 });
