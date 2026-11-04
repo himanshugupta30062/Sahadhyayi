@@ -92,6 +92,7 @@ const BookLibrary = lazy(() => import('./pages/BookLibrary'));
 const ResearchPapers = lazy(() => import('./pages/ResearchPapers'));
 const ResearchPaperSubmission = lazy(() => import('./pages/ResearchPaperSubmission'));
 const MyResearchSubmissions = lazy(() => import('./pages/MyResearchSubmissions'));
+const MySavedResearch = lazy(() => import('./pages/MySavedResearch'));
 const DmcaPolicy = lazy(() => import('./pages/DmcaPolicy'));
 const OpenSourceLicenses = lazy(() => import('./pages/OpenSourceLicenses'));
 const SignIn = lazy(() => import('./pages/SignIn'));
@@ -346,6 +347,16 @@ const App = memo(() => {
                             <ProtectedRoute>
                               <Suspense fallback={<LoadingFallback message="Loading your submissions..." />}>
                                 <MyResearchSubmissions />
+                              </Suspense>
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/my-saved-research"
+                          element={
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading saved research..." />}>
+                                <MySavedResearch />
                               </Suspense>
                             </ProtectedRoute>
                           }

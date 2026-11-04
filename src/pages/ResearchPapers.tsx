@@ -345,6 +345,7 @@ const ResearchPapers = () => {
             <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
               <a href="/research-papers/submit?kind=publish" className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#1C442D] px-4 text-sm font-semibold text-white hover:bg-[#163824] dark:bg-[#D5B16D] dark:text-[#101711] dark:hover:bg-[#E3C58B]">Publish Research Paper</a>
               <a href="/research-papers/submit?kind=contribute" className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[#C9D2CA] bg-white px-4 text-sm font-semibold text-[#1C442D] hover:bg-[#F3F6F2] dark:border-[#344039] dark:bg-[#1D2821] dark:text-[#D5B16D]">Add Research Paper</a>
+              <a href="/my-saved-research" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-[#C9D2CA] bg-white px-4 text-sm font-semibold text-[#1C442D] hover:bg-[#F3F6F2] dark:border-[#344039] dark:bg-[#1D2821] dark:text-[#D5B16D]"><BookmarkCheck className="h-4 w-4" /> My Saved Research</a>
             </div>
           </div>
         </section>
