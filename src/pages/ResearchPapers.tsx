@@ -277,7 +277,7 @@ const ResearchPapers = () => {
     }
     void loadPapers();
     return () => { active = false; };
-  }, [debouncedQuery, year, paperType, page, retry]);
+  }, [debouncedQuery, year, category, page, retry]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const pageNumbers = useMemo(() => {
