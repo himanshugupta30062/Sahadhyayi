@@ -86,7 +86,7 @@ describe('ResearchPapers', () => {
   it('filters results by database-backed research category', async () => {
     renderPage();
     await screen.findByRole('heading', { name: 'A Test Research Paper' });
-    fireEvent.change(screen.getByRole('combobox', { name: 'Filter by paper type' }), {
+    fireEvent.change(screen.getByRole('combobox', { name: 'Filter by research category' }), {
       target: { value: 'review' },
     });
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
