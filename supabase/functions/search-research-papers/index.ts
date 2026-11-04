@@ -32,6 +32,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return jsonResponse({ error: "Method not allowed" }, 405);
 
+  let stalePayload: unknown = null;
   try {
     const body: unknown = await req.json();
     if (!body || typeof body !== "object" || Array.isArray(body)) {
@@ -73,6 +74,7 @@ Deno.serve(async (req: Request) => {
 
     const cacheKey = JSON.stringify({ query, page, perPage, year, category });
     const cached = responseCache.get(cacheKey);
+    if (cached) stalePayload = cached.payload;
     if (cached && cached.expiresAt > Date.now()) {
       return jsonResponse(cached.payload, 200, true);
     }
@@ -112,6 +114,10 @@ Deno.serve(async (req: Request) => {
     responseCache.set(cacheKey, { expiresAt: Date.now() + CACHE_TTL_MS, payload });
     return jsonResponse(payload);
   } catch (error) {
+    if (stalePayload) {
+      console.warn("Research search failed; serving stale cached results");
+      return jsonResponse(stalePayload, 200, true);
+    }
     if (error instanceof DOMException && error.name === "TimeoutError") {
       return jsonResponse({ error: "The research catalogue took too long to respond. Please try again.", code: "UPSTREAM_TIMEOUT" }, 504);
     }
