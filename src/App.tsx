@@ -76,6 +76,7 @@ const ArticleDetail = lazy(() => import('./pages/ArticleDetail'));
 const MyArticles = lazy(() => import('./pages/MyArticles'));
 const Events = lazy(() => import('./pages/Events'));
 const ReviewersCritics = lazy(() => import('./pages/ReviewersCritics'));
+const LiteraryCreatorProfile = lazy(() => import('./pages/LiteraryCreatorProfile'));
 const EventDetails = lazy(() => import('./pages/EventDetails'));
 const AdminEvents = lazy(() => import('./pages/AdminEvents'));
 
@@ -403,6 +404,7 @@ const App = memo(() => {
                           }
                         />
                         <Route path="/reviewers-critics" element={<Suspense fallback={<LoadingFallback message="Loading reviewers and critics..." />}><ReviewersCritics /></Suspense>} />
+                        <Route path="/literary-voices/:slug" element={<Suspense fallback={<LoadingFallback message="Loading literary voice..." />}><LiteraryCreatorProfile /></Suspense>} />
                         <Route
                           path="/authors"
                           element={
