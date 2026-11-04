@@ -236,16 +236,14 @@ const ResearchPapers = () => {
     }
   };
 
+  const serializedSearchParams = searchParams.toString();
   useEffect(() => {
-    const urlSearch = searchParams.get('search') || '';
-    const urlYear = searchParams.get('year') || 'all';
-    const urlCategory = searchParams.get('category') || 'all';
-    const urlPage = Math.max(1, Number(searchParams.get('page')) || 1);
-    if (urlSearch !== searchQuery) setSearchQuery(urlSearch);
-    if (urlYear !== year) setYear(urlYear);
-    if (urlCategory !== category) setCategory(urlCategory);
-    if (urlPage !== page) setPage(urlPage);
-  }, [searchParams]);
+    const urlParams = new URLSearchParams(serializedSearchParams);
+    setSearchQuery(urlParams.get('search') || '');
+    setYear(urlParams.get('year') || 'all');
+    setCategory(urlParams.get('category') || 'all');
+    setPage(Math.max(1, Number(urlParams.get('page')) || 1));
+  }, [serializedSearchParams]);
 
   useEffect(() => {
     setSearchParams((currentParams) => {
