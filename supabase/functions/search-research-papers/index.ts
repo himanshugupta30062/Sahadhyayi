@@ -15,40 +15,29 @@ let categoryCache: { expiresAt: number; rows: ResearchCategory[] } | null = null
 
 async function getResearchCategories(): Promise<ResearchCategory[]> {
   if (categoryCache && categoryCache.expiresAt > Date.now()) return categoryCache.rows;
-  if (categoryCache) {
-    try {
-      const url = Deno.env.get("SUPABASE_URL");
-      const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-      if (!url || !anonKey) throw new Error("Research category database configuration is missing.");
-      const query = new URLSearchParams({ select: "slug,openalex_types" });
-      const response = await fetch(`${url.replace(/\\/$/, "")}/rest/v1/research_paper_categories?${query.toString()}`, {
-        headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}`, Accept: "application/json" },
-        signal: AbortSignal.timeout(8000),
-      });
-      if (!response.ok) throw new Error(`Research category lookup failed with HTTP ${response.status}.`);
-      const rows = await response.json() as ResearchCategory[];
-      if (!Array.isArray(rows) || rows.length === 0) throw new Error("Research categories are not configured.");
-      categoryCache = { rows, expiresAt: Date.now() + CATEGORY_CACHE_TTL_MS };
-      return rows;
-    } catch (error) {
+  const previous = categoryCache;
+  try {
+    const url = Deno.env.get("SUPABASE_URL");
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    if (!url || !anonKey) throw new Error("Research category database configuration is missing.");
+    const baseUrl = url.endsWith("/") ? url.slice(0, -1) : url;
+    const query = new URLSearchParams({ select: "slug,openalex_types" });
+    const response = await fetch(`${baseUrl}/rest/v1/research_paper_categories?${query.toString()}`, {
+      headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}`, Accept: "application/json" },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!response.ok) throw new Error(`Research category lookup failed with HTTP ${response.status}.`);
+    const rows = await response.json() as ResearchCategory[];
+    if (!Array.isArray(rows) || rows.length === 0) throw new Error("Research categories are not configured.");
+    categoryCache = { rows, expiresAt: Date.now() + CATEGORY_CACHE_TTL_MS };
+    return rows;
+  } catch (error) {
+    if (previous) {
       console.warn("Unable to refresh research category taxonomy; using stale taxonomy.", error);
-      return categoryCache.rows;
+      return previous.rows;
     }
+    throw error;
   }
-
-  const url = Deno.env.get("SUPABASE_URL");
-  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-  if (!url || !anonKey) throw new Error("Research category database configuration is missing.");
-  const query = new URLSearchParams({ select: "slug,openalex_types" });
-  const response = await fetch(`${url.replace(/\\/$/, "")}/rest/v1/research_paper_categories?${query.toString()}`, {
-    headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}`, Accept: "application/json" },
-    signal: AbortSignal.timeout(8000),
-  });
-  if (!response.ok) throw new Error(`Research category lookup failed with HTTP ${response.status}.`);
-  const rows = await response.json() as ResearchCategory[];
-  if (!Array.isArray(rows) || rows.length === 0) throw new Error("Research categories are not configured.");
-  categoryCache = { rows, expiresAt: Date.now() + CATEGORY_CACHE_TTL_MS };
-  return rows;
 }
 
 const SELECT_FIELDS = [
@@ -93,6 +82,13 @@ Deno.serve(async (req: Request) => {
     if (perPage < 1 || perPage > 25) return jsonResponse({ error: "Page size must be between 1 and 25." }, 400);
     if (year !== "all" && !/^\d{4}$/.test(year)) return jsonResponse({ error: "Publication year is invalid." }, 400);
 
+    const cacheKey = JSON.stringify({ query, page, perPage, year, category });
+    const cached = responseCache.get(cacheKey);
+    if (cached) stalePayload = cached.payload;
+    if (cached && cached.expiresAt > Date.now()) {
+      return jsonResponse(cached.payload, 200, true);
+    }
+
     const filters = ["open_access.is_oa:true"];
     if (year !== "all") filters.push(`publication_year:${year}`);
     if (category !== "all") {
@@ -117,12 +113,6 @@ Deno.serve(async (req: Request) => {
     });
     if (query) params.set("search", query);
 
-    const cacheKey = JSON.stringify({ query, page, perPage, year, category });
-    const cached = responseCache.get(cacheKey);
-    if (cached) stalePayload = cached.payload;
-    if (cached && cached.expiresAt > Date.now()) {
-      return jsonResponse(cached.payload, 200, true);
-    }
     // Keep expired entries available as a fallback while refreshing upstream.
 
     const apiKey = Deno.env.get("OPENALEX_API_KEY");
