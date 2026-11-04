@@ -707,6 +707,14 @@ const Navigation = () => {
                   </DropdownMenu>
                 ))}
                 <Link
+                  to="/events"
+                  onClick={() => handleDesktopNavigationClick("/events")}
+                  aria-current={isCurrentRoute("/events") ? "page" : undefined}
+                  className={"min-h-10 rounded-md px-2.5 py-2 text-sm font-medium transition-colors hover:bg-muted " + (isCurrentRoute("/events") ? "text-[hsl(var(--brand-primary))]" : "text-muted-foreground hover:text-foreground")}
+                >
+                  Events
+                </Link>
+                <Link
                   to="/games"
                   onClick={() => handleDesktopNavigationClick("/games")}
                   aria-current={isCurrentRoute("/games") ? "page" : undefined}
@@ -821,6 +829,7 @@ const Navigation = () => {
                 <>
                   {[...NAVIGATION_SECTIONS].sort((a, b) => NAVIGATION_ORDER.indexOf(a.name) - NAVIGATION_ORDER.indexOf(b.name)).map(renderDrawerSection)}
                   {renderDrawerLink({ name: "Authors", href: "/authors" })}
+                  {renderDrawerLink({ name: "Events", href: "/events" })}
                   {renderDrawerLink({ name: "Games", href: "/games" })}
                   {renderPublicDrawerItem({ name: "More", href: "/about", children: PEOPLE_AND_MORE }, "authenticated-more")}
                 </>
