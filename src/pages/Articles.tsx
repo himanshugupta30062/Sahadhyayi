@@ -31,7 +31,8 @@ const Articles = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
-  const [activeTag, setActiveTag] = useState<string | null>(null);\n  const [activeKind, setActiveKind] = useState<'all'|'book-review'|'literary-criticism'>('all');
+  const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [activeKind, setActiveKind] = useState<'all'|'book-review'|'literary-criticism'>('all');
   const [sortMode, setSortMode] = useState<SortMode>('latest');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
