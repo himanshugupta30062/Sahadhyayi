@@ -248,17 +248,19 @@ const ResearchPapers = () => {
   }, [searchParams]);
 
   useEffect(() => {
-    const next = new URLSearchParams(searchParams);
-    if (searchQuery.trim()) next.set('search', searchQuery.trim());
-    else next.delete('search');
-    if (year !== 'all') next.set('year', year);
-    else next.delete('year');
-    if (category !== 'all') next.set('category', category);
-    else next.delete('category');
-    if (page > 1) next.set('page', String(page));
-    else next.delete('page');
-    if (next.toString() !== searchParams.toString()) setSearchParams(next, { replace: true });
-  }, [searchQuery, year, category, page, searchParams, setSearchParams]);
+    setSearchParams((currentParams) => {
+      const next = new URLSearchParams(currentParams);
+      if (searchQuery.trim()) next.set('search', searchQuery.trim());
+      else next.delete('search');
+      if (year !== 'all') next.set('year', year);
+      else next.delete('year');
+      if (category !== 'all') next.set('category', category);
+      else next.delete('category');
+      if (page > 1) next.set('page', String(page));
+      else next.delete('page');
+      return next.toString() === currentParams.toString() ? currentParams : next;
+    }, { replace: true });
+  }, [searchQuery, year, category, page, setSearchParams]);
 
   useEffect(() => {
     let active = true;
