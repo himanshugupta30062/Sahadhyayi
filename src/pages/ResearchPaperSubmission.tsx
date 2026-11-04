@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
@@ -10,8 +10,39 @@ import { useAuth } from "@/contexts/authHelpers";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, FileUp, Loader2 } from "lucide-react";
 
+type ResearchPaperCategory = { slug: string; name: string; description: string | null; display_order: number };
+type CategoryReader = {
+ from: (table: string) => {
+  select: (columns: string) => {
+   order: (column: string, options: { ascending: boolean }) => PromiseLike<{ data: ResearchPaperCategory[] | null; error: { message: string } | null }>;
+  };
+ };
+};
+const DEFAULT_CATEGORIES: ResearchPaperCategory[] = [
+ {slug:"article",name:"Research article",description:"Original scholarly research",display_order:1},
+ {slug:"review",name:"Review paper",description:"Synthesis of existing research",display_order:2},
+ {slug:"preprint",name:"Preprint",description:"Research shared before peer review",display_order:3},
+ {slug:"conference-paper",name:"Conference paper",description:"Complete paper published in conference proceedings",display_order:4},
+ {slug:"book-chapter",name:"Book chapter",description:"Scholarly chapter in an edited volume",display_order:5},
+ {slug:"other",name:"Other research",description:"Other scholarly work types",display_order:6},
+];
+
 export default function ResearchPaperSubmission(){
  const [params]=useSearchParams(); const kind=params.get("kind")==="publish"?"publish":"contribute";
+ const [categories,setCategories]=useState<ResearchPaperCategory[]>(DEFAULT_CATEGORIES);
+ useEffect(()=>{
+  let active=true;
+  const loadCategories=async()=>{
+   try{
+    const reader=supabase as unknown as CategoryReader;
+    const {data,error}=await reader.from("research_paper_categories").select("slug,name,description,display_order").order("display_order",{ascending:true});
+    if(error)throw error;
+    if(active&&data?.length)setCategories(data);
+   }catch(error){console.warn("Unable to load research submission categories:",error);}
+  };
+  void loadCategories();
+  return()=>{active=false;};
+ },[]);
  const {user}=useAuth(); const [busy,setBusy]=useState(false);
  const [form,setForm]=useState({title:"",authors:"",abstract:"",doi:"",source_url:"",publication_year:"",paper_type:"article"});
  const [file,setFile]=useState<File|null>(null);
@@ -43,7 +74,7 @@ export default function ResearchPaperSubmission(){
  <div className="space-y-2"><Label htmlFor="rp-abstract">Abstract / summary</Label><Textarea id="rp-abstract" rows={5} maxLength={12000} value={form.abstract} onChange={e=>change("abstract",e.target.value)}/></div>
  <div className="grid gap-4 sm:grid-cols-2"><div className="space-y-2"><Label htmlFor="rp-doi">DOI</Label><Input id="rp-doi" placeholder="10.xxxx/..." value={form.doi} onChange={e=>change("doi",e.target.value)}/></div><div className="space-y-2"><Label htmlFor="rp-year">Publication year</Label><Input id="rp-year" type="number" min={1600} max={new Date().getFullYear()+1} value={form.publication_year} onChange={e=>change("publication_year",e.target.value)}/></div></div>
  <div className="space-y-2"><Label htmlFor="rp-url">Publisher / repository URL</Label><Input id="rp-url" type="url" placeholder="https://" value={form.source_url} onChange={e=>change("source_url",e.target.value)}/></div>
- <div className="space-y-2"><Label htmlFor="rp-type">Paper type</Label><select id="rp-type" className="h-10 w-full rounded-md border bg-background px-3" value={form.paper_type} onChange={e=>change("paper_type",e.target.value)}>{["article","review","preprint","conference-paper","book-chapter","other"].map(x=><option key={x} value={x}>{x.replace("-"," ")}</option>)}</select></div>
+ <div className="space-y-2"><Label htmlFor="rp-category">Research category</Label><select id="rp-category" className="h-10 w-full rounded-md border bg-background px-3" value={form.paper_type} onChange={e=>change("paper_type",e.target.value)}>{categories.map(item=><option key={item.slug} value={item.slug}>{item.name}</option>)}</select><p className="text-xs text-muted-foreground">Choose the category that best describes this scholarly work.</p></div>
  {kind==="publish"&&<div className="space-y-2"><Label htmlFor="rp-file">Manuscript PDF * (max 50 MB)</Label><Input id="rp-file" type="file" accept="application/pdf" required onChange={e=>setFile(e.target.files?.[0]||null)}/><p className="text-xs text-muted-foreground">Stored privately in review quarantine; not publicly downloadable.</p></div>}
  <Button type="submit" disabled={busy} className="w-full">{busy?<Loader2 className="mr-2 h-4 w-4 animate-spin"/>:<FileUp className="mr-2 h-4 w-4"/>}{busy?"Submitting…":"Submit for review"}</Button>
  <p className="text-xs text-muted-foreground">Submissions are reviewed before being listed. Submit only work you own or are authorized to share.</p>
