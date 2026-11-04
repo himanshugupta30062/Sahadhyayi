@@ -23,7 +23,7 @@ Deno.serve(async req=>{
   if(kind==="contribute"&&filePath) return respond({error:"PDF uploads are only accepted for publish submissions."},400);
   if(filePath){
     const parts=filePath.split("/");
-    if(parts.length!==3||parts[0]!==user.id||parts.some(part=>!part||part==="."||part===".."||part.includes("\\\\"))) return respond({error:"Invalid manuscript upload path."},400);
+    if(parts.length!==3||parts[0]!==user.id||parts.some(part=>!part||part==="."||part===".."||part.includes(String.fromCharCode(92)))) return respond({error:"Invalid manuscript upload path."},400);
     const {data:uploadedFiles,error:storageError}=await db.storage.from("research-paper-quarantine").list(`${user.id}/${parts[1]}`,{search:parts[2]});
     if(storageError||!uploadedFiles?.some(file=>file.name===parts[2])) return respond({error:"The uploaded manuscript could not be verified. Please upload it again."},400);
   }
