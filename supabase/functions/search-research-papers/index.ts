@@ -49,7 +49,7 @@ Deno.serve(async (req: Request) => {
       article: "type:article",
       review: "type:review",
       preprint: "type:preprint",
-      "conference-paper": "primary_location.source.type:conference",
+      "conference-paper": "type:conference-paper",
       "book-chapter": "type:book-chapter",
       other: "type:other",
     };
