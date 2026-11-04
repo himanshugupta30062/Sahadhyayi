@@ -83,7 +83,7 @@ describe('ResearchPapers', () => {
     ));
   });
 
-  it('filters results by research paper type', async () => {
+  it('filters results by database-backed research category', async () => {
     renderPage();
     await screen.findByRole('heading', { name: 'A Test Research Paper' });
     fireEvent.change(screen.getByRole('combobox', { name: 'Filter by paper type' }), {
@@ -101,6 +101,7 @@ describe('ResearchPapers', () => {
     expect(screen.getByText('Ada Lovelace, Alan Turing, Grace Hopper and 1 more')).toBeInTheDocument();
     expect(screen.getByText('Evidence matters greatly')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Read paper/ })).toHaveAttribute('href', 'https://publisher.example/paper');
+    expect(screen.getByText('Research article')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'PDF' })).toHaveAttribute('href', 'https://publisher.example/paper.pdf');
     expect(screen.getByText('42 citations')).toBeInTheDocument();
   });
@@ -165,9 +166,38 @@ describe('ResearchPapers', () => {
     ));
     fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
     expect(await screen.findByText('Page 2 of 2')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByText(/Showing 13–24 of 24 papers/)).toBeInTheDocument();
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
       'search-research-papers',
       { body: { query: 'artificial intelligence', year: 'all', category: 'all', page: 2, perPage: 12 } },
     ));
+  });
+});
+
+
+describe('ResearchPapers URL pagination', () => {
+  beforeEach(() => {
+    vi.mocked(supabase.functions.invoke).mockResolvedValue(searchResult([paper], 36) as never);
+    vi.mocked(supabase.from).mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        order: vi.fn().mockResolvedValue({ data: [], error: null }),
+      }),
+    } as never);
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it('loads the requested page from the URL', async () => {
+    renderPage('/research-papers?page=2&category=review&year=2024');
+    await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith(
+      'search-research-papers',
+      { body: { query: '', year: '2024', category: 'review', page: 2, perPage: 12 } },
+    ));
+    expect(await screen.findByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page');
   });
 });
