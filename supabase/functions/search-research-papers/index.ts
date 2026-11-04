@@ -45,7 +45,9 @@ Deno.serve(async (req: Request) => {
     const perPage = Number.isInteger(input.perPage) ? Number(input.perPage) : 12;
     const year = input.year === "all" || input.year == null ? "all" : String(input.year);
     const allowedCategories = new Set(["article", "review", "preprint", "conference-paper", "book-chapter", "other"]);
-    const category = typeof input.category === "string" && allowedCategories.has(input.category) ? input.category : "all";
+    // Keep compatibility with previously deployed frontends that still send "type".
+    const requestedCategory = input.category ?? input.type;
+    const category = typeof requestedCategory === "string" && allowedCategories.has(requestedCategory) ? requestedCategory : "all";
     const categoryFilters: Record<string, string> = {
       article: "type:article",
       review: "type:review",
