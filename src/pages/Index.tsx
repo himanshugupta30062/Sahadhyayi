@@ -124,6 +124,24 @@ const Index = () => {
           <HomeEditorialPreview />
         </DeferredSection>
 
+        {/* Literary voices discovery */}
+        <section className="border-y border-[#E4E8DF] bg-white py-14 dark:border-[#29332D] dark:bg-[#111614] sm:py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-center">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8F681C] dark:text-[#D5B16D]">A richer reading culture</p>
+                <h2 className="mt-3 max-w-xl font-serif text-3xl font-bold tracking-tight text-[#1C201D] dark:text-[#F3F0E7] sm:text-4xl">Discover the voices behind the books</h2>
+                <p className="mt-4 max-w-xl text-sm leading-7 text-[#636B65] dark:text-[#A5ADA6]">Find thoughtful reviewers, literary critics, BookTubers and bookish creators. Explore reader reviews or dive into essays that look deeper into the books we love.</p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <Link to="/reviewers-critics" className="group rounded-2xl border border-[#E4E8DF] p-5 transition hover:border-[#B7CEB7] hover:bg-[#F5F8F3] dark:border-[#29332D] dark:hover:bg-[#18201B]"><span className="text-2xl">✍️</span><h3 className="mt-3 font-semibold text-[#1C442D] dark:text-[#D5B16D]">Reviewers & Critics</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Meet literary voices</p><ArrowRight className="mt-3 h-4 w-4 transition-transform group-hover:translate-x-1"/></Link>
+                <Link to="/social?tab=reviews" className="group rounded-2xl border border-[#E4E8DF] p-5 transition hover:border-[#B7CEB7] hover:bg-[#F5F8F3] dark:border-[#29332D] dark:hover:bg-[#18201B]"><span className="text-2xl">⭐</span><h3 className="mt-3 font-semibold text-[#1C442D] dark:text-[#D5B16D]">Book Reviews</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Real reader perspectives</p><ArrowRight className="mt-3 h-4 w-4 transition-transform group-hover:translate-x-1"/></Link>
+                <Link to="/articles" className="group rounded-2xl border border-[#E4E8DF] p-5 transition hover:border-[#B7CEB7] hover:bg-[#F5F8F3] dark:border-[#29332D] dark:hover:bg-[#18201B]"><span className="text-2xl">📚</span><h3 className="mt-3 font-semibold text-[#1C442D] dark:text-[#D5B16D]">The Journal</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Reviews & critical essays</p><ArrowRight className="mt-3 h-4 w-4 transition-transform group-hover:translate-x-1"/></Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* 7. Atmospheric Final Call-to-Action with warm library aesthetic */}
         <section className="home-final-cta relative isolate py-20 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#FAFAF8] dark:bg-gradient-to-br dark:from-[#0B0D0C] dark:via-[#121413] dark:to-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden transition-colors duration-300">
 
