@@ -141,7 +141,7 @@ const StructuredFooter = () => {
               aria-label="Sahadhyayi home"
             >
               <img
-                src="/optimized-assets/site-logo.webp"
+                src="/brand/sahadhyayi-connected-readers.svg"
                 alt=""
                 aria-hidden="true"
                 width={40}
