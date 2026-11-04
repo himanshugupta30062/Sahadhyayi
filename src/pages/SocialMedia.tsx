@@ -23,6 +23,7 @@ import {
   UserRound,
 } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { Star } from 'lucide-react';
 import SignInLink from '@/components/SignInLink';
 import SEO from '@/components/SEO';
 import { SocialSurface } from '@/components/social/SocialSurface';
@@ -46,9 +47,10 @@ const SpoilerThreadsFeed = lazy(() => import('@/components/social/threads/Spoile
 const ReadingRoomsPanel = lazy(() => import('@/components/social/rooms/ReadingRoomsPanel'));
 const ReadingDnaPanel = lazy(() => import('@/components/social/dna/ReadingDnaPanel'));
 
-const VALID_SOCIAL_TABS = ['feed', 'rooms', 'threads', 'margins', 'dna', 'friends', 'map', 'groups'] as const;
+const VALID_SOCIAL_TABS = ['feed', 'reviews', 'rooms', 'threads', 'margins', 'dna', 'friends', 'map', 'groups'] as const;
 const SOCIAL_TAB_LABELS: Record<string, string> = {
   feed: 'Community Feed',
+  reviews: 'Book Reviews',
   rooms: 'Reading Rooms',
   threads: 'Book Discussions',
   margins: 'Shared Marginalia',
@@ -356,6 +358,15 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
               </button>
               <button
                 type="button"
+                aria-pressed={activeTab === 'reviews'}
+                onClick={() => handleTabChange('reviews')}
+                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'reviews' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAFAF8] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
+              >
+                <Star className="h-4 w-4" aria-hidden="true" />
+                Book Reviews
+              </button>
+              <button
+                type="button"
                 aria-pressed={activeTab === 'friends'}
                 onClick={() => handleTabChange('friends')}
                 className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'friends' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAFAF8] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
@@ -522,6 +533,27 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                       <EnhancedSocialFeed />
                     </Suspense>
                   </ErrorBoundary>
+                </TabsContent>
+
+                <TabsContent value="reviews" className="mt-0 space-y-6">
+                  <section className="rounded-2xl border border-[#E8E8E3] bg-white p-6 dark:border-[#29332D] dark:bg-[#111614] sm:p-8">
+                    <div className="flex items-start gap-3">
+                      <div className="rounded-xl bg-[#EBF2EC] p-3 text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]"><Star className="h-5 w-5" /></div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1C442D] dark:text-[#D5B16D]">Read · Reflect · Recommend</p>
+                        <h2 className="mt-1 font-serif text-2xl font-bold">Book Reviews</h2>
+                        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Discover reader experiences and thoughtful perspectives. Reviews are connected to their books so every opinion has context.</p>
+                      </div>
+                    </div>
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      <Button asChild className="bg-[#1C442D] text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C]"><Link to="/library">Find a book to review <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
+                      <Button asChild variant="outline"><Link to="/reviewers-critics">Discover reviewers & critics</Link></Button>
+                    </div>
+                    <div className="mt-6 rounded-xl border border-dashed border-[#C8DBCB] bg-[#FAFAF8] p-5 text-sm text-[#636B65] dark:border-[#315C43] dark:bg-[#0B0D0C] dark:text-[#A5ADA6]">
+                      <p className="font-semibold text-[#1C442D] dark:text-[#D5B16D]">Reviews are available on each book page</p>
+                      <p className="mt-1">Choose a book in the Library to read community reviews, add your own experience, and use spoiler controls. A unified cross-book review feed will be added after the review API and public visibility rules are finalized.</p>
+                    </div>
+                  </section>
                 </TabsContent>
 
                 {/* ── Reading Rooms Tab ── */}
