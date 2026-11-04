@@ -22,9 +22,10 @@ Deno.serve(async req=>{
   if(year!==null&&(!Number.isInteger(year)||year<1600||year>new Date().getFullYear()+1)) return respond({error:"Publication year is invalid."},400);
   const {data:existing}=await db.from("research_paper_submissions").select("id,status").eq("doi",doi||"__none__").maybeSingle();
   if(existing) return respond({error:"A submission with this DOI already exists.",duplicate:true},409);
-  const type=String(body.paper_type||"article");
-  if(!["article","review","preprint","conference-paper","book-chapter","other"].includes(type)) return respond({error:"Invalid paper type."},400);
-  const {data,error}=await db.from("research_paper_submissions").insert({submitter_id:user.id,submission_kind:kind,title,authors,abstract:abstract||null,doi:doi||null,source_url:sourceUrl||null,publication_year:year,paper_type:type,file_path:body.file_path||null}).select("id,title,status,created_at").single();
+  const categorySlug=String(body.paper_type||"article");
+  const {data:category,error:categoryError}=await db.from("research_paper_categories").select("slug").eq("slug",categorySlug).maybeSingle();
+  if(categoryError||!category) return respond({error:"Choose a valid research category."},400);
+  const {data,error}=await db.from("research_paper_submissions").insert({submitter_id:user.id,submission_kind:kind,title,authors,abstract:abstract||null,doi:doi||null,source_url:sourceUrl||null,publication_year:year,paper_type:category.slug,file_path:body.file_path||null}).select("id,title,status,created_at").single();
   if(error){if(error.code==="23505")return respond({error:"This DOI has already been submitted."},409);console.error(error);return respond({error:"Could not save submission."},500);}
   return respond({submission:data},201);
  }catch(e){console.error(e);return respond({error:"Invalid request."},400);}
