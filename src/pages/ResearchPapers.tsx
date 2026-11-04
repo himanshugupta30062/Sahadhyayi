@@ -15,7 +15,7 @@ type OpenAlexAuthor = { author?: { display_name?: string | null } | null } | nul
 type OpenAlexLocation = {
   landing_page_url?: string | null;
   pdf_url?: string | null;
-  source?: { display_name?: string | null } | null;
+  source?: { display_name?: string | null; type?: string | null } | null;
 } | null;
 type OpenAlexWork = {
   id?: string;
@@ -34,6 +34,43 @@ type OpenAlexWork = {
 };
 type OpenAlexResponse = { meta?: { count?: number }; results?: OpenAlexWork[] };
 type Topic = { label: string; query: string };
+type ResearchPaperCategory = {
+  slug: string;
+  name: string;
+  description: string | null;
+  display_order: number;
+};
+type CategoryQueryResult = {
+  data: ResearchPaperCategory[] | null;
+  error: { message: string } | null;
+};
+type CategoryQueryClient = {
+  from: (table: string) => {
+    select: (columns: string) => {
+      order: (column: string, options: { ascending: boolean }) => Promise<CategoryQueryResult>;
+    };
+  };
+};
+
+const DEFAULT_CATEGORIES: ResearchPaperCategory[] = [
+  { slug: 'article', name: 'Research article', description: 'Original scholarly research', display_order: 1 },
+  { slug: 'review', name: 'Review paper', description: 'Synthesis of existing research', display_order: 2 },
+  { slug: 'preprint', name: 'Preprint', description: 'Research shared before peer review', display_order: 3 },
+  { slug: 'conference-paper', name: 'Conference paper', description: 'Research published in conference proceedings', display_order: 4 },
+  { slug: 'book-chapter', name: 'Book chapter', description: 'Scholarly chapter in an edited volume', display_order: 5 },
+  { slug: 'other', name: 'Other research', description: 'Other scholarly work types', display_order: 6 },
+];
+
+function getCategorySlug(paper: OpenAlexWork): string {
+  const type = (paper.type || '').toLowerCase().replace(/_/g, '-');
+  const sourceType = (paper.primary_location?.source?.type || '').toLowerCase();
+  if (type.includes('review')) return 'review';
+  if (type.includes('preprint')) return 'preprint';
+  if (type.includes('book-chapter')) return 'book-chapter';
+  if (type.includes('conference') || type.includes('proceedings') || sourceType === 'conference') return 'conference-paper';
+  if (type === 'article' || type === 'journal-article' || type === 'research-article') return 'article';
+  return 'other';
+}
 
 const API_URL = 'https://api.openalex.org/works';
 const PAGE_SIZE = 12;
@@ -104,9 +141,10 @@ const ResearchPapers = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [activeTopic, setActiveTopic] = useState('');
-  const [year, setYear] = useState('all');
-  const [paperType, setPaperType] = useState('all');
-  const [page, setPage] = useState(1);
+  const [year, setYear] = useState(searchParams.get('year') || 'all');
+  const [category, setCategory] = useState(searchParams.get('category') || 'all');
+  const [categories, setCategories] = useState<ResearchPaperCategory[]>(DEFAULT_CATEGORIES);
+  const [page, setPage] = useState(() => Math.max(1, Number(searchParams.get('page')) || 1));
   const [papers, setPapers] = useState<OpenAlexWork[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -121,6 +159,26 @@ const ResearchPapers = () => {
     const timer = window.setTimeout(() => setDebouncedQuery(searchQuery.trim()), 350);
     return () => window.clearTimeout(timer);
   }, [searchQuery]);
+
+  useEffect(() => {
+    let active = true;
+    const loadCategories = async () => {
+      try {
+        const categoryClient = supabase as unknown as CategoryQueryClient;
+        const { data, error: categoryError } = await categoryClient
+          .from('research_paper_categories')
+          .select('slug,name,description,display_order')
+          .order('display_order', { ascending: true });
+        if (categoryError) throw categoryError;
+        if (active && Array.isArray(data) && data.length > 0) setCategories(data);
+      } catch (categoryLoadError) {
+        // Keep the built-in taxonomy available if the database is temporarily unavailable.
+        console.warn('Unable to load research paper categories:', categoryLoadError);
+      }
+    };
+    void loadCategories();
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -183,8 +241,14 @@ const ResearchPapers = () => {
     const next = new URLSearchParams(searchParams);
     if (searchQuery.trim()) next.set('search', searchQuery.trim());
     else next.delete('search');
+    if (year !== 'all') next.set('year', year);
+    else next.delete('year');
+    if (category !== 'all') next.set('category', category);
+    else next.delete('category');
+    if (page > 1) next.set('page', String(page));
+    else next.delete('page');
     if (next.toString() !== searchParams.toString()) setSearchParams(next, { replace: true });
-  }, [searchQuery, searchParams, setSearchParams]);
+  }, [searchQuery, year, category, page, searchParams, setSearchParams]);
 
   useEffect(() => {
     let active = true;
@@ -193,7 +257,7 @@ const ResearchPapers = () => {
       setError('');
       try {
         const { data, error: functionError } = await supabase.functions.invoke('search-research-papers', {
-          body: { query: debouncedQuery, year, type: paperType, page, perPage: PAGE_SIZE },
+          body: { query: debouncedQuery, year, category, page, perPage: PAGE_SIZE },
         });
         if (functionError) throw functionError;
         const payload: unknown = data;
@@ -206,8 +270,7 @@ const ResearchPapers = () => {
       } catch (loadError) {
         if (!active) return;
         setError(loadError instanceof Error ? loadError.message : 'Unable to load research papers right now.');
-        setPapers([]);
-        setTotalCount(0);
+        // Keep the last successful page visible during transient upstream failures.
       } finally {
         if (active) setLoading(false);
       }
@@ -217,7 +280,17 @@ const ResearchPapers = () => {
   }, [debouncedQuery, year, paperType, page, retry]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const pageNumbers = useMemo(() => {
+    const first = Math.max(1, Math.min(page - 2, totalPages - 4));
+    return Array.from({ length: Math.min(5, totalPages) }, (_, index) => first + index);
+  }, [page, totalPages]);
+  const firstResult = totalCount === 0 ? 0 : ((page - 1) * PAGE_SIZE) + 1;
+  const lastResult = Math.min(page * PAGE_SIZE, totalCount);
   const resultLabel = useMemo(() => totalCount.toLocaleString('en-US'), [totalCount]);
+
+  useEffect(() => {
+    if (!loading && page > totalPages) setPage(totalPages);
+  }, [loading, page, totalPages]);
 
   const chooseTopic = (topic: Topic) => {
     setActiveTopic(topic.label);
@@ -229,7 +302,7 @@ const ResearchPapers = () => {
     setSearchQuery('');
     setActiveTopic('All research');
     setYear('all');
-    setPaperType('all');
+    setCategory('all');
     setPage(1);
   };
 
@@ -275,14 +348,10 @@ const ResearchPapers = () => {
                 </select>
               </label>
               <label className="flex h-12 items-center gap-2 rounded-lg border border-[#E8E8E3] bg-[#FAFAF8] px-3 text-sm dark:border-[#26302A] dark:bg-[#0B0D0C]">
-                <span className="whitespace-nowrap text-xs text-[#737B74]">Type</span>
-                <select value={paperType} onChange={(event) => { setPaperType(event.target.value); setPage(1); }} aria-label="Filter by paper type" className="min-w-0 bg-transparent font-medium outline-none">
-                  <option value="all">All types</option>
-                  <option value="article">Research articles</option>
-                  <option value="review">Review papers</option>
-                  <option value="preprint">Preprints</option>
-                  <option value="conference-paper">Conference papers</option>
-                  <option value="book-chapter">Book chapters</option>
+                <span className="whitespace-nowrap text-xs text-[#737B74]">Category</span>
+                <select value={category} onChange={(event) => { setCategory(event.target.value); setPage(1); }} aria-label="Filter by research category" className="min-w-0 bg-transparent font-medium outline-none">
+                  <option value="all">All categories</option>
+                  {categories.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}
                 </select>
               </label>
               <Button type="button" variant="outline" onClick={resetFilters} className="h-12 gap-2 border-[#E8E8E3] dark:border-[#344039]">
@@ -380,7 +449,9 @@ const ResearchPapers = () => {
                           {abstract && <p className="mt-3 line-clamp-3 max-w-5xl text-sm leading-6 text-[#737B74] dark:text-[#A5ADA6]">{abstract}</p>}
                           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[#737B74] dark:text-[#A5ADA6]">
                             <span className="inline-flex items-center gap-1.5"><Quote className="h-3.5 w-3.5" /> {Number(paper.cited_by_count || 0).toLocaleString('en-US')} citations</span>
-                            {typeof paper.type === 'string' && <span className="capitalize">{paper.type.replace(/_/g, ' ')}</span>}
+                            <span className="inline-flex rounded-full border border-[#D7E1D6] bg-[#F1F5EF] px-2.5 py-1 text-[11px] font-semibold capitalize text-[#31583D] dark:border-[#344039] dark:bg-[#1D2821] dark:text-[#D5B16D]">
+                              {categories.find((item) => item.slug === getCategorySlug(paper))?.name || 'Other research'}
+                            </span>
                             <span>Paper {((page - 1) * PAGE_SIZE) + index + 1}</span>
                           </div>
                           <div className="mt-5 flex flex-wrap gap-2">
@@ -399,10 +470,22 @@ const ResearchPapers = () => {
               </div>
 
               <nav aria-label="Research results pagination" className="mt-8 flex flex-col items-center justify-between gap-3 rounded-2xl border border-[#E8E8E3] bg-white p-4 dark:border-[#26302A] dark:bg-[#141815] sm:flex-row">
-                <p className="text-sm text-[#737B74] dark:text-[#A5ADA6]">Page {page} of {totalPages}</p>
-                <div className="flex items-center gap-2">
+                <div className="text-center sm:text-left">
+                  <p className="text-sm font-medium text-[#344139] dark:text-[#DCE4DC]">
+                    Showing {firstResult.toLocaleString('en-US')}–{lastResult.toLocaleString('en-US')} of {resultLabel} papers
+                  </p>
+                  <p className="mt-1 text-xs text-[#737B74] dark:text-[#A5ADA6]">Page {page} of {totalPages}</p>
+                </div>
+                <div className="flex flex-wrap items-center justify-center gap-1.5">
+                  <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => { setPage(1); window.scrollTo({ top: 0, behavior: 'smooth' }); }} aria-label="First page">«</Button>
                   <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => { setPage((value) => value - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="gap-1.5"><ArrowLeft className="h-4 w-4" /> Previous</Button>
+                  {pageNumbers.map((number) => (
+                    <Button key={number} size="sm" variant={number === page ? 'default' : 'outline'} aria-current={number === page ? 'page' : undefined} aria-label={`Page ${number}`} onClick={() => { setPage(number); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+                      {number}
+                    </Button>
+                  ))}
                   <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => { setPage((value) => value + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="gap-1.5">Next <ArrowRight className="h-4 w-4" /></Button>
+                  <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => { setPage(totalPages); window.scrollTo({ top: 0, behavior: 'smooth' }); }} aria-label="Last page">»</Button>
                 </div>
               </nav>
             </>
