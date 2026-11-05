@@ -13,8 +13,8 @@ import { validateEmail, validatePassword, isRateLimited } from '@/utils/validati
 import { useToast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
 import { motion } from 'framer-motion';
-import { TurnstileCaptcha } from '@/components/auth/TurnstileCaptcha';
-import { executeRecaptcha, isRecaptchaConfigured } from '@/lib/recaptcha';
+import { HCaptchaWidget } from '@/components/auth/HCaptchaWidget';
+
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -88,21 +88,12 @@ const SignUp = () => {
       });
       return;
     }
-    setLoading(true);
-    let token = captchaToken;
-    if (isRecaptchaConfigured()) {
-      try {
-        token = await executeRecaptcha('signup');
-      } catch (captchaErr: any) {
-        setError(captchaErr?.message || 'Anti-bot verification failed. Please try again.');
-        setLoading(false);
-        return;
-      }
-    } else if (!token) {
-      setError('Please complete the anti-bot verification before creating your account.');
-      setLoading(false);
+    if (!captchaToken) {
+      setError('Please complete hCaptcha verification before creating your account.');
       return;
     }
+    setLoading(true);
+    const token = captchaToken;
     try {
       const signupName = normalizeAuthName(formData.name);
       const signupEmail = normalizeAuthEmail(formData.email);
@@ -340,7 +331,7 @@ const SignUp = () => {
                   </div>
                 </div>
                 
-                <TurnstileCaptcha key={captchaResetKey} onTokenChange={setCaptchaToken} />
+                <HCaptchaWidget key={captchaResetKey} action="signup" onTokenChange={setCaptchaToken} />
                 
                 <Button 
                   type="submit" 

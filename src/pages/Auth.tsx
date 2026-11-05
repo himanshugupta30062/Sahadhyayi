@@ -16,7 +16,7 @@ import SEO from '@/components/SEO';
 import { ForgotPasswordDialog } from '@/components/auth/ForgotPasswordDialog';
 import { Separator } from '@/components/ui/separator';
 import { motion } from 'framer-motion';
-import { executeRecaptcha } from '@/lib/recaptcha';
+import HCaptchaWidget from '@/components/auth/HCaptchaWidget';
 
 type AuthTab = 'signin' | 'signup';
 
@@ -34,6 +34,8 @@ const Auth = () => {
   const [signinData, setSigninData] = useState({ email: '', password: '' });
   const [signupData, setSignupData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaResetKey, setCaptchaResetKey] = useState(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [signupCompletedEmail, setSignupCompletedEmail] = useState<string | null>(null);
@@ -92,6 +94,8 @@ const Auth = () => {
     setError('');
     setSuccess('');
     setSignupCompletedEmail(null);
+    setCaptchaToken(null);
+    setCaptchaResetKey((key) => key + 1);
     const nextPath = tab === 'signup' ? '/signup' : '/signin';
     const currentParams = new URLSearchParams(searchParams);
     const nextSearch = currentParams.toString() ? `?${currentParams.toString()}` : '';
@@ -120,9 +124,13 @@ const Auth = () => {
       return;
     }
 
+    if (!captchaToken) {
+      setError('Please complete hCaptcha verification before signing in.');
+      return;
+    }
+
     setLoading(true);
     try {
-      const captchaToken = await executeRecaptcha('signin');
       await signIn(normalizeAuthEmail(signinData.email), signinData.password, captchaToken);
       window.dispatchEvent(new CustomEvent('communityStatsUpdate', { detail: { action: 'signin' } }));
       try {
@@ -146,6 +154,8 @@ const Auth = () => {
       }
     } finally {
       setLoading(false);
+      setCaptchaToken(null);
+      setCaptchaResetKey((key) => key + 1);
     }
   };
 
@@ -158,6 +168,11 @@ const Auth = () => {
       setError('Too many sign-up attempts. Please wait 10 minutes before trying again.');
       return;
     }
+    if (!captchaToken) {
+      setError('Please complete hCaptcha verification before creating your account.');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setSuccess('');
@@ -190,7 +205,6 @@ const Auth = () => {
     }
 
     try {
-      const captchaToken = await executeRecaptcha('signup');
       const { error: signUpError } = await signUp(
         normalizeAuthEmail(signupData.email),
         signupData.password,
@@ -226,6 +240,8 @@ const Auth = () => {
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
+      setCaptchaToken(null);
+      setCaptchaResetKey((key) => key + 1);
     }
   };
 
@@ -446,26 +462,7 @@ const Auth = () => {
                           </div>
                         </div>
 
-                        <p className="text-xs text-muted-foreground">
-                          Protected by Google reCAPTCHA.{' '}
-                          <a
-                            href="https://policies.google.com/privacy"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="underline hover:text-foreground"
-                          >
-                            Privacy
-                          </a>
-                          {' · '}
-                          <a
-                            href="https://policies.google.com/terms"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="underline hover:text-foreground"
-                          >
-                            Terms
-                          </a>
-                        </p>
+                        <HCaptchaWidget key={captchaResetKey} action="signin" onTokenChange={setCaptchaToken} />
 
                         <Button
                           type="submit"
@@ -626,26 +623,7 @@ const Auth = () => {
                           </div>
                         </div>
 
-                        <p className="text-xs text-muted-foreground">
-                          Protected by Google reCAPTCHA.{' '}
-                          <a
-                            href="https://policies.google.com/privacy"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="underline hover:text-foreground"
-                          >
-                            Privacy
-                          </a>
-                          {' · '}
-                          <a
-                            href="https://policies.google.com/terms"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="underline hover:text-foreground"
-                          >
-                            Terms
-                          </a>
-                        </p>
+                        <HCaptchaWidget key={captchaResetKey} action="signup" onTokenChange={setCaptchaToken} />
 
                         <Button
                           type="submit"

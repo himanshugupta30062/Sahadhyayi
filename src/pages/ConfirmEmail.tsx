@@ -9,8 +9,8 @@ import { CheckCircle2, XCircle, Mail, Loader2, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client-universal';
 import SEO from '@/components/SEO';
-import { TurnstileCaptcha } from '@/components/auth/TurnstileCaptcha';
-import { executeRecaptcha, isRecaptchaConfigured } from '@/lib/recaptcha';
+import { HCaptchaWidget } from '@/components/auth/HCaptchaWidget';
+
 
 type VerificationStatus = 'manual' | 'verifying' | 'success' | 'error' | 'already-verified' | 'verified-needs-signin';
 
@@ -241,18 +241,11 @@ const ConfirmEmail = () => {
       setErrorMessage('Enter a valid email address first.');
       return;
     }
-    let token = captchaToken;
-    if (isRecaptchaConfigured()) {
-      try {
-        token = await executeRecaptcha('confirm_email_resend');
-      } catch (captchaErr: any) {
-        setErrorMessage(captchaErr?.message || 'Anti-bot verification failed. Please try again.');
-        return;
-      }
-    } else if (!token) {
-      setErrorMessage('Complete the human verification before requesting a new code.');
+    if (!captchaToken) {
+      setErrorMessage('Complete hCaptcha verification before requesting a new code.');
       return;
     }
+    const token = captchaToken;
     setBusy(true);
     setErrorMessage('');
     try {
@@ -271,7 +264,7 @@ const ConfirmEmail = () => {
       if (message.includes('rate') || message.includes('too many')) {
         setErrorMessage('Please wait a little before requesting another code.');
       } else if (message.includes('captcha') || message.includes('challenge') || message.includes('captcha_token')) {
-        // A rejected/expired Turnstile token must not be submitted repeatedly.
+        // A rejected/expired hCaptcha token must not be submitted repeatedly.
         // Reset the widget and require a new successful challenge.
         setCaptchaToken(null);
         setCaptchaResetKey((key) => key + 1);
@@ -358,7 +351,7 @@ const ConfirmEmail = () => {
                   </form>
                   <div className="space-y-2">
                     <p className="text-sm text-muted-foreground">To protect accounts from automated abuse, verify before requesting another email.</p>
-                    <TurnstileCaptcha key={captchaResetKey} action="signup" onTokenChange={setCaptchaToken} />
+                    <HCaptchaWidget key={captchaResetKey} action="signup" onTokenChange={setCaptchaToken} />
                   </div>
                   <Button type="button" variant="outline" disabled={busy || !captchaToken} onClick={handleResendCode} className="w-full">
                     {busy ? 'Please wait…' : 'Resend verification code'}

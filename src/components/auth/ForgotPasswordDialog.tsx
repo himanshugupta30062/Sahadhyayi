@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { Mail, CheckCircle2, AlertCircle } from 'lucide-react';
 import { validateEmail } from '@/utils/validation';
+import HCaptchaWidget from '@/components/auth/HCaptchaWidget';
 
 export const ForgotPasswordDialog = () => {
   const [open, setOpen] = useState(false);
@@ -22,6 +23,8 @@ export const ForgotPasswordDialog = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaResetKey, setCaptchaResetKey] = useState(0);
   const { toast } = useToast();
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -29,6 +32,8 @@ export const ForgotPasswordDialog = () => {
     if (!newOpen) {
       setSuccess(false);
       setErrorMessage('');
+      setCaptchaToken(null);
+      setCaptchaResetKey((key) => key + 1);
     }
   };
 
@@ -47,6 +52,11 @@ export const ForgotPasswordDialog = () => {
       return;
     }
 
+    if (!captchaToken) {
+      setErrorMessage('Please complete hCaptcha verification before requesting a reset link.');
+      return;
+    }
+
     setLoading(true);
     setErrorMessage('');
     setSuccess(false);
@@ -54,6 +64,7 @@ export const ForgotPasswordDialog = () => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
         redirectTo: `${window.location.origin}/reset-password`,
+        captchaToken,
       });
 
       if (error) {
@@ -75,6 +86,8 @@ export const ForgotPasswordDialog = () => {
       setErrorMessage(err?.message || 'A network error occurred. Please try again.');
     } finally {
       setLoading(false);
+      setCaptchaToken(null);
+      setCaptchaResetKey((key) => key + 1);
     }
   };
 
@@ -155,6 +168,7 @@ export const ForgotPasswordDialog = () => {
               </div>
             </div>
 
+            <HCaptchaWidget key={captchaResetKey} action="password_reset" onTokenChange={setCaptchaToken} />
             <Button
               type="submit"
               disabled={loading}
