@@ -9,6 +9,7 @@ import usePageVisitTracker from '@/hooks/usePageVisitTracker';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { isSupabaseConfigured } from "@/integrations/supabase/client-universal";
 import { initializeSecurity, initializeSecureSession, setCSRFToken, generateCSRFToken } from '@/utils/security.ts';
+import { initRecaptcha } from '@/lib/recaptcha';
 
 // Context imports
 import { AuthProvider } from "./contexts/AuthContext";
@@ -245,6 +246,7 @@ const App = memo(() => {
 
     initializeSecurity();
     initializeSecureSession();
+    initRecaptcha();
     
     // Set CSRF token refresh interval
     const intervalId = setInterval(() => {

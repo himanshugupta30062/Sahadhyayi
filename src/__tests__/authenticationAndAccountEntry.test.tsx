@@ -41,6 +41,12 @@ vi.mock('@/components/auth/TurnstileCaptcha', () => ({
   },
 }));
 
+vi.mock('@/lib/recaptcha', () => ({
+  executeRecaptcha: vi.fn().mockResolvedValue('test-turnstile-token'),
+  isRecaptchaConfigured: vi.fn().mockReturnValue(true),
+  initRecaptcha: vi.fn(),
+}));
+
 const mockResetPasswordForEmail = vi.fn();
 const mockUpdateUser = vi.fn();
 const mockGetSession = vi.fn();
@@ -169,7 +175,9 @@ describe('Phase 3: Authentication and Account Entry', () => {
       fireEvent.change(passwordInput, { target: { value: 'wrongPassword1' } });
       fireEvent.click(screen.getByRole('button', { name: /^Sign In$/i }));
 
-      expect(mockSignIn).toHaveBeenCalledWith('reader@example.com', 'wrongPassword1', 'test-turnstile-token');
+      await waitFor(() => {
+        expect(mockSignIn).toHaveBeenCalledWith('reader@example.com', 'wrongPassword1', 'test-turnstile-token');
+      });
       expect(await screen.findByRole('alert')).toHaveTextContent(/Incorrect email or password/i);
 
       // Email field remains preserved for easy retry

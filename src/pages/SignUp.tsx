@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
 import { motion } from 'framer-motion';
 import { TurnstileCaptcha } from '@/components/auth/TurnstileCaptcha';
+import { executeRecaptcha, isRecaptchaConfigured } from '@/lib/recaptcha';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -88,7 +89,16 @@ const SignUp = () => {
       return;
     }
     setLoading(true);
-    if (!captchaToken) {
+    let token = captchaToken;
+    if (isRecaptchaConfigured()) {
+      try {
+        token = await executeRecaptcha('signup');
+      } catch (captchaErr: any) {
+        setError(captchaErr?.message || 'Anti-bot verification failed. Please try again.');
+        setLoading(false);
+        return;
+      }
+    } else if (!token) {
       setError('Please complete the anti-bot verification before creating your account.');
       setLoading(false);
       return;
@@ -96,7 +106,7 @@ const SignUp = () => {
     try {
       const signupName = normalizeAuthName(formData.name);
       const signupEmail = normalizeAuthEmail(formData.email);
-      const { error, requiresEmailVerification, emailMayAlreadyExist } = await signUp(signupEmail, formData.password, signupName, captchaToken);
+      const { error, requiresEmailVerification, emailMayAlreadyExist } = await signUp(signupEmail, formData.password, signupName, token || '');
       if (emailMayAlreadyExist) {
         setCaptchaToken(null);
         setCaptchaResetKey((key) => key + 1);
