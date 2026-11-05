@@ -107,48 +107,23 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
 ];
 
 const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
+  // Reuse the authenticated navigation definitions and filter access-only items.
+  NAVIGATION_SECTIONS[0],
   {
-    name: "Library",
-    href: "/library",
-    items: [
-      { name: "Library", href: "/library", tourTarget: "library" },
-      { name: "Research Papers", href: "/research-papers" },
-    ],
-  },
-  {
-    name: "Social Media",
-    href: "/social",
-    items: [
-      { name: "Community Feed", href: "/social", tourTarget: "community" },
-      { name: "Book Reviews", href: "/social?tab=reviews" },
-      { name: "Discover Friends", href: "/social?tab=friends" },
-      { name: "Reading Groups", href: "/groups" },
-      { name: "Reader's Map", href: "/social?tab=map" },
-      { name: "Reader Map by Book", href: "/reader-map" },
-      { name: "Friends & Readers Map", href: "/map" },
-      {
+    ...NAVIGATION_SECTIONS[2],
+    items: NAVIGATION_SECTIONS[2].items
+      .filter((item) => !["Book Discussions", "Reading Rooms", "Shared Marginalia", "Reading DNA"].includes(item.name))
+      .concat({
         name: "Book Discussion",
         href: "/social?tab=threads",
-        children: [
-          { name: "Book Discussions", href: "/social?tab=threads" },
-          { name: "Reading Rooms", href: "/social?tab=rooms" },
-          { name: "Shared Marginalia", href: "/social?tab=margins" },
-          { name: "Reading DNA", href: "/social?tab=dna" },
-        ],
-      },
-      { name: "Community Stories", href: "/community-stories" },
-      { name: "Life Stories", href: "/life-stories" },
-    ],
+        children: NAVIGATION_SECTIONS[2].items.filter((item) =>
+          ["Book Discussions", "Reading Rooms", "Shared Marginalia", "Reading DNA"].includes(item.name)
+        ),
+      }),
   },
   {
-    name: "Articles",
-    href: "/articles",
-    items: [
-      { name: "Articles", href: "/articles" },
-      { name: "Newsroom", href: "/news" },
-      { name: "Blogs", href: "/blog" },
-      { name: "Quotes", href: "/quotes" },
-    ],
+    ...NAVIGATION_SECTIONS[1],
+    items: NAVIGATION_SECTIONS[1].items.filter((item) => !item.authOnly),
   },
   {
     name: "Authors",
