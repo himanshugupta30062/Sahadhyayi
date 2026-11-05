@@ -70,9 +70,9 @@ export const sanitizeHTML = (dirty: string): string => {
   clean = clean.replace(/javascript:/gi, '');
 
   // Remove inline event handlers and style attributes.
-  // Bound attribute-name and value lengths to avoid pathological regex backtracking.
-  clean = clean.replace(/[ \t]+on[a-z]{1,32}[ \t]*=[ \t]*(?:"[^"]{0,2048}"|'[^']{0,2048}'|[^\s"'>]{1,2048})/gi, '');
-  clean = clean.replace(/[ \t]*style[ \t]*=[ \t]*(?:"[^"]*"|'[^']*')/gi, '');
+  // Use word boundaries to eliminate regex backtracking.
+  clean = clean.replace(/\bon[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+  clean = clean.replace(/\bstyle\s*=\s*(?:"[^"]*"|'[^']*')/gi, '');
 
   // Remove data: protocols (except data:image).
   clean = clean.replace(/data:(?!image\/)[^;]+;/gi, '');

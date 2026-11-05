@@ -422,7 +422,7 @@ async function searchStandardEbooks(searchTerm: string): Promise<BookData[]> {
     const entry = rawEntry.split('</entry>')[0];
     const titleMatch = entry.match(/<title>([^<]+)<\/title>/);
     const authorMatch = entry.match(/<author>\s*<name>([^<]+)<\/name>/);
-    const coverMatch = entry.match(/href="([^"]+downloads\/cover\.(?:jpg|png))"/);
+    const coverMatch = entry.match(/href="([^"\s]+downloads\/cover\.(?:jpg|png))"/);
     const epubMatch = entry.match(/href="([^"]+\.epub)"/);
     const summaryMatch = entry.match(/<summary[^>]*>([^<]+)<\/summary>/);
     const publishedMatch = entry.match(/<published>(\d{4})/);
@@ -531,7 +531,7 @@ async function searchOapen(searchTerm: string): Promise<BookData[]> {
       source: 'oapen',
       access_type: pdfUrl ? 'full_download' as AccessType : itemUrl ? 'official_reader' as AccessType : 'metadata_only' as AccessType,
       formats: pdfUrl ? ['pdf'] : itemUrl ? ['reader'] : [],
-      provider_id: handle ? `oapen:${String(handle).replace(/^.*\//, '')}` : undefined,
+      provider_id: handle ? `oapen:${String(handle).split('/').pop() || ''}` : undefined,
       // OAPEN exposes license metadata; retain it in description for transparent attribution.
       ...(license ? { genre: `License: ${license}` } : {}),
     };
@@ -633,7 +633,11 @@ async function searchOpenStax(searchTerm: string): Promise<BookData[]> {
     return (title + ' ' + slug + ' ' + subjects).toLowerCase().includes(q) ||
       q.split(/\s+/).every((word: string) => (title + ' ' + slug + ' ' + subjects).toLowerCase().includes(word));
   }).slice(0, 20).map((item: any) => {
-    const slug = String(item.slug || item.path || item.url || '').replace(/^.*\/books\//, '').replace(/^\/+|\/+$/g, '');
+    const rawSlug = String(item.slug || item.path || item.url || '');
+    const booksIdx = rawSlug.indexOf('/books/');
+    let slug = booksIdx !== -1 ? rawSlug.slice(booksIdx + 7) : rawSlug;
+    while (slug.startsWith('/')) slug = slug.slice(1);
+    while (slug.endsWith('/')) slug = slug.slice(0, -1);
     const title = item.title || item.name || item.book_title;
     const reader = slug ? `https://openstax.org/books/${slug}` : (typeof item.url === 'string' ? item.url : undefined);
     const pdf = item.pdf_url || item.pdf || (slug ? `https://openstax.org/books/${slug}/pages/preface` : undefined);

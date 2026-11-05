@@ -37,7 +37,7 @@ export function normalizeTitle(rawTitle: string): NormalizedTitle {
   // Extract edition brackets at end of title or matching edition keywords (including Hindi संस्करण).
   // Scan simple bracket groups first so matching stays linear in the title length.
   let editionTag: string | undefined;
-  const editionKeywords = /illustrated|annotated|revised|expanded|edition|संस्करण|classic|classics|[0-9]{1,4}(?:st|nd|rd|th)?[ \t]{1,8}ed[a-z]{0,32}/i;
+  const editionKeywords = /illustrated|annotated|revised|expanded|edition|संस्करण|classic|classics|\b\d{1,4}(?:st|nd|rd|th)?\s+ed(?:ition)?\b/i;
   const bracketPattern = /[([]([^()[\]]*)[)\]]/g;
   let editionMatch: RegExpExecArray | null = null;
   let bracketMatch: RegExpExecArray | null;
@@ -121,8 +121,11 @@ export function normalizeAuthor(rawAuthor?: string | null): NormalizedAuthor {
   const originalAuthor = rawAuthor.normalize('NFC').trim();
   let author = originalAuthor;
 
-  // Strip lifecycle dates like ", 1942-2018" or "(1942-2018)" or "b. 1942"
-  author = author.replace(/(?:,\s*)?(?:\(\s*)?(?:b\.\s*)?\b\d{4}\b(?:\s*-\s*\d{1,4})?\)?/gi, '').trim();
+  // Strip lifecycle dates like ", 1942-2018" or "(1942-2018)" or "b. 1942" without backtracking
+  author = author
+    .replace(/\s*\([^)]*\b\d{4}\b[^)]*\)/g, '')
+    .replace(/,?\s*(?:b\.\s*)?\b\d{4}\b(?:\s*-\s*\d{1,4}\b)?/gi, '')
+    .trim();
 
   // If multiple co-authors separated by semicolon, slash, or "et al.", take primary author
   const etAlIdx = author.search(/\bet\s+al\.?/i);

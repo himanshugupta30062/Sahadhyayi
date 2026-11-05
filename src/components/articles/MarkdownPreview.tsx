@@ -13,9 +13,37 @@ function markdownToHtml(md: string): string {
     return count === 0 ? base : `${base}-${count}`;
   };
 
-  let html = md
-    // Code blocks (must be before inline code)
-    .replace(/```(\w*)\n((?:[^`]|`(?!``))*)```/g, '<pre><code class="language-$1">$2</code></pre>')
+  // Replace code blocks in linear time without regex backtracking
+  const replaceCodeBlocks = (input: string): string => {
+    let output = '';
+    let cursor = 0;
+    while (cursor < input.length) {
+      const start = input.indexOf('```', cursor);
+      if (start === -1) {
+        output += input.slice(cursor);
+        break;
+      }
+      const end = input.indexOf('```', start + 3);
+      if (end === -1) {
+        output += input.slice(cursor);
+        break;
+      }
+      output += input.slice(cursor, start);
+      const block = input.slice(start + 3, end);
+      const newlineIdx = block.indexOf('\n');
+      if (newlineIdx !== -1) {
+        const lang = block.slice(0, newlineIdx).trim();
+        const code = block.slice(newlineIdx + 1);
+        output += `<pre><code class="language-${lang}">${code}</code></pre>`;
+      } else {
+        output += `<pre><code>${block}</code></pre>`;
+      }
+      cursor = end + 3;
+    }
+    return output;
+  };
+
+  let html = replaceCodeBlocks(md)
     // Headings — emit IDs so the TOC can link to them
     .replace(/^### (.+)$/gm, (_m, t) => `<h3 id="${makeId(t)}">${t}</h3>`)
     .replace(/^## (.+)$/gm, (_m, t) => `<h2 id="${makeId(t)}">${t}</h2>`)
