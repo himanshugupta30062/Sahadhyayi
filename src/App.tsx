@@ -71,6 +71,7 @@ const MyPublications = lazy(() => import('./pages/MyPublications'));
 const Articles = lazy(() => import('./pages/Articles'));
 const Newsroom = lazy(() => import('./pages/Newsroom'));
 const AdminNews = lazy(() => import('./pages/AdminNews'));
+const AdminGrowthIntelligence = lazy(() => import('./pages/AdminGrowthIntelligence'));
 const ArticleWrite = lazy(() => import('./pages/ArticleWrite'));
 const ArticleDetail = lazy(() => import('./pages/ArticleDetail'));
 const MyArticles = lazy(() => import('./pages/MyArticles'));
@@ -653,6 +654,7 @@ const App = memo(() => {
                         />
                         <Route path="/admin/literary-voices" element={<AdminRoute><Suspense fallback={<LoadingFallback message="Loading literary creator manager..." />}><AdminLiteraryCreators /></Suspense></AdminRoute>} />
                         <Route path="/admin/events" element={<AdminRoute><Suspense fallback={<LoadingFallback message="Loading event manager..." />}><AdminEvents /></Suspense></AdminRoute>} />
+                        <Route path="/admin/growth-intelligence" element={<AdminRoute><Suspense fallback={<LoadingFallback message="Loading growth workspace..." />}><AdminGrowthIntelligence /></Suspense></AdminRoute>} />
                         <Route
                           path="/admin/book-pdfs"
                           element={
