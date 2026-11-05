@@ -55,7 +55,8 @@ vi.mock('./contexts/BookExpertContext', () => ({
 vi.mock('./contexts/ThemeContext', () => ({
   ThemeProvider: ({ children }: React.PropsWithChildren) => <>{children}</>,
 }));
-vi.mock('./components/ui/tooltip', () => ({
+vi.mock('./components/ui/tooltip', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./components/ui/tooltip')>()),
   TooltipProvider: ({ children }: React.PropsWithChildren) => <>{children}</>,
 }));
 vi.mock('./components/ui/toaster', () => ({ Toaster: () => null }));
