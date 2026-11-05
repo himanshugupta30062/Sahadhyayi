@@ -76,7 +76,13 @@ const ArticleWrite = () => {
       setCoverUrl(data.cover_image_url || '');
       setOriginalIsPublished(!!data.is_published);
       setLoadingArticle(false);
-    })();
+    })().catch((loadError: unknown) => {
+      if (!cancelled) {
+        console.error('Failed to load article for editing:', loadError);
+        setLoadingArticle(false);
+        navigate('/articles/my', { replace: true });
+      }
+    });
     return () => { cancelled = true; };
   }, [isEditMode, editId, user, navigate]);
 
