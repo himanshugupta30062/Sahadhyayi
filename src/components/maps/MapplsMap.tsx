@@ -130,6 +130,26 @@ export function MapplsMap({
     }
   }, [center, status]);
 
+  // Handle container resizing (e.g., when switching tabs in tabbed map views)
+  useEffect(() => {
+    const map = mapInstance.current;
+    const container = mapElement.current;
+    if (status !== 'ready' || !map || !container || typeof ResizeObserver === 'undefined') return;
+
+    const observer = new ResizeObserver(() => {
+      try {
+        map.resize?.();
+      } catch {
+        // Some SDK versions do not expose resize
+      }
+    });
+
+    observer.observe(container);
+    return () => {
+      observer.disconnect();
+    };
+  }, [status]);
+
   useEffect(() => {
     const map = mapInstance.current;
     if (status !== 'ready' || !map || !window.mappls?.Marker) return;
@@ -154,10 +174,23 @@ export function MapplsMap({
     );
 
     validPoints.forEach((point) => {
+      const escapedTitle = point.title
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+      const escapedDesc = (point.description || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+      const popupHtml = `<div style="font-family:sans-serif;padding:4px 6px;min-width:140px;color:#1C201D;"><strong style="font-size:13px;display:block;">${escapedTitle}</strong>${escapedDesc ? `<span style="font-size:12px;color:#636B65;display:block;margin-top:2px;">${escapedDesc}</span>` : ''}</div>`;
+
       const marker = new window.mappls!.Marker({
         map,
         position: { lat: point.lat, lng: point.lng },
         title: point.title,
+        popupHtml,
       });
       markers.current.push(marker);
     });
