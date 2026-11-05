@@ -16,7 +16,7 @@ import SEO from '@/components/SEO';
 import { ForgotPasswordDialog } from '@/components/auth/ForgotPasswordDialog';
 import { Separator } from '@/components/ui/separator';
 import { motion } from 'framer-motion';
-import { TurnstileCaptcha } from '@/components/auth/TurnstileCaptcha';
+import { executeRecaptcha } from '@/lib/recaptcha';
 
 type AuthTab = 'signin' | 'signup';
 
@@ -39,8 +39,6 @@ const Auth = () => {
   const [signupCompletedEmail, setSignupCompletedEmail] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const [captchaResetKey, setCaptchaResetKey] = useState(0);
 
   const navigate = useNavigate();
   const redirectParam = searchParams.get('redirect');
@@ -94,8 +92,6 @@ const Auth = () => {
     setError('');
     setSuccess('');
     setSignupCompletedEmail(null);
-    setCaptchaToken(null);
-    setCaptchaResetKey((key) => key + 1);
     const nextPath = tab === 'signup' ? '/signup' : '/signin';
     const currentParams = new URLSearchParams(searchParams);
     const nextSearch = currentParams.toString() ? `?${currentParams.toString()}` : '';
@@ -119,10 +115,6 @@ const Auth = () => {
       setError('Please enter a valid email address.');
       return;
     }
-    if (!captchaToken) {
-      setError('Please complete the anti-bot verification before signing in.');
-      return;
-    }
     if (isRateLimited('signin', 5, 300000)) {
       setError('Too many sign-in attempts. Please wait 5 minutes before trying again.');
       return;
@@ -130,6 +122,7 @@ const Auth = () => {
 
     setLoading(true);
     try {
+      const captchaToken = await executeRecaptcha('signin');
       await signIn(normalizeAuthEmail(signinData.email), signinData.password, captchaToken);
       window.dispatchEvent(new CustomEvent('communityStatsUpdate', { detail: { action: 'signin' } }));
       try {
@@ -153,8 +146,6 @@ const Auth = () => {
       }
     } finally {
       setLoading(false);
-      setCaptchaToken(null);
-      setCaptchaResetKey((key) => key + 1);
     }
   };
 
@@ -197,13 +188,9 @@ const Auth = () => {
       setLoading(false);
       return;
     }
-    if (!captchaToken) {
-      setError('Please complete the anti-bot verification before creating your account.');
-      setLoading(false);
-      return;
-    }
 
     try {
+      const captchaToken = await executeRecaptcha('signup');
       const { error: signUpError } = await signUp(
         normalizeAuthEmail(signupData.email),
         signupData.password,
@@ -212,8 +199,6 @@ const Auth = () => {
       );
 
       if (signUpError) {
-        setCaptchaToken(null);
-        setCaptchaResetKey((key) => key + 1);
         const errorMsg = (signUpError.message || '').toLowerCase();
         if (errorMsg.includes('database error saving new user') || errorMsg.includes('unexpected_failure')) {
           setError('We could not finish creating your account because of a temporary setup issue. Please try again. If it continues, contact support.');
@@ -235,8 +220,6 @@ const Auth = () => {
         /* ignore storage error in private mode */
       }
 
-      setCaptchaToken(null);
-      setCaptchaResetKey((key) => key + 1);
       setSignupCompletedEmail(signupData.email.trim());
       setSignupData({ name: '', email: '', password: '', confirmPassword: '' });
     } catch {
@@ -463,7 +446,7 @@ const Auth = () => {
                           </div>
                         </div>
 
-                        <TurnstileCaptcha key={`signin-${captchaResetKey}`} action="signin" onTokenChange={setCaptchaToken} />
+                        <p className="text-xs text-muted-foreground">Protected by Google reCAPTCHA.</p>
 
                         <Button
                           type="submit"
@@ -624,7 +607,7 @@ const Auth = () => {
                           </div>
                         </div>
 
-                        <TurnstileCaptcha key={captchaResetKey} onTokenChange={setCaptchaToken} />
+                        <p className="text-xs text-muted-foreground">Protected by Google reCAPTCHA.</p>
 
                         <Button
                           type="submit"
