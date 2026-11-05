@@ -144,7 +144,8 @@
     "typescript-eslint": "^8.72.1",
     "vite": "6.4.5",
     "vitest": "4.1.11",
-    "@eslint/compat": "^2.1.1"
+    "@eslint/compat": "^2.1.1",
+    "@swc/core-linux-x64-gnu": "1.16.22"
   },
   "overrides": {
     "form-data": "2.5.6",
