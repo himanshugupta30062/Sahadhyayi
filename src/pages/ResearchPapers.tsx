@@ -364,15 +364,15 @@ const ResearchPapers = () => {
                 />
               </div>
               <label className="flex h-12 items-center gap-2 rounded-lg border border-[#E8E8E3] bg-[#FAFAF8] px-3 text-sm dark:border-[#26302A] dark:bg-[#0B0D0C]">
-                <span className="whitespace-nowrap text-xs text-[#737B74]">Published</span>
-                <select value={year} onChange={(event) => { setYear(event.target.value); setPage(1); }} aria-label="Filter by publication year" className="min-w-0 bg-transparent font-medium outline-none">
+                <label htmlFor="research-year-filter" className="whitespace-nowrap text-xs text-[#737B74]">Published</label>
+                <select id="research-year-filter" value={year} onChange={(event) => { setYear(event.target.value); setPage(1); }} className="min-w-0 bg-transparent font-medium outline-none">
                   <option value="all">Any year</option>
                   {Array.from({ length: 30 }, (_, index) => String(new Date().getFullYear() - index)).map((value) => <option key={value} value={value}>{value}</option>)}
                 </select>
               </label>
               <label className="flex h-12 items-center gap-2 rounded-lg border border-[#E8E8E3] bg-[#FAFAF8] px-3 text-sm dark:border-[#26302A] dark:bg-[#0B0D0C]">
-                <span className="whitespace-nowrap text-xs text-[#737B74]">Category</span>
-                <select value={category} onChange={(event) => { setCategory(event.target.value); setPage(1); }} aria-label="Filter by research category" className="min-w-0 bg-transparent font-medium outline-none">
+                <label htmlFor="research-category-filter" className="whitespace-nowrap text-xs text-[#737B74]">Category</label>
+                <select id="research-category-filter" value={category} onChange={(event) => { setCategory(event.target.value); setPage(1); }} className="min-w-0 bg-transparent font-medium outline-none">
                   <option value="all">All categories</option>
                   {categories.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}
                 </select>
