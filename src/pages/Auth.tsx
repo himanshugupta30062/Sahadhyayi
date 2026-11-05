@@ -115,10 +115,6 @@ const Auth = () => {
       setError('Please enter a valid email address.');
       return;
     }
-    if (!captchaToken) {
-      setError('Please complete the anti-bot verification before signing in.');
-      return;
-    }
     if (isRateLimited('signin', 5, 300000)) {
       setError('Too many sign-in attempts. Please wait 5 minutes before trying again.');
       return;
@@ -189,11 +185,6 @@ const Auth = () => {
     }
     if (signupData.password !== signupData.confirmPassword) {
       setError('Passwords do not match. Please ensure both passwords match.');
-      setLoading(false);
-      return;
-    }
-    if (!captchaToken) {
-      setError('Please complete the anti-bot verification before creating your account.');
       setLoading(false);
       return;
     }
