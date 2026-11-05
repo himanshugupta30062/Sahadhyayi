@@ -80,7 +80,7 @@ const AppSidebar = () => {
         >
           <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-amber-100 ring-1 ring-amber-200/70 dark:bg-amber-950/50 dark:ring-amber-800/50">
             <img
-              src="/optimized-assets/site-logo.webp"
+              src="/brand/sahadhyayi-connected-readers.svg"
               alt=""
               className="h-8 w-8 object-contain"
               width={32}
