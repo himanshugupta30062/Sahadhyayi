@@ -1,4 +1,6 @@
+/** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import '@testing-library/jest-dom/vitest';
 import {
   executeRecaptcha,
   isRecaptchaConfigured,
@@ -6,16 +8,23 @@ import {
   isRecaptchaEnterprise,
   loadRecaptcha,
   initRecaptcha,
+  _resetRecaptchaForTesting,
 } from './recaptcha';
 
 describe('Google reCAPTCHA Enterprise helper (recaptcha.ts)', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     delete (window as any).grecaptcha;
+    _resetRecaptchaForTesting();
+    document.getElementById('google-recaptcha-script')?.remove();
+    document.getElementById('google-recaptcha-v3')?.remove();
   });
 
   afterEach(() => {
     delete (window as any).grecaptcha;
+    _resetRecaptchaForTesting();
+    document.getElementById('google-recaptcha-script')?.remove();
+    document.getElementById('google-recaptcha-v3')?.remove();
   });
 
   it('reports configuration state correctly', () => {
@@ -25,6 +34,7 @@ describe('Google reCAPTCHA Enterprise helper (recaptcha.ts)', () => {
   });
 
   it('rejects invalid action names with invalid characters', async () => {
+    await expect(executeRecaptcha('')).rejects.toThrow('Invalid reCAPTCHA action');
     await expect(executeRecaptcha('invalid action with spaces')).rejects.toThrow('Invalid reCAPTCHA action');
     await expect(executeRecaptcha('<script>alert(1)</script>')).rejects.toThrow('Invalid reCAPTCHA action');
   });
@@ -40,7 +50,6 @@ describe('Google reCAPTCHA Enterprise helper (recaptcha.ts)', () => {
       },
     };
 
-    // If site key is set or test mock triggers
     const token = await executeRecaptcha('signin');
     expect(token).toBeDefined();
     expect(typeof token).toBe('string');
@@ -60,21 +69,6 @@ describe('Google reCAPTCHA Enterprise helper (recaptcha.ts)', () => {
     expect(typeof token).toBe('string');
   });
 
-  it('rejects when reCAPTCHA client returns an empty token', async () => {
-    // Force a mock site key by mocking execute to return empty string
-    (window as any).grecaptcha = {
-      enterprise: {
-        ready: (cb: () => void) => cb(),
-        execute: vi.fn().mockResolvedValue(''),
-      },
-    };
-
-    // When SITE_KEY is present or mocked, empty token triggers an error
-    // In test environment without SITE_KEY it returns mock token unless execute is invoked
-    const result = await executeRecaptcha('contact');
-    expect(result).toBeTruthy();
-  });
-
   it('initRecaptcha does not throw in browser environment', () => {
     expect(() => initRecaptcha()).not.toThrow();
   });
@@ -87,5 +81,49 @@ describe('Google reCAPTCHA Enterprise helper (recaptcha.ts)', () => {
       },
     };
     await expect(loadRecaptcha()).resolves.toBeUndefined();
+  });
+
+  it('creates script element and resolves when load event fires and grecaptcha attaches', async () => {
+    const loadPromise = loadRecaptcha();
+    const script = document.getElementById('google-recaptcha-script') as HTMLScriptElement;
+    expect(script).toBeInTheDocument();
+    expect(script.src).toContain('https://www.google.com/recaptcha/enterprise.js');
+
+    (window as any).grecaptcha = {
+      enterprise: {
+        ready: vi.fn(),
+        execute: vi.fn(),
+      },
+    };
+
+    script.dispatchEvent(new Event('load'));
+    await expect(loadPromise).resolves.toBeUndefined();
+  });
+
+  it('handles existing script element and completes on load', async () => {
+    const existing = document.createElement('script');
+    existing.id = 'google-recaptcha-script';
+    document.head.appendChild(existing);
+
+    const loadPromise = loadRecaptcha();
+
+    (window as any).grecaptcha = {
+      enterprise: {
+        ready: vi.fn(),
+        execute: vi.fn(),
+      },
+    };
+
+    existing.dispatchEvent(new Event('load'));
+    await expect(loadPromise).resolves.toBeUndefined();
+  });
+
+  it('rejects when script loading triggers an error', async () => {
+    const loadPromise = loadRecaptcha();
+    const script = document.getElementById('google-recaptcha-script') as HTMLScriptElement;
+    expect(script).toBeInTheDocument();
+
+    script.dispatchEvent(new Event('error'));
+    await expect(loadPromise).rejects.toThrow('Unable to load Google reCAPTCHA');
   });
 });

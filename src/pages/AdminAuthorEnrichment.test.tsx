@@ -77,6 +77,68 @@ describe('AdminAuthorEnrichment', () => {
     });
   });
 
+  it('processes batch results with enriched authors', async () => {
+    let callCount = 0;
+    const invokeSpy = vi.fn().mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) {
+        return Promise.resolve({
+          data: {
+            processed: 1,
+            enriched: 1,
+            notFound: 0,
+            failed: 0,
+            results: [{ name: 'Munshi Premchand', status: 'enriched', hasImage: true }],
+          },
+          error: null,
+        });
+      }
+      return Promise.resolve({
+        data: {
+          processed: 0,
+          enriched: 0,
+          notFound: 0,
+          failed: 0,
+          message: 'All done.',
+        },
+        error: null,
+      });
+    });
+
+    vi.spyOn(supabase, 'functions', 'get').mockReturnValue({
+      invoke: invokeSpy,
+    } as any);
+
+    render(<AdminAuthorEnrichment />);
+
+    const importButton = await screen.findByRole('button', {
+      name: /Import missing portraits \/ metadata/i,
+    });
+    fireEvent.click(importButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Munshi Premchand — enriched — image available/i)).toBeInTheDocument();
+    });
+  });
+
+  it('handles edge function error gracefully', async () => {
+    const invokeSpy = vi.fn().mockRejectedValue(new Error('Network failure on enrichment'));
+    vi.spyOn(supabase, 'functions', 'get').mockReturnValue({
+      invoke: invokeSpy,
+    } as any);
+
+    render(<AdminAuthorEnrichment />);
+
+    const retryButton = await screen.findByRole('button', {
+      name: /Retry missing portraits/i,
+    });
+    fireEvent.click(retryButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Network failure on enrichment')).toBeInTheDocument();
+    });
+  });
+
   it('refreshes stats when refresh button is clicked', async () => {
     const fromSpy = vi.spyOn(supabase, 'from');
     render(<AdminAuthorEnrichment />);
@@ -87,3 +149,4 @@ describe('AdminAuthorEnrichment', () => {
     expect(fromSpy).toHaveBeenCalledWith('authors');
   });
 });
+

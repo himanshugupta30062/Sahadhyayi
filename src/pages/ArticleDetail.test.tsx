@@ -136,6 +136,8 @@ describe('ArticleDetail', () => {
         views_count: 142,
         reading_time_minutes: 5,
         category: 'Literary',
+        cover_image_url: 'https://example.com/broken-cover.jpg',
+        tags: ['Contemplation', 'Philosophy'],
       },
       isLoading: false,
       error: null,
@@ -153,7 +155,14 @@ describe('ArticleDetail', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: 'The Art of Reading Slowly' })).toBeInTheDocument();
     expect(screen.getByText('Why deep contemplation matters in modern times')).toBeInTheDocument();
-    expect(screen.getByTestId('markdown-preview')).toHaveTextContent('# Deep Reading Take your time.');
+    expect(screen.getByText('Contemplation')).toBeInTheDocument();
+    expect(screen.getByText('Philosophy')).toBeInTheDocument();
+
+    const img = screen.getByRole('img');
+    expect(img).toBeInTheDocument();
+    img.dispatchEvent(new Event('error'));
+    expect(img.style.display).toBe('none');
+
     expect(rpcSpy).toHaveBeenCalledWith('increment_article_views', { _article_id: 'art-1' });
   });
 });

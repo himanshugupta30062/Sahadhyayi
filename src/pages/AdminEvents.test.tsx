@@ -108,4 +108,34 @@ describe('AdminEvents', () => {
       expect(window.confirm).toHaveBeenCalledWith('Delete this event permanently?');
     });
   });
+
+  it('saves modified event changes', async () => {
+    render(<AdminEvents />);
+
+    const editButton = await screen.findByRole('button', { name: /Edit/i });
+    fireEvent.click(editButton);
+
+    const titleInput = await screen.findByDisplayValue('New Delhi World Book Fair 2027');
+    fireEvent.change(titleInput, { target: { value: 'New Delhi World Book Fair 2028' } });
+
+    const saveButton = screen.getByRole('button', { name: /Save changes/i });
+    fireEvent.click(saveButton);
+
+    await waitFor(() => {
+      expect(supabase.from).toHaveBeenCalledWith('literary_events');
+    });
+  });
+
+  it('resets form when clicking Reset button', async () => {
+    render(<AdminEvents />);
+
+    const editButton = await screen.findByRole('button', { name: /Edit/i });
+    fireEvent.click(editButton);
+
+    await screen.findByDisplayValue('New Delhi World Book Fair 2027');
+    const resetButton = screen.getByRole('button', { name: /Reset/i });
+    fireEvent.click(resetButton);
+
+    expect(screen.queryByDisplayValue('New Delhi World Book Fair 2027')).not.toBeInTheDocument();
+  });
 });

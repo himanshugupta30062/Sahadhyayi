@@ -31,6 +31,10 @@ export const isRecaptchaEnterprise = (): boolean => USE_ENTERPRISE;
 
 let scriptPromise: Promise<void> | undefined;
 
+export function _resetRecaptchaForTesting(): void {
+  scriptPromise = undefined;
+}
+
 function getClient(): RecaptchaClient | undefined {
   if (typeof window === 'undefined') return undefined;
   return window.grecaptcha?.enterprise ?? window.grecaptcha;

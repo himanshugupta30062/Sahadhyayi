@@ -53,7 +53,48 @@ vi.mock('@tanstack/react-query', () => ({
         return {};
     }
   },
-  useMutation: () => ({ mutate: mocks.mutate, mutateAsync: mocks.mutateAsync }),
+  useMutation: (options?: any) => ({
+    mutate: (vars: any) => {
+      mocks.mutate(vars);
+      if (options?.onSuccess) {
+        options.onSuccess(
+          {
+            success: true,
+            action: vars.action,
+            primaryId: 'primary-1',
+            archivedBookIds: ['secondary-1'],
+            mergedFields: ['isbn', 'description'],
+            message: 'Resolution applied successfully',
+          },
+          vars
+        );
+      }
+    },
+    mutateAsync: async (vars: any) => {
+      mocks.mutateAsync(vars);
+      if (options?.onSuccess) {
+        options.onSuccess(
+          {
+            success: true,
+            action: vars.action,
+            primaryId: 'primary-1',
+            archivedBookIds: ['secondary-1'],
+            mergedFields: ['isbn', 'description'],
+            message: 'Resolution applied successfully',
+          },
+          vars
+        );
+      }
+      return {
+        success: true,
+        action: vars.action,
+        primaryId: 'primary-1',
+        archivedBookIds: ['secondary-1'],
+        mergedFields: ['isbn', 'description'],
+        message: 'Resolution applied successfully',
+      };
+    },
+  }),
   useQueryClient: () => ({ invalidateQueries: mocks.invalidateQueries }),
 }));
 
@@ -66,15 +107,22 @@ vi.mock('@/utils/catalog/duplicateAudit', () => ({
 }));
 
 vi.mock('@/utils/catalog/duplicateResolution', () => ({
-  applyDuplicateResolution: vi.fn(),
-  verifyAdminStatus: vi.fn(),
+  applyDuplicateResolution: vi.fn().mockResolvedValue({
+    success: true,
+    action: 'restore_archived_record',
+    primaryId: 'primary-1',
+    archivedBookIds: [],
+    mergedFields: [],
+    message: 'Record restored',
+  }),
+  verifyAdminStatus: vi.fn().mockResolvedValue(true),
 }));
 
 vi.mock('@/utils/catalog/bookArchiveVault', () => ({
-  archiveUnwantedBook: vi.fn(),
-  restoreBookFromArchive: vi.fn(),
-  getArchivedBooks: vi.fn(),
-  runSafeCleanupUnusedBooks: vi.fn(),
+  archiveUnwantedBook: vi.fn().mockResolvedValue({ message: 'Book safely archived' }),
+  restoreBookFromArchive: vi.fn().mockResolvedValue({ message: 'Book safely restored' }),
+  getArchivedBooks: vi.fn().mockResolvedValue([]),
+  runSafeCleanupUnusedBooks: vi.fn().mockResolvedValue(5),
 }));
 
 import AdminLibraryQuality from './AdminLibraryQuality';
@@ -98,54 +146,70 @@ const makeGroup = (overrides: Record<string, any> = {}) => ({
   count: 2,
   classification: 'exact_duplicate_edition',
   confidence: 'high',
+  recommendedAction: 'merge_into_primary',
   recommendedPrimary: {
-    id: 'book-1',
+    id: 'primary-1',
     title: 'The Dispossessed',
     author: 'Ursula K. Le Guin',
     qualityScore: 95,
-    accessStatus: 'verified_full_text',
-    reason: 'Best verified edition',
+    accessStatus: 'open_access',
+    reason: 'Has cover, PDF, and high resolution metadata',
   },
   recommendedSecondary: {
-    id: 'book-2',
+    id: 'secondary-1',
     title: 'The Dispossessed (Illustrated)',
     author: 'Ursula K. Le Guin',
     qualityScore: 80,
-    accessStatus: 'public_domain',
-    reason: 'Distinct edition',
+    accessStatus: 'open_access',
   },
   candidateRecords: [
     {
-      id: 'book-1',
+      id: 'primary-1',
       title: 'The Dispossessed',
       author: 'Ursula K. Le Guin',
-      isbn: null,
+      isbn: '9780060512750',
       publication_year: 1974,
-      cover_image_url: null,
-      pdf_url: null,
+      cover_image_url: 'https://example.com/cover1.jpg',
+      pdf_url: 'https://example.com/book1.pdf',
       qualityScore: 95,
-      accessStatus: 'verified_full_text',
+      accessStatus: 'open_access',
       isPrimary: true,
       isSecondary: false,
       isArchiveCandidate: false,
-      userReferences: { bookshelf: 1, personalLibrary: 0, readingProgress: 1, rooms: 0, marginNotes: 0, posts: 0, total: 2 },
-      proposedAction: 'Keep as primary',
+      userReferences: {
+        bookshelf: 1,
+        personalLibrary: 1,
+        readingProgress: 0,
+        rooms: 0,
+        marginNotes: 0,
+        posts: 0,
+        total: 2,
+      },
+      proposedAction: 'Keep as canonical edition',
     },
     {
-      id: 'book-2',
+      id: 'secondary-1',
       title: 'The Dispossessed (Illustrated)',
       author: 'Ursula K. Le Guin',
       isbn: null,
-      publication_year: 2019,
+      publication_year: 1975,
       cover_image_url: null,
       pdf_url: null,
       qualityScore: 80,
-      accessStatus: 'public_domain',
+      accessStatus: 'open_access',
       isPrimary: false,
       isSecondary: true,
-      isArchiveCandidate: false,
-      userReferences: { bookshelf: 0, personalLibrary: 0, readingProgress: 0, rooms: 0, marginNotes: 0, posts: 0, total: 0 },
-      proposedAction: 'Preserve as alternative edition',
+      isArchiveCandidate: true,
+      userReferences: {
+        bookshelf: 0,
+        personalLibrary: 0,
+        readingProgress: 0,
+        rooms: 0,
+        marginNotes: 0,
+        posts: 0,
+        total: 0,
+      },
+      proposedAction: 'Archive after migrating metadata',
     },
   ],
   archiveCandidatesCount: 0,
@@ -316,6 +380,141 @@ describe('AdminLibraryQuality', () => {
       expect(mocks.toast).toHaveBeenCalledWith(
         expect.objectContaining({
           title: 'Safe Cleanup Completed',
+        })
+      );
+    });
+  });
+
+  it('opens preview dialog when clicking Keep Best & Archive and approves resolution', async () => {
+    mocks.auditData = makeAudit([makeGroup()]);
+    renderPage();
+
+    const mergeBtn = screen.getByRole('button', { name: /Keep Best & Archive/i });
+    fireEvent.click(mergeBtn);
+
+    expect(screen.getByText('Preview Changes Before Approval')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Approve & Execute Resolution/i })).toBeInTheDocument();
+
+    const approveBtn = screen.getByRole('button', { name: /Approve & Execute Resolution/i });
+    fireEvent.click(approveBtn);
+
+    await waitFor(() => {
+      expect(mocks.mutateAsync).toHaveBeenCalled();
+    });
+  });
+
+  it('handles mark as false positive action', () => {
+    mocks.auditData = makeAudit([makeGroup()]);
+    renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: /Inspect All \(2\)/ }));
+
+    const falsePositiveBtn = screen.getByRole('button', { name: /Mark as False Positive/i });
+    fireEvent.click(falsePositiveBtn);
+    expect(mocks.mutate).toHaveBeenCalledWith(expect.objectContaining({ action: 'keep_separate' }));
+  });
+
+  it('handles mark junk action', () => {
+    mocks.auditData = makeAudit([makeGroup()]);
+    renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: /Inspect All \(2\)/ }));
+
+    const junkBtn = screen.getByRole('button', { name: /Mark Junk/i });
+    fireEvent.click(junkBtn);
+    expect(mocks.mutate).toHaveBeenCalledWith(expect.objectContaining({ action: 'archive_junk' }));
+  });
+
+  it('renders and interacts with the Audit Logs tab', async () => {
+    mocks.auditLogs = [
+      {
+        id: 'log-1',
+        action: 'merge_into_primary',
+        primary_book_id: 'book-12345678',
+        affected_book_ids: ['book-87654321'],
+        reason: 'Identical editions merged',
+        created_at: '2026-11-05T12:00:00Z',
+      },
+    ];
+
+    renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: /Audit Logs/i }));
+    expect(screen.getByText('Duplicate Resolution Audit Logs')).toBeInTheDocument();
+    expect(screen.getByText('merge_into_primary')).toBeInTheDocument();
+    expect(screen.getByText('Identical editions merged')).toBeInTheDocument();
+
+    const restoreBtn = screen.getByRole('button', { name: /Restore/i });
+    fireEvent.click(restoreBtn);
+
+    await waitFor(() => {
+      expect(mocks.toast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Record Restored',
+        })
+      );
+    });
+
+    const refreshBtn = screen.getByRole('button', { name: /Refresh/i });
+    fireEvent.click(refreshBtn);
+    expect(mocks.refetchLogs).toHaveBeenCalled();
+  });
+
+  it('renders and interacts with Archive Vault tab including search, restore and manual archive modal', async () => {
+    mocks.archivedBooks = [
+      {
+        id: 'vault-1',
+        title: 'Archived Duplicate Title',
+        author: 'Ursula K. Le Guin',
+        archived_at: '2026-11-05T12:00:00Z',
+        archive_reason: 'Duplicate edition',
+        publication_year: 2020,
+        language: 'en',
+        cover_image_url: 'https://example.com/cover.jpg',
+      },
+    ];
+
+    renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: /Archive Vault/i }));
+    expect(screen.getByText('Non-Destructive Book Vault (Hidden from Users)')).toBeInTheDocument();
+    expect(screen.getByText('Archived Duplicate Title')).toBeInTheDocument();
+
+    const vaultSearch = screen.getByPlaceholderText('Search vault by title, author, or reason...');
+    fireEvent.change(vaultSearch, { target: { value: 'Nonexistent Book' } });
+    expect(screen.queryByText('Archived Duplicate Title')).not.toBeInTheDocument();
+
+    fireEvent.change(vaultSearch, { target: { value: 'Archived Duplicate' } });
+    expect(screen.getByText('Archived Duplicate Title')).toBeInTheDocument();
+
+    const bringBackBtn = screen.getByRole('button', { name: /Bring Back to Library/i });
+    fireEvent.click(bringBackBtn);
+
+    await waitFor(() => {
+      expect(mocks.toast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Book Restored to Active Library',
+        })
+      );
+    });
+
+    const archiveByIdBtn = screen.getByRole('button', { name: /Archive Book by ID/i });
+    fireEvent.click(archiveByIdBtn);
+
+    expect(screen.getByText('Archive Unwanted Book')).toBeInTheDocument();
+    fireEvent.change(screen.getByPlaceholderText(/550e8400-e29b/i), {
+      target: { value: '550e8400-e29b-41d4-a716-446655440000' },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Poor scan quality/i), {
+      target: { value: 'Corrupt file' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Move to Archive Vault/i }));
+
+    await waitFor(() => {
+      expect(mocks.toast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Book Safely Archived',
         })
       );
     });
