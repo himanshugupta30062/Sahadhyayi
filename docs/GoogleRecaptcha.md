@@ -1,6 +1,6 @@
 # Google reCAPTCHA Enterprise (Additional Risk Signals)
 
-Google reCAPTCHA Enterprise remains an optional site-wide risk/telemetry layer. **It is not the CAPTCHA provider for Supabase Auth.** Supabase Auth's native CAPTCHA integration supports Cloudflare Turnstile and hCaptcha.
+Google reCAPTCHA Enterprise remains an optional site-wide risk/telemetry layer. **It is not the CAPTCHA provider for Supabase Auth.** Supabase Auth's native CAPTCHA integration supports hCaptcha and hCaptcha.
 
 ## Google Enterprise frontend
 
@@ -18,13 +18,13 @@ The shared helper `supabase/functions/_shared/recaptcha.ts` supports:
 
 Use `verifyRecaptcha(token, expectedAction)` from a trusted Edge Function before processing a protected custom operation. Keep API keys/secrets in Supabase Edge Function secrets; never in `VITE_*` variables.
 
-## Supabase Auth CAPTCHA: Cloudflare Turnstile
+## Supabase Auth CAPTCHA: hCaptcha
 
-For signup, password sign-in, password-reset email, and verification-code resend, use Cloudflare Turnstile:
+For signup, password sign-in, password-reset email, and verification-code resend, use hCaptcha:
 
-1. Create a Turnstile widget in Cloudflare and allow `sahadhyayi.com`, `www.sahadhyayi.com`, and `localhost` as needed.
-2. Configure its public sitekey as `VITE_TURNSTILE_SITE_KEY` in Cloudflare Pages (Production and Preview) and local `.env`.
-3. In Supabase Dashboard → Authentication → Bot and Abuse Protection, enable CAPTCHA, select **Cloudflare Turnstile**, and save its secret key.
-4. The frontend passes the Turnstile response as Supabase's `captchaToken`; do not substitute a Google Enterprise token.
+1. Create a hCaptcha widget in Cloudflare and allow `sahadhyayi.com`, `www.sahadhyayi.com`, and `localhost` as needed.
+2. Configure its public sitekey as `VITE_HCAPTCHA_SITE_KEY` in Cloudflare Pages (Production and Preview) and local `.env`.
+3. In Supabase Dashboard → Authentication → Bot and Abuse Protection, enable CAPTCHA, select **hCaptcha**, and save its secret key.
+4. The frontend passes the hCaptcha response as Supabase's `captchaToken`; do not substitute a Google Enterprise token.
 
 See [CAPTCHA deployment setup](./security/captcha-setup.md) and the [Supabase Auth CAPTCHA guide](https://supabase.com/docs/guides/auth/auth-captcha).
