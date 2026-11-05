@@ -73,24 +73,19 @@ export default function Events() {
       setLoading(true);
       setError(null);
       try {
-        const [categoryResult, eventResult] = await Promise.all([
-          (supabase as any).from("literary_event_categories").select("id,name,slug,description").eq("is_active", true).order("sort_order"),
-          (supabase as any).from("literary_events").select("*").eq("status", "published").gte("start_at", new Date().toISOString()).order("featured", { ascending: false }).order("start_at").limit(100),
-        ]);
-        // Categories are optional metadata: don't hide published events if this table
-        // is unavailable or its read policy is misconfigured.
-        if (eventResult.error) throw eventResult.error;
-        if (active) {
-          setCategories(categoryResult.error ? [] : (categoryResult.data || []));
-          setEvents(eventResult.data || []);
+        const categoryResult = await (supabase as any).from("literary_event_categories").select("id,name,slug,description").eq("is_active", true).order("sort_order");
+        if (categoryResult.error) console.warn("[Events] Categories unavailable; using fallback labels", categoryResult.error);
+        else if (active) setCategories(categoryResult.data || []);
+
+        const eventResult = await (supabase as any).from("literary_events").select("*").eq("status", "published").gte("start_at", new Date().toISOString()).order("featured", { ascending: false }).order("start_at").limit(100);
+        if (eventResult.error) {
+          console.error("[Events] Query error", { code: eventResult.error.code, message: eventResult.error.message, details: eventResult.error.details, hint: eventResult.error.hint });
+          throw new Error(eventResult.error.message || "Could not fetch events");
         }
+        if (active) { setEvents(eventResult.data || []); setError(null); }
       } catch (err) {
-        if (active) {
-          const apiError = err as { message?: string; details?: string; hint?: string; code?: string };
-          const message = [apiError?.message, apiError?.details, apiError?.hint, apiError?.code ? `Code: ${apiError.code}` : null]
-            .filter(Boolean).join(" · ");
-          setError(message || (err instanceof Error ? err.message : String(err)) || "Events are temporarily unavailable.");
-        }
+        console.error("[Events] Fetch failed", err);
+        if (active) setError(err instanceof Error ? err.message : "Unable to load events. Please refresh.");
       } finally {
         if (active) setLoading(false);
       }
