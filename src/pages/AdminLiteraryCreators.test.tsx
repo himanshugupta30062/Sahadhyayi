@@ -135,4 +135,42 @@ describe('AdminLiteraryCreators', () => {
       );
     });
   });
+
+  it('saves updated creator profile', async () => {
+    render(<AdminLiteraryCreators />);
+
+    const editButton = await screen.findByRole('button', { name: /Edit/i });
+    fireEvent.click(editButton);
+
+    const nameInput = await screen.findByDisplayValue('Jane Doe');
+    fireEvent.change(nameInput, { target: { value: 'Jane Austen' } });
+
+    const saveButton = screen.getByRole('button', { name: /Save profile/i });
+    fireEvent.click(saveButton);
+
+    await waitFor(() => {
+      expect(supabase.from).toHaveBeenCalledWith('literary_creators');
+    });
+  });
+
+  it('selects creator from dropdown to view and manage social links and publications', async () => {
+    render(<AdminLiteraryCreators />);
+
+    await screen.findAllByText('Jane Doe');
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: 'creator-1' } });
+
+    expect(await screen.findByText(/Social channels/i)).toBeInTheDocument();
+    expect(screen.getByText(/Reviews & publications/i)).toBeInTheDocument();
+    expect(screen.getByText(/Top 10 Books/i)).toBeInTheDocument();
+
+    const deleteBtns = screen.getAllByRole('button');
+    const deleteSocialBtn = deleteBtns.find((b) => b.className.includes('destructive') && b.querySelector('svg'));
+    if (deleteSocialBtn) {
+      fireEvent.click(deleteSocialBtn);
+      await waitFor(() => {
+        expect(supabase.from).toHaveBeenCalledWith('creator_social_links');
+      });
+    }
+  });
 });
