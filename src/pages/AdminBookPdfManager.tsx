@@ -29,6 +29,7 @@ const RIGHTS_OPTIONS = [
   { value: 'publisher_hosted', label: 'Official publisher or institution-hosted PDF' },
 ] as const;
 
+// eslint-disable-next-line react-refresh/only-export-components
 export async function validatePdf(file: File) {
   if (file.size <= 0 || file.size > MAX_PDF_BYTES) {
     throw new Error('Choose a PDF smaller than 50 MB.');

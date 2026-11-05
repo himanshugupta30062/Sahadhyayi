@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, BookmarkCheck, ExternalLink, FileText, Trash2 } from 'lucide-react';
 import SEO from '@/components/SEO';
@@ -23,7 +23,7 @@ export default function MySavedResearch() {
   const [error, setError] = useState('');
   const [removing, setRemoving] = useState<string | null>(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!user) { setPapers([]); setLoading(false); return; }
     setLoading(true); setError('');
     const { data, error: queryError } = await supabase
@@ -34,9 +34,9 @@ export default function MySavedResearch() {
     if (queryError) setError(queryError.message);
     else setPapers((data ?? []) as SavedPaper[]);
     setLoading(false);
-  };
+  }, [user]);
 
-  useEffect(() => { void load(); }, [user?.id]);
+  useEffect(() => { void load(); }, [load]);
 
   const remove = async (paper: SavedPaper) => {
     if (!user) return;

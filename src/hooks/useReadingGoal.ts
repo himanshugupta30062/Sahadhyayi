@@ -15,7 +15,7 @@ export const useReadingGoal = (): ReadingGoalData => {
   const storageKey = `readingGoal${currentYear}`;
   const userStorageKey = user?.id ? `sahadhyayi_goal_${user.id}_${currentYear}` : storageKey;
 
-  const getInitialGoal = (): number => {
+  const getInitialGoal = useCallback((): number => {
     // 1. Check user metadata if available
     const metaGoal = user?.user_metadata?.[`reading_goal_${currentYear}`];
     if (metaGoal && typeof metaGoal === 'number' && metaGoal > 0) {
@@ -34,7 +34,7 @@ export const useReadingGoal = (): ReadingGoalData => {
       if (parsed > 0) return parsed;
     }
     return 12;
-  };
+  }, [currentYear, storageKey, user?.user_metadata, userStorageKey]);
 
   const [goal, setGoalState] = useState<number>(getInitialGoal);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -54,7 +54,7 @@ export const useReadingGoal = (): ReadingGoalData => {
     return () => {
       window.removeEventListener('readingGoalUpdated', handleGoalUpdate);
     };
-  }, [user?.id, currentYear]);
+  }, [getInitialGoal]);
 
   const setGoal = useCallback(
     async (newGoal: number) => {

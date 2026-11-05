@@ -179,7 +179,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
   useEffect(() => {
     if (!user || !cloudBookmarks.length) return;
     setBookmarks(cloudBookmarks.map((bookmark) => bookmark.location));
-  }, [user?.id, cloudBookmarks]);
+  }, [user, cloudBookmarks]);
 
   // Initialize reading session
   useEffect(() => {
@@ -201,9 +201,11 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     };
   }, [bookUrl, user, bookId]);
 
+  const loadEpubBookRef = useRef<() => Promise<void>>(() => Promise.resolve());
+
   useEffect(() => {
     if (isEpub && bookUrl && viewerRef.current) {
-      void loadEpubBook();
+      void loadEpubBookRef.current();
     }
   }, [isEpub, bookUrl]);
 
@@ -281,6 +283,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
       initializeEpub();
     }
   };
+  loadEpubBookRef.current = loadEpubBook;
 
   const initializeEpub = () => {
     if (!bookUrl || !viewerRef.current) return;
@@ -349,7 +352,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     }
   };
 
-  const applyTheme = (theme: 'light' | 'sepia' | 'dark' = readerTheme) => {
+  const applyTheme = useCallback((theme: 'light' | 'sepia' | 'dark' = readerTheme) => {
     if (!renditionRef.current) return;
 
     if (theme === 'dark') {
@@ -392,7 +395,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
         }
       });
     }
-  };
+  }, [readerTheme]);
 
   const applyFontSize = () => {
     if (!renditionRef.current) return;
@@ -596,7 +599,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     if (isEpub) {
       applyTheme(readerTheme);
     }
-  }, [readerTheme]);
+  }, [applyTheme, isEpub, readerTheme]);
 
   const formatReadingTime = (minutes: number) => {
     if (minutes < 60) return `${minutes}m`;

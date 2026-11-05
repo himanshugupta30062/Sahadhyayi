@@ -81,7 +81,7 @@ export default function WebsiteTour() {
     } catch {
       // Keep onboarding usable when browser storage is disabled.
     }
-  }, [loading, user?.id]);
+  }, [loading, user]);
 
   const finishTour = useCallback(() => {
     if (user) {

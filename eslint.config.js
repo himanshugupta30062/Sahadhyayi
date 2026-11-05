@@ -7,7 +7,7 @@ import jsxA11y from "eslint-plugin-jsx-a11y";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", "server.js", "archive/**", "server-utils/**"] },
+  { ignores: ["dist", "coverage/**", "server.js", "archive/**", "server-utils/**"] },
   {
     files: ["**/*.{ts,tsx}"],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],

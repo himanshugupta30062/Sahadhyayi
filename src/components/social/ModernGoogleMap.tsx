@@ -35,7 +35,9 @@ export const ModernGoogleMap: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [readers, setReaders] = useState<Reader[]>([]);
-  const [markers, setMarkers] = useState<any[]>([]);
+  const markersRef = useRef<any[]>([]);
+  const updateMarkersOnMapRef = useRef<(readersData: Reader[]) => void>(() => {});
+  const initializeMapRef = useRef<() => Promise<void>>(() => Promise.resolve());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [userName, setUserName] = useState('');
   const [currentBook, setCurrentBook] = useState('');
@@ -67,7 +69,7 @@ export const ModernGoogleMap: React.FC = () => {
         
         // Update markers when readers change and map is ready
         if (map && window.google) {
-          updateMarkersOnMap(data || []);
+          updateMarkersOnMapRef.current(data || []);
         }
       } catch (error) {
         console.error('Failed to fetch readers:', error);
@@ -103,12 +105,12 @@ export const ModernGoogleMap: React.FC = () => {
       console.log('Updating markers for readers:', readersData);
       
       // Clear existing markers
-      markers.forEach(marker => {
+      markersRef.current.forEach(marker => {
         if (marker.setMap) {
           marker.setMap(null);
         }
       });
-      setMarkers([]);
+      markersRef.current = [];
 
       // Add new markers for each reader
       const newMarkers: any[] = [];
@@ -165,12 +167,13 @@ export const ModernGoogleMap: React.FC = () => {
         newMarkers.push(marker);
       });
 
-      setMarkers(newMarkers);
+      markersRef.current = newMarkers;
       console.log('Added markers:', newMarkers.length);
     } catch (error) {
       console.error('Failed to update markers:', error);
     }
   };
+  updateMarkersOnMapRef.current = updateMarkersOnMap;
 
   const initializeMap = async () => {
     // Wait for DOM element to be ready
@@ -229,6 +232,7 @@ export const ModernGoogleMap: React.FC = () => {
       setIsLoading(false);
     }
   };
+  initializeMapRef.current = initializeMap;
 
   const loadGoogleMapsScript = () => {
     return new Promise<void>((resolve, reject) => {
@@ -307,13 +311,13 @@ export const ModernGoogleMap: React.FC = () => {
 
     // Expose callback globally for Google Maps API
     window.initMap = () => {
-      void initializeMap();
+      void initializeMapRef.current();
     };
     void loadMap();
 
     return () => {
       // Cleanup markers
-      markers.forEach(marker => {
+      markersRef.current.forEach(marker => {
         if (marker && marker.setMap) {
           marker.setMap(null);
         }

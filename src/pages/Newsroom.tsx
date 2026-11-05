@@ -79,7 +79,7 @@ export default function Newsroom() {
       return (data || []) as NewsItem[];
     },
   });
-  const items = newsQuery.data || [];
+  const items = useMemo(() => newsQuery.data || [], [newsQuery.data]);
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return items.filter((item) => (category === "all" || item.category === category) &&

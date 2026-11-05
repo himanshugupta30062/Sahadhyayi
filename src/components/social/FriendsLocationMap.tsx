@@ -19,6 +19,7 @@ type SharedProfile = {
   bio?: string | null;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function createFriendInfoContent(profile: SharedProfile): HTMLElement {
   // Google Maps InfoWindow accepts a DOM node. Use textContent for profile fields so
   // reader-controlled names/bios can never be interpreted as HTML or script.

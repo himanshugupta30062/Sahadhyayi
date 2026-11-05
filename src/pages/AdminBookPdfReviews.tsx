@@ -94,11 +94,11 @@ export default function AdminBookPdfReviews() {
 
   const submissions = submissionsQuery.data || [];
   const selected = submissions.find((item) => item.id === selectedId) || submissions[0] || null;
-  const books = booksQuery.data || [];
   const eligibleBooks = useMemo(() => {
+    const books = booksQuery.data || [];
     const query = bookSearch.trim().toLowerCase();
     return books.filter((book) => !book.pdf_url && (!query || [book.title, book.author].some((v) => v?.toLowerCase().includes(query)))).slice(0, 100);
-  }, [books, bookSearch]);
+  }, [booksQuery.data, bookSearch]);
 
   const refresh = async () => {
     await Promise.all([

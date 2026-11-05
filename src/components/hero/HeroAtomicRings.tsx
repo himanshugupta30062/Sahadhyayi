@@ -118,6 +118,11 @@ const ORBITS: OrbitConfig[] = [
   },
 ];
 
+const COVERAGE = 0.65;
+const SWEEP_DEG = 360 * COVERAGE;
+const ATOM_SPEED = 30;
+const ATOM_FADE_ANGLE = 18;
+
 interface HeroAtomicRingsProps {
   size?: number | string;
   className?: string;
@@ -136,10 +141,6 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
   // Each atom moves only along its own coloured arc and fades near the gap.
   const atomProgress = useRef(ORBITS.map((orbit) => orbit.initialProgress));
   const pausedForKeyboard = useRef(false);
-  const COVERAGE = 0.65;
-  const SWEEP_DEG = 360 * COVERAGE;
-  const ATOM_SPEED = 30;
-  const ATOM_FADE_ANGLE = 18;
 
   useEffect(() => {
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
