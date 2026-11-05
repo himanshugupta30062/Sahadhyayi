@@ -327,6 +327,10 @@ const BookSelectionModal = ({
         return <Badge className="bg-purple-100 text-purple-900 border-purple-300 dark:bg-purple-950 dark:text-purple-200">Google Books</Badge>;
       case 'internet_archive':
         return <Badge className="bg-stone-100 text-stone-900 border-stone-300 dark:bg-stone-900 dark:text-stone-200">Internet Archive</Badge>;
+      case 'doab':
+        return <Badge className="bg-indigo-100 text-indigo-900 border-indigo-300 dark:bg-indigo-950 dark:text-indigo-200">DOAB Open Access</Badge>;
+      case 'oapen':
+        return <Badge className="bg-rose-100 text-rose-900 border-rose-300 dark:bg-rose-950 dark:text-rose-200">OAPEN</Badge>;
       case 'openalex':
         return <Badge className="bg-teal-100 text-teal-900 border-teal-300 dark:bg-teal-950 dark:text-teal-200">OpenAlex</Badge>;
       case 'wikisource':
