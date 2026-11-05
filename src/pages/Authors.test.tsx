@@ -119,7 +119,7 @@ describe('Authors directory', () => {
   it('renders authors in book-count order and matches library books case-insensitively', () => {
     renderAuthors();
 
-    expect(screen.getByRole('heading', { name: 'Meet the minds behind the books.' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: /Meet the minds/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Ursula K. Le Guin' })).toBeInTheDocument();
     expect(screen.getByText('10 in catalog')).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'The Dispossessed' })).toHaveAttribute(
