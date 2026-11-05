@@ -1,5 +1,4 @@
 import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react-swc';
 import path from 'node:path';
 
 /**
@@ -8,7 +7,9 @@ import path from 'node:path';
  * environment directive is missed by a runner or wrapper.
  */
 export default defineConfig({
-  plugins: [react()],
+  esbuild: {
+    jsx: 'automatic',
+  },
   resolve: {
     alias: {
       '@': path.resolve(process.cwd(), 'src'),
