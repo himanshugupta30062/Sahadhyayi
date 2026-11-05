@@ -23,6 +23,8 @@ Sentry.init({ dsn: process.env.SENTRY_DSN });
 
 const CSP_DIRECTIVES = [
   "default-src 'self'",
+  "worker-src 'self' blob:",
+  "child-src 'self' blob:",
   "script-src 'self' 'unsafe-inline' blob: https://sdk.mappls.com https://*.mappls.com https://*.mapmyindia.com https://unpkg.com https://maps.googleapis.com https://static.cloudflareinsights.com",
   "style-src 'self' 'unsafe-inline' https://*.mappls.com https://*.mapmyindia.com https://unpkg.com https://fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
