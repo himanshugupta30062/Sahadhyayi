@@ -62,6 +62,7 @@ function loadTurnstile(): Promise<void> {
     } else {
       script.addEventListener('load', onLoad, { once: true });
       script.addEventListener('error', onError, { once: true });
+      if (script.readyState === 'complete') onLoad();
     }
   }).catch((error: unknown) => {
     turnstileScriptPromise = null;
