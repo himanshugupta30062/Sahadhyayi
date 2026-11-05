@@ -45,7 +45,7 @@ function getClient(): RecaptchaClient | undefined {
  */
 export function loadRecaptcha(): Promise<void> {
   if (getClient()) return Promise.resolve();
-  if (scriptPromise) return scriptPromise;
+  if (scriptPromise !== undefined) return scriptPromise;
 
   scriptPromise = new Promise<void>((resolve, reject) => {
     if (typeof window === 'undefined' || typeof document === 'undefined') {
