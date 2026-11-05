@@ -363,14 +363,14 @@ const ResearchPapers = () => {
                   className="h-12 border-[#E8E8E3] bg-[#FAFAF8] pl-10 text-sm dark:border-[#26302A] dark:bg-[#0B0D0C]"
                 />
               </div>
-              <label className="flex h-12 items-center gap-2 rounded-lg border border-[#E8E8E3] bg-[#FAFAF8] px-3 text-sm dark:border-[#26302A] dark:bg-[#0B0D0C]">
+              <div className="flex h-12 items-center gap-2 rounded-lg border border-[#E8E8E3] bg-[#FAFAF8] px-3 text-sm dark:border-[#26302A] dark:bg-[#0B0D0C]">
                 <label htmlFor="research-year-filter" className="whitespace-nowrap text-xs text-[#737B74]">Published</label>
                 <select id="research-year-filter" value={year} onChange={(event) => { setYear(event.target.value); setPage(1); }} className="min-w-0 bg-transparent font-medium outline-none">
                   <option value="all">Any year</option>
                   {Array.from({ length: 30 }, (_, index) => String(new Date().getFullYear() - index)).map((value) => <option key={value} value={value}>{value}</option>)}
                 </select>
-              </label>
-              <label className="flex h-12 items-center gap-2 rounded-lg border border-[#E8E8E3] bg-[#FAFAF8] px-3 text-sm dark:border-[#26302A] dark:bg-[#0B0D0C]">
+              </div>
+              <div className="flex h-12 items-center gap-2 rounded-lg border border-[#E8E8E3] bg-[#FAFAF8] px-3 text-sm dark:border-[#26302A] dark:bg-[#0B0D0C]">
                 <label htmlFor="research-category-filter" className="whitespace-nowrap text-xs text-[#737B74]">Category</label>
                 <select id="research-category-filter" value={category} onChange={(event) => { setCategory(event.target.value); setPage(1); }} className="min-w-0 bg-transparent font-medium outline-none">
                   <option value="all">All categories</option>
@@ -463,7 +463,7 @@ const ResearchPapers = () => {
                                 <CheckCircle2 className="h-3 w-3" /> Open access
                               </span>
                             )}
-                            {paper.publication_year && <span className="text-xs text-[#737B74] dark:text-[#A5ADA6]">{paper.publication_year}</span>}
+                            {Boolean(paper.publication_year) && <span className="text-xs text-[#737B74] dark:text-[#A5ADA6]">{paper.publication_year}</span>}
                             {source && <span className="max-w-full truncate text-xs text-[#737B74] dark:text-[#A5ADA6]">· {source}</span>}
                           </div>
                           <h3 className="font-serif text-lg font-semibold leading-snug text-[#1C201D] transition-colors group-hover:text-[#1C442D] dark:text-[#F3F0E7] dark:group-hover:text-[#D5B16D] sm:text-xl">
