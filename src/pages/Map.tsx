@@ -40,7 +40,6 @@ const MapPage = () => {
   const { user } = useAuth();
 
   const friendsQuery = useFriends();
-  const friends = friendsQuery.data || [];
 
   // Use only the location the signed-in user has already chosen to share.
   // Opening this page must never trigger a new GPS permission prompt.
@@ -157,6 +156,7 @@ const MapPage = () => {
   );
 
   const friendPoints = useMemo<MapplsPoint[]>(() => {
+    const friends = friendsQuery.data || [];
     if (!Array.isArray(friends)) return [];
     return friends.flatMap((friend: any) => {
       const profile = friend?.friend_profile;
@@ -180,7 +180,7 @@ const MapPage = () => {
         description: 'Friend who has enabled location sharing',
       }];
     });
-  }, [friends]);
+  }, [friendsQuery.data]);
 
   return (
     <>

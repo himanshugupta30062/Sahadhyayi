@@ -365,18 +365,18 @@ const ResearchPapers = () => {
               </div>
               <div className="flex h-12 items-center gap-2 rounded-lg border border-[#E8E8E3] bg-[#FAFAF8] px-3 text-sm dark:border-[#26302A] dark:bg-[#0B0D0C]">
                 <label htmlFor="research-year-filter" className="whitespace-nowrap text-xs text-[#737B74]">Published</label>
-                <select id="research-year-filter" value={year} onChange={(event) => { setYear(event.target.value); setPage(1); }} className="min-w-0 bg-transparent font-medium outline-none">
+                <select id="research-year-filter" aria-label="Filter by publication year" value={year} onChange={(event) => { setYear(event.target.value); setPage(1); }} className="min-w-0 bg-transparent font-medium outline-none">
                   <option value="all">Any year</option>
                   {Array.from({ length: 30 }, (_, index) => String(new Date().getFullYear() - index)).map((value) => <option key={value} value={value}>{value}</option>)}
                 </select>
               </div>
               <div className="flex h-12 items-center gap-2 rounded-lg border border-[#E8E8E3] bg-[#FAFAF8] px-3 text-sm dark:border-[#26302A] dark:bg-[#0B0D0C]">
                 <label htmlFor="research-category-filter" className="whitespace-nowrap text-xs text-[#737B74]">Category</label>
-                <select id="research-category-filter" value={category} onChange={(event) => { setCategory(event.target.value); setPage(1); }} className="min-w-0 bg-transparent font-medium outline-none">
+                <select id="research-category-filter" aria-label="Filter by research category" value={category} onChange={(event) => { setCategory(event.target.value); setPage(1); }} className="min-w-0 bg-transparent font-medium outline-none">
                   <option value="all">All categories</option>
                   {categories.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}
                 </select>
-              </label>
+              </div>
               <Button type="button" variant="outline" onClick={resetFilters} className="h-12 gap-2 border-[#E8E8E3] dark:border-[#344039]">
                 <RefreshCw className="h-4 w-4" /> Reset
               </Button>

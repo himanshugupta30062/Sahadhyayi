@@ -31,9 +31,15 @@ describe('MapplsMap', () => {
     const fitBounds = vi.fn();
     const extend = vi.fn();
     const remove = vi.fn();
-    const Map = vi.fn().mockImplementation(() => ({ setCenter, setZoom, fitBounds, remove }));
-    const Marker = vi.fn().mockImplementation(() => ({ remove }));
-    const LatLngBounds = vi.fn().mockImplementation(() => ({ extend }));
+    const Map = vi.fn().mockImplementation(function () {
+      return { setCenter, setZoom, fitBounds, remove };
+    });
+    const Marker = vi.fn().mockImplementation(function () {
+      return { remove };
+    });
+    const LatLngBounds = vi.fn().mockImplementation(function () {
+      return { extend };
+    });
     window.mappls = { Map, Marker, LatLngBounds };
 
     render(<MapplsMap apiKey="valid-key" points={[
@@ -56,7 +62,9 @@ describe('MapplsMap', () => {
     const setCenter = vi.fn();
     const setZoom = vi.fn();
     window.mappls = {
-      Map: vi.fn().mockImplementation(() => ({ setCenter, setZoom, remove: vi.fn() })),
+      Map: vi.fn().mockImplementation(function () {
+        return { setCenter, setZoom, remove: vi.fn() };
+      }),
       Marker: vi.fn(),
     };
     const { rerender } = render(<MapplsMap apiKey="valid-key" points={[
@@ -79,7 +87,12 @@ describe('MapplsMap', () => {
   });
 
   it('shows an empty-location hint after the map becomes ready', async () => {
-    window.mappls = { Map: vi.fn().mockImplementation(() => ({ remove: vi.fn() })), Marker: vi.fn() };
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () {
+        return { remove: vi.fn() };
+      }),
+      Marker: vi.fn(),
+    };
     render(<MapplsMap apiKey="valid-key" points={[]} emptyMessage="No readers nearby" />);
     expect(await screen.findByText('No readers nearby')).toBeInTheDocument();
   });

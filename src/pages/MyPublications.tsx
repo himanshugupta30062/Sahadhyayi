@@ -80,8 +80,8 @@ export default function MyPublications() {
                         </div>
                         <div className="flex flex-wrap items-center gap-2 mt-1">
                           {book.genre && <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">{book.genre}</span>}
-                          {book.file_size && <span className="text-xs text-muted-foreground">{formatFileSize(book.file_size)}</span>}
-                          {book.reading_time_minutes && <span className="text-xs text-muted-foreground">~{book.reading_time_minutes} min</span>}
+                          {Boolean(book.file_size) && <span className="text-xs text-muted-foreground">{formatFileSize(book.file_size)}</span>}
+                          {Boolean(book.reading_time_minutes) && <span className="text-xs text-muted-foreground">~{book.reading_time_minutes} min</span>}
                         </div>
                         {book.tags && book.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1.5">

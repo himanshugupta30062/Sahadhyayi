@@ -125,7 +125,7 @@ export default function QuizGame({
         setShowStreakPopup(true);
       }
 
-      confetti({
+      void confetti({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 },
@@ -139,7 +139,7 @@ export default function QuizGame({
       answerTimeoutRef.current = null;
       onAnswer(index);
     }, 2000);
-  }, [showResult, hiddenOptions, question.correct_answer, question.points, onAnswer, mode, timeLeft, streak]);
+  }, [showResult, hiddenOptions, question.correct_answer, question.points, onAnswer, mode, streak]);
 
   const optionLabels = ['A', 'B', 'C', 'D'];
   const timerPercent = timerEnabled ? (timeLeft / timerDuration) * 100 : 100;

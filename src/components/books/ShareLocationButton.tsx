@@ -48,7 +48,7 @@ export const ShareLocationButton = ({
       }
     };
 
-    checkLocationStatus();
+    void checkLocationStatus();
   }, [user?.id, bookId]);
 
   const handleLocationToggle = async () => {

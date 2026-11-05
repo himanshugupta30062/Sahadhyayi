@@ -117,6 +117,8 @@ export const useReadingRoomLive = (
   const [presence, setPresence] = useState<RoomPresence[]>([]);
   const [pulses, setPulses] = useState<ChapterPulse[]>([]);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const pageStateRef = useRef({ page, sharePage });
+  pageStateRef.current = { page, sharePage };
 
   // Initial message and recent events fetch
   useEffect(() => {
@@ -228,11 +230,12 @@ export const useReadingRoomLive = (
       .subscribe(async (status) => {
         if (status === "SUBSCRIBED") {
           try {
+            const current = pageStateRef.current;
             await channel.track({
               user_id: user.id,
               name: user.email?.split("@")[0] ?? "Reader",
-              page: sharePage ? page : null,
-              share_page: sharePage,
+              page: current.sharePage ? current.page : null,
+              share_page: current.sharePage,
               joined_at: new Date().toISOString(),
             } satisfies RoomPresence);
           } catch (error) {
@@ -275,7 +278,7 @@ export const useReadingRoomLive = (
         .single();
 
       if (!error && data) {
-        channelRef.current?.send({
+        void channelRef.current?.send({
           type: "broadcast",
           event: "room_chat",
           payload: data,
@@ -295,7 +298,7 @@ export const useReadingRoomLive = (
         chapter,
       });
 
-      channelRef.current?.send({
+      void channelRef.current?.send({
         type: "broadcast",
         event: "chapter_complete",
         payload: {

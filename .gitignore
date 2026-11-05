@@ -12,6 +12,7 @@ dist
 dist-ssr
 server-utils
 public/prerender
+coverage
 *.local
 
 # Editor directories and files

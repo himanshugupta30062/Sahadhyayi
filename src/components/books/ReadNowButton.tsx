@@ -23,7 +23,7 @@ const ReadNowButton: React.FC<ReadNowButtonProps> = ({
   const { handleReadNow, isLoading } = useReadNow();
 
   const onClick = () => {
-    handleReadNow(bookId, bookTitle);
+    void handleReadNow(bookId, bookTitle);
   };
 
   return (

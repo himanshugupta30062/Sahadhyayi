@@ -1,16 +1,19 @@
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
+const toPath = (relPath: string) => fileURLToPath(new URL(relPath, import.meta.url));
+
 const hook = readFileSync(
-  new URL('../../src/hooks/useSocialPosts.ts', import.meta.url),
+  toPath('../../src/hooks/useSocialPosts.ts'),
   'utf8',
 );
 const feed = readFileSync(
-  new URL('../../src/components/social/EnhancedSocialFeed.tsx', import.meta.url),
+  toPath('../../src/components/social/EnhancedSocialFeed.tsx'),
   'utf8',
 );
 const audienceMigration = readFileSync(
-  new URL('../../supabase/migrations/20261020130000_add_post_audiences.sql', import.meta.url),
+  toPath('../../supabase/migrations/20261020130000_add_post_audiences.sql'),
   'utf8',
 );
 

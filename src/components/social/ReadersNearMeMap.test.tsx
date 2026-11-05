@@ -1,5 +1,6 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom/vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ReadersNearMeMap } from './ReadersNearMeMap';
 
 const mocks = vi.hoisted(() => ({
@@ -82,6 +83,10 @@ describe('ReadersNearMeMap', () => {
       if (name === 'get_nearby_book_readers') return Promise.resolve({ data: [], error: null });
       return Promise.resolve({ data: null, error: null });
     });
+  });
+
+  afterEach(() => {
+    cleanup();
   });
 
   it('does not request GPS or nearby readers just because the map is opened', async () => {

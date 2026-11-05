@@ -138,8 +138,8 @@ export const useSendFriendRequest = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
-      queryClient.invalidateQueries({ queryKey: ['all-users'] });
+      void queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
+      void queryClient.invalidateQueries({ queryKey: ['all-users'] });
     },
   });
 };
@@ -160,9 +160,9 @@ export const useRespondToFriendRequest = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
-      queryClient.invalidateQueries({ queryKey: ['friends'] });
-      queryClient.invalidateQueries({ queryKey: ['all-users'] });
+      void queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
+      void queryClient.invalidateQueries({ queryKey: ['friends'] });
+      void queryClient.invalidateQueries({ queryKey: ['all-users'] });
     },
   });
 };
@@ -186,8 +186,8 @@ export const useCancelFriendRequest = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
-      queryClient.invalidateQueries({ queryKey: ['all-users'] });
+      void queryClient.invalidateQueries({ queryKey: ['friend-requests'] });
+      void queryClient.invalidateQueries({ queryKey: ['all-users'] });
     },
   });
 };

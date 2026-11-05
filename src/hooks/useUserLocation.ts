@@ -59,7 +59,7 @@ export const useUpdateUserLocation = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-location'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-location'] });
     },
   });
 };

@@ -22,6 +22,7 @@ export default defineConfig({
     restoreMocks: true,
     unstubEnvs: true,
     testTimeout: 10_000,
+    exclude: ['**/node_modules/**', '**/dist/**', '**/* 2.*'],
     coverage: {
       provider: 'v8',
       enabled: false,
@@ -35,6 +36,7 @@ export default defineConfig({
         'src/**/__tests__/**',
         'src/integrations/supabase/types.ts',
         'archive/**',
+        '**/* 2.*',
       ],
     },
   },

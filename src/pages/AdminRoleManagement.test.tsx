@@ -82,8 +82,11 @@ describe('AdminRoleManagement', () => {
     mocks.queryError = null;
     mocks.permissionsError = null;
     mocks.loading = false;
-    mocks.permissionsLoading = false;
-    mocks.rpc.mockReset().mockResolvedValue({ data: true, error: null });
+    mocks.rpc.mockReset().mockImplementation((name: string) => {
+      if (name === 'admin_list_user_roles') return Promise.resolve({ data: mocks.roles, error: null });
+      if (name === 'admin_list_role_permissions') return Promise.resolve({ data: mocks.permissions, error: null });
+      return Promise.resolve({ data: true, error: null });
+    });
     mocks.invalidateQueries.mockClear();
     mocks.toast.mockReset();
   });

@@ -95,7 +95,7 @@ const AuthorDetails = () => {
                 <div className="flex flex-wrap gap-4 mb-4">
                   <StatPill icon={<BookOpen className="w-4 h-4 text-brand-primary" />} value={author.books_count || books.length} label="Books" />
                   <StatPill icon={<Users className="w-4 h-4 text-brand-primary" />} value={(author.followers_count || 0).toLocaleString()} label="Followers" />
-                  {author.rating && <StatPill icon={<Star className="w-4 h-4 text-amber-500" />} value={`${author.rating}/5`} label="Rating" />}
+                  {Boolean(author.rating) && <StatPill icon={<Star className="w-4 h-4 text-amber-500" />} value={`${author.rating}/5`} label="Rating" />}
                   {author.upcoming_events > 0 && <StatPill icon={<Calendar className="w-4 h-4 text-brand-primary" />} value={author.upcoming_events} label="Events" />}
                 </div>
 

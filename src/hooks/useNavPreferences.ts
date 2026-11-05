@@ -81,7 +81,7 @@ export function useNavPreferences() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['nav-preferences', user?.id] });
+      void queryClient.invalidateQueries({ queryKey: ['nav-preferences', user?.id] });
     },
   });
 

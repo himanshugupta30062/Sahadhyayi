@@ -52,7 +52,10 @@ vi.mock('@/components/ui/select', () => ({
   SelectItem: ({ children }: any) => <span>{children}</span>,
 }));
 
+import { MemoryRouter } from 'react-router-dom';
 import AdminNews from '@/pages/AdminNews';
+
+const renderAdminNews = () => render(<MemoryRouter><AdminNews /></MemoryRouter>);
 
 describe('AdminNews', () => {
   beforeEach(() => {
@@ -66,36 +69,36 @@ describe('AdminNews', () => {
 
   it('loads recent stories and exposes the query function', async () => {
     mocks.stories = [{ id: 'n1', title: 'Research breakthrough', slug: 'research-breakthrough', summary: 'A summary', status: 'published', category: 'research' }];
-    render(<AdminNews />);
+    renderAdminNews();
     expect(screen.getByText('Research breakthrough')).toBeInTheDocument();
-    expect(screen.getByText('Research & Science News')).toBeInTheDocument();
+    expect(screen.getAllByText('Research & Science News')[0]).toBeInTheDocument();
     expect(mocks.queryOptions[0].queryKey).toEqual(['admin-news']);
     await expect(mocks.queryOptions[0].queryFn()).resolves.toEqual(mocks.stories);
   });
 
   it('renders loading, error and empty collection states', () => {
-    mocks.loading = true; const first = render(<AdminNews />);
+    mocks.loading = true; const first = renderAdminNews();
     expect(screen.getByText('Loading stories...')).toBeInTheDocument(); first.unmount();
-    mocks.loading = false; mocks.queryError = new Error('offline'); const second = render(<AdminNews />);
+    mocks.loading = false; mocks.queryError = new Error('offline'); const second = renderAdminNews();
     expect(screen.getByText(/Could not load stories: offline/)).toBeInTheDocument(); second.unmount();
-    mocks.queryError = null; render(<AdminNews />);
+    mocks.queryError = null; renderAdminNews();
     expect(screen.getByText('No stories created yet.')).toBeInTheDocument();
   });
 
   it('validates story content and unsafe source URLs', async () => {
-    render(<AdminNews />);
-    fireEvent.click(screen.getByRole('button', { name: 'Publish story' }));
+    renderAdminNews();
+    fireEvent.click(screen.getByRole('button', { name: 'Save draft' }));
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Could not save news', description: expect.stringContaining('headline') })));
     fireEvent.change(screen.getByPlaceholderText('Write a clear, factual headline'), { target: { value: 'A sufficiently long headline' } });
     fireEvent.change(screen.getByPlaceholderText('Write the original story, context and key details...'), { target: { value: 'This story contains more than thirty characters of useful original content.' } });
-    fireEvent.change(screen.getByPlaceholderText('https://...'), { target: { value: 'javascript:alert(1)' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Publish story' }));
+    fireEvent.change(screen.getAllByPlaceholderText('https://...')[1], { target: { value: 'javascript:alert(1)' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save draft' }));
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ description: 'Source URL must use HTTP or HTTPS.' })));
     expect(mocks.insert).not.toHaveBeenCalled();
   });
 
   it('saves a draft, resets the form and invalidates the list', async () => {
-    render(<AdminNews />);
+    renderAdminNews();
     fireEvent.change(screen.getByPlaceholderText('Write a clear, factual headline'), { target: { value: 'A sufficiently long headline' } });
     fireEvent.change(screen.getByPlaceholderText('Write the original story, context and key details...'), { target: { value: 'This story contains more than thirty characters of useful original content.' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save draft' }));
@@ -106,10 +109,10 @@ describe('AdminNews', () => {
   });
 
   it('publishes a story with selected category and reports insert failures', async () => {
-    render(<AdminNews />);
+    renderAdminNews();
     fireEvent.change(screen.getByPlaceholderText('Write a clear, factual headline'), { target: { value: 'A sufficiently long headline' } });
     fireEvent.change(screen.getByPlaceholderText('Write the original story, context and key details...'), { target: { value: 'This story contains more than thirty characters of useful original content.' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Choose research' }));
+    fireEvent.click(screen.getByText('Choose research'));
     fireEvent.click(screen.getByRole('button', { name: 'Publish story' }));
     await waitFor(() => expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({ category: 'research', status: 'published', published_at: expect.any(String) })));
     expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'News published' }));
@@ -126,10 +129,10 @@ describe('AdminNews', () => {
       { id: 'draft-1', title: 'Draft headline', slug: 'draft-headline', summary: '', status: 'draft', category: 'books' },
       { id: 'published-1', title: 'Published headline', slug: 'published-headline', summary: '', status: 'published', category: 'authors' },
     ];
-    render(<AdminNews />);
+    renderAdminNews();
     fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
     await waitFor(() => expect(mocks.update).toHaveBeenCalledWith({ status: 'published', published_at: expect.any(String) }));
-    fireEvent.click(screen.getByRole('button', { name: 'Archive' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Archive' })[0]);
     await waitFor(() => expect(mocks.update).toHaveBeenCalledWith({ status: 'archived', published_at: null }));
   });
 });

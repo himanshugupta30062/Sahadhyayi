@@ -1,14 +1,17 @@
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
+const toPath = (relPath: string) => fileURLToPath(new URL(relPath, import.meta.url));
+
 const migration = readFileSync(
-  new URL('../../supabase/migrations/20261029200000_protect_default_reading_community_membership.sql', import.meta.url),
+  toPath('../../supabase/migrations/20261029200000_protect_default_reading_community_membership.sql'),
   'utf8',
 );
-const groupDetails = readFileSync(new URL('../pages/GroupDetails.tsx', import.meta.url), 'utf8');
-const groupCard = readFileSync(new URL('../components/groups/GroupCard.tsx', import.meta.url), 'utf8');
-const groupDirectory = readFileSync(new URL('../components/groups/ReadingGroupsDirectory.tsx', import.meta.url), 'utf8');
-const groupManagement = readFileSync(new URL('../hooks/useGroupManagement.ts', import.meta.url), 'utf8');
+const groupDetails = readFileSync(toPath('../pages/GroupDetails.tsx'), 'utf8');
+const groupCard = readFileSync(toPath('../components/groups/GroupCard.tsx'), 'utf8');
+const groupDirectory = readFileSync(toPath('../components/groups/ReadingGroupsDirectory.tsx'), 'utf8');
+const groupManagement = readFileSync(toPath('../hooks/useGroupManagement.ts'), 'utf8');
 
 describe('permanent default reading community membership', () => {
   it('auto-joins existing and newly registered users in the active group system', () => {

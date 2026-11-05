@@ -165,10 +165,11 @@ const Feedback = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="feedback-name" className="block text-sm font-medium text-gray-700 mb-1">
                       Name *
                     </label>
                     <Input
+                      id="feedback-name"
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
@@ -177,10 +178,11 @@ const Feedback = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="feedback-email" className="block text-sm font-medium text-gray-700 mb-1">
                       Email *
                     </label>
                     <Input
+                      id="feedback-email"
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
@@ -191,11 +193,11 @@ const Feedback = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="feedback-type" className="block text-sm font-medium text-gray-700 mb-1">
                     Feedback Type *
                   </label>
                   <Select value={formData.type} onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}>
-                    <SelectTrigger>
+                    <SelectTrigger id="feedback-type">
                       <SelectValue placeholder="Select feedback type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -209,10 +211,11 @@ const Feedback = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="feedback-subject" className="block text-sm font-medium text-gray-700 mb-1">
                     Subject
                   </label>
                   <Input
+                    id="feedback-subject"
                     type="text"
                     value={formData.subject}
                     onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
@@ -222,9 +225,9 @@ const Feedback = () => {
 
                 {formData.type === 'review' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <p className="block text-sm font-medium text-gray-700 mb-2">
                       Rating
-                    </label>
+                    </p>
                     <div className="flex space-x-1">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Star
@@ -242,10 +245,11 @@ const Feedback = () => {
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="feedback-message" className="block text-sm font-medium text-gray-700 mb-1">
                     Message *
                   </label>
                   <Textarea
+                    id="feedback-message"
                     value={formData.message}
                     onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
                     placeholder="Please share your detailed feedback..."

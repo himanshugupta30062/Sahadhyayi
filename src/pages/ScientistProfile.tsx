@@ -146,7 +146,7 @@ const ScientistProfile = () => {
               <section id="timeline" className="border-t border-[#E5DED2] pt-8 dark:border-[#29332D]">
                 <div className="mb-6 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8F681C] dark:text-[#D5B16D]"><ScrollText className="h-4 w-4" /> Life & work timeline</div>
                 <ol className="relative ml-2 space-y-6 border-l border-[#D8CDBB] pl-6 dark:border-[#465448]">
-                  {scientist.milestones.map((milestone) => (
+                  {(scientist.milestones || []).map((milestone) => (
                     <li key={`${milestone.year}-${milestone.title}`} className="relative">
                       <span aria-hidden="true" className="absolute -left-[31px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-[#FAF7F2] bg-[#8F681C] dark:border-[#0B0D0C] dark:bg-[#D5B16D]" />
                       <p className="text-xs font-bold tracking-[0.12em] text-[#8F681C] dark:text-[#D5B16D]">{milestone.year}</p>
@@ -165,7 +165,7 @@ const ScientistProfile = () => {
               <section id="sources" className="border-t border-[#E5DED2] pt-8 dark:border-[#29332D]">
                 <div className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8F681C] dark:text-[#D5B16D]"><ExternalLink className="h-4 w-4" /> Sources & further reading</div>
                 <div className="space-y-3">
-                  {scientist.sources.map((source) => (
+                  {(scientist.sources || []).map((source) => (
                     <a key={source.url} href={source.url} target="_blank" rel="noopener noreferrer" className="group flex items-start justify-between gap-4 rounded-xl border border-[#E5DED2] bg-white p-4 transition hover:border-[#A7B4A1] hover:shadow-sm dark:border-[#29332D] dark:bg-[#111614]">
                       <span>
                         <span className="block text-sm font-semibold text-[#202820] group-hover:text-[#1C442D] dark:text-[#F3F0E7] dark:group-hover:text-[#D5B16D]">{source.label}</span>

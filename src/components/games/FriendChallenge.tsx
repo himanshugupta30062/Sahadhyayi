@@ -56,8 +56,8 @@ export default function FriendChallenge({ onStartChallenge, onAcceptChallenge }:
 
   useEffect(() => {
     if (user) {
-      fetchFriends();
-      fetchChallenges();
+      void fetchFriends();
+      void fetchChallenges();
       generateChallengeCode();
     }
   }, [user]);

@@ -1,13 +1,16 @@
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-const socialPage = readFileSync(new URL('../../src/pages/SocialMedia.tsx', import.meta.url), 'utf8');
-const readersMap = readFileSync(new URL('../../src/components/social/ReadersNearMeMap.tsx', import.meta.url), 'utf8');
-const friendsMap = readFileSync(new URL('../../src/components/social/FriendsLocationMap.tsx', import.meta.url), 'utf8');
-const consentModal = readFileSync(new URL('../../src/components/social/LocationConsentModal.tsx', import.meta.url), 'utf8');
-const permissionModal = readFileSync(new URL('../../src/components/social/LocationPermissionModal.tsx', import.meta.url), 'utf8');
-const userSearch = readFileSync(new URL('../../src/hooks/useUserSearch.ts', import.meta.url), 'utf8');
-const friendsManager = readFileSync(new URL('../../src/components/social/EnhancedFriendsManager.tsx', import.meta.url), 'utf8');
+const toPath = (relPath: string) => fileURLToPath(new URL(relPath, import.meta.url));
+
+const socialPage = readFileSync(toPath('../../src/pages/SocialMedia.tsx'), 'utf8');
+const readersMap = readFileSync(toPath('../../src/components/social/ReadersNearMeMap.tsx'), 'utf8');
+const friendsMap = readFileSync(toPath('../../src/components/social/FriendsLocationMap.tsx'), 'utf8');
+const consentModal = readFileSync(toPath('../../src/components/social/LocationConsentModal.tsx'), 'utf8');
+const permissionModal = readFileSync(toPath('../../src/components/social/LocationPermissionModal.tsx'), 'utf8');
+const userSearch = readFileSync(toPath('../../src/hooks/useUserSearch.ts'), 'utf8');
+const friendsManager = readFileSync(toPath('../../src/components/social/EnhancedFriendsManager.tsx'), 'utf8');
 
 describe('Social discovery and location privacy regressions', () => {
   it('keeps authenticated data hooks inside the authenticated social page', () => {

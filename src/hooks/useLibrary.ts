@@ -52,7 +52,7 @@ export const useAddLibraryBook = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['library-books'] });
+      void queryClient.invalidateQueries({ queryKey: ['library-books'] });
       toast({ title: 'Book Added', description: 'Book has been added to the library!' });
     },
   });

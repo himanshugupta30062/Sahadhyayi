@@ -44,7 +44,7 @@ const key = (value: string) => value.trim().toLowerCase().replace(/[_]+/g, ' ').
 
 export function normalizeBookGenre(value?: string | null): string {
   if (!value?.trim()) return 'Other';
-  const hierarchy = value.split(/[\/]/).map(key).filter(Boolean);
+  const hierarchy = value.split('/').map(key).filter(Boolean);
   for (const part of hierarchy.reverse()) if (aliases[part]) return aliases[part];
   const normalized = key(value);
   if (aliases[normalized]) return aliases[normalized];

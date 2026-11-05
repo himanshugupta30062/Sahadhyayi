@@ -35,7 +35,7 @@ const ChatbotProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    initializeKnowledge();
+    void initializeKnowledge();
   }, [initializeWebsiteKnowledge, isInitialized, getTrainingDataStats]);
 
   const toggleChat = useCallback(() => {

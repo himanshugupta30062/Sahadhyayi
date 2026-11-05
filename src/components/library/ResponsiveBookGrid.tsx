@@ -97,7 +97,7 @@ const ResponsiveBookGrid: React.FC<ResponsiveBookGridProps> = ({ books, isLoadin
                     </Badge>
                   )}
                   
-                  {book.rating && (
+                  {Boolean(book.rating) && (
                     <div className="flex items-center text-sm text-yellow-600">
                       <Star className="w-3 h-3 mr-1 fill-current" />
                       <span>{book.rating.toFixed(1)}</span>
@@ -105,7 +105,7 @@ const ResponsiveBookGrid: React.FC<ResponsiveBookGridProps> = ({ books, isLoadin
                   )}
                 </div>
                 
-                {book.published_year && (
+                {Boolean(book.published_year) && (
                   <div className="flex items-center text-xs text-text-muted">
                     <Calendar className="w-3 h-3 mr-1" />
                     <span>{book.published_year}</span>

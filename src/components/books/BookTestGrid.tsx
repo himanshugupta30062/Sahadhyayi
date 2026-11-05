@@ -105,13 +105,13 @@ const BookTestGrid: React.FC<BookTestGridProps> = ({ books, loading }) => {
             </div>
 
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              {book.publication_year && (
+              {Boolean(book.publication_year) && (
                 <div className="flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
                   <span>{book.publication_year}</span>
                 </div>
               )}
-              {book.pages && (
+              {Boolean(book.pages) && (
                 <div className="flex items-center gap-1">
                   <FileText className="w-3 h-3" />
                   <span>{book.pages} pages</span>

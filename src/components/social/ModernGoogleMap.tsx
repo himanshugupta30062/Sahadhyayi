@@ -35,7 +35,9 @@ export const ModernGoogleMap: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [readers, setReaders] = useState<Reader[]>([]);
-  const [markers, setMarkers] = useState<any[]>([]);
+  const markersRef = useRef<any[]>([]);
+  const updateMarkersOnMapRef = useRef<(readersData: Reader[]) => void>(() => {});
+  const initializeMapRef = useRef<() => Promise<void>>(() => Promise.resolve());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [userName, setUserName] = useState('');
   const [currentBook, setCurrentBook] = useState('');
@@ -67,14 +69,14 @@ export const ModernGoogleMap: React.FC = () => {
         
         // Update markers when readers change and map is ready
         if (map && window.google) {
-          updateMarkersOnMap(data || []);
+          updateMarkersOnMapRef.current(data || []);
         }
       } catch (error) {
         console.error('Failed to fetch readers:', error);
       }
     };
 
-    fetchReaders();
+    void fetchReaders();
 
     // Set up real-time subscription
     const channel = supabase
@@ -83,13 +85,13 @@ export const ModernGoogleMap: React.FC = () => {
         { event: '*', schema: 'public', table: 'readers' }, 
         () => {
           console.log('Real-time update received');
-          fetchReaders();
+          void fetchReaders();
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel);
     };
   }, [isValidApiKey, map]);
 
@@ -103,12 +105,12 @@ export const ModernGoogleMap: React.FC = () => {
       console.log('Updating markers for readers:', readersData);
       
       // Clear existing markers
-      markers.forEach(marker => {
+      markersRef.current.forEach(marker => {
         if (marker.setMap) {
           marker.setMap(null);
         }
       });
-      setMarkers([]);
+      markersRef.current = [];
 
       // Add new markers for each reader
       const newMarkers: any[] = [];
@@ -165,12 +167,13 @@ export const ModernGoogleMap: React.FC = () => {
         newMarkers.push(marker);
       });
 
-      setMarkers(newMarkers);
+      markersRef.current = newMarkers;
       console.log('Added markers:', newMarkers.length);
     } catch (error) {
       console.error('Failed to update markers:', error);
     }
   };
+  updateMarkersOnMapRef.current = updateMarkersOnMap;
 
   const initializeMap = async () => {
     // Wait for DOM element to be ready
@@ -229,6 +232,7 @@ export const ModernGoogleMap: React.FC = () => {
       setIsLoading(false);
     }
   };
+  initializeMapRef.current = initializeMap;
 
   const loadGoogleMapsScript = () => {
     return new Promise<void>((resolve, reject) => {
@@ -306,12 +310,14 @@ export const ModernGoogleMap: React.FC = () => {
     };
 
     // Expose callback globally for Google Maps API
-    window.initMap = initializeMap;
-    loadMap();
+    window.initMap = () => {
+      void initializeMapRef.current();
+    };
+    void loadMap();
 
     return () => {
       // Cleanup markers
-      markers.forEach(marker => {
+      markersRef.current.forEach(marker => {
         if (marker && marker.setMap) {
           marker.setMap(null);
         }
@@ -516,8 +522,9 @@ export const ModernGoogleMap: React.FC = () => {
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Your Name</label>
+                  <label htmlFor="reader-user-name" className="text-sm font-medium text-gray-700">Your Name</label>
                   <Input
+                    id="reader-user-name"
                     placeholder="Enter your name"
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
@@ -525,8 +532,9 @@ export const ModernGoogleMap: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Currently Reading</label>
+                  <label htmlFor="reader-current-book" className="text-sm font-medium text-gray-700">Currently Reading</label>
                   <Input
+                    id="reader-current-book"
                     placeholder="What book are you reading?"
                     value={currentBook}
                     onChange={(e) => setCurrentBook(e.target.value)}

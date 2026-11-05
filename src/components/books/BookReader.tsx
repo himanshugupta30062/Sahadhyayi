@@ -179,7 +179,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
   useEffect(() => {
     if (!user || !cloudBookmarks.length) return;
     setBookmarks(cloudBookmarks.map((bookmark) => bookmark.location));
-  }, [user?.id, cloudBookmarks]);
+  }, [user, cloudBookmarks]);
 
   // Initialize reading session
   useEffect(() => {
@@ -201,9 +201,11 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     };
   }, [bookUrl, user, bookId]);
 
+  const loadEpubBookRef = useRef<() => Promise<void>>(() => Promise.resolve());
+
   useEffect(() => {
     if (isEpub && bookUrl && viewerRef.current) {
-      loadEpubBook();
+      void loadEpubBookRef.current();
     }
   }, [isEpub, bookUrl]);
 
@@ -272,6 +274,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     if (!(window as any).ePub) {
       const script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js';
+      script.integrity = 'sha384-ZqmkDa/1AGF4SKdSmXgEG+3G+Gsb6yNqUSq2Mqp0jDf1GWk+UY5eNbEd7hgwiywI';
       script.crossOrigin = 'anonymous';
       script.referrerPolicy = 'no-referrer';
       script.onload = () => initializeEpub();
@@ -280,6 +283,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
       initializeEpub();
     }
   };
+  loadEpubBookRef.current = loadEpubBook;
 
   const initializeEpub = () => {
     if (!bookUrl || !viewerRef.current) return;
@@ -348,7 +352,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     }
   };
 
-  const applyTheme = (theme: 'light' | 'sepia' | 'dark' = readerTheme) => {
+  const applyTheme = useCallback((theme: 'light' | 'sepia' | 'dark' = readerTheme) => {
     if (!renditionRef.current) return;
 
     if (theme === 'dark') {
@@ -391,7 +395,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
         }
       });
     }
-  };
+  }, [readerTheme]);
 
   const applyFontSize = () => {
     if (!renditionRef.current) return;
@@ -453,10 +457,10 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
-      viewerRef.current?.requestFullscreen?.();
+      void viewerRef.current?.requestFullscreen?.();
       setIsFullscreen(true);
     } else {
-      document.exitFullscreen?.();
+      void document.exitFullscreen?.();
       setIsFullscreen(false);
     }
   };
@@ -517,7 +521,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
       }
     } else {
       // Fallback: copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
+      void navigator.clipboard.writeText(window.location.href);
       toast({
         title: "Link Copied",
         description: "Book link copied to clipboard!",
@@ -595,7 +599,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     if (isEpub) {
       applyTheme(readerTheme);
     }
-  }, [readerTheme]);
+  }, [applyTheme, isEpub, readerTheme]);
 
   const formatReadingTime = (minutes: number) => {
     if (minutes < 60) return `${minutes}m`;

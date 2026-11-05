@@ -78,7 +78,7 @@ export function useLibrarySearch() {
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => {
       updateURL(query, filters)
-      runSearch(query, filters)
+      void runSearch(query, filters)
     }, 300)
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current)
@@ -88,7 +88,7 @@ export function useLibrarySearch() {
   const forceSearch = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current)
     updateURL(query, filters)
-    runSearch(query, filters)
+    void runSearch(query, filters)
   }, [query, filters, runSearch, updateURL])
 
   const resetFilters = useCallback(() => {

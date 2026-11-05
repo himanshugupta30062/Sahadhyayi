@@ -77,7 +77,7 @@ export const useSendPrivateMessage = () => {
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['private-messages'] });
+      void queryClient.invalidateQueries({ queryKey: ['private-messages'] });
     },
   });
 };
@@ -148,9 +148,9 @@ export const useMarkMessagesAsRead = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['unread-messages', user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['unread-messages-count', user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['private-messages'] });
+      void queryClient.invalidateQueries({ queryKey: ['unread-messages', user?.id] });
+      void queryClient.invalidateQueries({ queryKey: ['unread-messages-count', user?.id] });
+      void queryClient.invalidateQueries({ queryKey: ['private-messages'] });
     },
   });
 };
@@ -171,9 +171,9 @@ export const useMarkAllMessagesAsRead = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['unread-messages', user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['unread-messages-count', user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['private-messages'] });
+      void queryClient.invalidateQueries({ queryKey: ['unread-messages', user?.id] });
+      void queryClient.invalidateQueries({ queryKey: ['unread-messages-count', user?.id] });
+      void queryClient.invalidateQueries({ queryKey: ['private-messages'] });
     },
   });
 };
@@ -201,7 +201,7 @@ export const useGroupMessages = (groupId: string) => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel);
     };
   }, [groupId, user?.id, queryClient]);
 
@@ -246,7 +246,7 @@ export const useSendGroupMessage = () => {
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['group-messages', variables.groupId] });
+      void queryClient.invalidateQueries({ queryKey: ['group-messages', variables.groupId] });
     },
   });
 };

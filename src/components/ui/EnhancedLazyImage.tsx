@@ -186,6 +186,7 @@ export function EnhancedLazyImage({
 }
 
 // Utility function to generate srcSet for responsive images
+// eslint-disable-next-line react-refresh/only-export-components
 export function generateSrcSet(
   baseUrl: string,
   widths: number[] = [320, 640, 768, 1024, 1280, 1920]
@@ -206,6 +207,7 @@ export function generateSrcSet(
 }
 
 // Utility function to generate sizes attribute
+// eslint-disable-next-line react-refresh/only-export-components
 export function generateSizes(breakpoints: Record<string, string> = {}): string {
   const defaultBreakpoints = {
     '(max-width: 640px)': '100vw',
@@ -224,6 +226,7 @@ export function generateSizes(breakpoints: Record<string, string> = {}): string 
 }
 
 // Hook for preloading critical images
+// eslint-disable-next-line react-refresh/only-export-components
 export function useImagePreload(src: string, options?: { as?: string }) {
   useEffect(() => {
     if (!src) return;

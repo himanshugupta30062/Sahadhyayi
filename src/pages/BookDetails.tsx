@@ -298,7 +298,7 @@ const BookDetails = () => {
                     </Card>
                   )}
                   
-                  {book.publication_year && (
+                  {Boolean(book.publication_year) && (
                     <Card className="bg-green-50 border-green-200">
                       <CardContent className="p-3 text-center">
                         <div className="flex items-center justify-center gap-1 mb-1">
@@ -310,7 +310,7 @@ const BookDetails = () => {
                     </Card>
                   )}
                   
-                  {book.pages && (
+                  {Boolean(book.pages) && (
                     <Card className="bg-purple-50 border-purple-200">
                       <CardContent className="p-3 text-center">
                         <div className="flex items-center justify-center gap-1 mb-1">

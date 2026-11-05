@@ -325,7 +325,7 @@ const StickyNavigation = () => {
                       Profile
                     </Link>
                     <button
-                      onClick={() => { handleSignOut(); setIsOpen(false); }}
+                      onClick={() => { void handleSignOut(); setIsOpen(false); }}
                       className="block w-full text-left px-3 py-2.5 text-base font-medium rounded-md text-destructive hover:bg-destructive/10"
                     >
                       Sign Out

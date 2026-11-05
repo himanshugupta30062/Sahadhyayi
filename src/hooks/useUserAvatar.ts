@@ -56,7 +56,7 @@ export const useUpdateUserAvatar = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-avatar'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-avatar'] });
     },
   });
 };

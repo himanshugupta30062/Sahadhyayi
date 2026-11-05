@@ -621,7 +621,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     type="button"
                     onClick={() => {
                       if (propOnRefresh) propOnRefresh();
-                      else refetchStats();
+                      else void refetchStats();
                     }}
                     className="text-[11px] underline hover:text-white flex-shrink-0 font-medium"
                   >

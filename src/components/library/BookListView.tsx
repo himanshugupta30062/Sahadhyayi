@@ -67,7 +67,7 @@ const BookListView = ({ books }: BookListViewProps) => {
                     <span className="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
                       {book.genre}
                     </span>
-                    {book.publication_year && (
+                    {Boolean(book.publication_year) && (
                       <span className="text-xs text-gray-500">{book.publication_year}</span>
                     )}
                   </div>

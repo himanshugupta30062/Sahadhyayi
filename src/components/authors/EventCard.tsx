@@ -97,7 +97,7 @@ export const EventCard = ({ event }: EventCardProps) => {
             <Users className="w-4 h-4 text-primary" />
             <span>
               {attendeeCount} {attendeeCount === 1 ? 'person' : 'people'} interested
-              {event.max_attendees && (
+              {Boolean(event.max_attendees) && (
                 <span className="text-muted-foreground">
                   {' '}/ {event.max_attendees} max
                 </span>

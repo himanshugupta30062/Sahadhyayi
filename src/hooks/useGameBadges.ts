@@ -55,7 +55,7 @@ export function useGameBadges() {
   }, [user]);
 
   useEffect(() => {
-    fetchBadges();
+    void fetchBadges();
   }, [fetchBadges]);
 
   const checkAndAwardBadges = useCallback(async (stats: {
@@ -126,7 +126,7 @@ export function useGameBadges() {
     }
 
     if (newBadges.length > 0) {
-      fetchBadges();
+      await fetchBadges();
     }
 
     return newBadges;

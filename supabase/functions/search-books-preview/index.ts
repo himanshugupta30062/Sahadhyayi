@@ -581,7 +581,7 @@ async function searchDoab(searchTerm: string): Promise<BookData[]> {
       source: 'doab',
       access_type: pdfUrl ? 'full_download' as AccessType : itemUrl ? 'official_reader' as AccessType : 'metadata_only',
       formats: pdfUrl ? ['pdf'] : itemUrl ? ['reader'] : [],
-      provider_id: handle ? `doab:${String(handle).replace(/^.*\\//, '')}` : undefined,
+      provider_id: handle ? `doab:${String(handle).split('/').pop() || ''}` : undefined,
       ...(license ? { genre: `License: ${license}` } : {}),
     };
   }).filter((book: BookData) => book.title);

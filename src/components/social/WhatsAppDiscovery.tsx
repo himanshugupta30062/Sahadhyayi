@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,13 +23,7 @@ export const WhatsAppDiscovery = () => {
   const [discoveredFriends, setDiscoveredFriends] = useState<DiscoveredFriend[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      fetchDiscoveredFriends();
-    }
-  }, [user]);
-
-  const fetchDiscoveredFriends = async () => {
+  const fetchDiscoveredFriends = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('discovered_friends')
@@ -43,7 +37,13 @@ export const WhatsAppDiscovery = () => {
     } catch (error) {
       console.error('Error fetching discovered friends:', error);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (user) {
+      void fetchDiscoveredFriends();
+    }
+  }, [user, fetchDiscoveredFriends]);
 
   const discoverFriends = async () => {
     setIsLoading(true);

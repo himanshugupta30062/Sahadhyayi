@@ -1,8 +1,11 @@
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
+const toPath = (relPath: string) => fileURLToPath(new URL(relPath, import.meta.url));
+
 const migration = readFileSync(
-  new URL('../../supabase/migrations/20261029210000_restrict_trigger_function_execute.sql', import.meta.url),
+  toPath('../../supabase/migrations/20261029210000_restrict_trigger_function_execute.sql'),
   'utf8',
 );
 

@@ -382,7 +382,7 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
               </span>
             )}
           </div>
-          {book.publication_year && (
+          {Boolean(book.publication_year) && (
             <span className="text-xs text-muted-foreground font-medium shrink-0">{book.publication_year}</span>
           )}
         </div>

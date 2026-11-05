@@ -66,13 +66,13 @@ const BookInfo = ({
       
       {/* Book Metadata */}
       <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-        {publicationYear && (
+        {Boolean(publicationYear) && (
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
             <span>Published {publicationYear}</span>
           </div>
         )}
-        {pages && (
+        {Boolean(pages) && (
           <div className="flex items-center gap-2">
             <BookOpen className="w-4 h-4" />
             <span>{pages} pages</span>

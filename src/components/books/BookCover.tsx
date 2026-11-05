@@ -73,7 +73,7 @@ const BookCover = ({ title, coverImageUrl, price, bookId, description, pdfUrl, o
       
       {/* Action Buttons */}
       <div className="space-y-4">
-        {price && (
+        {Boolean(price) && (
           <div className="text-center">
             <span className="text-3xl font-bold text-green-600">${price}</span>
           </div>

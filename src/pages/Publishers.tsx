@@ -49,7 +49,7 @@ const Publishers = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  const publishers = data?.publishers ?? [];
+  const publishers = useMemo(() => data?.publishers ?? [], [data?.publishers]);
   const booksByPublisher = useMemo(() => {
     const grouped = new Map<string, PublisherBook[]>();
     (data?.books ?? []).forEach((book) => {

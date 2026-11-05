@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Edit, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AddStoryForm from "./AddStoryForm";
@@ -30,7 +30,7 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ userId }) => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
 
-  const fetchStories = async () => {
+  const fetchStories = useCallback(async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -63,11 +63,11 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ userId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
-    fetchStories();
-  }, [userId]);
+    void fetchStories();
+  }, [fetchStories]);
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this story?")) return;
@@ -179,7 +179,7 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ userId }) => {
           userId={userId}
           onClose={() => {
             setShowForm(false);
-            fetchStories();
+            void fetchStories();
           }}
         />
       )}

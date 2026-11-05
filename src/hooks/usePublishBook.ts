@@ -80,7 +80,7 @@ export function usePublishBook() {
       return data as PublishedBook;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['my-publications'] });
+      void queryClient.invalidateQueries({ queryKey: ['my-publications'] });
       toast({ title: 'Book saved', description: 'Your publication record has been created.' });
     },
     onError: (err: any) => {
@@ -97,7 +97,7 @@ export function usePublishBook() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['my-publications'] });
+      void queryClient.invalidateQueries({ queryKey: ['my-publications'] });
       toast({ title: 'Book submitted for review!' });
     },
     onError: (err: any) => {
@@ -143,7 +143,7 @@ export function usePublishBook() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['my-publications'] });
+      void queryClient.invalidateQueries({ queryKey: ['my-publications'] });
     },
   });
 
@@ -156,7 +156,7 @@ export function usePublishBook() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['my-publications'] });
+      void queryClient.invalidateQueries({ queryKey: ['my-publications'] });
       toast({ title: 'Book deleted' });
     },
     onError: (err: any) => {

@@ -52,7 +52,7 @@ const AdminFeedback = () => {
       .update({ responded: true })
       .eq('id', id);
     if (!error) {
-      refetch();
+      await refetch();
     }
   };
 

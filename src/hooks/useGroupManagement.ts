@@ -160,9 +160,9 @@ export const useCreateGroup = () => {
       };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-groups'] });
-      queryClient.invalidateQueries({ queryKey: ['all-groups'] });
-      queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['all-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
     },
   });
 };
@@ -190,9 +190,9 @@ export const useJoinGroup = () => {
     },
     onSuccess: () => {
       toast.success('Successfully joined the group!');
-      queryClient.invalidateQueries({ queryKey: ['user-groups'] });
-      queryClient.invalidateQueries({ queryKey: ['all-groups'] });
-      queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['all-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
     },
     onError: (error: Error) => {
       toast.error(`Failed to join group: ${error.message}`);
@@ -229,9 +229,9 @@ export const useLeaveGroup = () => {
     },
     onSuccess: () => {
       toast.success('Successfully left the group');
-      queryClient.invalidateQueries({ queryKey: ['user-groups'] });
-      queryClient.invalidateQueries({ queryKey: ['all-groups'] });
-      queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['all-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
     },
     onError: (error: Error) => {
       toast.error(`Failed to leave group: ${error.message}`);
@@ -258,7 +258,7 @@ export const useAddGroupMember = () => {
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['group-members', variables.groupId] });
+      void queryClient.invalidateQueries({ queryKey: ['group-members', variables.groupId] });
     },
   });
 };
@@ -280,9 +280,9 @@ export const useUpdateGroup = () => {
     },
     onSuccess: () => {
       toast.success('Group updated');
-      queryClient.invalidateQueries({ queryKey: ['all-groups'] });
-      queryClient.invalidateQueries({ queryKey: ['user-groups'] });
-      queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['all-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
     },
     onError: (error: Error) => toast.error(`Failed to update group: ${error.message}`),
   });
@@ -297,9 +297,9 @@ export const useDeleteGroup = () => {
     },
     onSuccess: () => {
       toast.success('Group deleted');
-      queryClient.invalidateQueries({ queryKey: ['all-groups'] });
-      queryClient.invalidateQueries({ queryKey: ['user-groups'] });
-      queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['all-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
     },
     onError: (error: Error) => toast.error(`Failed to delete group: ${error.message}`),
   });

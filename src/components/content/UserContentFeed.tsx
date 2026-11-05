@@ -118,7 +118,7 @@ const UserContentCard: React.FC<UserContentCardProps> = ({
               <Badge className={getContentTypeColor(content.content_type)}>
                 {getContentTypeLabel(content.content_type)}
               </Badge>
-              {content.original_chapter_number && (
+              {Boolean(content.original_chapter_number) && (
                 <Badge variant="outline">
                   Chapter {content.original_chapter_number}
                 </Badge>

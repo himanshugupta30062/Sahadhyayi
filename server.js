@@ -315,7 +315,7 @@ io.on('connection', (socket) => {
         console.error('Join error:', error);
         return socket.emit('error', 'Unauthorized');
       }
-      socket.join(roomId);
+      await socket.join(roomId);
     } catch (err) {
       console.error('Join exception:', err);
       socket.emit('error', 'Server error');

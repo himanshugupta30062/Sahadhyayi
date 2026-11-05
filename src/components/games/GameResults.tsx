@@ -51,14 +51,14 @@ export default function GameResults({
       const end = Date.now() + duration;
 
       const frame = () => {
-        confetti({
+        void confetti({
           particleCount: 3,
           angle: 60,
           spread: 55,
           origin: { x: 0 },
           colors: ['#8b5cf6', '#d946ef', '#f97316', '#22c55e', '#eab308']
         });
-        confetti({
+        void confetti({
           particleCount: 3,
           angle: 120,
           spread: 55,
@@ -72,7 +72,7 @@ export default function GameResults({
       };
       frame();
     } else if (isGood) {
-      confetti({
+      void confetti({
         particleCount: 150,
         spread: 100,
         origin: { y: 0.6 },

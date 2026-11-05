@@ -239,7 +239,7 @@ export const LeftSidebar = ({ onSelectConversation }: LeftSidebarProps) => {
                       {friend.location}
                     </p>
                   )}
-                  {friend.mutualFriends && (
+                  {Boolean(friend.mutualFriends) && (
                     <p className="text-xs text-gray-500">
                       {friend.mutualFriends} mutual friends
                     </p>

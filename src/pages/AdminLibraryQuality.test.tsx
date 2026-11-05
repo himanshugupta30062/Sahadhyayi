@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 
@@ -297,5 +297,27 @@ describe('AdminLibraryQuality', () => {
     fireEvent.click(screen.getByRole('button', { name: /Inspect All \(2\)/ }));
     expect(screen.getByText('Candidate Records in this Cluster (2)')).toBeInTheDocument();
     expect(screen.getAllByText('The Dispossessed (Illustrated)').length).toBeGreaterThan(1);
+  });
+
+  it('triggers safe automated cleanup and displays toast notification', async () => {
+    const { runSafeCleanupUnusedBooks } = await import('@/utils/catalog/bookArchiveVault');
+    vi.mocked(runSafeCleanupUnusedBooks).mockResolvedValue(5);
+    window.confirm = vi.fn().mockReturnValue(true);
+
+    mocks.auditData = makeAudit([makeGroup()]);
+    renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: /Archive Vault/i }));
+    const cleanupButton = screen.getByRole('button', { name: /Safe Automated Cleanup/i });
+    fireEvent.click(cleanupButton);
+
+    await waitFor(() => {
+      expect(runSafeCleanupUnusedBooks).toHaveBeenCalled();
+      expect(mocks.toast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Safe Cleanup Completed',
+        })
+      );
+    });
   });
 });

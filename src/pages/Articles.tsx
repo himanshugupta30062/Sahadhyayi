@@ -82,7 +82,7 @@ const Articles = () => {
       );
     }
     return list;
-  }, [articles, search, activeTag, activeKind, sortMode]);
+  }, [articles, search, activeTag, sortMode]);
 
   const featured = sortMode === 'latest' && !search && !activeTag ? filtered[0] : null;
   const rest = featured ? filtered.slice(1) : filtered;

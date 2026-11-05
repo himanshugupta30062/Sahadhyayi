@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,14 +32,7 @@ export const WhatsAppIntegration = () => {
   const [contacts, setContacts] = useState<WhatsAppContact[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      fetchUserProfile();
-      fetchWhatsAppContacts();
-    }
-  }, [user]);
-
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('user_profile')
@@ -59,9 +52,9 @@ export const WhatsAppIntegration = () => {
     } catch (error) {
       console.error('Error fetching profile:', error);
     }
-  };
+  }, [user?.id]);
 
-  const fetchWhatsAppContacts = async () => {
+  const fetchWhatsAppContacts = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('whatsapp_contacts')
@@ -74,7 +67,14 @@ export const WhatsAppIntegration = () => {
     } catch (error) {
       console.error('Error fetching contacts:', error);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (user) {
+      void fetchUserProfile();
+      void fetchWhatsAppContacts();
+    }
+  }, [user, fetchUserProfile, fetchWhatsAppContacts]);
 
   const sendVerificationCode = async () => {
     if (!phoneNumber.trim()) {
@@ -331,7 +331,7 @@ export const WhatsAppIntegration = () => {
                 checked={hidePhoneNumber}
                 onCheckedChange={(checked) => {
                   setHidePhoneNumber(checked);
-                  updatePrivacySettings('hide_phone_number', checked);
+                  void updatePrivacySettings('hide_phone_number', checked);
                 }}
               />
             </div>
@@ -346,7 +346,7 @@ export const WhatsAppIntegration = () => {
                 checked={allowWhatsAppDiscovery}
                 onCheckedChange={(checked) => {
                   setAllowWhatsAppDiscovery(checked);
-                  updatePrivacySettings('allow_whatsapp_discovery', checked);
+                  void updatePrivacySettings('allow_whatsapp_discovery', checked);
                 }}
               />
             </div>

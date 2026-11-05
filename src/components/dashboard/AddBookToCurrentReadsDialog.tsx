@@ -49,7 +49,7 @@ const AddBookToCurrentReadsDialog = () => {
         description: 'Book added to your current reads!',
       });
 
-      queryClient.invalidateQueries({ queryKey: ['reading-progress'] });
+      void queryClient.invalidateQueries({ queryKey: ['reading-progress'] });
       setIsOpen(false);
       setBookTitle('');
       setTotalPages('');

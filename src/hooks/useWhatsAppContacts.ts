@@ -112,7 +112,7 @@ export const useWhatsAppContacts = () => {
   };
 
   React.useEffect(() => {
-    fetchContacts();
+    void fetchContacts();
   }, [user, fetchContacts]);
 
   return {

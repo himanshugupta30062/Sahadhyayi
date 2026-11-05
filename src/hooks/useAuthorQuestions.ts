@@ -60,7 +60,7 @@ export const useAskQuestion = () => {
       return data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: ['author-questions', data.author_id],
       });
       toast({
@@ -100,7 +100,7 @@ export const useAnswerQuestion = () => {
       return data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['author-questions', data.author_id] });
+      void queryClient.invalidateQueries({ queryKey: ['author-questions', data.author_id] });
       toast({
         title: "Question answered!",
         description: "Your answer has been published.",

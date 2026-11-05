@@ -1,26 +1,23 @@
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
+const toPath = (relPath: string) => fileURLToPath(new URL(relPath, import.meta.url));
+
 const migration = readFileSync(
-  new URL(
-    '../../supabase/migrations/20261020190000_persist_reading_challenges_and_badges.sql',
-    import.meta.url,
-  ),
+  toPath('../../supabase/migrations/20261020190000_persist_reading_challenges_and_badges.sql'),
   'utf8',
 );
 const challengeHook = readFileSync(
-  new URL('../../src/hooks/useReadingChallenges.ts', import.meta.url),
+  toPath('../../src/hooks/useReadingChallenges.ts'),
   'utf8',
 );
 const distinctProgressFix = readFileSync(
-  new URL(
-    '../../supabase/migrations/20261020200000_count_distinct_completed_books.sql',
-    import.meta.url,
-  ),
+  toPath('../../supabase/migrations/20261020200000_count_distinct_completed_books.sql'),
   'utf8',
 );
 const bookshelfHook = readFileSync(
-  new URL('../../src/hooks/useUserBookshelf.ts', import.meta.url),
+  toPath('../../src/hooks/useUserBookshelf.ts'),
   'utf8',
 );
 

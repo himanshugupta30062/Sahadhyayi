@@ -262,7 +262,7 @@ const Navigation = () => {
         section,
         tourTarget: section.items[0]?.tourTarget,
       }));
-  }, [Boolean(user)]);
+  }, [user]);
 
   useEffect(() => () => {
     clearDesktopMenuCloseTimer();

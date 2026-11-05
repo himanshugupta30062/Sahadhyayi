@@ -164,7 +164,7 @@ const BooksCollection = ({
     void queryClient.invalidateQueries({ queryKey: ['library-books'] });
     void queryClient.invalidateQueries({ queryKey: ['community-stats'] });
     void queryClient.invalidateQueries({ queryKey: ['all-library-books'] });
-    refetchAll();
+    void refetchAll();
     window.dispatchEvent(new Event('shelfUpdated'));
     window.dispatchEvent(new Event('libraryUpdated'));
   };
@@ -269,7 +269,7 @@ const BooksCollection = ({
                 <Button
                   variant="outline"
                   onClick={() => {
-                    refetchAll();
+                    void refetchAll();
                     void queryClient.invalidateQueries({ queryKey: ['library-book-count'] });
                     void queryClient.invalidateQueries({ queryKey: ['paginated-library-all'] });
                     window.dispatchEvent(new Event('shelfUpdated'));

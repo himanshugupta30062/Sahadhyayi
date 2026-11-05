@@ -134,9 +134,9 @@ const FilterPopup = ({
         <div className="space-y-6">
           {/* Genre Filter */}
           <div className="space-y-3">
-            <label className="text-sm font-medium text-gray-700 block">Genre</label>
+            <label htmlFor="filter-genre" className="text-sm font-medium text-gray-700 block">Genre</label>
             <Select value={localGenre} onValueChange={setLocalGenre}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger id="filter-genre" className="w-full">
                 <SelectValue placeholder="Select genre" />
               </SelectTrigger>
               <SelectContent>
@@ -151,9 +151,9 @@ const FilterPopup = ({
 
           {/* Author Filter */}
           <div className="space-y-3">
-            <label className="text-sm font-medium text-gray-700 block">Author</label>
+            <label htmlFor="filter-author" className="text-sm font-medium text-gray-700 block">Author</label>
             <Select value={localAuthor} onValueChange={setLocalAuthor}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger id="filter-author" className="w-full">
                 <SelectValue placeholder="Select author" />
               </SelectTrigger>
               <SelectContent>
@@ -168,8 +168,9 @@ const FilterPopup = ({
 
           {/* Year Filter */}
           <div className="space-y-3">
-            <label className="text-sm font-medium text-gray-700 block">Publication Year</label>
+            <label htmlFor="filter-publication-year" className="text-sm font-medium text-gray-700 block">Publication Year</label>
             <Input
+              id="filter-publication-year"
               type="number"
               placeholder="e.g. 2020"
               value={localYear}
@@ -180,9 +181,9 @@ const FilterPopup = ({
 
           {/* Language Filter */}
           <div className="space-y-3">
-            <label className="text-sm font-medium text-gray-700 block">Language</label>
+            <label htmlFor="filter-language" className="text-sm font-medium text-gray-700 block">Language</label>
             <Select value={localLanguage} onValueChange={setLocalLanguage}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger id="filter-language" className="w-full">
                 <SelectValue placeholder="Select language" />
               </SelectTrigger>
               <SelectContent>

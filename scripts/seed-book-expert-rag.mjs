@@ -17,11 +17,14 @@
  * Re-running is idempotent: unchanged, indexed sources are skipped.
  */
 
-const supabaseUrl = (
+let supabaseUrl = (
   process.env.SUPABASE_URL ||
   process.env.VITE_SUPABASE_URL ||
   ""
-).trim().replace(/\/+$/, "");
+).trim();
+while (supabaseUrl.endsWith("/")) {
+  supabaseUrl = supabaseUrl.slice(0, -1);
+}
 const anonKey = (
   process.env.SUPABASE_ANON_KEY ||
   process.env.VITE_SUPABASE_ANON_KEY ||

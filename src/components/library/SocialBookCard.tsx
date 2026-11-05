@@ -166,7 +166,7 @@ const SocialBookCard: React.FC<SocialBookCardProps> = ({ book }) => {
 
             {/* Your Rating */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Your Rating</label>
+              <p className="text-sm font-medium">Your Rating</p>
               <div className="flex gap-1">
                 {renderStars(userRating, true)}
               </div>

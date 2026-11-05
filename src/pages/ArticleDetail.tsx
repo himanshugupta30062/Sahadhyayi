@@ -39,8 +39,11 @@ const ArticleDetail = () => {
     (supabase as any)
       .rpc('increment_article_views', { _article_id: article.id })
       .then(() => {
-        queryClient.invalidateQueries({ queryKey: ['article', slug] });
-        queryClient.invalidateQueries({ queryKey: ['articles'] });
+        void queryClient.invalidateQueries({ queryKey: ['article', slug] });
+        void queryClient.invalidateQueries({ queryKey: ['articles'] });
+      })
+      .catch(() => {
+        // Silently ignore view count increment errors
       });
   }, [article?.id, slug, queryClient]);
 

@@ -59,7 +59,7 @@ export const useMarkChapterAsRead = (bookId: string) => {
       return data as ChapterProgress;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: ['chapter-progress', user?.id, bookId],
       });
     },

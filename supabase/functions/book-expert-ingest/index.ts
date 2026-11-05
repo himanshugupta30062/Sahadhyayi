@@ -55,7 +55,13 @@ async function sha256(value: string): Promise<string> {
 }
 
 function chunkText(input: string): string[] {
-  const text = input.replace(/\r\n/g, "\n").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+  const text = input
+    .replace(/\r\n/g, "\n")
+    .split("\n")
+    .map((line) => line.trimEnd())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
   if (!text) return [];
 
   const chunks: string[] = [];

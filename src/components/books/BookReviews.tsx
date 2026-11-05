@@ -25,7 +25,7 @@ export default function BookReviews({ bookId }: { bookId: string }) {
     setReviewText(myReview?.review_text || '');
     setContainsSpoilers(myReview?.contains_spoilers || false);
     setEditing(false);
-  }, [myReview?.id, myReview?.updated_at]);
+  }, [myReview?.id, myReview?.updated_at, myReview?.review_text, myReview?.contains_spoilers]);
 
   const handleSave = async () => {
     try {

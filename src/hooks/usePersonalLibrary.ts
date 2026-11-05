@@ -77,8 +77,8 @@ export const useAddToPersonalLibrary = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['personal-library'] });
-      queryClient.invalidateQueries({ queryKey: ['all-library-books'] });
+      void queryClient.invalidateQueries({ queryKey: ['personal-library'] });
+      void queryClient.invalidateQueries({ queryKey: ['all-library-books'] });
       toast({ title: 'Success', description: 'Book added to your personal library!' });
     },
     onError: (error: any) => {
@@ -112,7 +112,7 @@ export const useRemoveFromPersonalLibrary = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['personal-library'] });
+      void queryClient.invalidateQueries({ queryKey: ['personal-library'] });
       toast({ title: 'Success', description: 'Book removed from your library!' });
     },
   });

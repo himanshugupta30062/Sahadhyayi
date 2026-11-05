@@ -114,7 +114,7 @@ export const useAutoLogout = () => {
     
     // If no session storage ID but localStorage has one, it means browser was reopened
     if (browserSessionId && !sessionSessionId) {
-      handleInactivityLogout();
+      void handleInactivityLogout();
       return false;
     }
     
@@ -135,7 +135,7 @@ export const useAutoLogout = () => {
 
     // Set new timeout
     timeoutRef.current = setTimeout(() => {
-      handleInactivityLogout();
+      void handleInactivityLogout();
     }, INACTIVITY_TIMEOUT);
 
   }, [user, handleInactivityLogout, isProtectedRoute]);
@@ -153,21 +153,21 @@ export const useAutoLogout = () => {
       
       // Set session timeout
       sessionTimeoutRef.current = setTimeout(() => {
-        handleSessionTimeout();
+        void handleSessionTimeout();
       }, SESSION_TIMEOUT);
     } else {
       const sessionAge = now - Number.parseInt(sessionStart, 10);
       
       if (sessionAge > SESSION_TIMEOUT) {
         // Session has expired
-        handleSessionTimeout();
+        void handleSessionTimeout();
         return;
       }
       
       // Set timeout for remaining session time
       const remainingTime = SESSION_TIMEOUT - sessionAge;
       sessionTimeoutRef.current = setTimeout(() => {
-        handleSessionTimeout();
+        void handleSessionTimeout();
       }, remainingTime);
     }
   }, [user, isProtectedRoute, handleSessionTimeout]);
@@ -234,7 +234,7 @@ export const useAutoLogout = () => {
     // Check for existing activity and session timeout
     const lastActivity = Number(localStorage.getItem(LAST_ACTIVITY_KEY));
     if (lastActivity && Date.now() - lastActivity > INACTIVITY_TIMEOUT) {
-      handleInactivityLogout();
+      void handleInactivityLogout();
       return;
     }
 

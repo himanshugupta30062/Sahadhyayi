@@ -174,47 +174,44 @@ describe('Authenticated App Shell & Dashboard (Phase 4)', () => {
     it('renders all authenticated navigation items', () => {
       renderWithProviders(<Navigation />, ['/dashboard']);
 
-      expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: 'Library' })).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: 'Articles' })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Dashboard' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Library/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Articles/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Authors/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Social Media/i })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Events' })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Games' })).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: 'Authors' })).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: 'Social Media' })).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: 'My Books' })).toBeInTheDocument();
     });
 
-    it('sets aria-current="page" on Home when on /dashboard', () => {
+    it('sets aria-current="page" on Dashboard when on /dashboard', () => {
       renderWithProviders(<Navigation />, ['/dashboard']);
 
-      const homeLink = screen.getByRole('link', { name: 'Home' });
-      expect(homeLink).toHaveAttribute('aria-current', 'page');
-
-      const articlesLink = screen.getByRole('link', { name: 'Articles' });
-      expect(articlesLink).not.toHaveAttribute('aria-current');
+      const dashboardLink = screen.getByRole('link', { name: 'Dashboard' });
+      expect(dashboardLink).toHaveAttribute('aria-current', 'page');
     });
 
     it('correctly sets parent active state on nested routes like /articles/my', () => {
       renderWithProviders(<Navigation />, ['/articles/my']);
 
-      const articlesLink = screen.getByRole('link', { name: 'Articles' });
-      expect(articlesLink).toHaveAttribute('aria-current', 'page');
+      const articlesBtn = screen.getByRole('button', { name: /Articles/i });
+      expect(articlesBtn).toHaveClass('text-[hsl(var(--brand-primary))]');
 
-      const homeLink = screen.getByRole('link', { name: 'Home' });
-      expect(homeLink).not.toHaveAttribute('aria-current');
+      const dashboardLink = screen.getByRole('link', { name: 'Dashboard' });
+      expect(dashboardLink).not.toHaveAttribute('aria-current');
     });
 
     it('correctly sets parent active state on nested author routes like /authors/premchand', () => {
       renderWithProviders(<Navigation />, ['/authors/premchand']);
 
-      const authorsLink = screen.getByRole('link', { name: 'Authors' });
-      expect(authorsLink).toHaveAttribute('aria-current', 'page');
+      const authorsBtn = screen.getByRole('button', { name: /Authors/i });
+      expect(authorsBtn).toHaveClass('text-[hsl(var(--brand-primary))]');
     });
 
     it('correctly sets parent active state on nested book reader routes like /reader/42', () => {
       renderWithProviders(<Navigation />, ['/reader/42']);
 
-      const libraryLink = screen.getByRole('link', { name: 'Library' });
-      expect(libraryLink).toHaveAttribute('aria-current', 'page');
+      const libraryBtn = screen.getByRole('button', { name: /Library/i });
+      expect(libraryBtn).toHaveClass('text-[hsl(var(--brand-primary))]');
     });
   });
 

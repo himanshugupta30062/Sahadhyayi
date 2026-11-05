@@ -88,7 +88,7 @@ const GroupMessaging: React.FC<GroupMessagingProps> = ({
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel);
     };
   }, [groupId]);
 
@@ -152,7 +152,7 @@ const GroupMessaging: React.FC<GroupMessagingProps> = ({
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      void handleSendMessage();
     }
   };
 

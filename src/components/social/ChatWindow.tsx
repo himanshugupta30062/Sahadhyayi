@@ -60,7 +60,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ friendId, isOpen, onClos
         }
       }
     };
-    markRead();
+    void markRead();
   }, [messages, isOpen, friendId, markMessagesAsRead, refetch]);
 
   const handleSendMessage = async (e: React.FormEvent) => {

@@ -54,7 +54,7 @@ export const useCreateStory = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stories'] });
+      void queryClient.invalidateQueries({ queryKey: ['stories'] });
       toast({ title: 'Story Created', description: 'Your story has been saved!' });
     },
   });
@@ -73,7 +73,7 @@ export const useDeleteStory = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stories'] });
+      void queryClient.invalidateQueries({ queryKey: ['stories'] });
       toast({ title: 'Story Deleted', description: 'The story has been removed.' });
     },
   });

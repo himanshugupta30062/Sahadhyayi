@@ -44,6 +44,12 @@ vi.mock('@/hooks/useChapterProgress', () => ({
   useMarkChapterAsRead: () => ({ mutate: mocks.markChapterRead, mutateAsync: mocks.markChapterRead }),
 }));
 
+vi.mock('@/hooks/useReaderBookmarks', () => ({
+  useReaderBookmarks: () => ({ data: [] }),
+  useAddReaderBookmark: () => ({ mutate: vi.fn(), isPending: false }),
+  useRemoveReaderBookmark: () => ({ mutate: vi.fn(), isPending: false }),
+}));
+
 vi.mock('@/utils/searchExternalSources', () => ({
   searchExternalSources: (...args: unknown[]) => mocks.searchExternalSources(...args),
 }));

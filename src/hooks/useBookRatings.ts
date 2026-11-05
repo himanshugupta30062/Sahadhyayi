@@ -67,7 +67,7 @@ export function useRateBook(bookId: string | undefined) {
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['book-ratings-agg', bookId] });
+      void qc.invalidateQueries({ queryKey: ['book-ratings-agg', bookId] });
     },
   });
 }

@@ -42,8 +42,8 @@ export const ReadersMap = ({
 }: ReadersMapProps) => {
   const readerMapRef = useRef<HTMLDivElement>(null);
   const [readerMap, setReaderMap] = useState<any | null>(null);
-  const [readerMarkers, setReaderMarkers] = useState<any[]>([]);
-  const [infoWindows, setInfoWindows] = useState<any[]>([]);
+  const readerMarkersRef = useRef<any[]>([]);
+  const infoWindowsRef = useRef<any[]>([]);
   const [currentUserLocation, setCurrentUserLocation] = useState<{ lat: number; lng: number } | null>(userLocation || null);
 
   useEffect(() => {
@@ -86,10 +86,10 @@ export const ReadersMap = ({
     if (!readerMap || !window.google?.maps) return;
 
     // Clear existing markers and info windows
-    readerMarkers.forEach(marker => marker.setMap(null));
-    infoWindows.forEach(infoWindow => infoWindow.close());
-    setReaderMarkers([]);
-    setInfoWindows([]);
+    readerMarkersRef.current.forEach(marker => marker.setMap(null));
+    infoWindowsRef.current.forEach(infoWindow => infoWindow.close());
+    readerMarkersRef.current = [];
+    infoWindowsRef.current = [];
 
     const newMarkers: any[] = [];
     const newInfoWindows: any[] = [];
@@ -253,8 +253,8 @@ export const ReadersMap = ({
       newInfoWindows.push(infoWindow);
     });
 
-    setReaderMarkers(newMarkers);
-    setInfoWindows(newInfoWindows);
+    readerMarkersRef.current = newMarkers;
+    infoWindowsRef.current = newInfoWindows;
 
     // Fit map to show all markers if there are multiple
     if (newMarkers.length > 1) {

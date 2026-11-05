@@ -51,9 +51,9 @@ export const useToggleUserFollow = () => {
       return { targetUserId, isFollowing: true };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-follows', user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['user-search'] });
-      queryClient.invalidateQueries({ queryKey: ['all-users'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-follows', user?.id] });
+      void queryClient.invalidateQueries({ queryKey: ['user-search'] });
+      void queryClient.invalidateQueries({ queryKey: ['all-users'] });
     },
   });
 };
