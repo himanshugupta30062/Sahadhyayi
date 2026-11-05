@@ -84,7 +84,7 @@ export default function Events() {
           setEvents(eventResult.data || []);
         }
       } catch (err) {
-        if (active) setError(err instanceof Error ? err.message : "Events are temporarily unavailable.");
+        if (active) {\n          const apiError = err as { message?: string; details?: string; hint?: string; code?: string };\n          const message = [apiError?.message, apiError?.details, apiError?.hint, apiError?.code ? `Code: ${apiError.code}` : null]\n            .filter(Boolean).join(" · ");\n          setError(message || (err instanceof Error ? err.message : String(err)) || "Events are temporarily unavailable.");\n        }
       } finally {
         if (active) setLoading(false);
       }
@@ -141,7 +141,7 @@ export default function Events() {
             <div className="flex flex-wrap gap-2">{categoryOptions.map((item) => <Button key={item.slug} size="sm" variant={category === item.slug || category === item.id ? "default" : "outline"} onClick={() => setCategory(category === item.slug || category === item.id ? "all" : (categories.length ? item.id : item.slug))} className="rounded-full">{item.name}</Button>)}</div>
           </div>
           {loading ? <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{[1,2,3].map((item) => <Skeleton key={item} className="aspect-[16/10] rounded-xl" />)}</div> :
-            error ? <Card className="border-destructive/30"><CardContent className="py-10 text-center"><CalendarDays className="mx-auto h-10 w-10 text-muted-foreground"/><h3 className="mt-3 font-semibold">Events couldn't load</h3><p className="mt-2 text-sm text-muted-foreground">The events database may not be set up yet. Please try again later.</p><p className="mt-1 text-xs text-muted-foreground">{error}</p></CardContent></Card> :
+            error ? <Card className="border-destructive/30"><CardContent className="py-10 text-center"><CalendarDays className="mx-auto h-10 w-10 text-muted-foreground"/><h3 className="mt-3 font-semibold">Events couldn't load</h3><p className="mt-2 text-sm text-muted-foreground">The events database may not be set up yet. Please try again later.</p><p className="mt-1 break-words text-xs text-muted-foreground">{error}</p><Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>Retry loading events</Button></CardContent></Card> :
             filtered.length === 0 ? <Card className="border-dashed"><CardContent className="flex flex-col items-center py-14 text-center"><div className="rounded-full bg-primary/10 p-4"><CalendarDays className="h-8 w-8 text-primary"/></div><h3 className="mt-4 text-xl font-semibold">No upcoming events found</h3><p className="mt-2 max-w-md text-sm text-muted-foreground">Try another city or category. We're building a verified calendar of book fairs, festivals and reading experiences.</p><Button variant="outline" className="mt-5" onClick={() => {setQuery("");setCity("");setCategory("all");setMode("all");}}>Reset search</Button></CardContent></Card> :
             <>
               {featured.length > 0 && <section className="mb-10"><div className="mb-4 flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary"/><h3 className="text-xl font-semibold">Featured events</h3></div><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{featured.map((event) => <EventCard key={event.id} event={event} category={categoryNameById.get(event.category_id)}/>)}</div></section>}
