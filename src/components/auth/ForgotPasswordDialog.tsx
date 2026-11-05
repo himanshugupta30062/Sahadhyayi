@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { Mail, CheckCircle2, AlertCircle } from 'lucide-react';
 import { validateEmail } from '@/utils/validation';
-import TurnstileCaptcha from '@/components/auth/TurnstileCaptcha';
+import HCaptchaWidget from '@/components/auth/HCaptchaWidget';
 
 export const ForgotPasswordDialog = () => {
   const [open, setOpen] = useState(false);
@@ -53,7 +53,7 @@ export const ForgotPasswordDialog = () => {
     }
 
     if (!captchaToken) {
-      setErrorMessage('Please complete Cloudflare verification before requesting a reset link.');
+      setErrorMessage('Please complete hCaptcha verification before requesting a reset link.');
       return;
     }
 
@@ -168,7 +168,7 @@ export const ForgotPasswordDialog = () => {
               </div>
             </div>
 
-            <TurnstileCaptcha key={captchaResetKey} action="password_reset" onTokenChange={setCaptchaToken} />
+            <HCaptchaWidget key={captchaResetKey} action="password_reset" onTokenChange={setCaptchaToken} />
             <Button
               type="submit"
               disabled={loading}
