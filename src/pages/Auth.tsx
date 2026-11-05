@@ -16,7 +16,7 @@ import SEO from '@/components/SEO';
 import { ForgotPasswordDialog } from '@/components/auth/ForgotPasswordDialog';
 import { Separator } from '@/components/ui/separator';
 import { motion } from 'framer-motion';
-import TurnstileCaptcha from '@/components/auth/TurnstileCaptcha';
+import HCaptchaWidget from '@/components/auth/HCaptchaWidget';
 
 type AuthTab = 'signin' | 'signup';
 
@@ -125,7 +125,7 @@ const Auth = () => {
     }
 
     if (!captchaToken) {
-      setError('Please complete Cloudflare verification before signing in.');
+      setError('Please complete hCaptcha verification before signing in.');
       return;
     }
 
@@ -169,7 +169,7 @@ const Auth = () => {
       return;
     }
     if (!captchaToken) {
-      setError('Please complete Cloudflare verification before creating your account.');
+      setError('Please complete hCaptcha verification before creating your account.');
       return;
     }
 
@@ -462,7 +462,7 @@ const Auth = () => {
                           </div>
                         </div>
 
-                        <TurnstileCaptcha key={captchaResetKey} action="signin" onTokenChange={setCaptchaToken} />
+                        <HCaptchaWidget key={captchaResetKey} action="signin" onTokenChange={setCaptchaToken} />
 
                         <Button
                           type="submit"
@@ -623,7 +623,7 @@ const Auth = () => {
                           </div>
                         </div>
 
-                        <TurnstileCaptcha key={captchaResetKey} action="signup" onTokenChange={setCaptchaToken} />
+                        <HCaptchaWidget key={captchaResetKey} action="signup" onTokenChange={setCaptchaToken} />
 
                         <Button
                           type="submit"
