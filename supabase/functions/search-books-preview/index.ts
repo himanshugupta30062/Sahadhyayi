@@ -147,6 +147,7 @@ serve(async (req) => {
       archiveBooks,
       standardEbooks,
       openAlexBooks,
+      oapenBooks,
       wikisourceBooks
     );
 
@@ -565,6 +566,7 @@ function mergeBookData(
   archiveBooks: BookData[],
   standardEbooks: BookData[],
   openAlexBooks: BookData[],
+  oapenBooks: BookData[],
   wikisourceBooks: BookData[]
 ): BookData[] {
   const allBooks = [
