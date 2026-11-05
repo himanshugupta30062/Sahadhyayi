@@ -14,7 +14,7 @@ Deno.serve(async req=>{
   const body=await req.json(); if(!body||typeof body!=="object") return respond({error:"Invalid body"},400);
   const title=String(body.title??"").trim(),authors=String(body.authors??"").trim(),abstract=String(body.abstract??"").trim();
   const rawDoi=String(body.doi??"").trim().toLowerCase();
-  const doiPrefixes=["https://doi.org/","http://doi.org/","https://dx.doi.org/","http://dx.doi.org/"];
+  const doiPrefixes=["https://doi.org/","https://dx.doi.org/"];
   const doi=doiPrefixes.reduce((value,prefix)=>value.startsWith(prefix)?value.slice(prefix.length):value,rawDoi);
   const sourceUrl=String(body.source_url??"").trim();
   const kind=body.submission_kind;
@@ -34,7 +34,7 @@ Deno.serve(async req=>{
   const doiSuffix=doi.slice(doiSeparator+1);
   const validDoi=!doi||(doiSeparator>0&&doiRegistrant.startsWith("10.")&&/^\d{4,9}$/.test(doiRegistrant.slice(3))&&doiSuffix.length>0&&/^[\w.();:+-]+$/i.test(doiSuffix));
   if(!validDoi) return respond({error:"Please enter a valid DOI."},400);
-  if(sourceUrl){try{const u=new URL(sourceUrl);if(!["https:","http:"].includes(u.protocol))throw 0;}catch{return respond({error:"Source URL must be a valid http(s) link."},400);}}
+  if(sourceUrl){try{const u=new URL(sourceUrl);if(u.protocol!=="https:")throw 0;}catch{return respond({error:"Source URL must be a valid HTTPS link."},400);}}
   const year=body.publication_year==null||body.publication_year===""?null:Number(body.publication_year);
   if(year!==null&&(!Number.isInteger(year)||year<1600||year>new Date().getFullYear()+1)) return respond({error:"Publication year is invalid."},400);
   const {data:existing}=await db.from("research_paper_submissions").select("id,status").eq("doi",doi||"__none__").maybeSingle();
