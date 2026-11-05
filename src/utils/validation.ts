@@ -205,7 +205,7 @@ export const sanitizeInput = (input: string, maxLength?: number): string => {
   // HTML encode dangerous characters
   sanitized = encodeHTML(sanitized);
   
-  if (maxLength && sanitized.length > maxLength) {
+  if (Boolean(maxLength) && sanitized.length > maxLength) {
     sanitized = sanitized.substring(0, maxLength);
   }
   
