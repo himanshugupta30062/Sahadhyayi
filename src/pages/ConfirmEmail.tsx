@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client-universal';
 import SEO from '@/components/SEO';
 import { TurnstileCaptcha } from '@/components/auth/TurnstileCaptcha';
-import { executeRecaptcha, isRecaptchaConfigured } from '@/lib/recaptcha';
+
 
 type VerificationStatus = 'manual' | 'verifying' | 'success' | 'error' | 'already-verified' | 'verified-needs-signin';
 
@@ -241,18 +241,11 @@ const ConfirmEmail = () => {
       setErrorMessage('Enter a valid email address first.');
       return;
     }
-    let token = captchaToken;
-    if (isRecaptchaConfigured()) {
-      try {
-        token = await executeRecaptcha('confirm_email_resend');
-      } catch (captchaErr: any) {
-        setErrorMessage(captchaErr?.message || 'Anti-bot verification failed. Please try again.');
-        return;
-      }
-    } else if (!token) {
-      setErrorMessage('Complete the human verification before requesting a new code.');
+    if (!captchaToken) {
+      setErrorMessage('Complete Cloudflare verification before requesting a new code.');
       return;
     }
+    const token = captchaToken;
     setBusy(true);
     setErrorMessage('');
     try {
