@@ -73,18 +73,42 @@ export default function Events() {
       setLoading(true);
       setError(null);
       try {
-        const [categoryResult, eventResult] = await Promise.all([
-          (supabase as any).from("literary_event_categories").select("id,name,slug,description").eq("is_active", true).order("sort_order"),
-          (supabase as any).from("literary_events").select("*").eq("status", "published").gte("start_at", new Date().toISOString()).order("featured", { ascending: false }).order("start_at").limit(100),
-        ]);
-        if (categoryResult.error) throw categoryResult.error;
-        if (eventResult.error) throw eventResult.error;
-        if (active) {
+        // Categories are auxiliary: a category-query failure must not hide valid events.
+        const categoryResult = await (supabase as any)
+          .from("literary_event_categories")
+          .select("id,name,slug,description")
+          .eq("is_active", true)
+          .order("sort_order");
+        if (categoryResult.error) {
+          console.warn("[Events] Category query failed; using built-in categories", categoryResult.error);
+        } else if (active) {
           setCategories(categoryResult.data || []);
+        }
+
+        const eventResult = await (supabase as any)
+          .from("literary_events")
+          .select("*")
+          .eq("status", "published")
+          .gte("start_at", new Date().toISOString())
+          .order("featured", { ascending: false })
+          .order("start_at")
+          .limit(100);
+        if (eventResult.error) {
+          console.error("[Events] Published events query failed", {
+            code: eventResult.error.code,
+            message: eventResult.error.message,
+            details: eventResult.error.details,
+            hint: eventResult.error.hint,
+          });
+          throw new Error(eventResult.error.message || "Unable to load published events.");
+        }
+        if (active) {
           setEvents(eventResult.data || []);
+          setError(null);
         }
       } catch (err) {
-        if (active) setError(err instanceof Error ? err.message : "Events are temporarily unavailable.");
+        console.error("[Events] Load failed", err);
+        if (active) setError(err instanceof Error ? err.message : "Unable to load events. Please refresh and try again.");
       } finally {
         if (active) setLoading(false);
       }
