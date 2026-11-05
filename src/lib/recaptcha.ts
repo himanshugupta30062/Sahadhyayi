@@ -19,8 +19,27 @@ function loadRecaptcha(): Promise<void> {
   scriptPromise = new Promise<void>((resolve, reject) => {
     const scriptId = 'google-recaptcha-v3';
     let script = document.getElementById(scriptId) as HTMLScriptElement | null;
-    const onLoad = () => window.grecaptcha ? resolve() : reject(new Error('reCAPTCHA API unavailable'));
-    const onError = () => reject(new Error('Unable to load Google reCAPTCHA'));
+    let settled = false;
+    const cleanup = () => {
+      window.clearTimeout(timeoutId);
+      script?.removeEventListener('load', onLoad);
+      script?.removeEventListener('error', onError);
+    };
+    const finish = (error?: Error) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      if (error) reject(error);
+      else resolve();
+    };
+    const onLoad = () => window.grecaptcha
+      ? finish()
+      : finish(new Error('reCAPTCHA API unavailable after script load'));
+    const onError = () => finish(new Error('Unable to load Google reCAPTCHA'));
+    const timeoutId = window.setTimeout(
+      () => finish(new Error('Google reCAPTCHA loading timed out')),
+      15000
+    );
 
     if (!script) {
       script = document.createElement('script');
@@ -34,6 +53,9 @@ function loadRecaptcha(): Promise<void> {
     } else {
       script.addEventListener('load', onLoad, { once: true });
       script.addEventListener('error', onError, { once: true });
+      if (script.readyState === 'complete' && !window.grecaptcha) {
+        finish(new Error('Existing reCAPTCHA script is loaded but its API is unavailable'));
+      }
     }
   }).catch((error: unknown) => {
     scriptPromise = undefined;
