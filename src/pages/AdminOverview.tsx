@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 
 const shortcuts = [
+  { title: "Growth Intelligence", description: "Manage bookstore, library and literary partnership prospects and outreach.", href: "/admin/growth-intelligence", icon: Users },
   { title: "Manage book events", description: "Create, verify and publish book fairs and literary events.", href: "/admin/events", icon: CalendarDays },
   { title: "Review PDF submissions", description: "Inspect quarantined uploads and verification results.", href: "/admin/book-pdf-reviews", icon: FileCheck2 },
   { title: "Manage the library", description: "Review library quality and archived records.", href: "/admin/library-quality", icon: BookOpen },
