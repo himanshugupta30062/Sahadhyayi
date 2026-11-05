@@ -43,7 +43,7 @@ export const AddMarginNoteDialog: React.FC<AddMarginNoteDialogProps> = ({
   const [page, setPage] = useState(initialPage);
   const [quote, setQuote] = useState(initialQuote);
   const [note, setNote] = useState("");
-  const [visibility, setVisibility] = useState<"public" | "friends">("public");
+  const [visibility, setVisibility] = useState<"public" | "friends" | "private">("private");
   const create = useCreateMarginNote();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -156,13 +156,14 @@ export const AddMarginNoteDialog: React.FC<AddMarginNoteDialogProps> = ({
             </div>
             <div className="col-span-2">
               <Label className="text-xs font-semibold">Visibility</Label>
-              <Select value={visibility} onValueChange={(v: "public" | "friends") => setVisibility(v)}>
+              <Select value={visibility} onValueChange={(v: "public" | "friends" | "private") => setVisibility(v)}>
                 <SelectTrigger className="mt-1">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="public">Public (Everyone)</SelectItem>
+                  <SelectItem value="private">Private (Only me)</SelectItem>
                   <SelectItem value="friends">Friends only</SelectItem>
+                  <SelectItem value="public">Public (Everyone)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
