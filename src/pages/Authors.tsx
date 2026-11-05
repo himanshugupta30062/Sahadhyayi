@@ -137,7 +137,7 @@ const Authors = () => {
           {/* Mobile image-first hero, matching the community homepage */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 sm:hidden">
             <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Victor_Hugo_%C3%A0_son_bureau_de_travail._2017.0.3693.jpg?width=1000" alt="" className="h-full w-full object-cover object-[center_30%]" loading="eager" fetchPriority="high" />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#F4F3EF]/95 via-[#F4F3EF]/90 to-[#F4F3EF]/75 dark:from-[#09120D]/90 dark:via-[#09120D]/85 dark:to-[#09120D]/75" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#F4F3EF]/80 via-[#F4F3EF]/75 to-[#F4F3EF]/65 dark:from-[#09120D]/75 dark:via-[#09120D]/70 dark:to-[#09120D]/65" />
           </div>
           {/* Keep the full-scene illustration off small screens so it never sits
               behind the copy/search. On desktop it stays in a dedicated right panel. */}
@@ -154,7 +154,7 @@ const Authors = () => {
           <div aria-hidden="true" className="absolute inset-0 hidden dark:block bg-gradient-to-t from-[#09120D]/70 via-transparent to-[#09120D]/25" />
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:radial-gradient(rgba(255,255,255,0.6)_0.7px,transparent_0.7px)] [background-size:18px_18px] [mask-image:linear-gradient(to_right,black,transparent_80%)]" />
 
-          <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-18 lg:px-8 lg:py-24">
+          <div className="relative mx-auto min-h-[520px] max-w-7xl px-4 py-10 sm:min-h-0 sm:px-6 sm:py-18 lg:px-8 lg:py-24">
             <div className="max-w-3xl">
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#D9D9D1] bg-white dark:border-[#D5B16D]/35 dark:bg-black/25 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#1C442D] dark:text-[#E8CC91] backdrop-blur-sm sm:mb-6">
                 <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
