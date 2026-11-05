@@ -8,10 +8,12 @@ describe('book metadata normalization', () => {
       cleanTitle: 'The Arthashastra', subtitle: 'Illustrated', editionTag: 'Vintage Classics',
     });
     expect(normalizeTitle('महाभारत खण्ड २')).toMatchObject({ cleanTitle: 'महाभारत' });
+    expect(normalizeTitle('Tamil நூல் संस्करण')).toMatchObject({ cleanTitle: 'Tamil நூல்' });
   });
 
   it('removes volume labels and trailing punctuation while preserving Unicode', () => {
-    expect(normalizeTitle('War and Peace Vol. 2!!!').cleanTitle).toBe('War and Peace Vol. 2!!!');
+    expect(normalizeTitle('War and Peace Vol. 2!!!').cleanTitle).toBe('War and Peace');
+    expect(normalizeTitle('War and Peace Part IV').cleanTitle).toBe('War and Peace');
     expect(normalizeTitle('The Odyssey — A Journey').subtitle).toBe('A Journey');
     expect(normalizeTitle('தமிழ் நூல் [Annotated]').editionTag).toBe('Annotated');
   });
