@@ -13,7 +13,7 @@ import { validateEmail, validatePassword, isRateLimited } from '@/utils/validati
 import { useToast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
 import { motion } from 'framer-motion';
-import { TurnstileCaptcha } from '@/components/auth/TurnstileCaptcha';
+import { HCaptchaWidget } from '@/components/auth/HCaptchaWidget';
 
 
 const SignUp = () => {
@@ -89,7 +89,7 @@ const SignUp = () => {
       return;
     }
     if (!captchaToken) {
-      setError('Please complete Cloudflare verification before creating your account.');
+      setError('Please complete hCaptcha verification before creating your account.');
       return;
     }
     setLoading(true);
@@ -331,7 +331,7 @@ const SignUp = () => {
                   </div>
                 </div>
                 
-                <TurnstileCaptcha key={captchaResetKey} action="signup" onTokenChange={setCaptchaToken} />
+                <HCaptchaWidget key={captchaResetKey} action="signup" onTokenChange={setCaptchaToken} />
                 
                 <Button 
                   type="submit" 
