@@ -77,10 +77,11 @@ export default function Events() {
           (supabase as any).from("literary_event_categories").select("id,name,slug,description").eq("is_active", true).order("sort_order"),
           (supabase as any).from("literary_events").select("*").eq("status", "published").gte("start_at", new Date().toISOString()).order("featured", { ascending: false }).order("start_at").limit(100),
         ]);
-        if (categoryResult.error) throw categoryResult.error;
+        // Categories are optional metadata: don't hide published events if this table
+        // is unavailable or its read policy is misconfigured.
         if (eventResult.error) throw eventResult.error;
         if (active) {
-          setCategories(categoryResult.data || []);
+          setCategories(categoryResult.error ? [] : (categoryResult.data || []));
           setEvents(eventResult.data || []);
         }
       } catch (err) {
