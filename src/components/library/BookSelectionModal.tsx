@@ -379,6 +379,19 @@ const BookSelectionModal = ({
           </p>
         </DialogHeader>
 
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => window.open(`https://www.pdfdrive.com/search?q=${encodeURIComponent(searchTerm)}`, '_blank', 'noopener,noreferrer')}
+            className="gap-2"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            Search PDFDrive for this title
+          </Button>
+        </div>
+
         {/* Filters and Search Source Controls */}
         <div className="flex flex-wrap items-center justify-between gap-3 py-3 border-y border-[#E8E2D9] dark:border-[#26302A]">
           <div className="flex flex-wrap items-center gap-3">
