@@ -1,15 +1,19 @@
-
 import { Link } from "react-router-dom";
 
 const NavLogo = () => (
-  <Link to="/" className="flex items-center space-x-3 font-bold text-2xl text-gray-800">
+  <Link
+    to="/"
+    className="flex items-center space-x-2.5 font-bold text-2xl text-gray-800"
+    aria-label="Sahadhyayi home"
+  >
     <img
-      src="/optimized-assets/site-logo.webp"
-      alt="Sahadhyayi home logo"
-      className="w-8 h-8 flex-shrink-0"
-      width={32}
-      height={32}
-      loading="lazy"
+      src="/brand/sahadhyayi-connected-readers.svg"
+      alt=""
+      aria-hidden="true"
+      className="h-9 w-9 flex-shrink-0 object-contain"
+      width={36}
+      height={36}
+      decoding="async"
     />
     <span className="whitespace-nowrap">Sahadhyayi</span>
   </Link>

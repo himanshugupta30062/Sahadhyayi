@@ -284,7 +284,7 @@ const ConfirmEmail = () => {
         <div className="w-full max-w-md">
           <div className="text-center mb-6">
             <Link to="/" className="inline-flex items-center gap-2 mb-3" aria-label="Sahadhyayi Home">
-              <img src="/optimized-assets/site-logo.webp" alt="" aria-hidden="true" className="w-10 h-10" width={40} height={40} />
+              <img src="/brand/sahadhyayi-connected-readers.svg" alt="" aria-hidden="true" className="w-10 h-10" width={40} height={40} />
             </Link>
           </div>
           <Card className="border border-[#E8E2D9] dark:border-[#26302A] shadow-md dark:shadow-none bg-white dark:bg-[#111614] rounded-2xl overflow-hidden">

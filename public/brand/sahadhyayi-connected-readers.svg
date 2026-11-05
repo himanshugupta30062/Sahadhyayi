@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Sahadhyayi — a global reading community</title>
+  <defs>
+    <linearGradient id="violet" x1="20" y1="20" x2="108" y2="110" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8B6CE0"/><stop offset="1" stop-color="#4B2B91"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="24" y1="30" x2="104" y2="100" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F6D78A"/><stop offset="1" stop-color="#D89B3B"/>
+    </linearGradient>
+  </defs>
+  <!-- Global circle and shared orbit -->
+  <circle cx="64" cy="48" r="34" fill="#8B6CE0" opacity=".10"/>
+  <path d="M29 48a35 35 0 0 1 70 0" fill="none" stroke="url(#gold)" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M38 27c8 7 12 16 12 27M90 27c-8 7-12 16-12 27" fill="none" stroke="#8B6CE0" stroke-opacity=".38" stroke-width="2"/>
+  <circle cx="29" cy="48" r="5" fill="#DDAA4D"/><circle cx="99" cy="48" r="5" fill="#DDAA4D"/>
+  <!-- Readers in sync -->
+  <circle cx="64" cy="37" r="8.5" fill="url(#violet)"/>
+  <circle cx="43" cy="49" r="6.5" fill="#6E4DB7"/><circle cx="85" cy="49" r="6.5" fill="#6E4DB7"/>
+  <path d="M52 62c0-9 24-9 24 0v8H52zM32 66c0-7 18-7 18 0v4H32zM78 66c0-7 18-7 18 0v4H78z" fill="url(#violet)"/>
+  <!-- Open book: pages converge into a shared center -->
+  <path d="M13 73c18-7 35-3 51 8 16-11 33-15 51-8v28c-18-5-35-2-51 10-16-12-33-15-51-10z" fill="url(#violet)"/>
+  <path d="M18 78c15-4 29-1 42 8v18c-13-9-27-12-42-9zM110 78c-15-4-29-1-42 8v18c13-9 27-12 42-9z" fill="#fff" opacity=".96"/>
+  <path d="M64 81v30" stroke="url(#gold)" stroke-width="3" stroke-linecap="round"/>
+  <path d="M22 106c16-2 29 3 42 11 13-8 26-13 42-11" fill="none" stroke="url(#gold)" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
