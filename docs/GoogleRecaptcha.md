@@ -1,46 +1,30 @@
-# Google reCAPTCHA Enterprise (Score-Based Keys)
+# Google reCAPTCHA Enterprise (Additional Risk Signals)
 
-Sahadhyayi uses Google reCAPTCHA Enterprise with score-based keys (no interactive challenge) to protect user actions while preserving a seamless, frictionless user experience.
+Google reCAPTCHA Enterprise remains an optional site-wide risk/telemetry layer. **It is not the CAPTCHA provider for Supabase Auth.** Supabase Auth's native CAPTCHA integration supports Cloudflare Turnstile and hCaptcha.
 
-## Frontend Setup
+## Google Enterprise frontend
 
-1. **Obtain your Site Key**:
-   - Go to Google Cloud Console > Security > [reCAPTCHA Enterprise / Google Cloud Fraud Defense](https://console.cloud.google.com/security/recaptcha).
-   - Create or copy a **score-based website key** (Integration type: Score based, no challenge).
-   - Add your domains (e.g. `sahadhyayi.com`, `www.sahadhyayi.com`, `localhost`).
-2. **Environment Variable**:
-   - Set `VITE_RECAPTCHA_SITE_KEY` in Cloudflare Pages build environment variables or `.env`.
-   - (Optional) `VITE_RECAPTCHA_USE_ENTERPRISE=true` (defaults to `true`, which loads `https://www.google.com/recaptcha/enterprise.js?render=KEY_ID`).
-3. **Execution & Telemetry**:
-   - As recommended by Google Fraud Defense documentation, the enterprise script is automatically preloaded in the background across all pages on app initialization (`initRecaptcha()`), allowing Google's risk engine to collect natural browsing telemetry.
-   - On critical user interactions (Sign In, Sign Up, Confirm Email resend, etc.), `executeRecaptcha('action_name')` generates an encrypted single-use assessment token.
-   - The token is passed to Supabase Auth (`options: { captchaToken }`).
+1. Create a score-based website key in Google Cloud Console → Security → reCAPTCHA.
+2. Allow `sahadhyayi.com`, `www.sahadhyayi.com`, and local development hostnames.
+3. Configure `VITE_RECAPTCHA_SITE_KEY` in the Vite/Cloudflare Pages build environment.
+4. Optional: `VITE_RECAPTCHA_USE_ENTERPRISE=true` (defaults to Enterprise).
+5. The app may preload the script for telemetry and generate action tokens via `executeRecaptcha(action)`.
 
-## Backend Verification (Supabase Auth & Edge Functions)
+## Google Enterprise backend assessments
 
-### 1. Supabase Auth
-- In Supabase Dashboard > Authentication > Bot and Abuse Protection:
-  - Enable Captcha Protection.
-  - Select your provider (Google reCAPTCHA Enterprise / v3 or Turnstile).
-  - Enter your Secret / Service Account credentials. Supabase validates the `captchaToken` on `signInWithPassword` and `signUp`.
+The shared helper `supabase/functions/_shared/recaptcha.ts` supports:
+- Enterprise Assessment API: `RECAPTCHA_ENTERPRISE_PROJECT_ID` (or `GCP_PROJECT_ID`), `RECAPTCHA_ENTERPRISE_API_KEY` (or `RECAPTCHA_API_KEY`), and `RECAPTCHA_SITE_KEY`.
+- Standard v3 Siteverify fallback: `RECAPTCHA_SECRET_KEY`.
 
-### 2. Custom Edge Functions (`supabase/functions/_shared/recaptcha.ts`)
-- The helper `verifyRecaptcha(token, action, options)` supports both:
-  - **Google Cloud reCAPTCHA Enterprise Assessment API**:
-    - `RECAPTCHA_ENTERPRISE_PROJECT_ID` (or `GCP_PROJECT_ID`)
-    - `RECAPTCHA_ENTERPRISE_API_KEY` (or `RECAPTCHA_API_KEY`)
-    - `RECAPTCHA_SITE_KEY`
-  - **Standard reCAPTCHA v3 siteverify**:
-    - `RECAPTCHA_SECRET_KEY`
+Use `verifyRecaptcha(token, expectedAction)` from a trusted Edge Function before processing a protected custom operation. Keep API keys/secrets in Supabase Edge Function secrets; never in `VITE_*` variables.
 
-```ts
-import { verifyRecaptcha } from '../_shared/recaptcha.ts';
+## Supabase Auth CAPTCHA: Cloudflare Turnstile
 
-const result = await verifyRecaptcha(body.recaptchaToken, 'contact');
-if (!result.valid) {
-  return new Response(JSON.stringify({ error: 'Bot verification failed', reason: result.error }), {
-    status: 403,
-    headers: { 'Content-Type': 'application/json' },
-  });
-}
-```
+For signup, password sign-in, password-reset email, and verification-code resend, use Cloudflare Turnstile:
+
+1. Create a Turnstile widget in Cloudflare and allow `sahadhyayi.com`, `www.sahadhyayi.com`, and `localhost` as needed.
+2. Configure its public sitekey as `VITE_TURNSTILE_SITE_KEY` in Cloudflare Pages (Production and Preview) and local `.env`.
+3. In Supabase Dashboard → Authentication → Bot and Abuse Protection, enable CAPTCHA, select **Cloudflare Turnstile**, and save its secret key.
+4. The frontend passes the Turnstile response as Supabase's `captchaToken`; do not substitute a Google Enterprise token.
+
+See [CAPTCHA deployment setup](./security/captcha-setup.md) and the [Supabase Auth CAPTCHA guide](https://supabase.com/docs/guides/auth/auth-captcha).
