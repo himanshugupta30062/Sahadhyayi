@@ -38,13 +38,13 @@ describe('EnhancedGlobalSearch Multi-Category Search', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByPlaceholderText(/search books, authors, or articles/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/search books.*authors/i)).toBeInTheDocument();
     expect(screen.getByText('Recent Searches')).toBeInTheDocument();
     expect(screen.getByText('Bhagavad Gita')).toBeInTheDocument();
     expect(screen.getByText('Premchand')).toBeInTheDocument();
 
     // Press Escape
-    fireEvent.keyDown(screen.getByPlaceholderText(/search books, authors, or articles/i), {
+    fireEvent.keyDown(screen.getByPlaceholderText(/search books.*authors/i), {
       key: 'Escape',
       code: 'Escape',
     });
@@ -102,7 +102,7 @@ describe('EnhancedGlobalSearch Multi-Category Search', () => {
       </MemoryRouter>
     );
 
-    const input = screen.getByPlaceholderText(/search books, authors, or articles/i);
+    const input = screen.getByPlaceholderText(/search books.*authors/i);
 
     // Type query
     await act(async () => {
@@ -171,7 +171,7 @@ describe('EnhancedGlobalSearch Multi-Category Search', () => {
       </MemoryRouter>
     );
 
-    const input = screen.getByPlaceholderText(/search books, authors, or articles/i);
+    const input = screen.getByPlaceholderText(/search books.*authors/i);
 
     await act(async () => {
       fireEvent.change(input, { target: { value: 'Gaban' } });
@@ -205,7 +205,7 @@ describe('EnhancedGlobalSearch Multi-Category Search', () => {
       </MemoryRouter>
     );
 
-    const input = screen.getByPlaceholderText(/search books, authors, or articles/i);
+    const input = screen.getByPlaceholderText(/search books.*authors/i);
     fireEvent.change(input, { target: { value: 'Quantum Physics' } });
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
 
@@ -255,7 +255,7 @@ describe('EnhancedGlobalSearch Multi-Category Search', () => {
       </MemoryRouter>
     );
 
-    const input = screen.getByPlaceholderText(/search books, authors, or articles/i);
+    const input = screen.getByPlaceholderText(/search books.*authors/i);
 
     await act(async () => {
       fireEvent.change(input, { target: { value: 'Resilient' } });

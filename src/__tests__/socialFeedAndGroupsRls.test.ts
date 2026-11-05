@@ -1,35 +1,26 @@
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
+const toPath = (relPath: string) => fileURLToPath(new URL(relPath, import.meta.url));
+
 const migration = readFileSync(
-  new URL(
-    '../../supabase/migrations/20260927140000_fix_social_feed_and_group_discovery.sql',
-    import.meta.url,
-  ),
+  toPath('../../supabase/migrations/20260927140000_fix_social_feed_and_group_discovery.sql'),
   'utf8',
 );
 
 const postAudienceMigration = readFileSync(
-  new URL(
-    '../../supabase/migrations/20261020130000_add_post_audiences.sql',
-    import.meta.url,
-  ),
+  toPath('../../supabase/migrations/20261020130000_add_post_audiences.sql'),
   'utf8',
 );
 
 const postAudienceCleanup = readFileSync(
-  new URL(
-    '../../supabase/migrations/20261022090000_remove_legacy_permissive_posts_policy.sql',
-    import.meta.url,
-  ),
+  toPath('../../supabase/migrations/20261022090000_remove_legacy_permissive_posts_policy.sql'),
   'utf8',
 );
 
 const groupDiscoveryHardening = readFileSync(
-  new URL(
-    '../../supabase/migrations/20261020180000_fix_group_discovery_and_anon_grants.sql',
-    import.meta.url,
-  ),
+  toPath('../../supabase/migrations/20261020180000_fix_group_discovery_and_anon_grants.sql'),
   'utf8',
 );
 

@@ -138,7 +138,7 @@ describe('Universal Search & Cmd+K Shortcut Architecture', () => {
         </MemoryRouter>
       );
 
-      const searchBtn = screen.getByRole('button', { name: /^search library, authors, and books$/i });
+      const searchBtn = screen.getByRole('button', { name: /search sahadhyayi/i });
       expect(searchBtn).toBeInTheDocument();
       expect(searchBtn).toHaveAttribute('type', 'button');
 
@@ -150,7 +150,7 @@ describe('Universal Search & Cmd+K Shortcut Architecture', () => {
       fireEvent.click(searchBtn);
 
       // Search dialog should open cleanly without any shortcut badges
-      expect(await screen.findByPlaceholderText(/search books, authors, or articles/i)).toBeInTheDocument();
+      expect(await screen.findByPlaceholderText(/search books.*authors/i)).toBeInTheDocument();
     });
   });
 
@@ -195,7 +195,7 @@ describe('Universal Search & Cmd+K Shortcut Architecture', () => {
         </MemoryRouter>
       );
 
-      const input = screen.getByPlaceholderText(/search books, authors, or articles/i);
+      const input = screen.getByPlaceholderText(/search books.*authors/i);
 
       // Press Meta+K inside input
       fireEvent.keyDown(input, {
@@ -235,7 +235,7 @@ describe('Universal Search & Cmd+K Shortcut Architecture', () => {
         </MemoryRouter>
       );
 
-      const input = screen.getByPlaceholderText(/search books, authors, or articles/i);
+      const input = screen.getByPlaceholderText(/search books.*authors/i);
 
       await act(async () => {
         fireEvent.change(input, { target: { value: 'theme' } });

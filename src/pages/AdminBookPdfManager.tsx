@@ -36,7 +36,21 @@ export async function validatePdf(file: File) {
   if (file.type && file.type !== 'application/pdf') {
     throw new Error('Only PDF files are accepted.');
   }
-  const header = new Uint8Array(await file.slice(0, 5).arrayBuffer());
+  const slice = file.slice(0, 5);
+  let buffer: ArrayBuffer;
+  if (typeof slice.arrayBuffer === 'function') {
+    buffer = await slice.arrayBuffer();
+  } else if (typeof file.arrayBuffer === 'function') {
+    buffer = (await file.arrayBuffer()).slice(0, 5);
+  } else {
+    buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as ArrayBuffer);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsArrayBuffer(slice);
+    });
+  }
+  const header = new Uint8Array(buffer);
   if (new TextDecoder().decode(header) !== '%PDF-') {
     throw new Error('This file does not have a valid PDF signature.');
   }

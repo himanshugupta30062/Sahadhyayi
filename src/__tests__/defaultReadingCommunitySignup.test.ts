@@ -1,11 +1,11 @@
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
+const toPath = (relPath: string) => fileURLToPath(new URL(relPath, import.meta.url));
+
 const migration = readFileSync(
-  new URL(
-    '../../supabase/migrations/20261029190000_auto_join_default_reading_community.sql',
-    import.meta.url,
-  ),
+  toPath('../../supabase/migrations/20261029190000_auto_join_default_reading_community.sql'),
   'utf8',
 );
 

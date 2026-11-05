@@ -33,17 +33,17 @@ export function validateScientistProfile(profile: ProfileRecord): void {
   if (!(profile.knownFor as unknown[]).every(hasText)) {
     throw new Error("Every knownFor entry must be a non-empty string.");
   }
-  if (!(profile.lifeStory as unknown[]).every(hasText)) {
-    throw new Error("Every lifeStory entry must be a non-empty paragraph.");
+  if (!(profile.lifeStory as unknown[]).length || !(profile.lifeStory as unknown[]).every(hasText)) {
+    throw new Error("At least one lifeStory entry is required, and every lifeStory entry must be a non-empty paragraph.");
   }
-  if (!(profile.work as unknown[]).every((item) => hasTextFields(item, ["title", "description"]))) {
-    throw new Error("Every work item needs a title and description.");
+  if (!(profile.work as unknown[]).length || !(profile.work as unknown[]).every((item) => hasTextFields(item, ["title", "description"]))) {
+    throw new Error("At least one work item is required, and every work item needs a title and description.");
   }
-  if (!(profile.milestones as unknown[]).every((item) => hasTextFields(item, ["year", "title", "description"]))) {
-    throw new Error("Every milestone needs a year, title and description.");
+  if (!(profile.milestones as unknown[]).length || !(profile.milestones as unknown[]).every((item) => hasTextFields(item, ["year", "title", "description"]))) {
+    throw new Error("At least one milestone is required, and every milestone needs a year, title and description.");
   }
-  if (!(profile.sources as unknown[]).every((item) => hasTextFields(item, ["label", "publisher", "url"]))) {
-    throw new Error("Every source needs a label, publisher and URL.");
+  if (!(profile.sources as unknown[]).length || !(profile.sources as unknown[]).every((item) => hasTextFields(item, ["label", "publisher", "url"]))) {
+    throw new Error("At least one source is required, and every source needs a label, publisher and URL.");
   }
   if ((profile.sources as ProfileRecord[]).some((source) => {
     const url = source.url as string;
