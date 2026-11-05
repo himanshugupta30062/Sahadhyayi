@@ -134,6 +134,11 @@ const Authors = () => {
       <div className="min-h-screen bg-[#FAFAF8] text-[#1C201D] transition-colors duration-200 dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
         {/* Photo-led hero: the page starts with a literary atmosphere, not a dashboard. */}
         <section className="relative isolate overflow-hidden border-b border-[#E8E8E3] bg-[#F4F3EF] text-[#1C201D] dark:border-[#29332D] dark:bg-[#101711] dark:text-white">
+          {/* Mobile image-first hero, matching the community homepage */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 sm:hidden">
+            <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Victor_Hugo_%C3%A0_son_bureau_de_travail._2017.0.3693.jpg?width=1000" alt="" className="h-full w-full object-cover object-[center_30%]" loading="eager" fetchPriority="high" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#F4F3EF]/95 via-[#F4F3EF]/90 to-[#F4F3EF]/75 dark:from-[#09120D]/90 dark:via-[#09120D]/85 dark:to-[#09120D]/75" />
+          </div>
           {/* Keep the full-scene illustration off small screens so it never sits
               behind the copy/search. On desktop it stays in a dedicated right panel. */}
           {/* Actual CC0 Victor Hugo at his writing desk artwork. */}
@@ -197,7 +202,6 @@ const Authors = () => {
                 <span className="inline-flex items-center gap-2"><BookOpen className="h-4 w-4 text-[#1C442D] dark:text-[#E4C17B]" aria-hidden="true" /> <strong className="font-semibold text-[#1C201D] dark:text-white">{genres.length.toLocaleString()}</strong> genres represented</span>
               </div>
             </div>
-            <div aria-hidden="true" className="relative mt-5 h-[390px] w-full overflow-hidden rounded-2xl sm:hidden"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/Victor_Hugo_%C3%A0_son_bureau_de_travail._2017.0.3693.jpg?width=1000" alt="" className="h-full w-full object-cover object-[center_30%]" loading="lazy" /></div>
           </div>
         </section>
 
