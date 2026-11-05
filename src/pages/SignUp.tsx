@@ -331,7 +331,7 @@ const SignUp = () => {
                   </div>
                 </div>
                 
-                <TurnstileCaptcha key={captchaResetKey} onTokenChange={setCaptchaToken} />
+                <TurnstileCaptcha key={captchaResetKey} action="signup" onTokenChange={setCaptchaToken} />
                 
                 <Button 
                   type="submit" 
