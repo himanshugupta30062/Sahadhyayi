@@ -1,5 +1,5 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+
 import path from "path";
 
 // Keep React and modules that depend on React in Rollup's natural graph.
@@ -71,7 +71,6 @@ export default defineConfig(({ mode }) => ({
     },
   },
   plugins: [
-    react(),
     bundleDiagnosticsPlugin(),
   ].filter(Boolean),
   optimizeDeps: {
