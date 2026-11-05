@@ -38,6 +38,45 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+const startBookFileDownload = (fileUrl: string, title: string, format: 'pdf' | 'epub') => {
+  try {
+    const parsedFileUrl = new URL(fileUrl);
+    if (parsedFileUrl.protocol !== 'https:') {
+      toast({
+        title: 'Download unavailable',
+        description: 'Only secure HTTPS book downloads are supported.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const safeTitle = (title || 'sahadhyayi-book')
+      .normalize('NFKD')
+      .replace(/[^a-zA-Z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+      .slice(0, 100) || 'sahadhyayi-book';
+    const proxyUrl = new URL('https://rknxtatvlzunatpyqxro.supabase.co/functions/v1/pdf-proxy');
+    proxyUrl.searchParams.set('url', parsedFileUrl.toString());
+    proxyUrl.searchParams.set('download', '1');
+    proxyUrl.searchParams.set('format', format);
+    proxyUrl.searchParams.set('filename', `${safeTitle}.${format}`);
+
+    const link = document.createElement('a');
+    link.href = proxyUrl.toString();
+    link.rel = 'noopener noreferrer';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } catch {
+    toast({
+      title: 'Download unavailable',
+      description: 'This provider did not return a valid secure file link.',
+      variant: 'destructive',
+    });
+  }
+};
+
 interface BookSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -603,14 +642,13 @@ const BookSelectionModal = ({
                             </Button>
                           )}
 
-                          {/* PDF Download Button */}
+                          {/* PDF and EPUB downloads use the allow-listed proxy so the browser
+                              receives Content-Disposition: attachment instead of opening an inline preview. */}
                           {book.pdf_url && (
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => {
-                                window.open(book.pdf_url!, '_blank');
-                              }}
+                              onClick={() => startBookFileDownload(book.pdf_url!, book.title, 'pdf')}
                               className="text-xs h-8 text-emerald-700 dark:text-emerald-400 border-[#E8E2D9] dark:border-[#26302A]"
                             >
                               <Download className="w-3.5 h-3.5 mr-1" />
@@ -618,14 +656,11 @@ const BookSelectionModal = ({
                             </Button>
                           )}
 
-                          {/* EPUB Download Button */}
                           {book.epub_url && (
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => {
-                                window.open(book.epub_url!, '_blank');
-                              }}
+                              onClick={() => startBookFileDownload(book.epub_url!, book.title, 'epub')}
                               className="text-xs h-8 text-amber-700 dark:text-amber-400 border-[#E8E2D9] dark:border-[#26302A]"
                             >
                               <FileText className="w-3.5 h-3.5 mr-1" />
