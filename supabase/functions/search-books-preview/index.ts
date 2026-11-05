@@ -99,6 +99,7 @@ serve(async (req) => {
       { name: 'openAlex', fn: () => searchOpenAlex(cleanQuery) },
       { name: 'wikisource', fn: () => searchWikisource(cleanQuery) },
       { name: 'oapen', fn: () => searchOapen(cleanQuery) },
+      { name: 'doab', fn: () => searchDoab(cleanQuery) },
     ];
 
     const metrics: Record<string, ProviderMetric> = {};
@@ -138,6 +139,7 @@ serve(async (req) => {
     const openAlexBooks = settledResults[5].status === 'fulfilled' ? settledResults[5].value : [];
     const wikisourceBooks = settledResults[6].status === 'fulfilled' ? settledResults[6].value : [];
     const oapenBooks = settledResults[7].status === 'fulfilled' ? settledResults[7].value : [];
+    const doabBooks = settledResults[8].status === 'fulfilled' ? settledResults[8].value : [];
 
     // Merge book data across providers without saving
     const mergedBooks = mergeBookData(
@@ -148,6 +150,7 @@ serve(async (req) => {
       standardEbooks,
       openAlexBooks,
       oapenBooks,
+      doabBooks,
       wikisourceBooks
     );
 
@@ -164,6 +167,7 @@ serve(async (req) => {
         openAlex: metrics.openAlex?.count || 0,
         wikisource: metrics.wikisource?.count || 0,
         oapen: metrics.oapen?.count || 0,
+        doab: metrics.doab?.count || 0,
       },
       metrics,
     };
@@ -526,6 +530,55 @@ async function searchOapen(searchTerm: string): Promise<BookData[]> {
   }).filter((book: BookData) => book.title);
 }
 
+
+// DOAB's documented DSpace REST API indexes peer-reviewed open-access books.
+// Only ORIGINAL PDF bitstreams are offered as direct downloads.
+async function searchDoab(searchTerm: string): Promise<BookData[]> {
+  const url = `https://directory.doabooks.org/rest/search?query=${encodeURIComponent(searchTerm)}&expand=metadata,bitstreams&limit=15`;
+  const response = await fetchWithTimeout(url, 4500, { headers: { Accept: 'application/json' } });
+  if (!response.ok) return [];
+  const payload = await response.json();
+  const items = payload?.searchResults?.items || payload?.items || payload?.results || [];
+  if (!Array.isArray(items)) return [];
+
+  const metadataValue = (metadata: any, key: string): string | undefined => {
+    const value = metadata?.[key];
+    if (Array.isArray(value)) return value[0]?.value || value[0];
+    return typeof value === 'string' ? value : value?.value;
+  };
+
+  return items.slice(0, 15).map((item: any) => {
+    const metadata = item.metadata || item;
+    const bitstreams = item.bitstreams || item.expand?.bitstreams || [];
+    const pdf = Array.isArray(bitstreams) ? bitstreams.find((file: any) =>
+      (file.name || file.bundleName || '').toLowerCase().endsWith('.pdf') &&
+      (file.bundleName === 'ORIGINAL' || file.bundle === 'ORIGINAL' || !file.bundleName)
+    ) : undefined;
+    const handle = item.handle || metadataValue(metadata, 'dc.identifier.uri') || metadataValue(metadata, 'dc.identifier');
+    const pdfUrl = pdf?.retrieveLink || pdf?.link || pdf?.url ||
+      (pdf?.uuid && handle ? `https://directory.doabooks.org/bitstream/${handle}/${encodeURIComponent(pdf.name || '')}` : undefined);
+    const title = metadataValue(metadata, 'dc.title') || item.name || item.title;
+    const author = metadataValue(metadata, 'dc.contributor.author') || metadataValue(metadata, 'dc.creator');
+    const year = metadataValue(metadata, 'dc.date.issued');
+    const license = metadataValue(metadata, 'dc.rights') || metadataValue(metadata, 'dc.rights.uri');
+    const itemUrl = handle ? (String(handle).startsWith('http') ? handle : `https://directory.doabooks.org/handle/${handle}`) : undefined;
+    return {
+      title: String(title || '').trim(),
+      author: author ? String(author).trim() : undefined,
+      description: metadataValue(metadata, 'dc.description.abstract'),
+      publication_year: year ? Number.parseInt(String(year).slice(0, 4), 10) : undefined,
+      language: metadataValue(metadata, 'dc.language') || 'English',
+      pdf_url: pdfUrl,
+      reader_url: itemUrl,
+      source: 'doab',
+      access_type: pdfUrl ? 'full_download' as AccessType : itemUrl ? 'official_reader' as AccessType : 'metadata_only',
+      formats: pdfUrl ? ['pdf'] : itemUrl ? ['reader'] : [],
+      provider_id: handle ? `doab:${String(handle).replace(/^.*\\//, '')}` : undefined,
+      ...(license ? { genre: `License: ${license}` } : {}),
+    };
+  }).filter((book: BookData) => book.title);
+}
+
 async function searchWikisource(searchTerm: string): Promise<BookData[]> {
   const url = `https://en.wikisource.org/w/api.php?action=opensearch&search=${encodeURIComponent(searchTerm)}&limit=10&namespace=0&format=json`;
   const response = await fetchWithTimeout(url, 4000);
@@ -567,6 +620,7 @@ function mergeBookData(
   standardEbooks: BookData[],
   openAlexBooks: BookData[],
   oapenBooks: BookData[],
+  doabBooks: BookData[],
   wikisourceBooks: BookData[]
 ): BookData[] {
   const allBooks = [
@@ -577,6 +631,7 @@ function mergeBookData(
     ...openAlexBooks,    // Academic open books
     ...archiveBooks,     // Archive scans
     ...oapenBooks,       // Peer-reviewed open-access books with hosted full text
+    ...doabBooks,         // Directory of Open Access Books discovery and provider files
     ...wikisourceBooks,  // Public domain transcriptions
   ];
 
