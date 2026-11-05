@@ -18,7 +18,7 @@ export interface MarginNote {
   page: number;
   quote: string;
   note: string;
-  visibility: "public" | "friends";
+  visibility: "public" | "friends" | "private";
   reactions_count: number;
   replies_count: number;
   created_at: string;
@@ -159,7 +159,7 @@ export const useCreateMarginNote = () => {
       page: number;
       quote: string;
       note: string;
-      visibility?: "public" | "friends";
+      visibility?: "public" | "friends" | "private";
     }) => {
       if (!user) throw new Error("Sign in to add margin notes.");
       const { data, error } = await supabase
