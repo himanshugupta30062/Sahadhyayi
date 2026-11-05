@@ -24,8 +24,11 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
   },
 }));
 vi.mock('@/components/SEO', () => ({ default: () => null }));
-vi.mock('@/components/auth/TurnstileCaptcha', () => ({
-  TurnstileCaptcha: ({ onTokenChange }: { onTokenChange: (token: string) => void }) => (
+vi.mock('@/components/auth/HCaptchaWidget', () => ({
+  HCaptchaWidget: ({ onTokenChange }: { onTokenChange: (token: string) => void }) => (
+    <button type="button" onClick={() => onTokenChange('test-captcha-token')}>Complete human verification</button>
+  ),
+  default: ({ onTokenChange }: { onTokenChange: (token: string) => void }) => (
     <button type="button" onClick={() => onTokenChange('test-captcha-token')}>Complete human verification</button>
   ),
 }));

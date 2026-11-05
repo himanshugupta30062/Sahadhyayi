@@ -25,8 +25,11 @@ vi.mock('@/contexts/authHelpers', async (importOriginal) => {
 });
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: mocks.toast }) }));
 vi.mock('@/components/SEO', () => ({ default: () => null }));
-vi.mock('@/components/auth/TurnstileCaptcha', () => ({
-  TurnstileCaptcha: ({ onTokenChange }: { onTokenChange: (token: string) => void }) => (
+vi.mock('@/components/auth/HCaptchaWidget', () => ({
+  HCaptchaWidget: ({ onTokenChange }: { onTokenChange: (token: string) => void }) => (
+    <button type="button" onClick={() => onTokenChange('captcha-token')}>Complete CAPTCHA</button>
+  ),
+  default: ({ onTokenChange }: { onTokenChange: (token: string) => void }) => (
     <button type="button" onClick={() => onTokenChange('captcha-token')}>Complete CAPTCHA</button>
   ),
 }));
@@ -106,7 +109,7 @@ describe('SignUp', () => {
     mocks.passwordValid = true;
     fillForm();
     fireEvent.click(screen.getByRole('button', { name: 'Create Account' }));
-    expect(screen.getByText('Please complete the anti-bot verification before creating your account.')).toBeInTheDocument();
+    expect(screen.getByText('Please complete hCaptcha verification before creating your account.')).toBeInTheDocument();
     expect(mocks.signUp).not.toHaveBeenCalled();
   });
 

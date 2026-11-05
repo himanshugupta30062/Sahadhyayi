@@ -32,13 +32,16 @@ vi.mock('@/contexts/authHelpers', () => ({
   }),
 }));
 
-vi.mock('@/components/auth/TurnstileCaptcha', () => ({
-  TurnstileCaptcha: ({ onTokenChange }: { onTokenChange: (token: string | null) => void }) => {
-    React.useEffect(() => {
-      onTokenChange('test-turnstile-token');
-    }, [onTokenChange]);
-    return null;
-  },
+const MockHCaptchaWidget = ({ onTokenChange }: { onTokenChange: (token: string | null) => void }) => {
+  React.useEffect(() => {
+    onTokenChange('test-turnstile-token');
+  }, [onTokenChange]);
+  return null;
+};
+
+vi.mock('@/components/auth/HCaptchaWidget', () => ({
+  HCaptchaWidget: MockHCaptchaWidget,
+  default: MockHCaptchaWidget,
 }));
 
 vi.mock('@/lib/recaptcha', () => ({

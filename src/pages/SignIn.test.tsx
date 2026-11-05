@@ -20,8 +20,11 @@ vi.mock('@/contexts/authHelpers', () => ({
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: mocks.toast }) }));
 vi.mock('@/components/SEO', () => ({ default: () => null }));
 vi.mock('@/components/auth/ForgotPasswordDialog', () => ({ ForgotPasswordDialog: () => <button type="button">Forgot password?</button> }));
-vi.mock('@/components/auth/TurnstileCaptcha', () => ({
-  TurnstileCaptcha: ({ onTokenChange }: { onTokenChange: (token: string) => void }) => (
+vi.mock('@/components/auth/HCaptchaWidget', () => ({
+  HCaptchaWidget: ({ onTokenChange }: { onTokenChange: (token: string) => void }) => (
+    <button type="button" onClick={() => onTokenChange('captcha-token')}>Complete CAPTCHA</button>
+  ),
+  default: ({ onTokenChange }: { onTokenChange: (token: string) => void }) => (
     <button type="button" onClick={() => onTokenChange('captcha-token')}>Complete CAPTCHA</button>
   ),
 }));
@@ -80,7 +83,7 @@ describe('SignIn', () => {
 
     fillCredentials('reader@example.com');
     fireEvent.click(screen.getByRole('button', { name: 'Sign In' }));
-    expect(screen.getByText('Please complete the anti-bot verification before signing in.')).toBeInTheDocument();
+    expect(screen.getByText('Please complete hCaptcha verification before signing in.')).toBeInTheDocument();
     expect(mocks.signIn).not.toHaveBeenCalled();
   });
 
