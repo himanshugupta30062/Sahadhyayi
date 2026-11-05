@@ -204,18 +204,11 @@ export const LeftSidebar = ({ onSelectConversation }: LeftSidebarProps) => {
         </CardHeader>
         <CardContent className="space-y-2">
           {friends.map((friend) => (
-            <div
+            <button
+              type="button"
               key={friend.id}
-              role="button"
-              tabIndex={0}
               onClick={() => handleFriendClick(friend.id, friend.name)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  handleFriendClick(friend.id, friend.name);
-                }
-              }}
-              className="flex items-center space-x-3 p-3 hover:bg-amber-50 rounded-lg transition-all duration-200 cursor-pointer group border border-transparent hover:border-amber-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+              className="w-full text-left flex items-center space-x-3 p-3 hover:bg-amber-50 rounded-lg transition-all duration-200 cursor-pointer group border border-transparent hover:border-amber-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
             >
               <div className="relative">
                 <Avatar className="w-12 h-12 border-2 border-white shadow-sm">
@@ -253,7 +246,7 @@ export const LeftSidebar = ({ onSelectConversation }: LeftSidebarProps) => {
                   )}
                 </div>
               </div>
-            </div>
+            </button>
           ))}
           <Button size="sm" variant="outline" className="w-full border-amber-300 text-amber-700 hover:bg-amber-50 mt-3">
             <UserPlus className="w-4 h-4 mr-1" />
