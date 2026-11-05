@@ -15,9 +15,9 @@ export const BOOK_GENRE_TAXONOMY = [
 const aliases: Record<string, string> = {
   novel: 'Fiction', novels: 'Fiction', fiction: 'Fiction', 'general fiction': 'Fiction',
   'literary fiction': 'Literary Fiction', classics: 'Literary Fiction', classic: 'Literary Fiction',
-  fantasy: 'Fantasy', 'science fiction': 'Science Fiction', 'sci fi': 'Science Fiction',
+  fantasy: 'Fantasy', 'science fiction': 'Science Fiction', 'sci-fi': 'Science Fiction', 'sci fi': 'Science Fiction',
   scifi: 'Science Fiction', 'speculative fiction': 'Science Fiction',
-  thriller: 'Mystery & Thriller', thrillers: 'Mystery & Thriller', mystery: 'Mystery & Thriller',
+  thriller: 'Mystery & Thriller', thrillers: 'Mystery & Thriller', mystery: 'Mystery & Thriller', 'detective fiction': 'Mystery & Thriller',
   crime: 'Mystery & Thriller', detective: 'Mystery & Thriller',
   romance: 'Romance', romantic: 'Romance', horror: 'Horror',
   'historical novel': 'Historical Fiction', 'historical fiction': 'Historical Fiction',
