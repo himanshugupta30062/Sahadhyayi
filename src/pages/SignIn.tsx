@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
 import { ForgotPasswordDialog } from '@/components/auth/ForgotPasswordDialog';
 import { TurnstileCaptcha } from '@/components/auth/TurnstileCaptcha';
-import { executeRecaptcha, isRecaptchaConfigured } from '@/lib/recaptcha';
+
 import { Separator } from '@/components/ui/separator';
 import { motion } from 'framer-motion';
 
@@ -122,18 +122,11 @@ const SignIn = () => {
     setError('');
     if (!validateForm()) return;
 
-    let token = captchaToken;
-    if (isRecaptchaConfigured()) {
-      try {
-        token = await executeRecaptcha('signin');
-      } catch (captchaErr: any) {
-        setError(captchaErr?.message || 'Anti-bot verification failed. Please try again.');
-        return;
-      }
-    } else if (!token) {
-      setError('Please complete the anti-bot verification before signing in.');
+    if (!captchaToken) {
+      setError('Please complete Cloudflare verification before signing in.');
       return;
     }
+    const token = captchaToken;
 
     if (isRateLimited('signin', 5, 300000)) {
       toast({
