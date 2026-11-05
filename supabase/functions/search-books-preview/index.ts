@@ -100,6 +100,8 @@ serve(async (req) => {
       { name: 'wikisource', fn: () => searchWikisource(cleanQuery) },
       { name: 'oapen', fn: () => searchOapen(cleanQuery) },
       { name: 'doab', fn: () => searchDoab(cleanQuery) },
+      { name: 'openTextbookLibrary', fn: () => searchOpenTextbookLibrary(cleanQuery) },
+      { name: 'openStax', fn: () => searchOpenStax(cleanQuery) },
     ];
 
     const metrics: Record<string, ProviderMetric> = {};
@@ -140,6 +142,8 @@ serve(async (req) => {
     const wikisourceBooks = settledResults[6].status === 'fulfilled' ? settledResults[6].value : [];
     const oapenBooks = settledResults[7].status === 'fulfilled' ? settledResults[7].value : [];
     const doabBooks = settledResults[8].status === 'fulfilled' ? settledResults[8].value : [];
+    const openTextbookLibraryBooks = settledResults[9].status === 'fulfilled' ? settledResults[9].value : [];
+    const openStaxBooks = settledResults[10].status === 'fulfilled' ? settledResults[10].value : [];
 
     // Merge book data across providers without saving
     const mergedBooks = mergeBookData(
@@ -151,6 +155,8 @@ serve(async (req) => {
       openAlexBooks,
       oapenBooks,
       doabBooks,
+      openTextbookLibraryBooks,
+      openStaxBooks,
       wikisourceBooks
     );
 
@@ -168,6 +174,8 @@ serve(async (req) => {
         wikisource: metrics.wikisource?.count || 0,
         oapen: metrics.oapen?.count || 0,
         doab: metrics.doab?.count || 0,
+        openTextbookLibrary: metrics.openTextbookLibrary?.count || 0,
+        openStax: metrics.openStax?.count || 0,
       },
       metrics,
     };
@@ -579,6 +587,67 @@ async function searchDoab(searchTerm: string): Promise<BookData[]> {
   }).filter((book: BookData) => book.title);
 }
 
+
+// Open Textbook Library (University of Minnesota) provides a public JSON search API.
+// Search metadata is CC0; each textbook's own license remains attached in its record.
+async function searchOpenTextbookLibrary(searchTerm: string): Promise<BookData[]> {
+  const url = `https://open.umn.edu/opentextbooks/textbooks.json?term=${encodeURIComponent(searchTerm)}&page=1`;
+  const response = await fetchWithTimeout(url, 4500, { headers: { Accept: 'application/json' } });
+  if (!response.ok) return [];
+  const payload = await response.json();
+  const items = payload?.textbooks || payload?.results || payload?.data || (Array.isArray(payload) ? payload : []);
+  if (!Array.isArray(items)) return [];
+  return items.slice(0, 20).map((item: any) => {
+    const title = item.title || item.name;
+    const authors = item.authors || item.author;
+    const author = Array.isArray(authors) ? authors.map((a: any) => typeof a === 'string' ? a : a.name || a.full_name).filter(Boolean).join(', ') : authors;
+    const formats = item.formats || item.links || {};
+    const pdf = item.pdf || item.pdf_url || item.download_url || (Array.isArray(formats) ? formats.find((f: any) => String(f.format || f.type).toLowerCase().includes('pdf'))?.url : formats.PDF || formats.pdf);
+    const online = item.url || item.book_url || item.href || item.front_matter_url;
+    const license = item.license || item.licenses || item.license_name;
+    return {
+      title: String(title || '').trim(), author: author ? String(author) : undefined,
+      description: item.description || item.summary, publication_year: Number.parseInt(String(item.publication_year || item.year || '').slice(0, 4), 10) || undefined,
+      language: item.language || 'English', pdf_url: typeof pdf === 'string' ? pdf : undefined,
+      reader_url: typeof online === 'string' ? online : undefined, source: 'open_textbook_library',
+      access_type: pdf ? 'full_download' as AccessType : online ? 'official_reader' as AccessType : 'metadata_only' as AccessType,
+      formats: pdf ? ['pdf'] : online ? ['reader'] : [], provider_id: item.id ? `otl:${item.id}` : item.slug ? `otl:${item.slug}` : undefined,
+      ...(license ? { genre: `License: ${Array.isArray(license) ? license.join(', ') : license}` } : {}),
+    };
+  }).filter((b: BookData) => b.title);
+}
+
+// OpenStax's public CMS catalog API supplies the official textbook slugs and metadata.
+// OpenStax confirms every catalog title has a free online version and PDF on its details page.
+async function searchOpenStax(searchTerm: string): Promise<BookData[]> {
+  const response = await fetchWithTimeout('https://openstax.org/apps/cms/api/books/?format=json', 4500, { headers: { Accept: 'application/json' } });
+  if (!response.ok) return [];
+  const payload = await response.json();
+  const items = payload?.books || payload?.results || payload?.items || (Array.isArray(payload) ? payload : []);
+  if (!Array.isArray(items)) return [];
+  const q = searchTerm.toLowerCase();
+  return items.filter((item: any) => {
+    const title = String(item.title || item.name || item.book_title || '');
+    const slug = String(item.slug || item.path || item.url || '');
+    const subjects = Array.isArray(item.subjects) ? item.subjects.join(' ') : String(item.subject || item.category || '');
+    return (title + ' ' + slug + ' ' + subjects).toLowerCase().includes(q) ||
+      q.split(/\s+/).every((word: string) => (title + ' ' + slug + ' ' + subjects).toLowerCase().includes(word));
+  }).slice(0, 20).map((item: any) => {
+    const slug = String(item.slug || item.path || item.url || '').replace(/^.*\/books\//, '').replace(/^\/+|\/+$/g, '');
+    const title = item.title || item.name || item.book_title;
+    const reader = slug ? `https://openstax.org/books/${slug}` : (typeof item.url === 'string' ? item.url : undefined);
+    const pdf = item.pdf_url || item.pdf || (slug ? `https://openstax.org/books/${slug}/pages/preface` : undefined);
+    return {
+      title: String(title || '').trim(), author: Array.isArray(item.authors) ? item.authors.join(', ') : item.author || item.authors,
+      description: item.description || item.summary, cover_image_url: item.cover || item.cover_image || item.image,
+      language: 'English', reader_url: reader, // PDF is intentionally not fabricated; link to official reader until a verified PDF URL is exposed.
+      source: 'openstax', access_type: reader ? 'official_reader' as AccessType : 'metadata_only' as AccessType,
+      formats: reader ? ['reader'] : [], provider_id: slug ? `openstax:${slug}` : undefined,
+      genre: Array.isArray(item.subjects) ? item.subjects.join(', ') : item.subject || 'Open textbook',
+    };
+  }).filter((b: BookData) => b.title && b.reader_url);
+}
+
 async function searchWikisource(searchTerm: string): Promise<BookData[]> {
   const url = `https://en.wikisource.org/w/api.php?action=opensearch&search=${encodeURIComponent(searchTerm)}&limit=10&namespace=0&format=json`;
   const response = await fetchWithTimeout(url, 4000);
@@ -621,6 +690,8 @@ function mergeBookData(
   openAlexBooks: BookData[],
   oapenBooks: BookData[],
   doabBooks: BookData[],
+  openTextbookLibraryBooks: BookData[],
+  openStaxBooks: BookData[],
   wikisourceBooks: BookData[]
 ): BookData[] {
   const allBooks = [
@@ -632,6 +703,8 @@ function mergeBookData(
     ...archiveBooks,     // Archive scans
     ...oapenBooks,       // Peer-reviewed open-access books with hosted full text
     ...doabBooks,         // Directory of Open Access Books discovery and provider files
+    ...openTextbookLibraryBooks,
+    ...openStaxBooks,
     ...wikisourceBooks,  // Public domain transcriptions
   ];
 
