@@ -70,7 +70,7 @@ export const sanitizeHTML = (dirty: string): string => {
   clean = clean.replace(/javascript:/gi, '');
 
   // Remove inline event handlers and style attributes.
-  clean = clean.replace(/\s*on[a-z]+\s*=\s*["'][^"']*["']/gi, '');
+  clean = clean.replace(/\s+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
   clean = clean.replace(/\s*style\s*=\s*["'][^"']*["']/gi, '');
 
   // Remove data: protocols (except data:image).
