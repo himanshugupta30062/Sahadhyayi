@@ -17,6 +17,9 @@ const ALLOWED_HOST_SUFFIXES = [
   'loc.gov',
   'sahadhyayi.com',
   'supabase.co',
+  'oapen.org',
+  'google.com',
+  'googleusercontent.com',
 ]
 
 // Block private / loopback / link-local IPv4 ranges and IPv6 equivalents.
@@ -135,19 +138,40 @@ serve(async (req) => {
       })
     }
 
-    const upstreamType = (response.headers.get('content-type') || '').toLowerCase()
-    if (!upstreamType.includes('pdf') && !upstreamType.includes('octet-stream')) {
-      return new Response('Upstream is not a PDF', { status: 415, headers: corsHeaders })
+    const requestedFormat = (url.searchParams.get('format') || '').toLowerCase()
+    const pathFormat = currentUrl.pathname.toLowerCase().endsWith('.epub') ? 'epub' : 'pdf'
+    const fileFormat = requestedFormat || pathFormat
+    if (fileFormat !== 'pdf' && fileFormat !== 'epub') {
+      return new Response('Unsupported book format', { status: 400, headers: corsHeaders })
     }
 
-    const pdfData = await response.arrayBuffer()
+    const upstreamType = (response.headers.get('content-type') || '').toLowerCase()
+    const isPdf = upstreamType.includes('pdf') || upstreamType.includes('octet-stream')
+    const isEpub = upstreamType.includes('epub') || upstreamType.includes('zip') || upstreamType.includes('octet-stream')
+    if ((fileFormat === 'pdf' && !isPdf) || (fileFormat === 'epub' && !isEpub)) {
+      return new Response(`Upstream is not a valid ${fileFormat.toUpperCase()} file`, { status: 415, headers: corsHeaders })
+    }
 
-    return new Response(pdfData, {
+    const requestedFilename = url.searchParams.get('filename') || `sahadhyayi-book.${fileFormat}`
+    const safeFilename = requestedFilename
+      .replace(/[^a-zA-Z0-9._-]/g, '_')
+      .replace(/^\.+/, '')
+      .slice(0, 120)
+    const filename = safeFilename.toLowerCase().endsWith(`.${fileFormat}`)
+      ? safeFilename
+      : `${safeFilename || 'sahadhyayi-book'}.${fileFormat}`
+    const shouldDownload = url.searchParams.get('download') === '1'
+
+    // Stream the upstream body instead of buffering the entire ebook in Edge Function memory.
+    // Keep inline behavior as the default because BookReader uses this same proxy.
+    return new Response(response.body, {
       status: 200,
       headers: {
         ...corsHeaders,
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': 'inline',
+        'Content-Type': fileFormat === 'pdf' ? 'application/pdf' : 'application/epub+zip',
+        'Content-Disposition': shouldDownload
+          ? `attachment; filename="${filename}"`
+          : 'inline',
         'Cache-Control': 'public, max-age=3600',
         'X-Content-Type-Options': 'nosniff',
       },
