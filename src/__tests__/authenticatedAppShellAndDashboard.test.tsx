@@ -226,9 +226,10 @@ describe('Authenticated App Shell & Dashboard (Phase 4)', () => {
     });
 
     it('displays user profile info, dedicated destinations, and sign out in dropdown', async () => {
-      window.HTMLElement.prototype.hasPointerCapture = vi.fn();
+      window.HTMLElement.prototype.hasPointerCapture = vi.fn().mockReturnValue(false);
       window.HTMLElement.prototype.setPointerCapture = vi.fn();
       window.HTMLElement.prototype.releasePointerCapture = vi.fn();
+      window.HTMLElement.prototype.scrollIntoView = vi.fn();
 
       const queryClient = createTestQueryClient();
       render(
@@ -245,8 +246,9 @@ describe('Authenticated App Shell & Dashboard (Phase 4)', () => {
       const menuTrigger = await screen.findByRole('button', {
         name: 'User account menu for Test Reader',
       });
-      fireEvent.pointerDown(menuTrigger, { button: 0 });
-      fireEvent.keyDown(menuTrigger, { key: 'Enter' });
+      fireEvent.pointerDown(menuTrigger, { button: 0, pointerId: 1 });
+      fireEvent.pointerUp(menuTrigger, { button: 0, pointerId: 1 });
+      fireEvent.click(menuTrigger);
 
       await waitFor(() => {
         expect(screen.getByText('Test Reader')).toBeInTheDocument();
