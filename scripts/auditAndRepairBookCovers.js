@@ -54,7 +54,8 @@ function hasUsableCover(raw) {
 function cleanTitleForMatch(title) {
   if (!title) return '';
   return title
-    .replace(/\[[^\]]*\]|\([^)]*\)/g, '')
+    .replace(/\[[^\]]*\]/g, '')
+    .replace(/\([^)]*\)/g, '')
     .replace(/[^\w\s]/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim()
