@@ -1,20 +1,12 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { List } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { slugify } from '@/utils/slugify';
 
 interface Heading {
   id: string;
   text: string;
   level: number;
-}
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-    .slice(0, 80);
 }
 
 interface Props {
@@ -31,15 +23,20 @@ const TableOfContents: React.FC<Props> = ({ content, className }) => {
     const out: Heading[] = [];
     const seen = new Map<string, number>();
     for (const line of lines) {
-      const m = /^(#{1,3})\s+(.+)$/.exec(line.trim());
-      if (m) {
-        const level = m[1].length;
-        const text = m[2].trim();
-        let id = slugify(text);
-        const count = seen.get(id) || 0;
-        if (count > 0) id = `${id}-${count}`;
-        seen.set(slugify(text), count + 1);
-        out.push({ id, text, level });
+      const trimmed = line.trim();
+      let level = 0;
+      while (level < 3 && trimmed[level] === '#') {
+        level++;
+      }
+      if (level > 0 && trimmed[level] === ' ') {
+        const text = trimmed.slice(level).trim();
+        if (text) {
+          let id = slugify(text).slice(0, 80);
+          const count = seen.get(id) || 0;
+          if (count > 0) id = `${id}-${count}`;
+          seen.set(id, count + 1);
+          out.push({ id, text, level });
+        }
       }
     }
     return out;

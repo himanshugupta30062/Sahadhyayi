@@ -71,8 +71,8 @@ export const sanitizeHTML = (dirty: string): string => {
 
   // Remove inline event handlers and style attributes.
   // Bound attribute-name and value lengths to avoid pathological regex backtracking.
-  clean = clean.replace(/\s+on[a-z]{1,32}\s*=\s*(?:"[^"]{0,2048}"|'[^']{0,2048}'|[^\s>]{1,2048})/gi, '');
-  clean = clean.replace(/\s*style\s*=\s*["'][^"']*["']/gi, '');
+  clean = clean.replace(/[ \t]+on[a-z]{1,32}[ \t]*=[ \t]*(?:"[^"]{0,2048}"|'[^']{0,2048}'|[^\s"'>]{1,2048})/gi, '');
+  clean = clean.replace(/[ \t]*style[ \t]*=[ \t]*(?:"[^"]*"|'[^']*')/gi, '');
 
   // Remove data: protocols (except data:image).
   clean = clean.replace(/data:(?!image\/)[^;]+;/gi, '');
@@ -102,6 +102,7 @@ export const validateEmail = (email: string): boolean => {
   if (local.includes('..') || local.startsWith('.') || local.endsWith('.')) return false;
 
   const labels = domain.split('.');
+  if (labels.length < 2) return false;
   for (const label of labels) {
     if (
       label.length === 0 ||
@@ -197,9 +198,10 @@ export const sanitizeInput = (input: string, maxLength?: number): string => {
   if (!input || typeof input !== 'string') return '';
   
   let sanitized = input
-    .replace(/[<>]/g, '') // Remove potential XSS characters
+    .replace(/<[^>]*>/g, '') // Strip HTML tags
+    .replace(/[<>]/g, '') // Remove dangling angle brackets
     .replace(/javascript:/gi, '') // Remove javascript protocols
-    .replace(/on\w+\s*=/gi, '') // Remove event handlers
+    .replace(/on\w+[ \t]*=/gi, '') // Remove event handlers
     .replace(/data:(?!image\/)[^;]+;/gi, '') // Remove non-image data URLs
     .trim();
   

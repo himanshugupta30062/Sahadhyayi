@@ -15,7 +15,11 @@ function isUuid(value: unknown): value is string {
 function isValidEmail(value: unknown): value is string {
   if (typeof value !== 'string') return false;
   const email = value.trim();
-  return email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if (email.length < 5 || email.length > 254) return false;
+  const atIndex = email.indexOf('@');
+  if (atIndex <= 0 || atIndex !== email.lastIndexOf('@')) return false;
+  const domain = email.slice(atIndex + 1);
+  return domain.includes('.') && !domain.startsWith('.') && !domain.endsWith('.');
 }
 
 function isPlaceholderEmail(email: string): boolean {

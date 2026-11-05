@@ -633,13 +633,16 @@ export function getAuthorDiversificationKey(author?: string | null, title?: stri
   }
 
   // Biography / monograph subject detection: if title is "Biography of [Person]" or "The Extraordinary Life of [Person]" etc.
-  const bioMatch = normTitle.match(
-    /^(?:the extraordinary life of|biography of|who was|introducing|theoretical physicist)\s+([a-z\s]+?)(?::|$)/i
+  const prefixMatch = normTitle.match(
+    /^(?:the extraordinary life of|biography of|who was|introducing|theoretical physicist)\s+/i
   );
-  if (bioMatch && bioMatch[1]) {
-    const person = bioMatch[1].replace(/\b[a-z]\.?\s+/gi, ' ').replace(/\s+/g, ' ').trim();
-    if (person && person.length > 3) {
-      return person;
+  if (prefixMatch) {
+    const afterPrefix = normTitle.slice(prefixMatch[0].length).split(':')[0].trim();
+    if (afterPrefix) {
+      const person = afterPrefix.replace(/\b[a-z]\.?\s+/gi, ' ').replace(/\s+/g, ' ').trim();
+      if (person && person.length > 3) {
+        return person;
+      }
     }
   }
 

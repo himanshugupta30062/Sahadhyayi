@@ -67,8 +67,8 @@ export const useMarkNotificationAsRead = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['unread-notifications-count', user?.id] });
+      void queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
+      void queryClient.invalidateQueries({ queryKey: ['unread-notifications-count', user?.id] });
     },
   });
 };
@@ -84,8 +84,8 @@ export const useMarkAllNotificationsAsRead = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['unread-notifications-count', user?.id] });
+      void queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
+      void queryClient.invalidateQueries({ queryKey: ['unread-notifications-count', user?.id] });
     },
   });
 };

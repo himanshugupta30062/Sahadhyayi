@@ -48,7 +48,7 @@ export const useBlockUser = (targetId?: string) => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['blocked-users', user?.id] });
+      void queryClient.invalidateQueries({ queryKey: ['blocked-users', user?.id] });
       toast.success('User blocked');
     },
     onError: (err) => {

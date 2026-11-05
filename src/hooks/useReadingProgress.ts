@@ -54,7 +54,7 @@ export const useUpdateReadingProgress = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reading-progress'] });
+      void queryClient.invalidateQueries({ queryKey: ['reading-progress'] });
     },
   });
 };
@@ -101,7 +101,7 @@ export const useSaveReadingProgress = () => {
       return data as ReadingProgressItem;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reading-progress', user?.id] });
+      void queryClient.invalidateQueries({ queryKey: ['reading-progress', user?.id] });
     },
   });
 };

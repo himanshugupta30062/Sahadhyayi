@@ -114,10 +114,11 @@ export const CreatePostForm = ({ onClose, onSubmit }: CreatePostFormProps) => {
         {/* Book Information */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">
+            <label htmlFor="post-book-title" className="text-sm font-medium text-gray-700 mb-1 block">
               Book Title *
             </label>
             <Input
+              id="post-book-title"
               placeholder="Enter book title"
               value={bookTitle}
               onChange={(e) => setBookTitle(e.target.value)}
@@ -125,10 +126,11 @@ export const CreatePostForm = ({ onClose, onSubmit }: CreatePostFormProps) => {
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">
+            <label htmlFor="post-book-author" className="text-sm font-medium text-gray-700 mb-1 block">
               Author *
             </label>
             <Input
+              id="post-book-author"
               placeholder="Enter author name"
               value={bookAuthor}
               onChange={(e) => setBookAuthor(e.target.value)}
@@ -139,11 +141,11 @@ export const CreatePostForm = ({ onClose, onSubmit }: CreatePostFormProps) => {
 
         {/* Reading Status */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">
+          <label htmlFor="post-reading-status" className="text-sm font-medium text-gray-700 mb-1 block">
             Reading Status
           </label>
           <Select value={readingStatus} onValueChange={setReadingStatus}>
-            <SelectTrigger className="border-amber-200 focus:border-amber-400">
+            <SelectTrigger id="post-reading-status" className="border-amber-200 focus:border-amber-400">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -159,11 +161,11 @@ export const CreatePostForm = ({ onClose, onSubmit }: CreatePostFormProps) => {
         {/* Genre and Mood */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">
+            <label htmlFor="post-genre" className="text-sm font-medium text-gray-700 mb-1 block">
               Genre
             </label>
             <Select value={selectedGenre} onValueChange={setSelectedGenre}>
-              <SelectTrigger className="border-amber-200 focus:border-amber-400">
+              <SelectTrigger id="post-genre" className="border-amber-200 focus:border-amber-400">
                 <SelectValue placeholder="Select genre" />
               </SelectTrigger>
               <SelectContent>
@@ -176,11 +178,11 @@ export const CreatePostForm = ({ onClose, onSubmit }: CreatePostFormProps) => {
             </Select>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">
+            <label htmlFor="post-mood" className="text-sm font-medium text-gray-700 mb-1 block">
               Current Mood
             </label>
             <Select value={selectedMood} onValueChange={setSelectedMood}>
-              <SelectTrigger className="border-amber-200 focus:border-amber-400">
+              <SelectTrigger id="post-mood" className="border-amber-200 focus:border-amber-400">
                 <SelectValue placeholder="How are you feeling?" />
               </SelectTrigger>
               <SelectContent>
@@ -196,10 +198,11 @@ export const CreatePostForm = ({ onClose, onSubmit }: CreatePostFormProps) => {
 
         {/* Post Content */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">
+          <label htmlFor="post-content" className="text-sm font-medium text-gray-700 mb-1 block">
             Share Your Thoughts *
           </label>
           <Textarea
+            id="post-content"
             placeholder="What are you thinking about this book? Share your experience..."
             value={postText}
             onChange={(e) => setPostText(e.target.value)}
@@ -209,11 +212,12 @@ export const CreatePostForm = ({ onClose, onSubmit }: CreatePostFormProps) => {
 
         {/* Custom Tags */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">
+          <label htmlFor="post-custom-tag" className="text-sm font-medium text-gray-700 mb-1 block">
             Tags
           </label>
           <div className="flex space-x-2 mb-2">
             <Input
+              id="post-custom-tag"
               placeholder="Add custom tag"
               value={customTag}
               onChange={(e) => setCustomTag(e.target.value)}
@@ -248,12 +252,13 @@ export const CreatePostForm = ({ onClose, onSubmit }: CreatePostFormProps) => {
 
         {/* Location */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">
+          <label htmlFor="post-location" className="text-sm font-medium text-gray-700 mb-1 block">
             Location (Optional)
           </label>
           <div className="relative">
             <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
+              id="post-location"
               placeholder="Where are you reading?"
               value={location}
               onChange={(e) => setLocation(e.target.value)}

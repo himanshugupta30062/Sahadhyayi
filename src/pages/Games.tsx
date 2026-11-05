@@ -107,7 +107,7 @@ export default function Games() {
         current_streak: isPerfect ? (stats?.current_streak || 0) + 1 : 0,
         perfect_game: isPerfect,
       });
-      refetchStats();
+      await refetchStats();
       setView('results');
     }
   };

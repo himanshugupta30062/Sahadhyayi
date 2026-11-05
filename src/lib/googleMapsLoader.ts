@@ -15,7 +15,7 @@ export const loadGoogleMaps = (apiKey: string): Promise<void> => {
   }
 
   // Return existing promise if maps are already loading
-  if (window.googleMapsLoadingPromise) {
+  if (window.googleMapsLoadingPromise !== undefined) {
     return window.googleMapsLoadingPromise;
   }
 

@@ -12,7 +12,7 @@ if (import.meta.env.DEV) {
     .then(async ({ default: axe }) => {
       const React = await import('react');
       const ReactDOM = await import('react-dom');
-      axe(React, ReactDOM, 1000);
+      await axe(React, ReactDOM, 1000);
     })
     .catch(() => {
       // Optional dev-only accessibility audit not installed; skip silently

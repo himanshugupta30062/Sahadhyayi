@@ -1,19 +1,23 @@
 export function parseLibgenHtml(html) {
   const books = [];
-  const rowRegex = /<tr[^>]*>(.*?)<\/tr>/gs;
-  let match;
+  if (!html || typeof html !== 'string') return books;
+  const strip = (str) => (str ? str.replace(/<[^>]*>/g, '').trim() : '');
+
+  const rawRows = html.split(/<tr\b[^>]*>/i).slice(1);
   let index = 0;
-  while ((match = rowRegex.exec(html)) !== null) {
-    const row = match[1];
+  for (const rawRow of rawRows) {
+    const endRowIdx = rawRow.indexOf('</tr>');
+    const row = endRowIdx !== -1 ? rawRow.slice(0, endRowIdx) : rawRow;
     if (index === 0) { index++; continue; }
-    const cellRegex = /<td[^>]*>(.*?)<\/td>/gs;
-    const cells = [];
-    let cellMatch;
-    while ((cellMatch = cellRegex.exec(row)) !== null) {
-      cells.push(cellMatch[1]);
-    }
+
+    const rawCells = row.split(/<td\b[^>]*>/i).slice(1);
+    const cells = rawCells.map((rawCell) => {
+      const endCellIdx = rawCell.indexOf('</td>');
+      return endCellIdx !== -1 ? rawCell.slice(0, endCellIdx) : rawCell;
+    });
+
     if (cells.length < 10) { index++; continue; }
-    const strip = (str) => str.replace(/<[^>]+>/g, '').trim();
+
     const title = strip(cells[2]);
     const author = strip(cells[1]);
     const publisher = strip(cells[3]);

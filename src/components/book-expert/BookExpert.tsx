@@ -184,7 +184,7 @@ function BookResultCard({ book, onTalk }: { book: BookExpertBook; onTalk: (book:
         {book.author && <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{book.author}</p>}
         <div className="mt-1 flex flex-wrap gap-x-2 text-[11px] text-muted-foreground">
           {book.genre && <span>{book.genre}</span>}
-          {book.publicationYear && <span>{book.publicationYear}</span>}
+          {Boolean(book.publicationYear) && <span>{book.publicationYear}</span>}
           {book.language && <span>{book.language}</span>}
         </div>
         {book.description && (

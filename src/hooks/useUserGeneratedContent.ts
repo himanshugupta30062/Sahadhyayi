@@ -77,7 +77,7 @@ export const useCreateUserContent = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user_generated_content'] });
+      void queryClient.invalidateQueries({ queryKey: ['user_generated_content'] });
     },
   });
 };
@@ -119,7 +119,7 @@ export const useVoteContent = () => {
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['content_votes', variables.contentId] });
+      void queryClient.invalidateQueries({ queryKey: ['content_votes', variables.contentId] });
     },
   });
 };

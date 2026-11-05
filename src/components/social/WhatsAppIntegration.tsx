@@ -34,8 +34,8 @@ export const WhatsAppIntegration = () => {
 
   useEffect(() => {
     if (user) {
-      fetchUserProfile();
-      fetchWhatsAppContacts();
+      void fetchUserProfile();
+      void fetchWhatsAppContacts();
     }
   }, [user]);
 
@@ -331,7 +331,7 @@ export const WhatsAppIntegration = () => {
                 checked={hidePhoneNumber}
                 onCheckedChange={(checked) => {
                   setHidePhoneNumber(checked);
-                  updatePrivacySettings('hide_phone_number', checked);
+                  void updatePrivacySettings('hide_phone_number', checked);
                 }}
               />
             </div>
@@ -346,7 +346,7 @@ export const WhatsAppIntegration = () => {
                 checked={allowWhatsAppDiscovery}
                 onCheckedChange={(checked) => {
                   setAllowWhatsAppDiscovery(checked);
-                  updatePrivacySettings('allow_whatsapp_discovery', checked);
+                  void updatePrivacySettings('allow_whatsapp_discovery', checked);
                 }}
               />
             </div>

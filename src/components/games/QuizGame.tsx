@@ -125,7 +125,7 @@ export default function QuizGame({
         setShowStreakPopup(true);
       }
 
-      confetti({
+      void confetti({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 },

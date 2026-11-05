@@ -229,7 +229,7 @@ export default function PublishBook() {
                 <div className="space-y-2">
                   <Label htmlFor="pages">Pages</Label>
                   <Input id="pages" type="number" value={form.pages} onChange={e => updateField('pages', e.target.value)} placeholder="Number of pages" min={1} />
-                  {readingTime && <p className="text-xs text-muted-foreground">~{readingTime} min reading time</p>}
+                  {Boolean(readingTime) && <p className="text-xs text-muted-foreground">~{readingTime} min reading time</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="isbn">ISBN (optional)</Label>

@@ -62,7 +62,7 @@ export const useCreateEvent = () => {
       return data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['author-events', data.author_id] });
+      void queryClient.invalidateQueries({ queryKey: ['author-events', data.author_id] });
       toast({
         title: "Event created!",
         description: "Your event has been published and followers will be notified.",
@@ -115,7 +115,7 @@ export const useEventAttendance = (eventId?: string) => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['event-attendance', eventId] });
+      void queryClient.invalidateQueries({ queryKey: ['event-attendance', eventId] });
       toast({
         title: "RSVP updated!",
         description: "Your attendance status has been saved.",

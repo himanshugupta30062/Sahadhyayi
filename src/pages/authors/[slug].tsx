@@ -309,7 +309,7 @@ const AuthorSlugPage = () => {
                                   </Badge>
                                 )}
                               </div>
-                              {book.publication_year && (
+                              {Boolean(book.publication_year) && (
                                 <span className="text-muted-foreground">{book.publication_year}</span>
                               )}
                             </div>

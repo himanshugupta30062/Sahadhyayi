@@ -180,7 +180,7 @@ export const AdminLibraryQuality: React.FC = () => {
       });
       void refetchLogs();
       void refetchVault();
-      runAudit();
+      void runAudit();
     } catch (err: any) {
       toast({
         title: 'Restore Failed',
@@ -218,7 +218,7 @@ export const AdminLibraryQuality: React.FC = () => {
       setArchiveReasonInput('');
       setIsArchiveModalOpen(false);
       void refetchVault();
-      runAudit();
+      void runAudit();
     } catch (err: any) {
       toast({
         title: 'Archival Failed',
@@ -238,7 +238,7 @@ export const AdminLibraryQuality: React.FC = () => {
         description: res.message,
       });
       void refetchVault();
-      runAudit();
+      void runAudit();
     } catch (err: any) {
       toast({
         title: 'Restore Failed',
@@ -260,7 +260,7 @@ export const AdminLibraryQuality: React.FC = () => {
         description: `Moved ${count} redundant entries to the archive vault without deleting any records.`,
       });
       void refetchVault();
-      runAudit();
+      void runAudit();
     } catch (err: any) {
       toast({
         title: 'Cleanup Error',

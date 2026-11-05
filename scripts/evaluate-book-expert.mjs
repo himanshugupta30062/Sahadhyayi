@@ -34,7 +34,10 @@ function readArg(name, fallback) {
 const requestedLimit = Math.trunc(readArg("limit", cases.length));
 const limit = Math.max(1, Math.min(cases.length, requestedLimit));
 const delayMs = Math.max(3100, Math.trunc(readArg("delay-ms", 3100)));
-const supabaseUrl = (process.env.BOOK_EXPERT_URL || process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "").trim().replace(/\/+$/, "");
+let supabaseUrl = (process.env.BOOK_EXPERT_URL || process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "").trim();
+while (supabaseUrl.endsWith("/")) {
+  supabaseUrl = supabaseUrl.slice(0, -1);
+}
 const anonKey = (process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || "").trim();
 
 if (!supabaseUrl || !anonKey) {
@@ -48,7 +51,7 @@ const endpoint = supabaseUrl.includes("/functions/v1/")
 
 const unsupportedClaimPatterns = [
   /\b10,000\+\s+(?:books|titles)\b/i,
-  /\bevery book in (?:our|the) library (?:offers|has|includes|comes with)[^.]{0,80}\b(?:pdf|download)/i,
+  /\bevery book in (?:our|the) library (?:offers|has|includes|comes with)[^.\r\n]{0,80}?\b(?:pdf|download)/i,
   /\ball books are (?:completely )?free to (?:access|download)\b/i,
   /\ball 10,000\+ books\b/i,
 ];

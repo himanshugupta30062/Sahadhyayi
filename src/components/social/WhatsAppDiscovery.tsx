@@ -25,7 +25,7 @@ export const WhatsAppDiscovery = () => {
 
   useEffect(() => {
     if (user) {
-      fetchDiscoveredFriends();
+      void fetchDiscoveredFriends();
     }
   }, [user]);
 

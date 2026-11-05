@@ -66,7 +66,7 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ userId }) => {
   };
 
   useEffect(() => {
-    fetchStories();
+    void fetchStories();
   }, [userId]);
 
   const handleDelete = async (id: string) => {
@@ -179,7 +179,7 @@ const StoriesSection: React.FC<StoriesSectionProps> = ({ userId }) => {
           userId={userId}
           onClose={() => {
             setShowForm(false);
-            fetchStories();
+            void fetchStories();
           }}
         />
       )}

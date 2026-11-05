@@ -98,7 +98,7 @@ const BookDetailModal = ({ book, isOpen, onClose }: BookDetailModalProps) => {
               
               {/* Price and Action Buttons */}
               <div className="mt-4 space-y-3">
-                {book.price && (
+                {Boolean(book.price) && (
                   <div className="text-center">
                     <span className="text-2xl font-bold text-green-600">${book.price}</span>
                   </div>
@@ -169,14 +169,14 @@ const BookDetailModal = ({ book, isOpen, onClose }: BookDetailModalProps) => {
 
                 {/* Book Metadata */}
                 <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
-                  {book.publication_year && (
+                  {Boolean(book.publication_year) && (
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
                       <span>Published {book.publication_year}</span>
                     </div>
                   )}
                   
-                  {book.pages && (
+                  {Boolean(book.pages) && (
                     <div className="flex items-center gap-2">
                       <BookOpen className="w-4 h-4" />
                       <span>{book.pages} pages</span>

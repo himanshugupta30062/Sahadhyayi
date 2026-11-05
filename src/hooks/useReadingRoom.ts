@@ -275,7 +275,7 @@ export const useReadingRoomLive = (
         .single();
 
       if (!error && data) {
-        channelRef.current?.send({
+        void channelRef.current?.send({
           type: "broadcast",
           event: "room_chat",
           payload: data,
@@ -295,7 +295,7 @@ export const useReadingRoomLive = (
         chapter,
       });
 
-      channelRef.current?.send({
+      void channelRef.current?.send({
         type: "broadcast",
         event: "chapter_complete",
         payload: {

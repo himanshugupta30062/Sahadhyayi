@@ -42,8 +42,8 @@ export const useAuthorFollow = (authorId?: string) => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['author-follow', user?.id, authorId] });
-      queryClient.invalidateQueries({ queryKey: ['authors'] });
+      void queryClient.invalidateQueries({ queryKey: ['author-follow', user?.id, authorId] });
+      void queryClient.invalidateQueries({ queryKey: ['authors'] });
       toast.success('Successfully followed author!');
     },
     onError: (error) => {
@@ -66,8 +66,8 @@ export const useAuthorFollow = (authorId?: string) => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['author-follow', user?.id, authorId] });
-      queryClient.invalidateQueries({ queryKey: ['authors'] });
+      void queryClient.invalidateQueries({ queryKey: ['author-follow', user?.id, authorId] });
+      void queryClient.invalidateQueries({ queryKey: ['authors'] });
       toast.success('Successfully unfollowed author');
     },
     onError: (error) => {

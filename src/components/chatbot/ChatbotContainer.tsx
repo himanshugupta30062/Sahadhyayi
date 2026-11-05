@@ -24,7 +24,7 @@ export default function ChatbotContainer() {
   const { ask, initializeWebsiteKnowledge } = useChatbotAI();
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => { initializeWebsiteKnowledge?.(); }, [initializeWebsiteKnowledge]);
+  useEffect(() => { void initializeWebsiteKnowledge?.(); }, [initializeWebsiteKnowledge]);
 
   const onSend = async () => {
     const text = consumeInput();

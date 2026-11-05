@@ -151,8 +151,8 @@ export const useCreatePost = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['author-posts'] });
-      queryClient.invalidateQueries({ queryKey: ['followed-authors-posts'] });
+      void queryClient.invalidateQueries({ queryKey: ['author-posts'] });
+      void queryClient.invalidateQueries({ queryKey: ['followed-authors-posts'] });
       toast.success('Post created successfully!');
     },
     onError: (error) => {
@@ -238,7 +238,7 @@ export const useAddComment = () => {
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['post-comments', variables.postId] });
+      void queryClient.invalidateQueries({ queryKey: ['post-comments', variables.postId] });
       toast.success('Comment added successfully!');
     },
     onError: (error) => {
@@ -322,7 +322,7 @@ export const useToggleReaction = () => {
       }
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['post-reactions', variables.postId] });
+      void queryClient.invalidateQueries({ queryKey: ['post-reactions', variables.postId] });
     },
     onError: (error) => {
       console.error('Error toggling reaction:', error);

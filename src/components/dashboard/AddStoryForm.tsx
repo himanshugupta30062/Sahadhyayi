@@ -55,8 +55,9 @@ const AddStoryForm: React.FC<AddStoryFormProps> = ({ userId, onClose }) => {
           <button type="button" onClick={onClose} className="text-stone-500 hover:text-stone-900">&times;</button>
         </div>
         <div>
-          <label className="block text-stone-700 mb-1">Title</label>
+          <label htmlFor="story-title" className="block text-stone-700 mb-1">Title</label>
           <input
+            id="story-title"
             className="w-full border border-stone-300 rounded px-3 py-2"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -65,8 +66,9 @@ const AddStoryForm: React.FC<AddStoryFormProps> = ({ userId, onClose }) => {
           />
         </div>
         <div>
-          <label className="block text-stone-700 mb-1">Description</label>
+          <label htmlFor="story-description" className="block text-stone-700 mb-1">Description</label>
           <input
+            id="story-description"
             className="w-full border border-stone-300 rounded px-3 py-2"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -74,8 +76,9 @@ const AddStoryForm: React.FC<AddStoryFormProps> = ({ userId, onClose }) => {
           />
         </div>
         <div>
-          <label className="block text-stone-700 mb-1">Format</label>
+          <label htmlFor="story-format" className="block text-stone-700 mb-1">Format</label>
           <select
+            id="story-format"
             className="w-full border border-stone-300 rounded px-3 py-2"
             value={format}
             onChange={(e) => setFormat(e.target.value as "text" | "audio")}
@@ -86,8 +89,9 @@ const AddStoryForm: React.FC<AddStoryFormProps> = ({ userId, onClose }) => {
         </div>
         {format === "text" && (
           <div>
-            <label className="block text-stone-700 mb-1">Story Content</label>
+            <label htmlFor="story-content" className="block text-stone-700 mb-1">Story Content</label>
             <textarea
+              id="story-content"
               className="w-full border border-stone-300 rounded px-3 py-2 min-h-[100px]"
               value={content}
               onChange={(e) => setContent(e.target.value)}
@@ -98,8 +102,9 @@ const AddStoryForm: React.FC<AddStoryFormProps> = ({ userId, onClose }) => {
         )}
         {format === "audio" && (
           <div>
-            <label className="block text-stone-700 mb-1">Upload Voice File (MP3/WAV)</label>
+            <label htmlFor="story-audio-file" className="block text-stone-700 mb-1">Upload Voice File (MP3/WAV)</label>
             <input
+              id="story-audio-file"
               type="file"
               accept=".mp3,.wav"
               disabled

@@ -7,7 +7,7 @@ import {
 
 describe('validation and sanitization utilities', () => {
   it('HTML-encodes every dangerous character', () => {
-    expect(encodeHTML(`&<>"'`=/`)).toBe('&amp;&lt;&gt;&quot;&#39;&#x60;&#x3D;&#x2F;');
+    expect(encodeHTML('&<>"\'`=/')).toBe('&amp;&lt;&gt;&quot;&#39;&#x60;&#x3D;&#x2F;');
   });
 
   it('removes script blocks, event handlers, styles and unsafe protocols', () => {

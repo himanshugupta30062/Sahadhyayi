@@ -1,22 +1,13 @@
 import React from 'react';
 import DOMPurify from 'dompurify';
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/<[^>]+>/g, '')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-    .slice(0, 80);
-}
+import { slugify } from '@/utils/slugify';
 
 /** Minimal markdown-to-HTML converter for article preview */
 function markdownToHtml(md: string): string {
   // Track heading id collisions so anchors stay unique
   const seen = new Map<string, number>();
   const makeId = (raw: string): string => {
-    const base = slugify(raw);
+    const base = slugify(raw).slice(0, 80);
     const count = seen.get(base) || 0;
     seen.set(base, count + 1);
     return count === 0 ? base : `${base}-${count}`;
@@ -24,7 +15,7 @@ function markdownToHtml(md: string): string {
 
   let html = md
     // Code blocks (must be before inline code)
-    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>')
+    .replace(/```(\w*)\n((?:[^`]|`(?!``))*)```/g, '<pre><code class="language-$1">$2</code></pre>')
     // Headings — emit IDs so the TOC can link to them
     .replace(/^### (.+)$/gm, (_m, t) => `<h3 id="${makeId(t)}">${t}</h3>`)
     .replace(/^## (.+)$/gm, (_m, t) => `<h2 id="${makeId(t)}">${t}</h2>`)
@@ -40,9 +31,9 @@ function markdownToHtml(md: string): string {
     // Inline code
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     // Images
-    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="rounded-lg max-w-full my-6" loading="lazy" />')
+    .replace(/!\[([^\]]*)\]\(([^\s)]+)\)/g, '<img src="$2" alt="$1" class="rounded-lg max-w-full my-6" loading="lazy" />')
     // Links
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-[hsl(var(--brand-primary))] underline">$1</a>')
+    .replace(/\[([^\]]+)\]\(([^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-[hsl(var(--brand-primary))] underline">$1</a>')
     // Unordered lists
     .replace(/^- (.+)$/gm, '<li>$1</li>')
     // Ordered lists

@@ -63,8 +63,19 @@ const BookGridView = ({ books }: BookGridViewProps) => {
         {books.map((book) => (
           <Card key={book.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white/90 backdrop-blur-sm border-gray-200">
             {/* Book Cover */}
-            <div className="aspect-[3/4] bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg relative group cursor-pointer"
-                 onClick={() => handleViewBook(book)}>
+            <div
+              role="button"
+              tabIndex={0}
+              aria-label={`View details for ${book.title}`}
+              className="aspect-[3/4] bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg relative group cursor-pointer"
+              onClick={() => handleViewBook(book)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleViewBook(book);
+                }
+              }}
+            >
               {book.cover_image_url ? (
                 <img
                   src={book.cover_image_url}
@@ -120,7 +131,7 @@ const BookGridView = ({ books }: BookGridViewProps) => {
                     </span>
                   )}
                 </div>
-                {book.publication_year && (
+                {Boolean(book.publication_year) && (
                   <span className="text-gray-500 font-medium">{book.publication_year}</span>
                 )}
               </div>

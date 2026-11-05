@@ -106,7 +106,7 @@ export function useGameStats() {
   }, [user]);
 
   useEffect(() => {
-    fetchStats();
+    void fetchStats();
   }, [fetchStats]);
 
   const updateStats = useCallback(async (updates: Partial<GameStats>) => {
@@ -175,7 +175,7 @@ export function useLeaderboard(limit: number = 10) {
       }
     }
 
-    fetchLeaderboard();
+    void fetchLeaderboard();
   }, [limit]);
 
   return { leaderboard, loading };

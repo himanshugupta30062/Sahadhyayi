@@ -87,7 +87,7 @@ export const usePageVisitTracker = () => {
       }
     };
 
-    recordVisit();
+    void recordVisit();
 
     // Measure visible time continuously while this page is in the foreground.
     // Requiring a fresh click/scroll every 30 seconds undercounted reading sessions

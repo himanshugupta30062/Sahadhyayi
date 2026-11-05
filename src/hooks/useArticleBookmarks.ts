@@ -47,8 +47,8 @@ export function useToggleBookmark() {
       }
     },
     onSuccess: (_, { articleId, isBookmarked }) => {
-      queryClient.invalidateQueries({ queryKey: ['article-bookmark', articleId] });
-      queryClient.invalidateQueries({ queryKey: ['my-bookmarks'] });
+      void queryClient.invalidateQueries({ queryKey: ['article-bookmark', articleId] });
+      void queryClient.invalidateQueries({ queryKey: ['my-bookmarks'] });
       toast({
         title: isBookmarked ? 'Removed from bookmarks' : 'Saved to bookmarks',
       });

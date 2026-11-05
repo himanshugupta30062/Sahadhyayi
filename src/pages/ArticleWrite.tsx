@@ -327,9 +327,10 @@ const ArticleWrite = () => {
             <div className="space-y-6">
               {/* Cover image */}
               <div>
-                <label className="text-sm font-medium text-muted-foreground mb-1 block">Cover Image (optional)</label>
+                <label htmlFor="article-cover-url" className="text-sm font-medium text-muted-foreground mb-1 block">Cover Image (optional)</label>
                 <div className="flex gap-2">
                   <Input
+                    id="article-cover-url"
                     placeholder="https://example.com/image.jpg or upload →"
                     value={coverUrl}
                     onChange={(e) => setCoverUrl(e.target.value)}
@@ -395,7 +396,7 @@ const ArticleWrite = () => {
               </div>
 
               {/* Article format */}
-              <div className="space-y-2"><label className="text-sm font-medium text-muted-foreground">Article format</label><div className="flex flex-wrap gap-2">{([{value:'essay',label:'Essay / Story'},{value:'book-review',label:'Book Review'},{value:'literary-criticism',label:'Literary Criticism'}] as const).map(option=><Button key={option.value} type="button" size="sm" variant={articleKind===option.value?'default':'outline'} onClick={()=>setArticleKind(option.value)}>{option.label}</Button>)}</div><p className="text-xs text-muted-foreground">This category helps readers discover reviews and critical essays separately from general articles.</p></div>
+              <div className="space-y-2"><p className="text-sm font-medium text-muted-foreground">Article format</p><div className="flex flex-wrap gap-2">{([{value:'essay',label:'Essay / Story'},{value:'book-review',label:'Book Review'},{value:'literary-criticism',label:'Literary Criticism'}] as const).map(option=><Button key={option.value} type="button" size="sm" variant={articleKind===option.value?'default':'outline'} onClick={()=>setArticleKind(option.value)}>{option.label}</Button>)}</div><p className="text-xs text-muted-foreground">This category helps readers discover reviews and critical essays separately from general articles.</p></div>
 
               {/* Title */}
               <div>
@@ -462,7 +463,7 @@ const ArticleWrite = () => {
 
               {/* Tags */}
               <div>
-                <label className="text-sm font-medium text-muted-foreground mb-2 block">Tags (up to 5)</label>
+                <label htmlFor="article-tag-input" className="text-sm font-medium text-muted-foreground mb-2 block">Tags (up to 5)</label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {tags.map((t) => (
                     <Badge key={t} variant="secondary" className="gap-1 cursor-pointer" onClick={() => removeTag(t)}>
@@ -472,6 +473,7 @@ const ArticleWrite = () => {
                 </div>
                 <div className="flex gap-2">
                   <Input
+                    id="article-tag-input"
                     placeholder="Add a tag..."
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}

@@ -66,7 +66,7 @@ export const useToggleCommentLike = () => {
       }
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['comment-likes', variables.commentId] });
+      void queryClient.invalidateQueries({ queryKey: ['comment-likes', variables.commentId] });
     },
   });
 };

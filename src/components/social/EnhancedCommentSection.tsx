@@ -197,7 +197,7 @@ export const EnhancedCommentSection: React.FC<CommentSectionProps> = ({ postId }
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
-                  handleSend();
+                  void handleSend();
                 }
               }}
               className="min-w-0 flex-1 bg-[#FAF7F2] dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-xs text-[#1C201D] dark:text-[#F3F0E7] placeholder:text-stone-400 dark:placeholder:text-[#A5ADA6]/70 rounded-xl focus-visible:ring-1 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"

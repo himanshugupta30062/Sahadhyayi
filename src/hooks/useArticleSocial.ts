@@ -66,8 +66,8 @@ export function useToggleArticleLike() {
       }
     },
     onSuccess: (_, { articleId }) => {
-      queryClient.invalidateQueries({ queryKey: ['article-likes', articleId] });
-      queryClient.invalidateQueries({ queryKey: ['articles'] });
+      void queryClient.invalidateQueries({ queryKey: ['article-likes', articleId] });
+      void queryClient.invalidateQueries({ queryKey: ['articles'] });
     },
     onError: (err: any) => {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
@@ -149,7 +149,7 @@ export function useCreateComment() {
       return data;
     },
     onSuccess: (_, { articleId }) => {
-      queryClient.invalidateQueries({ queryKey: ['article-comments', articleId] });
+      void queryClient.invalidateQueries({ queryKey: ['article-comments', articleId] });
     },
     onError: (err: any) => {
       toast({ title: 'Error posting comment', description: err.message, variant: 'destructive' });
@@ -170,7 +170,7 @@ export function useUpdateComment() {
       return articleId;
     },
     onSuccess: (articleId) => {
-      queryClient.invalidateQueries({ queryKey: ['article-comments', articleId] });
+      void queryClient.invalidateQueries({ queryKey: ['article-comments', articleId] });
     },
     onError: (err: any) => {
       toast({ title: 'Error updating comment', description: err.message, variant: 'destructive' });
@@ -191,7 +191,7 @@ export function useDeleteComment() {
       return articleId;
     },
     onSuccess: (articleId) => {
-      queryClient.invalidateQueries({ queryKey: ['article-comments', articleId] });
+      void queryClient.invalidateQueries({ queryKey: ['article-comments', articleId] });
     },
   });
 }
@@ -259,7 +259,7 @@ export function useToggleFollowAuthor() {
       }
     },
     onSuccess: (_, { authorUserId }) => {
-      queryClient.invalidateQueries({ queryKey: ['author-followers', authorUserId] });
+      void queryClient.invalidateQueries({ queryKey: ['author-followers', authorUserId] });
     },
     onError: (err: any) => {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });

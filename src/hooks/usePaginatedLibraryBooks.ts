@@ -221,7 +221,7 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
   // Automatically refetch when books are added or shelf updates anywhere
   React.useEffect(() => {
     const handleUpdate = () => {
-      allBooksQuery.refetch();
+      void allBooksQuery.refetch();
     };
 
     window.addEventListener('shelfUpdated', handleUpdate);

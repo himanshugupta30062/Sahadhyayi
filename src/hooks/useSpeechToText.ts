@@ -79,7 +79,7 @@ export const useSpeechToText = ({ onTranscript, onError }: UseSpeechToTextOption
     if (isRecording) {
       stopRecording();
     } else {
-      startRecording();
+      void startRecording();
     }
   }, [isRecording, startRecording, stopRecording]);
 

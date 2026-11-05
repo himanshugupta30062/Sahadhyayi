@@ -56,7 +56,7 @@ export const useCreateBook = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['books'] });
+      void queryClient.invalidateQueries({ queryKey: ['books'] });
       toast({ title: 'Book Added', description: 'Book has been added successfully!' });
     },
   });
@@ -107,7 +107,7 @@ export const useAddBookToShelf = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-books'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-books'] });
       toast({ title: 'Book Added', description: 'Book added to your shelf!' });
     },
   });
@@ -129,7 +129,7 @@ export const useUpdateBookStatus = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-books'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-books'] });
       toast({ title: 'Status Updated', description: 'Book status updated successfully!' });
     },
   });

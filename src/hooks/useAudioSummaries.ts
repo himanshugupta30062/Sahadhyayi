@@ -87,7 +87,7 @@ export const useCreateAudioSummary = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['audio_summary'] });
+      void queryClient.invalidateQueries({ queryKey: ['audio_summary'] });
     },
   });
 };

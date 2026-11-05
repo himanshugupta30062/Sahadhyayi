@@ -25,7 +25,16 @@ function parseUserAgent(userAgent: string): ParsedUserAgent {
   else if (userAgent.includes('Safari')) { browser='Safari'; browserVersion=userAgent.match(/Version\/([0-9.]+)/)?.[1]??''; }
   if (userAgent.includes('iPhone')) { os='iOS'; deviceType='Mobile'; deviceModel='iPhone'; }
   else if (userAgent.includes('iPad')) { os='iPadOS'; deviceType='Tablet'; deviceModel='iPad'; }
-  else if (userAgent.includes('Android')) { os='Android'; deviceType=/Mobile/i.test(userAgent)?'Mobile':'Tablet'; deviceModel=userAgent.match(/;\s*([^;)]+)\s*Build\//)?.[1]?.trim()??''; }
+  else if (userAgent.includes('Android')) {
+    os = 'Android';
+    deviceType = /Mobile/i.test(userAgent) ? 'Mobile' : 'Tablet';
+    const buildIdx = userAgent.indexOf('Build/');
+    if (buildIdx !== -1) {
+      const beforeBuild = userAgent.slice(0, buildIdx);
+      const semiIdx = beforeBuild.lastIndexOf(';');
+      deviceModel = (semiIdx !== -1 ? beforeBuild.slice(semiIdx + 1) : beforeBuild).trim();
+    }
+  }
   else if (userAgent.includes('Windows NT 10.0')) os='Windows 10/11';
   else if (userAgent.includes('Windows')) os='Windows';
   else if (userAgent.includes('Mac OS X')) { const v=userAgent.match(/Mac OS X ([0-9_]+)/)?.[1]; os=v?'macOS '+v.replace(/_/g,'.'):'macOS'; if(userAgent.includes('Macintosh'))deviceModel='Mac'; }

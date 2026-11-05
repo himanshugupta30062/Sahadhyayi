@@ -25,7 +25,7 @@ let turnstileScriptPromise: Promise<void> | null = null;
 
 function loadTurnstile(): Promise<void> {
   if (window.turnstile) return Promise.resolve();
-  if (turnstileScriptPromise) return turnstileScriptPromise;
+  if (turnstileScriptPromise !== null) return turnstileScriptPromise;
 
   turnstileScriptPromise = new Promise<void>((resolve, reject) => {
     const scriptId = 'cloudflare-turnstile-api';

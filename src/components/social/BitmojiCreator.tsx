@@ -217,7 +217,7 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
             
             {/* Skin Tone */}
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Skin Tone</label>
+              <p className="text-sm font-medium text-gray-700 mb-2 block">Skin Tone</p>
               <div className="flex gap-2 flex-wrap">
                 {skinTones.map((tone, index) => (
                   <button
@@ -234,7 +234,7 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
 
             {/* Hair Style */}
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Hair Style</label>
+              <p className="text-sm font-medium text-gray-700 mb-2 block">Hair Style</p>
               <div className="grid grid-cols-3 gap-2">
                 {hairStyles.map((style) => (
                   <Button
@@ -252,7 +252,7 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
 
             {/* Hair Color */}
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Hair Color</label>
+              <p className="text-sm font-medium text-gray-700 mb-2 block">Hair Color</p>
               <div className="flex gap-2 flex-wrap">
                 {hairColors.map((color, index) => (
                   <button
@@ -269,7 +269,7 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
 
             {/* Eye Color */}
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Eye Color</label>
+              <p className="text-sm font-medium text-gray-700 mb-2 block">Eye Color</p>
               <div className="flex gap-2 flex-wrap">
                 {eyeColors.map((color, index) => (
                   <button
@@ -286,7 +286,7 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
 
             {/* Outfit */}
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Outfit Style</label>
+              <p className="text-sm font-medium text-gray-700 mb-2 block">Outfit Style</p>
               <div className="grid grid-cols-2 gap-2">
                 {outfits.map((outfit) => (
                   <Button

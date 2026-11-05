@@ -74,7 +74,7 @@ export const useCreateReadingSummary = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reading_summaries'] });
+      void queryClient.invalidateQueries({ queryKey: ['reading_summaries'] });
     },
   });
 };

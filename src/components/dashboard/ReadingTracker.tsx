@@ -31,7 +31,7 @@ const ReadingTracker: React.FC<ReadingTrackerProps> = ({ userId }) => {
       if (!error && data) setItems(data);
       setLoading(false);
     }
-    fetchProgress();
+    void fetchProgress();
   }, [userId]);
 
   const handleUpdate = async (id: number, newPage: number) => {

@@ -69,8 +69,17 @@ serve(async (req) => {
       );
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
+    const trimmedEmail = email.trim();
+    const atIndex = trimmedEmail.indexOf('@');
+    const isEmailValid =
+      trimmedEmail.length <= 254 &&
+      atIndex > 0 &&
+      atIndex === trimmedEmail.lastIndexOf('@') &&
+      trimmedEmail.slice(atIndex + 1).includes('.') &&
+      !trimmedEmail.slice(atIndex + 1).startsWith('.') &&
+      !trimmedEmail.slice(atIndex + 1).endsWith('.');
+
+    if (!isEmailValid) {
       return new Response(
         JSON.stringify({ success: false, error: 'Invalid email address', code: 'INVALID_EMAIL' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

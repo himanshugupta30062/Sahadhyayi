@@ -74,7 +74,7 @@ export const ModernGoogleMap: React.FC = () => {
       }
     };
 
-    fetchReaders();
+    void fetchReaders();
 
     // Set up real-time subscription
     const channel = supabase
@@ -83,13 +83,13 @@ export const ModernGoogleMap: React.FC = () => {
         { event: '*', schema: 'public', table: 'readers' }, 
         () => {
           console.log('Real-time update received');
-          fetchReaders();
+          void fetchReaders();
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel);
     };
   }, [isValidApiKey, map]);
 
@@ -306,8 +306,10 @@ export const ModernGoogleMap: React.FC = () => {
     };
 
     // Expose callback globally for Google Maps API
-    window.initMap = initializeMap;
-    loadMap();
+    window.initMap = () => {
+      void initializeMap();
+    };
+    void loadMap();
 
     return () => {
       // Cleanup markers
@@ -516,8 +518,9 @@ export const ModernGoogleMap: React.FC = () => {
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Your Name</label>
+                  <label htmlFor="reader-user-name" className="text-sm font-medium text-gray-700">Your Name</label>
                   <Input
+                    id="reader-user-name"
                     placeholder="Enter your name"
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
@@ -525,8 +528,9 @@ export const ModernGoogleMap: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Currently Reading</label>
+                  <label htmlFor="reader-current-book" className="text-sm font-medium text-gray-700">Currently Reading</label>
                   <Input
+                    id="reader-current-book"
                     placeholder="What book are you reading?"
                     value={currentBook}
                     onChange={(e) => setCurrentBook(e.target.value)}
