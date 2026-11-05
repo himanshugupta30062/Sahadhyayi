@@ -13,7 +13,7 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import { useToast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
 import { ForgotPasswordDialog } from '@/components/auth/ForgotPasswordDialog';
-import { TurnstileCaptcha } from '@/components/auth/TurnstileCaptcha';
+import { HCaptchaWidget } from '@/components/auth/HCaptchaWidget';
 
 import { Separator } from '@/components/ui/separator';
 import { motion } from 'framer-motion';
@@ -123,7 +123,7 @@ const SignIn = () => {
     if (!validateForm()) return;
 
     if (!captchaToken) {
-      setError('Please complete Cloudflare verification before signing in.');
+      setError('Please complete hCaptcha verification before signing in.');
       return;
     }
     const token = captchaToken;
@@ -286,7 +286,7 @@ const SignIn = () => {
                   </div>
                 </div>
                 
-                <TurnstileCaptcha key={`signin-${captchaResetKey}`} action="signin" onTokenChange={setCaptchaToken} />
+                <HCaptchaWidget key={`signin-${captchaResetKey}`} action="signin" onTokenChange={setCaptchaToken} />
                 <Button 
                   type="submit" 
                   variant="auth" 
