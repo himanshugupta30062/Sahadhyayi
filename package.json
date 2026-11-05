@@ -117,7 +117,7 @@
     "web-vitals": "^5.1.0",
     "xml2js": "0.6.2",
     "zod": "^3.23.8",
-    "@hcaptcha/react-hcaptcha": "^1.12.0"
+    "@hcaptcha/react-hcaptcha": "^2.2.0"
   },
   "devDependencies": {
     "@axe-core/react": "^4.10.2",
