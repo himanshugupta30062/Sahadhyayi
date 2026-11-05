@@ -7,7 +7,7 @@ type HCaptchaWidgetProps = {
 };
 
 /** hCaptcha widget used to obtain Supabase-compatible CAPTCHA tokens. */
-export function HCaptchaWidget({ onTokenChange, action }: HCaptchaWidgetProps) {
+export function HCaptchaWidget({ onTokenChange }: HCaptchaWidgetProps) {
   const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'missing-key'>('loading');
   const siteKey = import.meta.env.VITE_HCAPTCHA_SITE_KEY?.trim();
 
