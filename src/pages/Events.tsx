@@ -84,7 +84,12 @@ export default function Events() {
           setEvents(eventResult.data || []);
         }
       } catch (err) {
-        if (active) {\n          const apiError = err as { message?: string; details?: string; hint?: string; code?: string };\n          const message = [apiError?.message, apiError?.details, apiError?.hint, apiError?.code ? `Code: ${apiError.code}` : null]\n            .filter(Boolean).join(" · ");\n          setError(message || (err instanceof Error ? err.message : String(err)) || "Events are temporarily unavailable.");\n        }
+        if (active) {
+          const apiError = err as { message?: string; details?: string; hint?: string; code?: string };
+          const message = [apiError?.message, apiError?.details, apiError?.hint, apiError?.code ? `Code: ${apiError.code}` : null]
+            .filter(Boolean).join(" · ");
+          setError(message || (err instanceof Error ? err.message : String(err)) || "Events are temporarily unavailable.");
+        }
       } finally {
         if (active) setLoading(false);
       }
