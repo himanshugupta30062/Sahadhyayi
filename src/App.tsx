@@ -94,6 +94,7 @@ const ResearchPaperSubmission = lazy(() => import('./pages/ResearchPaperSubmissi
 const MyResearchSubmissions = lazy(() => import('./pages/MyResearchSubmissions'));
 const MySavedResearch = lazy(() => import('./pages/MySavedResearch'));
 const RecommendedResearch = lazy(() => import('./pages/RecommendedResearch'));
+const ResearchCitationNetwork = lazy(() => import('./pages/ResearchCitationNetwork'));
 const DmcaPolicy = lazy(() => import('./pages/DmcaPolicy'));
 const OpenSourceLicenses = lazy(() => import('./pages/OpenSourceLicenses'));
 const SignIn = lazy(() => import('./pages/SignIn'));
@@ -331,6 +332,10 @@ const App = memo(() => {
                               <ResearchPapers />
                             </Suspense>
                           }
+                        />
+                        <Route
+                          path="/research-network/:workId"
+                          element={<Suspense fallback={<LoadingFallback message="Loading citation network..." />}><ResearchCitationNetwork /></Suspense>}
                         />
                         <Route
                           path="/research-papers/submit"
