@@ -194,17 +194,10 @@ export const SocialFeed = () => {
             </div>
 
             {/* Post Content - Clickable */}
-            <div
-              role="button"
-              tabIndex={0}
-              className="mb-4 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+            <button
+              type="button"
+              className="w-full text-left mb-4 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
               onClick={() => handlePostClick(post)}
-              onKeyDown={(event) => {
-                if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
-                  event.preventDefault();
-                  handlePostClick(post);
-                }
-              }}
             >
               <p className="text-gray-800 mb-3">{post.content}</p>
               
@@ -228,7 +221,7 @@ export const SocialFeed = () => {
                   <img src={post.image} alt="Post image" className="w-full max-h-96 object-cover rounded-xl" />
                 </div>
               )}
-            </div>
+            </button>
 
             {/* Post Actions */}
             <div className="flex items-center space-x-6 pt-3 border-t border-gray-100">
