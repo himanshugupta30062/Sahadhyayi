@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { isRecaptchaConfigured } from '@/lib/recaptcha';
 
 type TurnstileOptions = {
   sitekey: string;
@@ -25,18 +24,31 @@ declare global {
 let turnstileScriptPromise: Promise<void> | null = null;
 
 function loadTurnstile(): Promise<void> {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return Promise.reject(new Error('Turnstile is only available in a browser.'));
+  }
   if (window.turnstile) return Promise.resolve();
-  if (turnstileScriptPromise !== null) return turnstileScriptPromise;
+  if (turnstileScriptPromise) return turnstileScriptPromise;
 
   turnstileScriptPromise = new Promise<void>((resolve, reject) => {
     const scriptId = 'cloudflare-turnstile-api';
     let script = document.getElementById(scriptId) as HTMLScriptElement | null;
+    let settled = false;
+    const timeout = window.setTimeout(() => finish(new Error('Turnstile loading timed out.')), 15000);
 
-    const onLoad = () => {
-      if (window.turnstile) resolve();
-      else reject(new Error('Turnstile loaded without its API.'));
+    const finish = (error?: Error) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeout);
+      script?.removeEventListener('load', onLoad);
+      script?.removeEventListener('error', onError);
+      if (error) reject(error);
+      else resolve();
     };
-    const onError = () => reject(new Error('Could not load the verification service.'));
+    const onLoad = () => window.turnstile
+      ? finish()
+      : finish(new Error('Turnstile loaded without its API.'));
+    const onError = () => finish(new Error('Unable to load Cloudflare Turnstile.'));
 
     if (!script) {
       script = document.createElement('script');
@@ -47,16 +59,10 @@ function loadTurnstile(): Promise<void> {
       script.addEventListener('load', onLoad, { once: true });
       script.addEventListener('error', onError, { once: true });
       document.head.appendChild(script);
-      return;
+    } else {
+      script.addEventListener('load', onLoad, { once: true });
+      script.addEventListener('error', onError, { once: true });
     }
-
-    if (window.turnstile) {
-      resolve();
-      return;
-    }
-
-    script.addEventListener('load', onLoad, { once: true });
-    script.addEventListener('error', onError, { once: true });
   }).catch((error: unknown) => {
     turnstileScriptPromise = null;
     throw error;
@@ -67,45 +73,27 @@ function loadTurnstile(): Promise<void> {
 
 type TurnstileCaptchaProps = {
   onTokenChange: (token: string | null) => void;
-  action?: 'signin' | 'signup' | string;
+  action: 'signin' | 'signup' | 'password_reset' | string;
 };
 
-/**
- * Anti-bot verification component.
- * When Google reCAPTCHA Enterprise is configured via VITE_RECAPTCHA_SITE_KEY,
- * verification runs invisibly (score-based) with the required Google Terms & Privacy disclosure.
- * When VITE_TURNSTILE_SITE_KEY is configured, Cloudflare Turnstile is rendered.
- */
-export function TurnstileCaptcha({ onTokenChange, action = 'signup' }: TurnstileCaptchaProps) {
+/** Cloudflare Turnstile widget used to obtain Supabase-compatible CAPTCHA tokens. */
+export function TurnstileCaptcha({ onTokenChange, action }: TurnstileCaptchaProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const onTokenChangeRef = useRef(onTokenChange);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'missing-key'>('loading');
   const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY?.trim();
-  const recaptchaActive = isRecaptchaConfigured();
 
   useEffect(() => {
     onTokenChangeRef.current = onTokenChange;
   }, [onTokenChange]);
 
   useEffect(() => {
-    if (recaptchaActive) {
-      setStatus('ready');
-      onTokenChangeRef.current('recaptcha-active');
-      return;
-    }
-
     let cancelled = false;
     let widgetId: string | undefined;
-
     onTokenChangeRef.current(null);
 
     if (!siteKey) {
-      if (import.meta.env.DEV) {
-        setStatus('ready');
-        onTokenChangeRef.current('dev-bypass-token');
-      } else {
-        setStatus('missing-key');
-      }
+      setStatus('missing-key');
       return;
     }
 
@@ -113,7 +101,6 @@ export function TurnstileCaptcha({ onTokenChange, action = 'signup' }: Turnstile
     loadTurnstile()
       .then(() => {
         if (cancelled || !containerRef.current || !window.turnstile) return;
-
         widgetId = window.turnstile.render(containerRef.current, {
           sitekey: siteKey,
           action,
@@ -148,60 +135,37 @@ export function TurnstileCaptcha({ onTokenChange, action = 'signup' }: Turnstile
         try {
           window.turnstile.remove(widgetId);
         } catch {
-          // Ignore cleanup errors when the third-party widget was already removed.
+          // Widget may already have been removed by the provider.
         }
       }
     };
-  }, [siteKey, action, recaptchaActive]);
-
-  if (recaptchaActive) {
-    return (
-      <div className="space-y-1 py-1">
-        <p className="text-xs text-muted-foreground">
-          Protected by Google reCAPTCHA.{' '}
-          <a
-            href="https://policies.google.com/privacy"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:text-foreground"
-          >
-            Privacy
-          </a>
-          {' · '}
-          <a
-            href="https://policies.google.com/terms"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:text-foreground"
-          >
-            Terms
-          </a>
-        </p>
-      </div>
-    );
-  }
+  }, [siteKey, action]);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" aria-live="polite">
       <div ref={containerRef} aria-label="Verify you are human" />
       {status === 'loading' && siteKey && (
-        <p className="text-xs text-muted-foreground" role="status">
-          {action === 'signin' ? 'Loading sign-in verification…' : 'Loading signup verification…'}
-        </p>
+        <p className="text-xs text-muted-foreground" role="status">Loading Cloudflare verification…</p>
       )}
       {status === 'missing-key' && (
         <p className="text-xs text-destructive" role="alert">
-          {action === 'signin' ? 'Sign-in verification' : 'Signup verification'} is not configured yet. Please try again later.
+          Cloudflare Turnstile is not configured. Authentication is disabled until verification is configured.
         </p>
       )}
       {status === 'error' && (
         <p className="text-xs text-destructive" role="alert">
-          Verification could not load or failed. Check your connection and try again.
+          Cloudflare verification failed to load. Check your connection, allow challenges.cloudflare.com, and retry.
         </p>
       )}
-      {status === 'ready' && siteKey && (
-        <p className="text-xs text-muted-foreground">Verification complete.</p>
+      {status === 'ready' && (
+        <p className="text-xs text-muted-foreground" role="status">Verification complete.</p>
       )}
+      <p className="text-xs text-muted-foreground">
+        Protected by Cloudflare Turnstile.{' '}
+        <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">Privacy</a>
+        {' · '}
+        <a href="https://www.cloudflare.com/website-terms/" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">Terms</a>
+      </p>
     </div>
   );
 }
