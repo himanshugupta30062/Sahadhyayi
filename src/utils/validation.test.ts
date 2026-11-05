@@ -1,14 +1,17 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
 import {
   validateEmail, validatePassword, validateUsername, sanitizeInput,
   sanitizeSearchQuery, validateTextLength, isValidUrl, validateCSP,
-  encodeHTML, sanitizeHTML,
+  encodeHTML, sanitizeHTML, isRateLimited,
 } from './validation';
 
 describe('validation utilities edge cases', () => {
+  beforeEach(() => localStorage.clear());
+  afterEach(() => vi.restoreAllMocks());
+
   it('encodes markup characters', () => {
     expect(encodeHTML('&<>')).toBe('&amp;&lt;&gt;');
-    expect(encodeHTML('"\'=/')).toBe('&quot;&#39;&equals;&#x2F;'.replace('&equals;', '&#x3D;'));
+    expect(encodeHTML('"\'=/')).toBe('&#x3D;&quot;&#39;&#x2F;');
     expect(encodeHTML('plain text')).toBe('plain text');
   });
 
@@ -67,5 +70,22 @@ describe('validation utilities edge cases', () => {
     expect(validateCSP('script protocol')).toBe(true);
     expect(validateCSP('javascript:')).toBe(false);
     expect(validateCSP('<iframe')).toBe(false);
+  });
+
+  it('tracks attempts and resets after the time window', () => {
+    vi.spyOn(Date, 'now').mockReturnValue(1_000);
+    expect(isRateLimited('signup', 2, 500)).toBe(false);
+    expect(isRateLimited('signup', 2, 500)).toBe(false);
+    expect(isRateLimited('signup', 2, 500)).toBe(true);
+    vi.spyOn(Date, 'now').mockReturnValue(1_501);
+    expect(isRateLimited('signup', 2, 500)).toBe(false);
+    expect(JSON.parse(localStorage.getItem('rate_limit_signup') || '{}')).toMatchObject({ count: 1, firstAttempt: 1501 });
+  });
+
+  it('recovers from malformed stored limiter data', () => {
+    localStorage.setItem('rate_limit_broken', '{invalid');
+    vi.spyOn(Date, 'now').mockReturnValue(42);
+    expect(isRateLimited('broken', 1, 100)).toBe(false);
+    expect(JSON.parse(localStorage.getItem('rate_limit_broken') || '{}')).toMatchObject({ count: 1, firstAttempt: 42 });
   });
 });
