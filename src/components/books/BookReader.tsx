@@ -40,6 +40,7 @@ import { useAudioSummary } from '@/hooks/useAudioSummaries';
 import { useChapterProgress, useMarkChapterAsRead } from '@/hooks/useChapterProgress';
 import { searchExternalSources } from '@/utils/searchExternalSources';
 import { loadProgressLocally, saveProgressLocally } from '@/utils/readingProgressStorage';
+import { useReaderBookmarks, useAddReaderBookmark } from '@/hooks/useReaderBookmarks';
 
 interface BookReaderProps {
   bookId: string;
@@ -78,6 +79,8 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
   // Hooks for data management
   const { data: readingProgress } = useReadingProgress();
   const saveProgress = useSaveReadingProgress();
+  const { data: cloudBookmarks = [] } = useReaderBookmarks(bookId);
+  const addCloudBookmark = useAddReaderBookmark();
   const { data: audioSummary } = useAudioSummary(bookId);
   const { data: chapterProgress = [] } = useChapterProgress(bookId);
   const markChapterRead = useMarkChapterAsRead(bookId);
@@ -171,6 +174,12 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
   const progressPercentage = totalPages > 0 ? (currentPage / totalPages) * 100 : 0;
   const chapterProgressPercent =
     tocItems.length > 0 ? (completedChapters.length / tocItems.length) * 100 : 0;
+
+  // Prefer cloud bookmarks for signed-in readers; local bookmarks remain a migration fallback.
+  useEffect(() => {
+    if (!user || !cloudBookmarks.length) return;
+    setBookmarks(cloudBookmarks.map((bookmark) => bookmark.location));
+  }, [user?.id, cloudBookmarks]);
 
   // Initialize reading session
   useEffect(() => {
@@ -461,11 +470,13 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
       { bookId, bookmarks: newBookmarks, currentPage, totalPages, position: currentLocation },
       user?.id
     );
-    
-    toast({
-      title: "Bookmark Added",
-      description: "Page bookmarked successfully!",
-    });
+    if (user?.id) {
+      void addCloudBookmark.mutateAsync({ bookId, location: currentLocation, page: currentPage })
+        .then(() => toast({ title: "Bookmark synced", description: "Available across your devices." }))
+        .catch((error) => toast({ title: "Bookmark saved locally", description: error.message || "Cloud sync failed; it will remain on this device.", variant: "destructive" }));
+    } else {
+      toast({ title: "Bookmark Added", description: "Sign in to sync it across devices." });
+    }
   };
 
   const handleSelection = () => {
