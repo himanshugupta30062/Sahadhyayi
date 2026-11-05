@@ -1,18 +1,46 @@
-# Google reCAPTCHA v3
+# Google reCAPTCHA Enterprise (Score-Based Keys)
 
-## Frontend
+Sahadhyayi uses Google reCAPTCHA Enterprise with score-based keys (no interactive challenge) to protect user actions while preserving a seamless, frictionless user experience.
 
-Set `VITE_RECAPTCHA_SITE_KEY` in Cloudflare Pages build environment variables. Auth forms call `executeRecaptcha('signin'|'signup')` at submission time and pass the resulting token to Supabase Auth's `captchaToken` option. Tokens are short-lived and single-use; generate a fresh token for every attempt.
+## Frontend Setup
 
-## Supabase Edge Functions
+1. **Obtain your Site Key**:
+   - Go to Google Cloud Console > Security > [reCAPTCHA Enterprise / Google Cloud Fraud Defense](https://console.cloud.google.com/security/recaptcha).
+   - Create or copy a **score-based website key** (Integration type: Score based, no challenge).
+   - Add your domains (e.g. `sahadhyayi.com`, `www.sahadhyayi.com`, `localhost`).
+2. **Environment Variable**:
+   - Set `VITE_RECAPTCHA_SITE_KEY` in Cloudflare Pages build environment variables or `.env`.
+   - (Optional) `VITE_RECAPTCHA_USE_ENTERPRISE=true` (defaults to `true`, which loads `https://www.google.com/recaptcha/enterprise.js?render=KEY_ID`).
+3. **Execution & Telemetry**:
+   - As recommended by Google Fraud Defense documentation, the enterprise script is automatically preloaded in the background across all pages on app initialization (`initRecaptcha()`), allowing Google's risk engine to collect natural browsing telemetry.
+   - On critical user interactions (Sign In, Sign Up, Confirm Email resend, etc.), `executeRecaptcha('action_name')` generates an encrypted single-use assessment token.
+   - The token is passed to Supabase Auth (`options: { captchaToken }`).
 
-Set `RECAPTCHA_SECRET_KEY` in Supabase Edge Function secrets. Import `verifyRecaptcha` from `../_shared/recaptcha.ts` (adjust relative path) and reject the request unless `result.valid` is true. The helper verifies token success, exact action, hostname, and a score threshold (default 0.5). Configure score tuning based on production observations.
+## Backend Verification (Supabase Auth & Edge Functions)
 
-Example:
+### 1. Supabase Auth
+- In Supabase Dashboard > Authentication > Bot and Abuse Protection:
+  - Enable Captcha Protection.
+  - Select your provider (Google reCAPTCHA Enterprise / v3 or Turnstile).
+  - Enter your Secret / Service Account credentials. Supabase validates the `captchaToken` on `signInWithPassword` and `signUp`.
+
+### 2. Custom Edge Functions (`supabase/functions/_shared/recaptcha.ts`)
+- The helper `verifyRecaptcha(token, action, options)` supports both:
+  - **Google Cloud reCAPTCHA Enterprise Assessment API**:
+    - `RECAPTCHA_ENTERPRISE_PROJECT_ID` (or `GCP_PROJECT_ID`)
+    - `RECAPTCHA_ENTERPRISE_API_KEY` (or `RECAPTCHA_API_KEY`)
+    - `RECAPTCHA_SITE_KEY`
+  - **Standard reCAPTCHA v3 siteverify**:
+    - `RECAPTCHA_SECRET_KEY`
 
 ```ts
-const result = await verifyRecaptcha(body.recaptchaToken, 'contact');
-if (!result.valid) return jsonResponse({ error: 'Bot verification failed' }, 403);
-```
+import { verifyRecaptcha } from '../_shared/recaptcha.ts';
 
-For Supabase Auth signup/signin, configure the same secret in Supabase Auth > Bot and Abuse Protection so Supabase validates the `captchaToken` independently.
+const result = await verifyRecaptcha(body.recaptchaToken, 'contact');
+if (!result.valid) {
+  return new Response(JSON.stringify({ error: 'Bot verification failed', reason: result.error }), {
+    status: 403,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+```

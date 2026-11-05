@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
 import { ForgotPasswordDialog } from '@/components/auth/ForgotPasswordDialog';
 import { TurnstileCaptcha } from '@/components/auth/TurnstileCaptcha';
+import { executeRecaptcha, isRecaptchaConfigured } from '@/lib/recaptcha';
 import { Separator } from '@/components/ui/separator';
 import { motion } from 'framer-motion';
 
@@ -121,7 +122,15 @@ const SignIn = () => {
     setError('');
     if (!validateForm()) return;
 
-    if (!captchaToken) {
+    let token = captchaToken;
+    if (isRecaptchaConfigured()) {
+      try {
+        token = await executeRecaptcha('signin');
+      } catch (captchaErr: any) {
+        setError(captchaErr?.message || 'Anti-bot verification failed. Please try again.');
+        return;
+      }
+    } else if (!token) {
       setError('Please complete the anti-bot verification before signing in.');
       return;
     }
@@ -140,7 +149,7 @@ const SignIn = () => {
       const sanitizedEmail = sanitizeInput(formData.email.trim().toLowerCase(), 254);
       // AuthProvider updates `user`; the effect above performs the single post-login redirect.
       // Avoid navigating twice (here and in the user effect), which can race protected-route rendering.
-      await signIn(sanitizedEmail, formData.password, captchaToken);
+      await signIn(sanitizedEmail, formData.password, token || undefined);
     } catch (error: any) {
       console.error('Sign-in error:', error);
       const rawMessage = typeof error?.message === 'string' ? error.message : '';

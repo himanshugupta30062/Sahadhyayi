@@ -446,7 +446,26 @@ const Auth = () => {
                           </div>
                         </div>
 
-                        <p className="text-xs text-muted-foreground">Protected by Google reCAPTCHA.</p>
+                        <p className="text-xs text-muted-foreground">
+                          Protected by Google reCAPTCHA.{' '}
+                          <a
+                            href="https://policies.google.com/privacy"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline hover:text-foreground"
+                          >
+                            Privacy
+                          </a>
+                          {' · '}
+                          <a
+                            href="https://policies.google.com/terms"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline hover:text-foreground"
+                          >
+                            Terms
+                          </a>
+                        </p>
 
                         <Button
                           type="submit"
@@ -607,7 +626,26 @@ const Auth = () => {
                           </div>
                         </div>
 
-                        <p className="text-xs text-muted-foreground">Protected by Google reCAPTCHA.</p>
+                        <p className="text-xs text-muted-foreground">
+                          Protected by Google reCAPTCHA.{' '}
+                          <a
+                            href="https://policies.google.com/privacy"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline hover:text-foreground"
+                          >
+                            Privacy
+                          </a>
+                          {' · '}
+                          <a
+                            href="https://policies.google.com/terms"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline hover:text-foreground"
+                          >
+                            Terms
+                          </a>
+                        </p>
 
                         <Button
                           type="submit"

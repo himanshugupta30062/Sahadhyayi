@@ -20,14 +20,14 @@ export const useAuth = () => {
     email: string,
     password: string,
     fullName: string | undefined,
-    captchaToken: string
+    captchaToken?: string
   ): Promise<{ error: AuthError | null; requiresEmailVerification: boolean; emailMayAlreadyExist: boolean }> => {
     // Do not HTML-encode identity fields. React escapes rendered text, and
     // HTML entities would change valid email local-parts (for example '&' or '/').
     const normalizedEmail = normalizeAuthEmail(email);
     const normalizedName = fullName ? normalizeAuthName(fullName) : '';
 
-    if (!captchaToken.trim()) {
+    if (!captchaToken || !captchaToken.trim()) {
       return {
         error: {
           name: 'CaptchaRequiredError',
@@ -45,7 +45,7 @@ export const useAuth = () => {
       options: {
         // Supabase should return users to the route that handles PKCE and OTP links.
         emailRedirectTo: `${window.location.origin}/confirm-email`,
-        captchaToken,
+        ...(captchaToken?.trim() ? { captchaToken: captchaToken.trim() } : {}),
         data: normalizedName ? { full_name: normalizedName } : undefined,
       },
     });
