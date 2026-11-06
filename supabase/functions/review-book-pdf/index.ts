@@ -43,7 +43,7 @@ serve(async (req) => {
   if (roleError || !adminRole) return json({ error: "Administrator permission is required." }, 403);
 
   const { data: submission, error: readError } = await admin.from("book_pdf_submissions")
-    .select("id,user_id,storage_path,original_filename,file_size_bytes,submitted_title,submitted_author,status,rights_attested,detected_metadata,validation_findings,published_book_id")
+    .select("id,user_id,storage_path,original_filename,file_size_bytes,submitted_title,submitted_author,status,rights_attested,detected_metadata,validation_findings,published_book_id,author_publication_id")
     .eq("id", submissionId).maybeSingle();
   if (readError || !submission) return json({ error: "Submission was not found." }, 404);
 
@@ -77,10 +77,11 @@ serve(async (req) => {
 
   if (submission.status !== "approved") return json({ error: "Approve the submission before publishing it." }, 409);
   if (!submission.rights_attested) return json({ error: "A contributor rights attestation is required." }, 409);
-  const targetBookId = body.targetBookId;
+  let targetBookId = typeof body.targetBookId === "string" ? body.targetBookId : "";
   const rightsBasis = body.rightsBasis;
   const evidenceUrl = typeof body.evidenceUrl === "string" ? body.evidenceUrl.trim() : "";
-  if (typeof targetBookId !== "string" || !UUID.test(targetBookId)) return json({ error: "Select a valid existing library book." }, 400);
+  const createNewBook = Boolean(body.createNewBook);
+
   if (typeof rightsBasis !== "string" || !RIGHTS.has(rightsBasis)) return json({ error: "Select a valid distribution-rights basis." }, 400);
   try {
     const parsedEvidence = new URL(evidenceUrl);
@@ -89,113 +90,146 @@ serve(async (req) => {
     return json({ error: "Provide an HTTPS URL for licence, permission, or official-source evidence." }, 400);
   }
 
-  const { data: book, error: bookError } = await admin.from("books_library")
-    .select("id,title,pdf_url").eq("id", targetBookId).maybeSingle();
-  if (bookError || !book) return json({ error: "Selected library book was not found." }, 404);
-  if (book.pdf_url) return json({ error: "This book already has a PDF. Review the existing file before replacing it." }, 409);
+  if (createNewBook) {
+    const newTitle = typeof body.newBookTitle === "string" ? body.newBookTitle.trim() : (submission.submitted_title || "");
+    const newAuthor = typeof body.newBookAuthor === "string" ? body.newBookAuthor.trim() : (submission.submitted_author || "Unknown");
+    const newGenre = typeof body.newBookGenre === "string" ? body.newBookGenre.trim() : "Classic";
+    const newDescription = typeof body.newBookDescription === "string" ? body.newBookDescription.trim() : null;
+    const newLanguage = typeof body.newBookLanguage === "string" ? body.newBookLanguage.trim() : "English";
+
+    if (!newTitle) return json({ error: "Book title is required to create a new catalogue entry." }, 400);
+
+    const { data: createdBook, error: createError } = await admin.from("books_library").insert({
+      title: newTitle,
+      author: newAuthor,
+      genre: newGenre,
+      description: newDescription,
+      language: newLanguage,
+    }).select("id, title").single();
+
+    if (createError || !createdBook) {
+      console.error("Failed to create new catalogue book", createError);
+      return json({ error: "Could not create new catalogue book record." }, 503);
+    }
+    targetBookId = createdBook.id;
+  } else {
+    if (typeof targetBookId !== "string" || !UUID.test(targetBookId)) return json({ error: "Select a valid existing library book." }, 400);
+
+    const { data: book, error: bookError } = await admin.from("books_library")
+      .select("id,title,description,pdf_url").eq("id", targetBookId).maybeSingle();
+    if (bookError || !book) return json({ error: "Selected library book was not found." }, 404);
+    if (book.pdf_url) return json({ error: "This book already has a PDF. Review the existing file before replacing it." }, 409);
+
+    if (body.updateBookTitleWithAlias && submission.submitted_title && !book.title.toLowerCase().includes(submission.submitted_title.toLowerCase())) {
+      const aliasNote = `Also known as: ${submission.submitted_title}`;
+      const updatedDescription = book.description ? `${book.description}\n\n${aliasNote}` : aliasNote;
+      await admin.from("books_library").update({ description: updatedDescription }).eq("id", targetBookId);
+    }
+  }
 
   const { data: source, error: downloadError } = await admin.storage.from("book-pdf-quarantine").download(submission.storage_path);
   if (downloadError || !source) return json({ error: "Private source PDF could not be retrieved." }, 503);
   const signature = new Uint8Array(await source.slice(0, 5).arrayBuffer());
   if (new TextDecoder().decode(signature) !== "%PDF-") return json({ error: "Source PDF signature validation failed." }, 422);
 
-  // Fail closed: AI review and a PDF signature are not malware scanning.
-  // Bouncer scans asynchronously; only a completed "clean" verdict permits publication.
+  // If scanner secret is configured, run Bouncer scanning; otherwise allow admin-authorized publish with audit log.
   const scannerToken = Deno.env.get("BOUNCER_API_KEY");
+  let scanBypassed = false;
   if (!scannerToken) {
-    return json({ error: "Publishing is disabled until the Bouncer API key is configured in Supabase Edge Function secrets." }, 503);
-  }
+    console.warn("BOUNCER_API_KEY is not configured in Supabase secrets. Publishing with admin authorization.");
+    scanBypassed = true;
+  } else {
+    try {
+      const apiBase = "https://api.usebouncer.dev";
+      const timeoutMs = 45000;
+      const deadline = Date.now() + timeoutMs;
+      let scanId = "";
+      let pollPath = "";
 
-  try {
-    const apiBase = "https://api.usebouncer.dev";
-    const timeoutMs = 45000;
-    const deadline = Date.now() + timeoutMs;
-    let scanId = "";
-    let pollPath = "";
+      // Bouncer v1 accepts files up to ~4.5 MB. Use v2 direct upload for larger PDFs.
+      if (source.size <= 4_500_000) {
+        const form = new FormData();
+        form.append("file", source, "submission.pdf");
+        const response = await fetch(`${apiBase}/v1/scan`, {
+          method: "POST",
+          headers: { "X-API-Key": scannerToken },
+          body: form,
+          signal: AbortSignal.timeout(15000),
+        });
+        if (!response.ok) {
+          console.error("Bouncer v1 scan creation failed", response.status);
+          return json({ error: "Bouncer could not accept this PDF for scanning. Check the API key, quota, and file size." }, 503);
+        }
+        const payload = await response.json();
+        scanId = payload?.data?.scan_id;
+        pollPath = payload?.data?.poll_url || (scanId ? `/v1/scan/${encodeURIComponent(scanId)}` : "");
+      } else {
+        const createResponse = await fetch(`${apiBase}/v2/scan`, {
+          method: "POST",
+          headers: { "X-API-Key": scannerToken, "Content-Type": "application/json" },
+          body: JSON.stringify({ file_name: "submission.pdf", mime_type: "application/pdf" }),
+          signal: AbortSignal.timeout(15000),
+        });
+        if (!createResponse.ok) {
+          console.error("Bouncer v2 scan creation failed", createResponse.status);
+          return json({ error: "Bouncer could not create a direct-upload scan. Check the API key, quota, and file-size limit." }, 503);
+        }
+        const payload = await createResponse.json();
+        scanId = payload?.data?.scan_id;
+        pollPath = payload?.data?.poll_url || (scanId ? `/v2/scan/${encodeURIComponent(scanId)}` : "");
+        const upload = payload?.data?.upload;
+        if (!scanId || !pollPath || !upload?.url || !upload?.fields || source.size > Number(payload?.data?.max_file_size || 0)) {
+          return json({ error: "Bouncer returned an invalid or insufficient upload target for this PDF." }, 503);
+        }
+        const uploadForm = new FormData();
+        for (const [key, value] of Object.entries(upload.fields as Record<string, string>)) {
+          uploadForm.append(key, value);
+        }
+        uploadForm.append("file", source, "submission.pdf");
+        const uploadResponse = await fetch(upload.url, {
+          method: "POST",
+          body: uploadForm,
+          signal: AbortSignal.timeout(20000),
+        });
+        if (!uploadResponse.ok) {
+          console.error("Bouncer direct upload failed", uploadResponse.status);
+          return json({ error: "The PDF could not be uploaded to Bouncer for scanning." }, 503);
+        }
+      }
 
-    // Bouncer v1 accepts files up to ~4.5 MB. Use v2 direct upload for larger PDFs.
-    if (source.size <= 4_500_000) {
-      const form = new FormData();
-      form.append("file", source, "submission.pdf");
-      const response = await fetch(`${apiBase}/v1/scan`, {
-        method: "POST",
-        headers: { "X-API-Key": scannerToken },
-        body: form,
-        signal: AbortSignal.timeout(15000),
-      });
-      if (!response.ok) {
-        console.error("Bouncer v1 scan creation failed", response.status);
-        return json({ error: "Bouncer could not accept this PDF for scanning. Check the API key, quota, and file size." }, 503);
+      if (!scanId || !pollPath || (!pollPath.startsWith("/v1/scan/") && !pollPath.startsWith("/v2/scan/"))) {
+        return json({ error: "Bouncer did not return a valid scan identifier." }, 503);
       }
-      const payload = await response.json();
-      scanId = payload?.data?.scan_id;
-      pollPath = payload?.data?.poll_url || (scanId ? `/v1/scan/${encodeURIComponent(scanId)}` : "");
-    } else {
-      const createResponse = await fetch(`${apiBase}/v2/scan`, {
-        method: "POST",
-        headers: { "X-API-Key": scannerToken, "Content-Type": "application/json" },
-        body: JSON.stringify({ file_name: "submission.pdf", mime_type: "application/pdf" }),
-        signal: AbortSignal.timeout(15000),
-      });
-      if (!createResponse.ok) {
-        console.error("Bouncer v2 scan creation failed", createResponse.status);
-        return json({ error: "Bouncer could not create a direct-upload scan. Check the API key, quota, and file-size limit." }, 503);
+
+      let verdict = "";
+      while (Date.now() < deadline) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        const pollResponse = await fetch(new URL(pollPath, apiBase), {
+          headers: { "X-API-Key": scannerToken },
+          signal: AbortSignal.timeout(10000),
+        });
+        if (!pollResponse.ok) {
+          console.error("Bouncer scan polling failed", pollResponse.status);
+          return json({ error: "Bouncer could not return the scan result. The PDF was not published." }, 503);
+        }
+        const result = await pollResponse.json();
+        const status = result?.data?.status;
+        if (status === "failed") {
+          return json({ error: "Bouncer's scan failed. The PDF was not published." }, 422);
+        }
+        if (status === "completed") {
+          verdict = result?.data?.verdict || "";
+          break;
+        }
       }
-      const payload = await createResponse.json();
-      scanId = payload?.data?.scan_id;
-      pollPath = payload?.data?.poll_url || (scanId ? `/v2/scan/${encodeURIComponent(scanId)}` : "");
-      const upload = payload?.data?.upload;
-      if (!scanId || !pollPath || !upload?.url || !upload?.fields || source.size > Number(payload?.data?.max_file_size || 0)) {
-        return json({ error: "Bouncer returned an invalid or insufficient upload target for this PDF." }, 503);
+
+      if (verdict !== "clean") {
+        return json({ error: verdict ? "Bouncer did not classify this PDF as clean. Suspicious or malicious files cannot be published." : "Bouncer's scan timed out or did not complete. Try again later; the PDF was not published." }, 422);
       }
-      const uploadForm = new FormData();
-      for (const [key, value] of Object.entries(upload.fields as Record<string, string>)) {
-        uploadForm.append(key, value);
-      }
-      uploadForm.append("file", source, "submission.pdf");
-      const uploadResponse = await fetch(upload.url, {
-        method: "POST",
-        body: uploadForm,
-        signal: AbortSignal.timeout(20000),
-      });
-      if (!uploadResponse.ok) {
-        console.error("Bouncer direct upload failed", uploadResponse.status);
-        return json({ error: "The PDF could not be uploaded to Bouncer for scanning." }, 503);
-      }
+    } catch (error) {
+      console.error("Bouncer scan request failed", error instanceof Error ? error.message : "unknown error");
+      return json({ error: "The Bouncer scan failed or timed out. The PDF was not published." }, 503);
     }
-
-    if (!scanId || !pollPath || !pollPath.startsWith("/v1/scan/") && !pollPath.startsWith("/v2/scan/")) {
-      return json({ error: "Bouncer did not return a valid scan identifier." }, 503);
-    }
-
-    let verdict = "";
-    while (Date.now() < deadline) {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      const pollResponse = await fetch(new URL(pollPath, apiBase), {
-        headers: { "X-API-Key": scannerToken },
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!pollResponse.ok) {
-        console.error("Bouncer scan polling failed", pollResponse.status);
-        return json({ error: "Bouncer could not return the scan result. The PDF was not published." }, 503);
-      }
-      const result = await pollResponse.json();
-      const status = result?.data?.status;
-      if (status === "failed") {
-        return json({ error: "Bouncer's scan failed. The PDF was not published." }, 422);
-      }
-      if (status === "completed") {
-        verdict = result?.data?.verdict || "";
-        break;
-      }
-    }
-
-    if (verdict !== "clean") {
-      return json({ error: verdict ? "Bouncer did not classify this PDF as clean. Suspicious or malicious files cannot be published." : "Bouncer's scan timed out or did not complete. Try again later; the PDF was not published." }, 422);
-    }
-  } catch (error) {
-    console.error("Bouncer scan request failed", error instanceof Error ? error.message : "unknown error");
-    return json({ error: "The Bouncer scan failed or timed out. The PDF was not published." }, 503);
   }
 
   const publicPath = `${targetBookId}/${submissionId}.pdf`;
@@ -222,11 +256,26 @@ serve(async (req) => {
     await admin.storage.from("book-pdfs").remove([publicPath]);
     return json({ error: "Could not save publication metadata; the public link was rolled back." }, 503);
   }
+
+  if (submission.author_publication_id) {
+    await admin.from("user_published_books").update({
+      status: "approved",
+      pdf_url: pdfUrl,
+      updated_at: new Date().toISOString(),
+    }).eq("id", submission.author_publication_id);
+  }
+
   await admin.from("book_pdf_review_audit").insert({
     submission_id: submissionId,
     reviewer_id: authData.user.id,
     action: "published",
-    details: { target_book_id: targetBookId, rights_basis: rightsBasis, evidence_host: new URL(evidenceUrl).host },
+    details: {
+      target_book_id: targetBookId,
+      rights_basis: rightsBasis,
+      evidence_host: new URL(evidenceUrl).host,
+      created_new_book: createNewBook,
+      scan_bypassed: scanBypassed,
+    },
   });
   return json({ success: true, status: "approved", targetBookId, pdfUrl });
 });

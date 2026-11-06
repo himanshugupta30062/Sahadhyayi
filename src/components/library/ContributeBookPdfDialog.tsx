@@ -27,6 +27,7 @@ type Submission = {
   submitted_author: string | null;
   status: string;
   created_at: string;
+  published_book_id?: string | null;
 };
 
 async function validatePdf(file: File) {
@@ -43,7 +44,7 @@ const statusLabel: Record<string, string> = {
   extracting: 'Reading book details',
   matching: 'Matching catalogue records',
   needs_review: 'Needs human review',
-  approved: 'Approved',
+  approved: 'Approved — awaiting publishing',
   rejected: 'Not approved',
   failed: 'Processing failed',
 };
@@ -64,7 +65,7 @@ function ContributeBookPdfDialogContent() {
     queryKey: ['my-book-pdf-submissions', user?.id],
     enabled: Boolean(user && open),
     queryFn: async () => {
-      const { data, error } = await supabase.from('book_pdf_submissions' as any).select('id,original_filename,submitted_title,submitted_author,status,created_at').eq('user_id', user!.id).order('created_at', { ascending: false }).limit(10);
+      const { data, error } = await supabase.from('book_pdf_submissions' as any).select('id,original_filename,submitted_title,submitted_author,status,created_at,published_book_id').eq('user_id', user!.id).order('created_at', { ascending: false }).limit(10);
       if (error) throw error;
       return (data || []) as Submission[];
     },
@@ -204,15 +205,27 @@ function ContributeBookPdfDialogContent() {
             <h3 className="font-semibold">Your recent submissions</h3>
             {isLoading ? <p className="text-sm text-muted-foreground">Loading submissions…</p> : submissions.length === 0 ? (
               <p className="text-sm text-muted-foreground">No submissions yet.</p>
-            ) : submissions.map((submission) => (
-              <div key={submission.id} className="flex flex-col gap-1 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{submission.submitted_title || submission.original_filename}</p>
-                  <p className="text-xs text-muted-foreground">{submission.submitted_author || submission.original_filename} · {new Date(submission.created_at).toLocaleDateString()}</p>
+            ) : submissions.map((submission) => {
+              const isPublished = Boolean(submission.published_book_id);
+              return (
+                <div key={submission.id} className="flex flex-col gap-1 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{submission.submitted_title || submission.original_filename}</p>
+                    <p className="text-xs text-muted-foreground">{submission.submitted_author || submission.original_filename} · {new Date(submission.created_at).toLocaleDateString()}</p>
+                    {isPublished ? (
+                      <a href={`/library?search=${encodeURIComponent(submission.submitted_title || '')}`} className="mt-1 inline-block text-xs font-medium text-primary hover:underline">
+                        View in Library →
+                      </a>
+                    ) : submission.status === 'approved' ? (
+                      <p className="mt-0.5 text-xs text-amber-600 dark:text-amber-400">Approved by reviewer · catalog publishing in progress</p>
+                    ) : null}
+                  </div>
+                  <Badge variant={isPublished ? 'default' : submission.status === 'rejected' || submission.status === 'failed' ? 'destructive' : 'secondary'}>
+                    {isPublished ? 'Published to Library' : statusLabel[submission.status] || submission.status}
+                  </Badge>
                 </div>
-                <Badge variant={submission.status === 'rejected' || submission.status === 'failed' ? 'destructive' : 'secondary'}>{statusLabel[submission.status] || submission.status}</Badge>
-              </div>
-            ))}
+              );
+            })}
           </section>
         )}
       </DialogContent>

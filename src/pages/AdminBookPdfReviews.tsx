@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useToast } from '@/hooks/use-toast';
@@ -8,8 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertCircle, CheckCircle2, ExternalLink, FileSearch, LoaderCircle, RefreshCw, ShieldCheck, XCircle } from 'lucide-react';
+import { AlertCircle, BookOpen, CheckCircle2, ExternalLink, FileSearch, LoaderCircle, PlusCircle, RefreshCw, ShieldCheck, Sparkles, XCircle } from 'lucide-react';
 
 type Submission = {
   id: string;
@@ -70,6 +71,13 @@ export default function AdminBookPdfReviews() {
   const [targetBookId, setTargetBookId] = useState('');
   const [rightsBasis, setRightsBasis] = useState<RightsBasis>('public_domain');
   const [evidenceUrl, setEvidenceUrl] = useState('');
+  const [publishMode, setPublishMode] = useState<'existing' | 'new'>('existing');
+  const [newBookTitle, setNewBookTitle] = useState('');
+  const [newBookAuthor, setNewBookAuthor] = useState('');
+  const [newBookGenre, setNewBookGenre] = useState('Classic');
+  const [newBookDescription, setNewBookDescription] = useState('');
+  const [newBookLanguage, setNewBookLanguage] = useState('English');
+  const [updateAlias, setUpdateAlias] = useState(true);
 
   const submissionsQuery = useQuery({
     queryKey: ['admin-book-pdf-review-queue'],
@@ -94,11 +102,54 @@ export default function AdminBookPdfReviews() {
 
   const submissions = submissionsQuery.data || [];
   const selected = submissions.find((item) => item.id === selectedId) || submissions[0] || null;
+
+  useEffect(() => {
+    if (selected) {
+      const rep = (selected.detected_metadata || {}) as Record<string, any>;
+      setNewBookTitle(selected.submitted_title || rep.detected_title || '');
+      setNewBookAuthor(selected.submitted_author || rep.detected_author || 'Unknown');
+      setNewBookGenre(rep.document_type || 'Classic');
+      setNewBookDescription(rep.content_relevance || rep.readability || '');
+      setNewBookLanguage(rep.language || 'English');
+      if (selected.published_book_id) {
+        setTargetBookId(selected.published_book_id);
+      }
+    }
+  }, [selected]);
+
   const eligibleBooks = useMemo(() => {
     const books = booksQuery.data || [];
     const query = bookSearch.trim().toLowerCase();
-    return books.filter((book) => !book.pdf_url && (!query || [book.title, book.author].some((v) => v?.toLowerCase().includes(query)))).slice(0, 100);
+    if (!query) {
+      return books.filter((book) => !book.pdf_url).slice(0, 100);
+    }
+    const tokens = query.split(/\s+/).filter(Boolean);
+    return books.filter((book) => {
+      if (book.pdf_url) return false;
+      const combined = `${book.title} ${book.author || ''}`.toLowerCase();
+      return combined.includes(query) || tokens.every((t) => combined.includes(t));
+    }).slice(0, 100);
   }, [booksQuery.data, bookSearch]);
+
+  const suggestedCandidates = useMemo(() => {
+    if (!selected) return [];
+    const books = booksQuery.data || [];
+    const rep = (selected.detected_metadata || {}) as Record<string, any>;
+    const title = (selected.submitted_title || rep.detected_title || '').toLowerCase();
+    const author = (selected.submitted_author || rep.detected_author || '').toLowerCase();
+    const authorTokens = author.split(/\s+/).filter((w: string) => w.length > 2);
+    const titleTokens = title.split(/\s+/).filter((w: string) => w.length > 3 && !['poems', 'songs', 'book', 'edition'].includes(w));
+    const allTokens = [...authorTokens, ...titleTokens];
+    if (allTokens.length === 0) return [];
+
+    return books
+      .filter((book) => !book.pdf_url)
+      .filter((book) => {
+        const text = `${book.title} ${book.author || ''}`.toLowerCase();
+        return allTokens.some((tok) => text.includes(tok));
+      })
+      .slice(0, 4);
+  }, [selected, booksQuery.data]);
 
   const refresh = async () => {
     await Promise.all([
@@ -127,7 +178,7 @@ export default function AdminBookPdfReviews() {
         const description = action === 'approve'
           ? 'Approved for publishing review only. This does not make the PDF visible in the Library; complete the Publish step below.'
           : action === 'publish'
-            ? 'The PDF was linked to the selected catalogue book. Refresh the Library page to see it.'
+            ? 'The PDF was published and is now live in the Library. Refresh the Library page to see it.'
             : data?.status ? `Status: ${data.status}` : 'The action completed.';
         toast({ title: action === 'publish' ? 'PDF published' : action === 'approve' ? 'Approved — not yet published' : 'Review saved', description });
         setReason('');
@@ -245,16 +296,196 @@ export default function AdminBookPdfReviews() {
                 </div>
               </div>
 
+              {selected.published_book_id ? (
+                <div className="rounded-lg border border-primary/20 bg-primary/10 p-4">
+                  <div className="flex items-center gap-2 font-medium text-primary">
+                    <CheckCircle2 className="h-5 w-5" />
+                    <span>This book PDF is published and publicly visible in the Library.</span>
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <Button variant="outline" size="sm" asChild>
+                      <a href={`/library?search=${encodeURIComponent(selected.submitted_title || '')}`} target="_blank" rel="noopener noreferrer">
+                        <BookOpen className="mr-2 h-4 w-4" /> View in Library Catalog
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              ) : selected.status === 'approved' ? (
+                <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-800 dark:text-amber-200">
+                  <div className="flex items-center gap-2 font-semibold">
+                    <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                    <span>Submission Approved — Pending Library Catalog Publication</span>
+                  </div>
+                  <p className="mt-1">
+                    This file passed preliminary review. Complete the publishing step below (select an existing catalogue book or create a new catalogue entry) to make it publicly readable in the Library.
+                  </p>
+                </div>
+              ) : null}
+
               <div className="space-y-3 border-t pt-4">
-                <h3 className="font-semibold">Publish to an existing library book</h3>
-                <p className="text-sm text-muted-foreground">Publishing makes the PDF public. Select the matching catalogue record and provide evidence that permits redistribution. This will not overwrite an existing PDF. The server also requires a configured malware scanner to confirm the file is clean; without it, publishing is blocked.</p>
-                <div className="space-y-1"><Label htmlFor="pdf-book-search">Find book (without an existing PDF)</Label><Input id="pdf-book-search" value={bookSearch} onChange={(e) => setBookSearch(e.target.value)} placeholder="Search title or author…" /></div>
-                <div className="space-y-1"><Label>Target book</Label><Select value={targetBookId} onValueChange={setTargetBookId}><SelectTrigger><SelectValue placeholder={booksQuery.isLoading ? 'Loading books…' : 'Choose a catalogue book'} /></SelectTrigger><SelectContent>{eligibleBooks.map((book) => <SelectItem key={book.id} value={book.id}>{book.title}{book.author ? ` — ${book.author}` : ''}</SelectItem>)}</SelectContent></Select></div>
-                <div className="space-y-1"><Label>Distribution-rights basis</Label><Select value={rightsBasis} onValueChange={(v) => setRightsBasis(v as RightsBasis)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{RIGHTS_OPTIONS.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectContent></Select></div>
-                <div className="space-y-1"><Label htmlFor="pdf-rights-evidence">HTTPS licence / permission evidence URL</Label><Input id="pdf-rights-evidence" type="url" value={evidenceUrl} onChange={(e) => setEvidenceUrl(e.target.value)} placeholder="https://example.org/licence-or-permission" /></div>
-                <Button className="w-full" onClick={() => void invokeReview('publish', { targetBookId, rightsBasis, evidenceUrl })} disabled={Boolean(busyAction) || selected.status !== 'approved' || !targetBookId || !evidenceUrl.trim() || booksQuery.isLoading}>
-                  {busyAction === 'publish' ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />} Publish approved PDF to Library
-                </Button>
+                <h3 className="font-semibold">Publish to Library</h3>
+                <p className="text-sm text-muted-foreground">Publishing makes the PDF public to all readers. Select an existing catalogue record or create a new catalogue entry, and specify the distribution-rights basis.</p>
+
+                <div className="grid w-full grid-cols-2 rounded-lg border bg-muted p-1" role="tablist">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={publishMode === 'existing'}
+                    onClick={() => setPublishMode('existing')}
+                    className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${publishMode === 'existing' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    Link to Existing Catalogue Book
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={publishMode === 'new'}
+                    onClick={() => setPublishMode('new')}
+                    className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${publishMode === 'new' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    Publish as New Library Book
+                  </button>
+                </div>
+
+                {publishMode === 'existing' ? (
+                  <div className="space-y-3 pt-2">
+                    {suggestedCandidates.length > 0 && (
+                      <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm">
+                        <div className="flex items-center gap-1.5 font-medium text-primary">
+                          <Sparkles className="h-4 w-4" /> Suggested catalogue matches
+                        </div>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {suggestedCandidates.map((candidate) => (
+                            <Button
+                              key={candidate.id}
+                              variant={targetBookId === candidate.id ? 'default' : 'outline'}
+                              size="sm"
+                              className="text-xs"
+                              onClick={() => setTargetBookId(candidate.id)}
+                            >
+                              {candidate.title.slice(0, 35)}{candidate.title.length > 35 ? '…' : ''} {candidate.author ? `(${candidate.author})` : ''}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="space-y-1">
+                      <Label htmlFor="pdf-book-search">Find book (without an existing PDF)</Label>
+                      <Input id="pdf-book-search" value={bookSearch} onChange={(e) => setBookSearch(e.target.value)} placeholder="Search title or author…" />
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label>Target catalogue book</Label>
+                      <Select value={targetBookId} onValueChange={setTargetBookId}>
+                        <SelectTrigger>
+                          <SelectValue placeholder={booksQuery.isLoading ? 'Loading books…' : 'Choose a catalogue book'} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {eligibleBooks.map((book) => (
+                            <SelectItem key={book.id} value={book.id}>
+                              {book.title}{book.author ? ` — ${book.author}` : ''}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <label className="flex items-center gap-2 pt-1 text-xs text-muted-foreground">
+                      <Checkbox checked={updateAlias} onCheckedChange={(c) => setUpdateAlias(c === true)} />
+                      <span>Add submitted title &ldquo;{selected.submitted_title}&rdquo; as searchable alias if catalogue title differs</span>
+                    </label>
+
+                    <div className="space-y-1">
+                      <Label>Distribution-rights basis</Label>
+                      <Select value={rightsBasis} onValueChange={(v) => setRightsBasis(v as RightsBasis)}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {RIGHTS_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label htmlFor="pdf-rights-evidence">HTTPS licence / permission evidence URL</Label>
+                      <Input id="pdf-rights-evidence" type="url" value={evidenceUrl} onChange={(e) => setEvidenceUrl(e.target.value)} placeholder="https://example.org/licence-or-permission" />
+                    </div>
+
+                    <Button
+                      className="w-full"
+                      onClick={() => void invokeReview('publish', { targetBookId, rightsBasis, evidenceUrl, updateBookTitleWithAlias: updateAlias })}
+                      disabled={Boolean(busyAction) || selected.status !== 'approved' || !targetBookId || !evidenceUrl.trim() || booksQuery.isLoading}
+                    >
+                      {busyAction === 'publish' ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
+                      Publish approved PDF to Library Book
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3 pt-2">
+                    <div className="rounded-lg border border-muted bg-muted/30 p-3 text-sm">
+                      <p className="font-medium">Create a new book record</p>
+                      <p className="text-xs text-muted-foreground">If this book is not yet in the catalogue, publish it as a brand-new title visible in the public Library.</p>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-1 sm:col-span-2">
+                        <Label htmlFor="new-book-title">Book Title</Label>
+                        <Input id="new-book-title" value={newBookTitle} onChange={(e) => setNewBookTitle(e.target.value)} placeholder="Full book title" required />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="new-book-author">Author</Label>
+                        <Input id="new-book-author" value={newBookAuthor} onChange={(e) => setNewBookAuthor(e.target.value)} placeholder="Author name" />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="new-book-genre">Genre / Category</Label>
+                        <Input id="new-book-genre" value={newBookGenre} onChange={(e) => setNewBookGenre(e.target.value)} placeholder="e.g. Poetry, Fiction, Philosophy" />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="new-book-lang">Language</Label>
+                        <Input id="new-book-lang" value={newBookLanguage} onChange={(e) => setNewBookLanguage(e.target.value)} placeholder="e.g. English, Hindi" />
+                      </div>
+                      <div className="space-y-1">
+                        <Label>Distribution-rights basis</Label>
+                        <Select value={rightsBasis} onValueChange={(v) => setRightsBasis(v as RightsBasis)}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {RIGHTS_OPTIONS.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1 sm:col-span-2">
+                        <Label htmlFor="new-book-desc">Description</Label>
+                        <Textarea id="new-book-desc" value={newBookDescription} onChange={(e) => setNewBookDescription(e.target.value)} placeholder="Book description, translator notes, or edition information..." rows={2} />
+                      </div>
+                      <div className="space-y-1 sm:col-span-2">
+                        <Label htmlFor="new-book-evidence">HTTPS licence / permission evidence URL</Label>
+                        <Input id="new-book-evidence" type="url" value={evidenceUrl} onChange={(e) => setEvidenceUrl(e.target.value)} placeholder="https://example.org/licence-or-permission" />
+                      </div>
+                    </div>
+
+                    <Button
+                      className="w-full"
+                      onClick={() => void invokeReview('publish', {
+                        createNewBook: true,
+                        newBookTitle,
+                        newBookAuthor,
+                        newBookGenre,
+                        newBookDescription,
+                        newBookLanguage,
+                        rightsBasis,
+                        evidenceUrl,
+                      })}
+                      disabled={Boolean(busyAction) || selected.status !== 'approved' || !newBookTitle.trim() || !evidenceUrl.trim()}
+                    >
+                      {busyAction === 'publish' ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
+                      Create Catalogue Book & Publish PDF
+                    </Button>
+                  </div>
+                )}
               </div>
             </section>}
           </div>

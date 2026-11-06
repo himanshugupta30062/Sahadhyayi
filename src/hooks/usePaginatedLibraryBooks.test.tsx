@@ -142,7 +142,7 @@ describe('usePaginatedLibraryBooks', () => {
     }));
     const books = await mocks.queryOptions.queryFn();
     expect(books).toHaveLength(2);
-    expect(mocks.or).toHaveBeenCalledWith('title.ilike.%fantasy classic%,author.ilike.%fantasy classic%,genre.ilike.%fantasy classic%');
+    expect(mocks.or).toHaveBeenCalledWith('title.ilike.%fantasy classic%,author.ilike.%fantasy classic%,genre.ilike.%fantasy classic%,description.ilike.%fantasy classic%');
     expect(mocks.eq).toHaveBeenCalledWith('language', 'Hindi');
     expect(mocks.eq).toHaveBeenCalledWith('author', 'Premchand');
     expect(mocks.eq).toHaveBeenCalledWith('publication_year', 1925);
