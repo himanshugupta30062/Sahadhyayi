@@ -114,7 +114,6 @@ const iconColorMap = {
   fuchsia: 'bg-fuchsia-50 text-fuchsia-800 border border-fuchsia-200 dark:bg-fuchsia-500/15 dark:text-fuchsia-400 dark:border-fuchsia-500/30',
 };
 
-// ─── Guest (unauthenticated) landing ─────────────────────────────────────────
 const GuestLanding: React.FC = () => {
   const [searchParams] = useSearchParams();
   const queryString = searchParams.toString();
