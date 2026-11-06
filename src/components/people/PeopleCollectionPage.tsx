@@ -81,10 +81,22 @@ export function PeopleCollectionPage({ collectionKey }: { collectionKey: PeopleC
 
       <div className="min-h-screen bg-[#FAF7F2] text-[#1C201D] transition-colors duration-200 dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
         <section className="relative isolate overflow-hidden border-b border-[#29332D] bg-[#101711] text-white">
-          <div aria-hidden="true" className={"absolute inset-0 bg-gradient-to-br " + accent.glow} />
-          <div aria-hidden="true" className="absolute -right-24 -top-36 h-[28rem] w-[28rem] rounded-full border border-white/10" />
-          <div aria-hidden="true" className="absolute -right-8 -top-20 h-[20rem] w-[20rem] rounded-full border border-white/10" />
-          <div aria-hidden="true" className="absolute inset-0 opacity-[0.12] [background-image:radial-gradient(rgba(255,255,255,0.7)_0.7px,transparent_0.7px)] [background-size:18px_18px]" />
+          <img
+            src="https://images.unsplash.com/photo-1461360370896-922624d12aa1?auto=format&fit=crop&w=2400&q=85"
+            alt=""
+            aria-hidden="true"
+            className="absolute right-0 top-0 z-0 h-full w-full object-cover object-[center_35%] sm:w-[65%] lg:w-[60%]"
+            loading="eager"
+          />
+          {/* Mobile scrim for readability */}
+          <div aria-hidden="true" className="absolute inset-0 z-0 bg-gradient-to-b from-[#101711]/92 via-[#101711]/86 to-[#101711]/80 sm:hidden" />
+          {/* Desktop gradient blend */}
+          <div aria-hidden="true" className="hidden sm:block absolute inset-0 z-0 bg-gradient-to-r from-[#101711] via-[#101711]/85 to-[#101711]/25" />
+          <div aria-hidden="true" className="hidden sm:block absolute inset-0 z-0 bg-gradient-to-t from-[#101711]/80 via-transparent to-transparent" />
+          <div aria-hidden="true" className={"pointer-events-none absolute inset-0 z-0 opacity-40 bg-gradient-to-br " + accent.glow} />
+          <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-36 z-0 h-[28rem] w-[28rem] rounded-full border border-white/10" />
+          <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-20 z-0 h-[20rem] w-[20rem] rounded-full border border-white/10" />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 opacity-[0.10] [background-image:radial-gradient(rgba(255,255,255,0.7)_0.7px,transparent_0.7px)] [background-size:18px_18px]" />
 
           <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-18 lg:px-8 lg:py-20">
             <div className="max-w-3xl">

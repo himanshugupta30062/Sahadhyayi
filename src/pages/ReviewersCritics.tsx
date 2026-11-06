@@ -76,8 +76,20 @@ export default function ReviewersCritics() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <SEO title="Reviewers & Critics | Sahadhyayi" description="Discover book reviewers, literary critics, BookTubers and independent literary voices." canonical="https://sahadhyayi.com/reviewers-critics" url="https://sahadhyayi.com/reviewers-critics" />
-      <section className="relative overflow-hidden border-b bg-[#101711] text-white">
-        <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(circle_at_20%_20%,#D5B16D,transparent_35%),radial-gradient(circle_at_80%_70%,#3D7554,transparent_40%)]" aria-hidden="true" />
+      <section className="relative isolate overflow-hidden border-b border-[#29332D] bg-[#101711] text-white">
+        <img
+          src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=2400&q=85"
+          alt=""
+          aria-hidden="true"
+          className="absolute right-0 top-0 z-0 h-full w-full object-cover object-[center_35%] sm:w-[65%] lg:w-[60%]"
+          loading="eager"
+        />
+        {/* Mobile scrim for readability */}
+        <div aria-hidden="true" className="absolute inset-0 z-0 bg-gradient-to-b from-[#101711]/92 via-[#101711]/86 to-[#101711]/80 sm:hidden" />
+        {/* Desktop gradient blend */}
+        <div aria-hidden="true" className="hidden sm:block absolute inset-0 z-0 bg-gradient-to-r from-[#101711] via-[#101711]/85 to-[#101711]/25" />
+        <div aria-hidden="true" className="hidden sm:block absolute inset-0 z-0 bg-gradient-to-t from-[#101711]/80 via-transparent to-transparent" />
+        <div className="pointer-events-none absolute inset-0 z-0 opacity-20 [background-image:radial-gradient(circle_at_20%_20%,#D5B16D,transparent_35%),radial-gradient(circle_at_80%_70%,#3D7554,transparent_40%)]" aria-hidden="true" />
         <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
           <Badge className="mb-5 border-[#D5B16D]/40 bg-white/10 text-[#E8CC91]">Literary people · Sahadhyayi</Badge>
           <h1 className="max-w-3xl font-serif text-4xl font-bold tracking-tight sm:text-5xl">Reviewers & Critics</h1>

@@ -337,8 +337,20 @@ const ResearchPapers = () => {
         keywords={['research papers', 'open access research', 'academic papers', 'scientific studies', 'scholarly articles']}
       />
       <main className="min-h-screen bg-[#FAFAF8] text-[#1C201D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
-        <section className="border-b border-[#E8E8E3] bg-[#F4F3EF] dark:border-[#29332D] dark:bg-[#101711]">
-          <div className="mx-auto max-w-7xl px-4 py-9 sm:px-6 sm:py-12 lg:px-8">
+        <section className="relative isolate overflow-hidden border-b border-[#E8E8E3] bg-[#F4F3EF] dark:border-[#29332D] dark:bg-[#101711]">
+          <img
+            src="https://images.unsplash.com/photo-1532012164546-f432f2e3edd4?auto=format&fit=crop&w=2400&q=85"
+            alt=""
+            aria-hidden="true"
+            className="absolute right-0 top-0 z-0 h-full w-full object-cover object-[center_40%] sm:w-[65%] lg:w-[60%]"
+            loading="eager"
+          />
+          {/* Mobile scrim for readability */}
+          <div aria-hidden="true" className="absolute inset-0 z-0 bg-gradient-to-b from-[#F4F3EF]/92 via-[#F4F3EF]/85 to-[#F4F3EF]/78 dark:from-[#101711]/92 dark:via-[#101711]/85 dark:to-[#101711]/80 sm:hidden" />
+          {/* Desktop gradient fade */}
+          <div aria-hidden="true" className="hidden sm:block absolute inset-0 z-0 bg-gradient-to-r from-[#F4F3EF] via-[#F4F3EF]/85 to-[#F4F3EF]/20 dark:from-[#101711] dark:via-[#101711]/85 dark:to-[#101711]/20" />
+          <div aria-hidden="true" className="hidden sm:block absolute inset-0 z-0 bg-gradient-to-t from-[#F4F3EF]/70 via-transparent to-transparent dark:from-[#101711]/80 dark:via-transparent dark:to-transparent" />
+          <div className="relative mx-auto max-w-7xl px-4 py-9 sm:px-6 sm:py-12 lg:px-8">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8A7350] dark:text-[#D5B16D]">Explore scholarly knowledge</p>
             <h1 className="mt-2 font-serif text-3xl font-bold tracking-tight sm:text-4xl">Research Papers</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-[#636B65] dark:text-white/70 sm:text-base">Find research, compare evidence and read papers from their original sources.</p>

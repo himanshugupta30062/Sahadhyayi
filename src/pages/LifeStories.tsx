@@ -219,9 +219,21 @@ const LifeStories = () => {
         keywords={['real life stories', 'inspiring biographies', 'Indian personalities', 'human stories', 'life journeys']}
       />
       <div className="min-h-screen bg-[#FAF7F2] text-[#202820] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
-        <section className="relative isolate overflow-hidden bg-[#101711] text-white">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_15%,rgba(213,177,109,0.22),transparent_42%),radial-gradient(ellipse_at_10%_90%,rgba(63,111,79,0.3),transparent_45%)]" />
-          <div className="absolute inset-0 opacity-[0.12] [background-image:radial-gradient(rgba(255,255,255,0.65)_0.7px,transparent_0.7px)] [background-size:18px_18px]" />
+        <section className="relative isolate overflow-hidden border-b border-[#29332D] bg-[#101711] text-white">
+          <img
+            src="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=2400&q=85"
+            alt=""
+            aria-hidden="true"
+            className="absolute right-0 top-0 z-0 h-full w-full object-cover object-[center_35%] sm:w-[65%] lg:w-[60%]"
+            loading="eager"
+          />
+          {/* Mobile scrim for crisp text legibility */}
+          <div aria-hidden="true" className="absolute inset-0 z-0 bg-gradient-to-b from-[#101711]/94 via-[#101711]/88 to-[#101711]/82 sm:hidden" />
+          {/* Desktop gradient blend */}
+          <div aria-hidden="true" className="hidden sm:block absolute inset-0 z-0 bg-gradient-to-r from-[#101711] via-[#101711]/88 to-[#101711]/20" />
+          <div aria-hidden="true" className="hidden sm:block absolute inset-0 z-0 bg-gradient-to-t from-[#101711]/80 via-transparent to-transparent" />
+          <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_80%_15%,rgba(213,177,109,0.22),transparent_42%),radial-gradient(ellipse_at_10%_90%,rgba(63,111,79,0.3),transparent_45%)]" />
+          <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.12] [background-image:radial-gradient(rgba(255,255,255,0.65)_0.7px,transparent_0.7px)] [background-size:18px_18px]" />
           <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
             <div className="max-w-3xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-[#D5B16D]/35 bg-white/5 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#E8CC91]"><Heart className="h-3.5 w-3.5" /> Real lives. Real journeys.</div>

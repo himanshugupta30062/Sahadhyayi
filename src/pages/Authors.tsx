@@ -134,25 +134,19 @@ const Authors = () => {
       <div className="min-h-screen bg-[#FAFAF8] text-[#1C201D] transition-colors duration-200 dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
         {/* Photo-led hero: the page starts with a literary atmosphere, not a dashboard. */}
         <section className="relative isolate overflow-hidden border-b border-[#E8E8E3] bg-[#F4F3EF] text-[#1C201D] dark:border-[#29332D] dark:bg-[#101711] dark:text-white">
-          {/* Mobile image-first hero, matching the community homepage */}
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 sm:hidden">
-            <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Victor_Hugo_%C3%A0_son_bureau_de_travail._2017.0.3693.jpg?width=1000" alt="" className="h-full w-full object-cover object-[center_30%]" loading="eager" fetchPriority="high" />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#F4F3EF]/80 via-[#F4F3EF]/75 to-[#F4F3EF]/65 dark:from-[#09120D]/75 dark:via-[#09120D]/70 dark:to-[#09120D]/65" />
-          </div>
-          {/* Keep the full-scene illustration off small screens so it never sits
-              behind the copy/search. On desktop it stays in a dedicated right panel. */}
-          {/* Actual CC0 Victor Hugo at his writing desk artwork. */}
-          <div
+          <img
+            src="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=2400&q=85"
+            alt=""
             aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 right-0 hidden w-[54%] bg-cover bg-[center_35%] bg-no-repeat opacity-90 sm:block"
-            style={{
-              backgroundImage:
-                "url('https://commons.wikimedia.org/wiki/Special:FilePath/Victor_Hugo_%C3%A0_son_bureau_de_travail._2017.0.3693.jpg?width=1400')",
-          }} />
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#F4F3EF] via-[#F4F3EF]/95 to-[#F4F3EF]/55 dark:hidden" />
-          <div aria-hidden="true" className="absolute inset-0 hidden dark:block bg-gradient-to-r from-[#09120D]/95 via-[#09120D]/79 to-[#09120D]/38" />
-          <div aria-hidden="true" className="absolute inset-0 hidden dark:block bg-gradient-to-t from-[#09120D]/70 via-transparent to-[#09120D]/25" />
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:radial-gradient(rgba(255,255,255,0.6)_0.7px,transparent_0.7px)] [background-size:18px_18px] [mask-image:linear-gradient(to_right,black,transparent_80%)]" />
+            className="absolute right-0 top-0 z-0 h-full w-full object-cover object-[center_35%] sm:w-[65%] lg:w-[60%]"
+            loading="eager"
+          />
+          {/* Mobile overlay ensuring text readability across all viewport sizes */}
+          <div aria-hidden="true" className="absolute inset-0 z-0 bg-gradient-to-b from-[#F4F3EF]/92 via-[#F4F3EF]/85 to-[#F4F3EF]/75 dark:from-[#101711]/92 dark:via-[#101711]/85 dark:to-[#101711]/80 sm:hidden" />
+          {/* Desktop horizontal gradient overlay blending smoothly into page background */}
+          <div aria-hidden="true" className="hidden sm:block absolute inset-0 z-0 bg-gradient-to-r from-[#F4F3EF] via-[#F4F3EF]/85 to-[#F4F3EF]/15 dark:from-[#101711] dark:via-[#101711]/85 dark:to-[#101711]/20" />
+          <div aria-hidden="true" className="hidden sm:block absolute inset-0 z-0 bg-gradient-to-t from-[#F4F3EF]/50 via-transparent to-transparent dark:from-[#101711]/70 dark:via-transparent dark:to-transparent" />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 opacity-[0.08] [background-image:radial-gradient(rgba(255,255,255,0.6)_0.7px,transparent_0.7px)] [background-size:18px_18px]" />
 
           <div className="relative mx-auto min-h-[520px] max-w-7xl px-4 py-10 sm:min-h-0 sm:px-6 sm:py-18 lg:px-8 lg:py-24">
             <div className="max-w-3xl">

@@ -35,6 +35,8 @@ import { useSendFriendRequest } from '@/hooks/useFriends';
 import { useReadingProgress } from '@/hooks/useReadingProgress';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { toast } from 'sonner';
+import { BookReelsStrip } from '@/components/social/BookReelsStrip';
+import { SampleReaderFeedCards } from '@/components/social/SampleReaderFeedCards';
 
 // Lazy-load social feature panels so the active tab determines what JavaScript is fetched
 const MarginNotesFeed = lazy(() => import('@/components/social/margins/MarginNotesFeed'));
@@ -128,10 +130,19 @@ const GuestLanding: React.FC = () => {
       />
 
       <div className="min-h-screen bg-[#FAFAF8] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-200">
-        {/* ── Hero Section ── */}
-        <section className="relative isolate overflow-hidden border-b border-[#E8E8E3] bg-[#F4EFEA] px-4 py-16 dark:border-[#29332D] dark:bg-[#111614] sm:px-6 sm:py-20 lg:px-8">
-          <img src="https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=2200&q=85" alt="" aria-hidden="true" className="absolute inset-y-0 right-0 h-full w-full object-cover object-center sm:w-[68%]" loading="eager" />
-          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#FAF7F2] via-[#FAF7F2]/72 to-[#FAF7F2]/0 dark:from-[#0B0D0C]/78 dark:via-[#0B0D0C]/58 dark:to-[#0B0D0C]/12" />
+        {/* ── Photo-Led Hero Section ── */}
+        <section className="relative isolate overflow-hidden border-b border-[#E8E8E3] bg-[#F4EFEA] px-4 py-14 dark:border-[#29332D] dark:bg-[#111614] sm:px-6 sm:py-20 lg:px-8">
+          <img
+            src="https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=2200&q=85"
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-y-0 right-0 h-full w-full object-cover object-center sm:w-[68%]"
+            loading="eager"
+          />
+          {/* Mobile readable scrim */}
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-[#FAF7F2]/95 via-[#FAF7F2]/88 to-[#FAF7F2]/80 dark:from-[#0B0D0C]/95 dark:via-[#0B0D0C]/88 dark:to-[#0B0D0C]/80 sm:hidden" />
+          {/* Desktop horizontal blend */}
+          <div aria-hidden="true" className="hidden sm:block absolute inset-0 bg-gradient-to-r from-[#FAF7F2] via-[#FAF7F2]/85 to-[#FAF7F2]/15 dark:from-[#0B0D0C] dark:via-[#0B0D0C]/85 dark:to-[#0B0D0C]/20" />
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="absolute -top-32 -right-32 w-[32rem] h-[32rem] rounded-full bg-emerald-500/10 dark:bg-emerald-950/20 blur-3xl" />
             <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-[#B68A35]/10 dark:bg-[#D5B16D]/5 blur-3xl" />
@@ -139,22 +150,22 @@ const GuestLanding: React.FC = () => {
 
           <div className="relative z-10 mx-auto max-w-7xl text-left">
             {/* Eyebrow Label */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-[#111614] border border-[#E8E8E3] dark:border-[#29332D] text-[11px] font-semibold uppercase tracking-widest text-[#1C442D] dark:text-[#D5B16D] mb-6 shadow-xs">
-              <Sparkles className="w-3.5 h-3.5" />
-              A Reading Community
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-[#111614] border border-[#E8E8E3] dark:border-[#29332D] text-[11px] font-semibold uppercase tracking-widest text-[#1C442D] dark:text-[#D5B16D] mb-5 shadow-xs">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              The Bookish Corner of the Internet
             </div>
 
-            <h1 className="max-w-2xl text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-6 tracking-tight leading-[1.15]">
+            <h1 className="max-w-2xl text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-5 tracking-tight leading-[1.12]">
               Where readers connect{' '}
-              <span className="text-[#1C442D] dark:text-[#D5B16D]">around books.</span>
+              <span className="block text-[#1C442D] dark:text-[#D5B16D]">around books.</span>
             </h1>
 
-            <p className="max-w-xl text-base sm:text-lg text-[#636B65] dark:text-[#A5ADA6] mb-10 leading-relaxed font-normal">
-              Share what you're reading, explore ideas, join reading rooms, and find people who see the world through books.
+            <p className="max-w-xl text-sm sm:text-lg text-[#636B65] dark:text-[#A5ADA6] mb-8 leading-relaxed font-normal">
+              Share what you're reading, explore ideas, join reading rooms, and find people who see the world through books. No toxic algorithms, no doomscrolling — just real book lovers, reels, and honest reactions.
             </p>
 
             {/* Action CTAs */}
-            <div className="flex flex-col sm:flex-row gap-3 mb-12">
+            <div className="flex flex-col sm:flex-row gap-3 mb-8">
               <Link to="/signup">
                 <Button className="w-full sm:w-auto bg-[#1C442D] hover:bg-[#143221] text-white dark:bg-[#D5B16D] dark:hover:bg-[#c49f5c] dark:text-[#0B0D0C] font-semibold px-7 h-11 text-sm shadow-md gap-2">
                   Create an account
@@ -180,38 +191,119 @@ const GuestLanding: React.FC = () => {
           </div>
         </section>
 
+        {/* ── Book Reels Strip (Interactive Micro-Moments) ── */}
+        <section className="mx-auto max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">
+          <BookReelsStrip />
+        </section>
+
+        {/* ── Community Stream & Reading Vibes ── */}
+        <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            {/* Left 2 Cols: Real everyday reader feed */}
+            <div className="lg:col-span-2">
+              <SampleReaderFeedCards isGuest={true} />
+            </div>
+
+            {/* Right 1 Col: Community highlights & moods */}
+            <div className="space-y-6">
+              {/* Mood Pills */}
+              <div className="rounded-2xl border border-[#E8E8E3] bg-white p-5 shadow-sm dark:border-[#29332D] dark:bg-[#111614]">
+                <h3 className="font-serif text-base font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-2 flex items-center gap-2">
+                  <span>☕</span>
+                  <span>Browse by Reading Mood</span>
+                </h3>
+                <p className="text-xs text-[#636B65] dark:text-[#A5ADA6] mb-4">
+                  Find fellow readers currently in the exact same headspace:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { label: '🌙 Late-Night Binge', path: '/library?genre=fiction' },
+                    { label: '⚡ Slump Breakers', path: '/library?genre=thriller' },
+                    { label: '☕ Cozy Chai Reads', path: '/library?genre=classics' },
+                    { label: '💔 Sobbing at Chapter 20', path: '/library?genre=fiction' },
+                    { label: '✍️ Second-Hand & Margins', path: '/library?genre=philosophy' },
+                    { label: '🌱 Habit Builders', path: '/library?genre=non-fiction' },
+                    { label: '📖 Hindi Sahitya', path: '/library?genre=hindi' },
+                  ].map((mood) => (
+                    <Link
+                      key={mood.label}
+                      to={mood.path}
+                      className="rounded-full border border-[#E8E8E3] bg-[#FAF7F2] px-3 py-1.5 text-xs font-medium text-[#1C442D] transition hover:border-[#1C442D] hover:bg-[#EBF2EC] dark:border-[#29332D] dark:bg-[#18221B] dark:text-[#D5B16D] dark:hover:border-[#315C43]"
+                    >
+                      {mood.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              {/* Why Readers Gather Here */}
+              <div className="rounded-2xl border border-[#E8E8E3] bg-gradient-to-br from-[#F4F3EF] to-white p-5 shadow-sm dark:border-[#29332D] dark:from-[#111614] dark:to-[#0B0D0C]">
+                <h3 className="font-serif text-base font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-3">
+                  Why readers choose Sahadhyayi
+                </h3>
+                <ul className="space-y-3 text-xs leading-relaxed text-[#636B65] dark:text-[#A5ADA6]">
+                  <li className="flex items-start gap-2">
+                    <span className="font-bold text-[#1C442D] dark:text-[#D5B16D]">✓</span>
+                    <span><strong>100% Book Centric:</strong> No political spams or viral rage-bait. Every thread connects to literature.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="font-bold text-[#1C442D] dark:text-[#D5B16D]">✓</span>
+                    <span><strong>Spoiler-Safe Threads:</strong> Discuss plot twists with fellow readers without ruining it for newcomers.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="font-bold text-[#1C442D] dark:text-[#D5B16D]">✓</span>
+                    <span><strong>Shared Marginalia:</strong> Leave and read digital pencil notes right in the margins of classic books.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="font-bold text-[#1C442D] dark:text-[#D5B16D]">✓</span>
+                    <span><strong>Reading Rooms:</strong> Cozy silent reading rooms with ambient audio to read together in real time.</span>
+                  </li>
+                </ul>
+
+                <div className="mt-5 pt-4 border-t border-[#E8E8E3] dark:border-[#29332D]">
+                  <Link to="/signup" className="block w-full">
+                    <Button className="w-full bg-[#1C442D] text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:hover:bg-[#c49f5c] text-xs font-semibold h-9">
+                      Create Your Reader Profile
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ── 4 Feature Pillar Cards ── */}
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center max-w-xl mx-auto mb-12">
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-3">
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-[#E8E8E3] dark:border-[#29332D]">
+          <div className="text-center max-w-xl mx-auto mb-10">
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-2">
               Built for Deep Reading Culture
             </h2>
-            <p className="text-sm text-[#636B65] dark:text-[#A5ADA6] leading-relaxed">
-              Every interaction is anchored to a specific book and chapter — no empty scrolling, just meaningful literary connection.
+            <p className="text-xs sm:text-sm text-[#636B65] dark:text-[#A5ADA6] leading-relaxed">
+              Every feature is anchored to a specific book and chapter — no empty scrolling, just meaningful literary connection.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {PILLARS.map(({ icon: Icon, color, title, desc, cta, tab }) => (
               <SignInLink
                 key={tab}
                 redirectPath={`/social?tab=${tab}`}
                 className="block group"
               >
-                <Card className="h-full border border-[#E8E8E3] dark:border-[#29332D] bg-white dark:bg-[#111614] hover:bg-[#F4F3EF] dark:hover:bg-[#161D19] hover:border-[#1C442D]/40 dark:hover:border-[#315C43] transition-all duration-200 shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs hover:shadow-md cursor-pointer">
-                  <CardContent className="p-5 flex flex-col h-full text-[#1C201D] dark:text-[#F3F0E7]">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${iconColorMap[color]}`}>
-                      <Icon className="w-5 h-5" />
+                <Card className="h-full border border-[#E8E8E3] dark:border-[#29332D] bg-white dark:bg-[#111614] hover:bg-[#F4F3EF] dark:hover:bg-[#161D19] hover:border-[#1C442D]/40 dark:hover:border-[#315C43] transition-all duration-200 shadow-xs hover:shadow-md cursor-pointer">
+                  <CardContent className="p-4 sm:p-5 flex flex-col h-full text-[#1C201D] dark:text-[#F3F0E7]">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3.5 ${iconColorMap[color]}`}>
+                      <Icon className="w-4 h-4" />
                     </div>
-                    <h3 className="text-sm font-semibold text-[#1C201D] dark:text-[#F3F0E7] mb-2 group-hover:text-[#1C442D] dark:group-hover:text-[#D5B16D] transition-colors">
+                    <h3 className="text-sm font-semibold text-[#1C201D] dark:text-[#F3F0E7] mb-1.5 group-hover:text-[#1C442D] dark:group-hover:text-[#D5B16D] transition-colors">
                       {title}
                     </h3>
                     <p className="text-xs text-[#636B65] dark:text-[#A5ADA6] leading-relaxed flex-1">
                       {desc}
                     </p>
-                    <div className="mt-4 text-xs font-semibold flex items-center gap-1.5 text-[#1C442D] dark:text-[#D5B16D] group-hover:underline">
+                    <div className="mt-3.5 text-xs font-semibold flex items-center gap-1 text-[#1C442D] dark:text-[#D5B16D] group-hover:underline">
                       <span>{cta}</span>
-                      <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                      <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
                     </div>
                   </CardContent>
                 </Card>
@@ -220,17 +312,17 @@ const GuestLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* ── How It Works (3 Steps, Honest) ── */}
-        <section className="bg-[#F4F3EF] dark:bg-[#111614] border-t border-[#E8E8E3] dark:border-[#29332D] py-16 px-4 sm:px-6 lg:px-8">
+        {/* ── How It Works (3 Steps) ── */}
+        <section className="bg-[#F4F3EF] dark:bg-[#111614] border-t border-[#E8E8E3] dark:border-[#29332D] py-14 px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 mb-3 text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">
-              <TrendingUp className="w-4 h-4" />
+            <div className="inline-flex items-center gap-1.5 mb-2 text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">
+              <TrendingUp className="w-3.5 h-3.5" />
               How It Works
             </div>
-            <h2 className="text-xl sm:text-2xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-12">
+            <h2 className="text-xl sm:text-2xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-10">
               Get started in 3 steps
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-left">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
               {[
                 {
                   step: '1',
@@ -245,11 +337,11 @@ const GuestLanding: React.FC = () => {
                 {
                   step: '3',
                   title: 'Join the Community',
-                  body: 'Open a reading room, annotate a passage, or match your literary DNA.',
+                  body: 'Share your 2 AM thoughts, annotate a passage, or match your reading DNA.',
                 },
               ].map(({ step, title, body }) => (
-                <div key={step} className="flex flex-col gap-3 p-4 rounded-xl bg-white dark:bg-[#0B0D0C]/50 border border-[#E8E8E3] dark:border-[#29332D]/60 shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-none">
-                  <div className="w-9 h-9 rounded-full bg-[#EBF2EC] dark:bg-[#1C3024] border border-[#C8DBCB] dark:border-[#315C43] text-[#1C442D] dark:text-[#D5B16D] flex items-center justify-center text-sm font-bold shadow-xs">
+                <div key={step} className="flex flex-col gap-2.5 p-4 rounded-xl bg-white dark:bg-[#0B0D0C]/50 border border-[#E8E8E3] dark:border-[#29332D]/60 shadow-xs">
+                  <div className="w-8 h-8 rounded-full bg-[#EBF2EC] dark:bg-[#1C3024] border border-[#C8DBCB] dark:border-[#315C43] text-[#1C442D] dark:text-[#D5B16D] flex items-center justify-center text-xs font-bold">
                     {step}
                   </div>
                   <h3 className="text-sm font-semibold text-[#1C201D] dark:text-[#F3F0E7]">{title}</h3>
@@ -257,7 +349,7 @@ const GuestLanding: React.FC = () => {
                 </div>
               ))}
             </div>
-            <div className="mt-12 flex justify-center gap-3">
+            <div className="mt-10 flex justify-center gap-3">
               <Link to="/signup">
                 <Button className="bg-[#1C442D] hover:bg-[#143221] text-white dark:bg-[#D5B16D] dark:hover:bg-[#c49f5c] dark:text-[#0B0D0C] font-semibold px-8 h-10 text-sm gap-2 shadow-sm">
                   Join for Free <ArrowRight className="w-4 h-4" />
