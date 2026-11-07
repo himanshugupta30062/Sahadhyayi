@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
@@ -22,7 +21,7 @@ export const useReadingProgress = (options: { enabled?: boolean } = {}) => {
       if (!user) {
         return [];
       }
-      
+
       const { data, error } = await supabase
         .from('reading_progress')
         .select('*')
@@ -39,19 +38,30 @@ export const useReadingProgress = (options: { enabled?: boolean } = {}) => {
 };
 
 export const useUpdateReadingProgress = () => {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ id, current_page }: { id: number; current_page: number }) => {
+      if (!user?.id) throw new Error('Sign in to update reading progress');
+      if (!Number.isSafeInteger(id) || id <= 0) {
+        throw new Error('Invalid reading progress record');
+      }
+      if (!Number.isSafeInteger(current_page) || current_page < 1) {
+        throw new Error('Page number must be a positive integer');
+      }
+
+      // Scope writes to the authenticated owner as well as relying on database RLS.
       const { data, error } = await supabase
         .from('reading_progress')
         .update({ current_page })
         .eq('id', id)
+        .eq('user_id', user.id)
         .select()
         .single();
 
       if (error) throw error;
-      return data;
+      return data as ReadingProgressItem;
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['reading-progress'] });
@@ -78,9 +88,16 @@ export const useSaveReadingProgress = () => {
       coverImageUrl?: string;
     }) => {
       if (!user?.id) throw new Error('Sign in to save reading progress');
+      if (!bookId.trim()) throw new Error('Book ID is required');
+      if (!Number.isFinite(totalPages) || totalPages < 1) {
+        throw new Error('Total pages must be a positive number');
+      }
+      if (!Number.isFinite(currentPage) || currentPage < 1) {
+        throw new Error('Current page must be a positive number');
+      }
 
-      const safeTotal = Math.max(1, totalPages);
-      const safePage = Math.min(safeTotal, Math.max(1, currentPage));
+      const safeTotal = Math.max(1, Math.floor(totalPages));
+      const safePage = Math.min(safeTotal, Math.max(1, Math.floor(currentPage)));
       const { data, error } = await supabase
         .from('reading_progress')
         .upsert(
