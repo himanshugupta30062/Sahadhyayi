@@ -1,7 +1,9 @@
 /**
- * Unified Reading Progress Storage
- * Ensures single progress model keyed by user ID and book ID.
- * Persists locally instantly and falls back cleanly across sessions.
+ * Unified Reading Progress Storage.
+ *
+ * Every record is scoped to a user (or the guest scope). Older unscoped keys
+ * cannot be safely attributed to an account, so they are discarded rather
+ * than restored into whichever account happens to open the book next.
  */
 
 export interface ReadingProgressRecord {
@@ -21,6 +23,16 @@ export const getProgressStorageKey = (bookId: string, userId?: string | null): s
   return `sahadhyayi_progress_guest_${bookId}`;
 };
 
+const removeLegacyProgress = (bookId: string): void => {
+  try {
+    localStorage.removeItem(`book-${bookId}-page`);
+    localStorage.removeItem(`book-${bookId}-position`);
+    localStorage.removeItem(`book-${bookId}-bookmarks`);
+  } catch {
+    // Storage can be unavailable in restricted browser contexts.
+  }
+};
+
 export const loadProgressLocally = (
   bookId: string,
   userId?: string | null
@@ -28,41 +40,26 @@ export const loadProgressLocally = (
   try {
     const key = getProgressStorageKey(bookId, userId);
     const raw = localStorage.getItem(key);
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw) as ReadingProgressRecord;
-        if (parsed && typeof parsed.currentPage === 'number') {
-          return parsed;
-        }
-      } catch {
-        // Ignore a corrupted keyed record and continue to the legacy fallback.
-      }
-    }
 
-    // Fallback to legacy unkeyed localStorage for backward compatibility
-    const legacyPage = localStorage.getItem(`book-${bookId}-page`);
-    const legacyPos = localStorage.getItem(`book-${bookId}-position`);
-    const legacyBookmarks = localStorage.getItem(`book-${bookId}-bookmarks`);
+    // Legacy keys were shared across all browser users and have no trustworthy
+    // owner. Never migrate them into a signed-in or guest session.
+    removeLegacyProgress(bookId);
 
-    if (legacyPage || legacyPos || legacyBookmarks) {
-      const page = legacyPage ? Number.parseInt(legacyPage, 10) : 1;
-      let bookmarks: string[] = [];
-      if (legacyBookmarks) {
-        try {
-          bookmarks = JSON.parse(legacyBookmarks);
-        } catch {
-          bookmarks = [];
-        }
+    if (!raw) return null;
+
+    try {
+      const parsed = JSON.parse(raw) as ReadingProgressRecord;
+      if (
+        parsed &&
+        parsed.bookId === bookId &&
+        (parsed.userId ?? null) === (userId ?? null) &&
+        Number.isFinite(parsed.currentPage) &&
+        parsed.currentPage > 0
+      ) {
+        return parsed;
       }
-      return {
-        bookId,
-        userId: userId || null,
-        currentPage: Number.isFinite(page) && page > 0 ? page : 1,
-        totalPages: 1,
-        position: legacyPos || null,
-        bookmarks,
-        updatedAt: Date.now(),
-      };
+    } catch {
+      // Ignore corrupted scoped data and let the cloud source restore progress.
     }
   } catch (err) {
     console.error('Failed to load local reading progress:', err);
@@ -95,15 +92,9 @@ export const saveProgressLocally = (
     };
 
     localStorage.setItem(key, JSON.stringify(record));
-
-    // Also update legacy keys to keep older views working
-    localStorage.setItem(`book-${params.bookId}-page`, String(record.currentPage));
-    if (record.position) {
-      localStorage.setItem(`book-${params.bookId}-position`, record.position);
-    }
-    if (record.bookmarks) {
-      localStorage.setItem(`book-${params.bookId}-bookmarks`, JSON.stringify(record.bookmarks));
-    }
+    // Do not mirror records to legacy unscoped keys: doing so would leak
+    // reading positions and bookmarks when accounts switch on one device.
+    removeLegacyProgress(params.bookId);
   } catch (err) {
     console.error('Failed to save local reading progress:', err);
   }
