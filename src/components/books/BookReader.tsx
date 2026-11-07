@@ -41,6 +41,7 @@ import { useChapterProgress, useMarkChapterAsRead } from '@/hooks/useChapterProg
 import { searchExternalSources } from '@/utils/searchExternalSources';
 import { loadProgressLocally, saveProgressLocally } from '@/utils/readingProgressStorage';
 import { useReaderBookmarks, useAddReaderBookmark } from '@/hooks/useReaderBookmarks';
+import { useAddReaderHighlight } from '@/hooks/useReaderHighlights';
 
 interface BookReaderProps {
   bookId: string;
@@ -81,6 +82,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
   const saveProgress = useSaveReadingProgress();
   const { data: cloudBookmarks = [] } = useReaderBookmarks(bookId);
   const addCloudBookmark = useAddReaderBookmark();
+  const addReaderHighlight = useAddReaderHighlight();
   const { data: audioSummary } = useAudioSummary(bookId);
   const { data: chapterProgress = [] } = useChapterProgress(bookId);
   const markChapterRead = useMarkChapterAsRead(bookId);
@@ -512,7 +514,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     }
   };
 
-  const saveSelectedQuote = () => {
+  const saveSelectedHighlight = async () => {\n    if (!selectedText || !user?.id) { toast({ title: 'Sign in required', description: 'Highlights sync privately across your devices.' }); return; }\n    try { await addReaderHighlight.mutateAsync({ bookId, text: selectedText, page: currentPage, location: currentLocation || undefined }); toast({ title: 'Highlight saved', description: `Saved on page ${currentPage}.` }); setSelectedText(''); setShowSaveQuote(false); }\n    catch (error) { toast({ title: 'Could not save highlight', description: error instanceof Error ? error.message : 'Please try again.', variant: 'destructive' }); }\n  };\n\n  const saveSelectedQuote = () => {
     if (!selectedText) return;
     addQuote(selectedText, bookTitle, undefined, { bookId, page: currentPage, location: currentLocation || undefined });
     toast({ title: 'Quote Saved', description: 'Highlight added to your quotes.' });
@@ -966,7 +968,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                 />
                 {showSaveQuote && (
                   <div className="absolute bottom-4 right-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm p-2 rounded-xl shadow-lg border border-border flex items-center gap-2 z-20">
-                    <Button size="sm" onClick={saveSelectedQuote}>Save Quote</Button>
+                    <Button size="sm" onClick={saveSelectedQuote}>Save Quote</Button>\n                    {user && <Button size="sm" variant="outline" onClick={() => void saveSelectedHighlight()} disabled={addReaderHighlight.isPending}>Save Highlight</Button>
                     {user && (
                       <AddMarginNoteDialog
                         initialBookId={bookId}
