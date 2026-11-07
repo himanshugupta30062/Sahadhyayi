@@ -835,6 +835,7 @@ const App = memo(() => {
                         <Route path="/reader-map/:bookId?" element={<Suspense fallback={<LoadingFallback />}><ReaderMap /></Suspense>} />
                         <Route path="/investors" element={<Suspense fallback={<LoadingFallback />}><Investors /></Suspense>} />
                         <Route path="/quotes" element={<Suspense fallback={<LoadingFallback />}><QuotesPage /></Suspense>} />
+                        <Route path="/journal" element={<Suspense fallback={<LoadingFallback message="Loading your reading journal..." />}><QuotesPage /></Suspense>} />
                         <Route path="/community-stories" element={<Suspense fallback={<LoadingFallback />}><CommunityStories /></Suspense>} />
                         <Route path="/life-stories/:slug?" element={<Suspense fallback={<LoadingFallback message="Loading life stories..." />}><LifeStories /></Suspense>} />
                         <Route path="/book-library" element={<Suspense fallback={<LoadingFallback />}><BookLibrary /></Suspense>} />
