@@ -3,6 +3,7 @@ Allow: /
 
 # Public discovery pages
 Allow: /library
+Allow: /research-papers
 Allow: /articles
 Allow: /authors
 Allow: /book/

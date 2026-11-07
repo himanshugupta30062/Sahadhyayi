@@ -96,6 +96,7 @@ function writeRoute(route, html) {
 // deployment does not provide Supabase credentials. This ensures each URL
 // returns a unique title, description, canonical URL, and useful initial HTML.
 const publicPages = [
+  { route: "/", title: "Sahadhyayi — Discover Books, Read & Connect with Readers", description: "Discover books, read stories and articles, explore authors, and connect with readers on Sahadhyayi—a welcoming online reading community built to make reading a shared habit." },
   { route: "/library", title: "Online Book Library - Discover Books to Read | Sahadhyayi", description: "Discover books across genres, explore your next read, and build a consistent reading habit with Sahadhyayi's online book library." },
   { route: "/research-papers", title: "Research Papers & Academic Studies | Sahadhyayi", description: "Discover research papers, academic studies, preprints and technical reports across disciplines." },
   { route: "/articles", title: "Reading Articles, Book Ideas & Literary Insights | Sahadhyayi", description: "Explore thoughtful articles about books, reading habits, literature, and ideas from the Sahadhyayi reading community." },
