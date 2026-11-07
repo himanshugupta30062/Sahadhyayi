@@ -635,6 +635,8 @@ const Navigation = () => {
                             ? "Events, challenges, reading groups, meetups and games"
                             : key === "library"
                             ? "Browse the library, publications and research papers"
+                            : key === "read-write"
+                            ? "Read articles and stories, or share your own writing"
                             : "Meet the authors, critics and thinkers shaping ideas"}
                         </p>
                       </div>
@@ -643,7 +645,7 @@ const Navigation = () => {
                           item.children?.length ? item.children : [item]
                         );
                         const groups = [
-                          { title: "Community", description: "Connect with fellow readers", names: ["Friends Feed", "Discover Friends"] },
+                          { title: "Friends", description: "Connect with fellow readers", names: ["Friends Feed", "Discover Friends"] },
                           { title: "Stories", description: "Original stories and series", names: ["Short Stories", "Community Stories", "Life Stories"] },
                           { title: "Discussions", description: "Go deeper into books and reflections", names: ["Book Reviews", "Book Discussion", "Book Discussions", "Reading Rooms", "Shared Marginalia", "Reading DNA"] },
                           { title: "Readers Map", description: "Find fellow readers around you", names: ["Reader's Map", "Reader Map by Book", "Friends & Readers Map"] },
