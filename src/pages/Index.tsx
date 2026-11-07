@@ -7,11 +7,23 @@ import DeferredSection from "@/components/DeferredSection";
 import AnimatedHero from "@/components/AnimatedHero";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-const SahadhyayiCapabilities = lazy(() => import("@/components/SahadhyayiCapabilities"));
+// Section 01: Animated Hero (LOCKED - imported directly)
+// Logged-in Continue Reading
 const CurrentReads = lazy(() => import("@/components/library/CurrentReads"));
+
+// Section 02: Sliding Books / Discovery (LOCKED)
 const HomeBookDiscovery = lazy(() => import("@/components/home/HomeBookDiscovery"));
-const HomeCommunityPreview = lazy(() => import("@/components/home/HomeCommunityPreview"));
-const HomeEditorialPreview = lazy(() => import("@/components/home/HomeEditorialPreview"));
+
+// Sections 03 to 11: Homepage Redesign
+const HomeExploreCategories = lazy(() => import("@/components/home/HomeExploreCategories"));
+const HomeSocialFeedPreview = lazy(() => import("@/components/home/HomeSocialFeedPreview"));
+const HomeBookExpertShowcase = lazy(() => import("@/components/home/HomeBookExpertShowcase"));
+const HomeReadAndWriteSection = lazy(() => import("@/components/home/HomeReadAndWriteSection"));
+const HomeReadingPeopleSection = lazy(() => import("@/components/home/HomeReadingPeopleSection"));
+const HomeAuthorsShowcase = lazy(() => import("@/components/home/HomeAuthorsShowcase"));
+const HomeActivityHubSection = lazy(() => import("@/components/home/HomeActivityHubSection"));
+const HomeResearchKnowledgeSection = lazy(() => import("@/components/home/HomeResearchKnowledgeSection"));
+const HomeFinalCtaSection = lazy(() => import("@/components/home/HomeFinalCtaSection"));
 
 const Index = () => {
   const { user } = useAuth();
@@ -49,13 +61,13 @@ const Index = () => {
         {JSON.stringify(structuredData)}
       </script>
 
-      {/* 1. Animated Hero */}
+      {/* 01. Existing Animated Hero (LOCKED) */}
       <ErrorBoundary fallback={null}>
         <AnimatedHero />
       </ErrorBoundary>
 
       <div className="sahadhyayi-home-sections bg-[#FAFAF8] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300">
-        {/* 2. Logged-in: Continue Reading first */}
+        {/* Logged-in reader: Continue reading */}
         {user?.id && (
           <section className="relative isolate overflow-hidden py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-[#FAFAF8] dark:bg-[#0B0D0C]">
             <div className="relative z-10 max-w-7xl mx-auto">
@@ -88,7 +100,7 @@ const Index = () => {
           </section>
         )}
 
-        {/* 3. Real Book Discovery */}
+        {/* 02. Existing Sliding Books & Discovery (LOCKED) */}
         <DeferredSection
           fallback={<div className="min-h-[640px] sm:min-h-[680px] lg:min-h-[720px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
           minHeightClassName="min-h-[640px] sm:min-h-[680px] lg:min-h-[720px]"
@@ -98,86 +110,95 @@ const Index = () => {
           </ErrorBoundary>
         </DeferredSection>
 
-        {/* 4. Real Community Preview */}
+        {/* 03. Explore Sahadhyayi */}
         <DeferredSection
-          fallback={<div className="min-h-[1320px] sm:min-h-[1080px] lg:min-h-[820px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
-          minHeightClassName="min-h-[1320px] sm:min-h-[1080px] lg:min-h-[820px]"
+          fallback={<div className="min-h-[480px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          minHeightClassName="min-h-[480px]"
         >
           <ErrorBoundary fallback={null}>
-            <HomeCommunityPreview />
+            <HomeExploreCategories />
           </ErrorBoundary>
         </DeferredSection>
 
-        {/* 5. Explore the Platform / Capabilities */}
+        {/* 04. The Social Reading Experience */}
         <DeferredSection
-          fallback={<div className="min-h-[760px] sm:min-h-[650px] lg:min-h-[500px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
-          minHeightClassName="min-h-[760px] sm:min-h-[650px] lg:min-h-[500px]"
+          fallback={<div className="min-h-[580px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          minHeightClassName="min-h-[580px]"
         >
           <ErrorBoundary fallback={null}>
-            <SahadhyayiCapabilities />
+            <HomeSocialFeedPreview />
           </ErrorBoundary>
         </DeferredSection>
 
-        {/* 6. Editorial blogs and community articles are distinct content destinations. */}
+        {/* 05. Meet Your Book Expert AI */}
         <DeferredSection
-          fallback={<div className="min-h-[640px] sm:min-h-[560px] lg:min-h-[520px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
-          minHeightClassName="min-h-[640px] sm:min-h-[560px] lg:min-h-[520px]"
+          fallback={<div className="min-h-[520px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          minHeightClassName="min-h-[520px]"
         >
           <ErrorBoundary fallback={null}>
-            <HomeEditorialPreview />
+            <HomeBookExpertShowcase />
           </ErrorBoundary>
         </DeferredSection>
 
-        {/* Literary voices discovery */}
-        <section className="border-y border-[#E4E8DF] bg-white py-14 dark:border-[#29332D] dark:bg-[#111614] sm:py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-center">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8F681C] dark:text-[#D5B16D]">A richer reading culture</p>
-                <h2 className="mt-3 max-w-xl font-serif text-3xl font-bold tracking-tight text-[#1C201D] dark:text-[#F3F0E7] sm:text-4xl">Discover the voices behind the books</h2>
-                <p className="mt-4 max-w-xl text-sm leading-7 text-[#636B65] dark:text-[#A5ADA6]">Find thoughtful reviewers, literary critics, BookTubers and bookish creators. Explore reader reviews or dive into essays that look deeper into the books we love.</p>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-3">
-                <Link to="/reviewers-critics" className="group rounded-2xl border border-[#E4E8DF] p-5 transition hover:border-[#B7CEB7] hover:bg-[#F5F8F3] dark:border-[#29332D] dark:hover:bg-[#18201B]"><span className="text-2xl">✍️</span><h3 className="mt-3 font-semibold text-[#1C442D] dark:text-[#D5B16D]">Reviewers & Critics</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Meet literary voices</p><ArrowRight className="mt-3 h-4 w-4 transition-transform group-hover:translate-x-1"/></Link>
-                <Link to="/social?tab=reviews" className="group rounded-2xl border border-[#E4E8DF] p-5 transition hover:border-[#B7CEB7] hover:bg-[#F5F8F3] dark:border-[#29332D] dark:hover:bg-[#18201B]"><span className="text-2xl">⭐</span><h3 className="mt-3 font-semibold text-[#1C442D] dark:text-[#D5B16D]">Book Reviews</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Real reader perspectives</p><ArrowRight className="mt-3 h-4 w-4 transition-transform group-hover:translate-x-1"/></Link>
-                <Link to="/articles" className="group rounded-2xl border border-[#E4E8DF] p-5 transition hover:border-[#B7CEB7] hover:bg-[#F5F8F3] dark:border-[#29332D] dark:hover:bg-[#18201B]"><span className="text-2xl">📚</span><h3 className="mt-3 font-semibold text-[#1C442D] dark:text-[#D5B16D]">The Journal</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Reviews & critical essays</p><ArrowRight className="mt-3 h-4 w-4 transition-transform group-hover:translate-x-1"/></Link>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* 06. Read & Write */}
+        <DeferredSection
+          fallback={<div className="min-h-[540px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          minHeightClassName="min-h-[540px]"
+        >
+          <ErrorBoundary fallback={null}>
+            <HomeReadAndWriteSection />
+          </ErrorBoundary>
+        </DeferredSection>
 
-        {/* 7. Atmospheric Final Call-to-Action with warm library aesthetic */}
-        <section className="home-final-cta relative isolate py-20 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#FAFAF8] dark:bg-gradient-to-br dark:from-[#0B0D0C] dark:via-[#121413] dark:to-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden transition-colors duration-300">
+        {/* 07. Find Your Reading People */}
+        <DeferredSection
+          fallback={<div className="min-h-[520px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          minHeightClassName="min-h-[520px]"
+        >
+          <ErrorBoundary fallback={null}>
+            <HomeReadingPeopleSection />
+          </ErrorBoundary>
+        </DeferredSection>
 
-          <div className="relative z-10 max-w-3xl mx-auto text-center">
-            {/* Cultural Origin Tag */}
-            <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.24em] text-[#8F681C] dark:text-[#D5B16D] mb-4">
-              सहाध्यायी · Fellow Reader
-            </div>
+        {/* 08. Discover Authors & Literary Experts */}
+        <DeferredSection
+          fallback={<div className="min-h-[540px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          minHeightClassName="min-h-[540px]"
+        >
+          <ErrorBoundary fallback={null}>
+            <HomeAuthorsShowcase />
+          </ErrorBoundary>
+        </DeferredSection>
 
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold tracking-tight mb-5 text-[#1C201D] dark:text-[#F3F0E7]">
-              Ready to join Sahadhyayi?
-            </h2>
-            <p className="text-sm sm:text-base text-[#636B65] dark:text-[#A5ADA6] mb-9 max-w-2xl mx-auto leading-relaxed">
-              Explore the library, join reading groups, and be part of a community that reads, thinks, and grows together.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3.5 justify-center items-center">
-              <Link
-                to={user ? "/dashboard" : "/signup"}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-[#8F681C] hover:bg-[#785715] text-white dark:bg-[#D5B16D] dark:hover:bg-[#e4c688] dark:text-stone-950 font-semibold text-sm sm:text-base shadow-md shadow-[#8F681C]/20 dark:shadow-[#D5B16D]/20 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:focus-visible:ring-[#D5B16D]"
-              >
-                <span>{user ? 'Open Dashboard' : 'Get started'}</span>
-                <ArrowRight className="w-4 h-4 text-white/90 dark:text-stone-950/80" />
-              </Link>
-              <Link
-                to="/library"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full border border-[#DDE5D8] hover:border-[#B7CEB7] bg-white/85 hover:bg-[#ECF4EA] text-[#1C201D] dark:border-[#26302A] dark:hover:border-[#38483D] dark:bg-[#111413] dark:hover:bg-[#181C1A] dark:text-[#F3F0E7] text-sm sm:text-base font-medium transition-all shadow-2xs dark:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:focus-visible:ring-[#D5B16D]"
-              >
-                <span>Explore the library</span>
-              </Link>
-            </div>
-          </div>
-        </section>
+        {/* 09. Activity Hub */}
+        <DeferredSection
+          fallback={<div className="min-h-[500px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          minHeightClassName="min-h-[500px]"
+        >
+          <ErrorBoundary fallback={null}>
+            <HomeActivityHubSection />
+          </ErrorBoundary>
+        </DeferredSection>
+
+        {/* 10. Research & Knowledge */}
+        <DeferredSection
+          fallback={<div className="min-h-[480px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          minHeightClassName="min-h-[480px]"
+        >
+          <ErrorBoundary fallback={null}>
+            <HomeResearchKnowledgeSection />
+          </ErrorBoundary>
+        </DeferredSection>
+
+        {/* 11. Final Join Sahadhyayi */}
+        <DeferredSection
+          fallback={<div className="min-h-[380px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          minHeightClassName="min-h-[380px]"
+        >
+          <ErrorBoundary fallback={null}>
+            <HomeFinalCtaSection />
+          </ErrorBoundary>
+        </DeferredSection>
       </div>
     </>
   );
