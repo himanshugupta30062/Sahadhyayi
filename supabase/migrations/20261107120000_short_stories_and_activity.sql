@@ -1,6 +1,21 @@
 -- Migration: 20261107120000_short_stories_and_activity.sql
 -- Description: Schema enhancements for Short Stories (standalone & multi-part series), discovery, reading progress, and social interactions.
 
+-- 0. Create the base stories table (also supports fresh databases).
+CREATE TABLE IF NOT EXISTS public.stories (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  title text NOT NULL,
+  description text,
+  created_at timestamptz NOT NULL DEFAULT now()
+ );
+
+-- Keep the author FK pointed at profiles so PostgREST can embed author details.
+ALTER TABLE public.stories DROP CONSTRAINT IF EXISTS stories_user_id_fkey;
+ALTER TABLE public.stories DROP CONSTRAINT IF EXISTS stories_user_id_profiles_fkey;
+ALTER TABLE public.stories ADD CONSTRAINT stories_user_id_profiles_fkey
+  FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
+
 -- 1. Enhance public.stories table
 ALTER TABLE public.stories
   ADD COLUMN IF NOT EXISTS cover_image_url text,

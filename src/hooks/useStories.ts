@@ -125,7 +125,7 @@ export const useStories = (options?: StoryFilterOptions) => {
       const { data, error } = await query.limit(50);
       if (error) {
         console.error('Failed to load stories feed:', error);
-        return [];
+        throw error;
       }
 
       const stories = (data || []) as unknown as Story[];
