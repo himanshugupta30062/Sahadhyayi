@@ -107,7 +107,7 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
         {/* Enhanced Action Buttons Overlay - Icon Only with Hover Text */}
         <div
           className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-all duration-300 ${
-            isHovered ? 'opacity-100' : 'opacity-0'
+            'opacity-100 md:opacity-0' + (isHovered ? ' md:opacity-100' : '')
           } 
           flex items-center justify-center gap-4`}
         >
@@ -231,98 +231,7 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
           </Link>
         </div>
 
-        {/* Mobile Quick Actions - Simplified */}
-        <div
-          className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 md:hidden transition-opacity duration-300 ${
-            isHovered ? 'opacity-0 pointer-events-none' : 'opacity-100'
-          }`}
-        >
-          <div className="flex gap-3 justify-center">
-            {/* Add to Library Button - Mobile */}
-            <button
-              onClick={handleAddToLibrary}
-              disabled={user && (isInLibrary || addToLibrary.isPending)}
-              className={`
-                flex items-center justify-center w-10 h-10 rounded-full
-                transition-all duration-200 backdrop-blur-sm
-                ${
-                  isInLibrary
-                    ? 'bg-green-600 text-white cursor-default'
-                    : addToLibrary.isPending
-                    ? 'bg-muted/60 text-muted-foreground cursor-not-allowed opacity-60'
-                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                }
-              `}
-              title={
-                !user
-                  ? "Sign in to add to library"
-                  : isInLibrary 
-                  ? "Already in library" 
-                  : addToLibrary.isPending 
-                  ? "Adding..." 
-                  : "Add to library"
-              }
-              aria-label={
-                !user
-                  ? "Sign in to add to library"
-                  : isInLibrary 
-                  ? "Already in library" 
-                  : addToLibrary.isPending 
-                  ? "Adding to library..." 
-                  : "Add to library"
-              }
-            >
-              {isInLibrary ? (
-                <Check className="w-4 h-4" />
-              ) : (
-                <Plus className="w-4 h-4" />
-              )}
-            </button>
 
-            {hasDirectPdf ? (
-              <button
-                onClick={handleDownload}
-                className="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 backdrop-blur-sm bg-sahadhyayi-orange text-white hover:bg-sahadhyayi-orange/90"
-                title="Download PDF"
-                aria-label="Download PDF"
-              >
-                <Download className="w-4 h-4" />
-              </button>
-            ) : hasOnlineReader ? (
-              <Link
-                to={`/book/${book.id}`}
-                className="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 backdrop-blur-sm bg-amber-600 text-white hover:bg-amber-500"
-                title="Read Online"
-                aria-label="Read Online"
-              >
-                <BookOpen className="w-4 h-4" />
-              </Link>
-            ) : resourceType === 'external_book_page' ? (
-              <Link
-                to={`/book/${book.id}`}
-                className="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 backdrop-blur-sm bg-purple-600 text-white hover:bg-purple-500"
-                title="View Resource"
-                aria-label="View Resource"
-              >
-                <ExternalLink className="w-4 h-4" />
-              </Link>
-            ) : null}
-            
-            <Link
-              to={`/book/${book.id}`}
-              onClick={() => void trackBookOpened(book.id, book.title)}
-              className="
-                relative z-10 flex items-center justify-center w-10 h-10 rounded-full
-                bg-white/10 text-white hover:bg-white/20 border border-white/20
-                transition-all duration-200 backdrop-blur-sm touch-manipulation
-              "
-              title="View Details"
-              aria-label={`View details for ${book.title}`}
-            >
-              <Info className="w-4 h-4 pointer-events-none" />
-            </Link>
-          </div>
-        </div>
       </div>
 
       <CardContent className="p-3 md:p-4 space-y-2 md:space-y-3">
