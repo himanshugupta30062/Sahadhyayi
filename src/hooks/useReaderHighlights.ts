@@ -10,12 +10,12 @@ export interface ReaderHighlight {
 export const useReaderHighlights = (bookId?: string) => {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ["reader-highlights", user?.id, bookId], enabled: !!user?.id && !!bookId,
+    queryKey: ["reader-highlights", user?.id, bookId], enabled: !!user?.id,
     queryFn: async () => {
-      if (!user?.id || !bookId) return [];
+      if (!user?.id) return [];
       const { data, error } = await supabase.from("reader_highlights").select("*")
-        .eq("user_id", user.id).eq("book_id", bookId).order("created_at", { ascending: false });
-      if (error) throw error; return (data ?? []) as ReaderHighlight[];
+        .eq("user_id", user.id).order("created_at", { ascending: false });
+      if (error) throw error; return ((data ?? []) as ReaderHighlight[]).filter(item => !bookId || item.book_id === bookId);
     },
   });
 };
