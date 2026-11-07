@@ -5,11 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import SEO from '@/components/SEO';
 import { useToast } from '@/hooks/use-toast';
-import { useQuotes, Quote } from '@/contexts/quotesHelpers';
+import { useQuotes } from '@/contexts/quotesHelpers';
+import { useReaderHighlights, useDeleteReaderHighlight } from '@/hooks/useReaderHighlights';
 
 
 const QuotesPage = () => {
-  const { quotes, addQuote } = useQuotes();
+  const { quotes, addQuote, removeQuote } = useQuotes();
+  const { data: highlights = [], isLoading: highlightsLoading } = useReaderHighlights();
+  const deleteHighlight = useDeleteReaderHighlight();
   const { toast } = useToast();
   const [quoteText, setQuoteText] = useState('');
   const [quoteSource, setQuoteSource] = useState('');
@@ -56,6 +59,21 @@ const QuotesPage = () => {
             <Button onClick={handleAddQuote} className="w-full">Add Quote</Button>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader><CardTitle className="text-base">My Highlights ({highlights.length})</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {highlightsLoading ? <p className="text-sm text-muted-foreground">Loading highlights…</p> :
+              highlights.length === 0 ? <p className="text-sm text-muted-foreground">Highlights you save while reading will appear here.</p> :
+              highlights.map(h => <div key={h.id} className="rounded-lg border p-3 space-y-2">
+                <p className="text-sm whitespace-pre-wrap">“{h.text}”</p>
+                <p className="text-xs text-muted-foreground">Page {h.page} · {h.color}</p>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => window.location.assign(`/reader/${h.book_id}?page=${h.page}`)}>Open in Reader</Button>
+                  <Button size="sm" variant="ghost" onClick={() => deleteHighlight.mutate({id:h.id,bookId:h.book_id})} disabled={deleteHighlight.isPending}>Delete</Button>
+                </div>
+              </div>)}
+          </CardContent>
+        </Card>
         {quotes.map((q) => (
           <Card key={q.id}>
             <CardContent className="space-y-2">
@@ -64,6 +82,7 @@ const QuotesPage = () => {
                 {q.source && <p className="text-xs text-gray-500">— {q.source}</p>}
                 {(q.page || q.location) && <p className="text-xs text-muted-foreground">{q.page ? `Page ${q.page}` : 'Reading location'}{q.location ? ` · ${q.location.slice(0, 28)}` : ''}</p>}
               </div>
+              <Button size="sm" variant="ghost" onClick={() => removeQuote(q.id)}>Delete</Button>
               <Button size="sm" variant="outline" onClick={() => shareQuote(q.text)}>
                 Share Quote
               </Button>
