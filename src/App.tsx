@@ -50,6 +50,7 @@ const WebsiteTour = lazy(() => import("./components/onboarding/WebsiteTour"));
 // Secondary pages (can be loaded later)
 const Profile = lazy(() => import('./pages/Profile'));
 const SocialMedia = lazy(() => import('./pages/SocialMedia'));
+const Stories = lazy(() => import('./pages/Stories'));
 const Authors = lazy(() => import('./pages/Authors'));
 const Scientists = lazy(() => import('./pages/Scientists'));
 const ScientistProfile = lazy(() => import('./pages/ScientistProfile'));
@@ -438,7 +439,11 @@ const App = memo(() => {
                         />
                         <Route
                           path="/stories"
-                          element={<Navigate to="/social?tab=stories" replace />}
+                          element={
+                            <Suspense fallback={<LoadingFallback message="Loading stories..." />}>
+                              <Stories />
+                            </Suspense>
+                          }
                         />
                         <Route
                           path="/stories/:storyId"
