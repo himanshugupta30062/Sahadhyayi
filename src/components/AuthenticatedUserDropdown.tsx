@@ -36,10 +36,13 @@ export default function AuthenticatedUserDropdown({
   onSignOut,
 }: AuthenticatedUserDropdownProps) {
   const { data: isAdmin } = useQuery({
-    queryKey: ["authenticated-user-dropdown-admin", user.id],
+    queryKey: ["authenticated-user-dropdown-admin", user?.id],
     queryFn: verifyAdminStatus,
+    enabled: !!user?.id,
     staleTime: 5 * 60 * 1000,
   });
+
+  if (!user) return null;
 
   return (
     <DropdownMenu>
@@ -52,7 +55,7 @@ export default function AuthenticatedUserDropdown({
           <Avatar className="h-8 w-8">
             <AvatarImage src={user.user_metadata?.avatar_url} alt={userDisplayName} />
             <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white font-medium text-xs">
-              {getUserInitials(user.user_metadata?.full_name || user.email)}
+              {getUserInitials(user.user_metadata?.full_name || user?.email)}
             </AvatarFallback>
           </Avatar>
           <ChevronDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
@@ -61,7 +64,7 @@ export default function AuthenticatedUserDropdown({
       <DropdownMenuContent align="end" className="w-56">
         <div className="px-3 py-2 border-b border-border mb-1">
           <p className="text-sm font-semibold text-foreground truncate">{userDisplayName}</p>
-          {user.email && (
+          {user?.email && (
             <p className="text-xs text-muted-foreground truncate">{user.email}</p>
           )}
         </div>

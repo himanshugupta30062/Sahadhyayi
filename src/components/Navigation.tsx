@@ -340,9 +340,14 @@ const Navigation = () => {
   }, [isOpen]);
 
   const handleSignOut = async () => {
-    await signOut();
-    setIsOpen(false);
-    navigate("/signin");
+    try {
+      await signOut();
+    } catch (error) {
+      console.warn("Sign out notice:", error);
+    } finally {
+      setIsOpen(false);
+      navigate("/signin");
+    }
   };
 
   const isCurrentRoute = (href: string) => {
@@ -870,7 +875,7 @@ const Navigation = () => {
               <Link to="/profile" onClick={() => setIsOpen(false)} className="mb-3 flex min-h-[64px] items-center gap-3 rounded-xl border border-border/70 bg-muted/30 px-3 py-2 transition-colors hover:bg-muted">
                 <Avatar className="h-10 w-10 shrink-0">
                   <AvatarImage src={user.user_metadata?.avatar_url} alt={userDisplayName} />
-                  <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 font-medium text-white">{getUserInitials(user.user_metadata?.full_name || user.email)}</AvatarFallback>
+                  <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 font-medium text-white">{getUserInitials(user.user_metadata?.full_name || user?.email)}</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-foreground">{userDisplayName}</p><p className="truncate text-xs text-muted-foreground">View profile</p></div>
                 <ChevronDown className="h-4 w-4 -rotate-90 text-muted-foreground" aria-hidden="true" />
@@ -897,12 +902,12 @@ const Navigation = () => {
                   <Avatar className="h-10 w-10 shrink-0">
                     <AvatarImage src={user.user_metadata?.avatar_url} alt={userDisplayName} />
                     <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 font-medium text-white">
-                      {getUserInitials(user.user_metadata?.full_name || user.email)}
+                      {getUserInitials(user.user_metadata?.full_name || user?.email)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-foreground">{userDisplayName}</p>
-                    <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                    <p className="truncate text-xs text-muted-foreground">{user?.email || 'Reader'}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-1">

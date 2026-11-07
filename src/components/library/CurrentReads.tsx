@@ -14,7 +14,7 @@ const CurrentReads: React.FC = () => {
   const { data: books = [], isLoading, error } = useQuery<CurrentRead[]>({
     queryKey: ['current-reads', user?.id],
     queryFn: fetchCurrentReads,
-    enabled: !!user,
+    enabled: !!user?.id,
   });
 
   const handleOpen = async (book: CurrentRead) => {

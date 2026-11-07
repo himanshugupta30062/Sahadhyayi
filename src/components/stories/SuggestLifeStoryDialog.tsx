@@ -245,3 +245,4 @@ export const SuggestLifeStoryDialog: React.FC<SuggestLifeStoryDialogProps> = ({
     </Dialog>
   );
 };
+

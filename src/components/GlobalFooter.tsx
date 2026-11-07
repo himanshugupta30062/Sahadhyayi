@@ -253,7 +253,7 @@ const GlobalFooter = () => {
               <p>© {new Date().getFullYear()} Sahadhyayi. All rights reserved. Building a global reading community.</p>
               <div className="text-[#636B65] dark:text-zinc-400">
                 {user ? (
-                  <>Logged in as <span className="font-medium text-[#1C201D] dark:text-zinc-300">{user.email}</span></>
+                  <>Logged in as <span className="font-medium text-[#1C201D] dark:text-zinc-300">{user?.email || 'Reader'}</span></>
                 ) : (
                   <span>Welcome to Sahadhyayi</span>
                 )}

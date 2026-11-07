@@ -23,6 +23,8 @@ const UserDropdownMenu = () => {
   const navigate = useNavigate();
   const { showWarning, timeRemaining, extendSession } = useSessionWarning();
 
+  if (!user) return null;
+
   const avatarFallback =
     profile?.full_name?.charAt(0) ||
     user?.email?.charAt(0) ||
@@ -30,13 +32,10 @@ const UserDropdownMenu = () => {
 
   const handleSignOut = async () => {
     try {
-      console.log('[DROPDOWN] Starting sign out...');
       await signOut();
-      console.log('[DROPDOWN] Sign out completed, navigating...');
-      navigate('/signin');
     } catch (error) {
-      console.error('[DROPDOWN] Sign out error:', error);
-      // Force navigation even if there's an error
+      console.warn('[DROPDOWN] Sign out notice:', error);
+    } finally {
       navigate('/signin');
     }
   };
@@ -67,7 +66,7 @@ const UserDropdownMenu = () => {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-8 w-8 rounded-full focus:ring-2 focus:ring-amber-500" aria-label="User Menu">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={profile?.profile_photo_url || ''} alt={profile?.full_name || user.email || ''} />
+              <AvatarImage src={profile?.profile_photo_url || ''} alt={profile?.full_name || user?.email || ''} />
               <AvatarFallback className="bg-gradient-to-br from-amber-500 to-orange-600 text-white text-sm font-semibold">
                 {avatarFallback}
               </AvatarFallback>
@@ -77,14 +76,14 @@ const UserDropdownMenu = () => {
         <DropdownMenuContent className="w-72 bg-white shadow-xl border border-gray-200" align="end" forceMount>
           <div className="flex items-center gap-3 p-4 border-b border-gray-100">
             <Avatar className="h-12 w-12">
-              <AvatarImage src={profile?.profile_photo_url || ''} alt={profile?.full_name || user.email || ''} />
+              <AvatarImage src={profile?.profile_photo_url || ''} alt={profile?.full_name || user?.email || ''} />
               <AvatarFallback className="bg-gradient-to-br from-amber-500 to-orange-600 text-white text-lg font-semibold">
                 {avatarFallback}
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col flex-1 min-w-0">
               <p className="font-semibold text-gray-900 truncate">{profile?.full_name || 'User'}</p>
-              <p className="text-sm text-gray-500 truncate">{user.email}</p>
+              <p className="text-sm text-gray-500 truncate">{user?.email || 'Reader'}</p>
               {sessionInfo && (
                 <div className="flex items-center gap-1 mt-1">
                   <Clock className="w-3 h-3 text-gray-400" />

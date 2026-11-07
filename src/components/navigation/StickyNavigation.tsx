@@ -86,8 +86,13 @@ const StickyNavigation = () => {
   };
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate('/signin');
+    try {
+      await signOut();
+    } catch (error) {
+      console.warn("Sign out notice:", error);
+    } finally {
+      navigate('/signin');
+    }
   };
 
   const handleOnboardingSave = (tabs: string[]) => {

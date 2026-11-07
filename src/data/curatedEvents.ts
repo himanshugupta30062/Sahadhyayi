@@ -217,3 +217,4 @@ export const CURATED_LITERARY_EVENTS: BookEvent[] = [
     attendees_count: 410,
   },
 ];
+

@@ -362,3 +362,4 @@ export const SuggestEventDialog: React.FC<SuggestEventDialogProps> = ({
     </Dialog>
   );
 };
+

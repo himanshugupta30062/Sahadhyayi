@@ -50,11 +50,13 @@ const Index = () => {
       </script>
 
       {/* 1. Animated Hero */}
-      <AnimatedHero />
+      <ErrorBoundary fallback={null}>
+        <AnimatedHero />
+      </ErrorBoundary>
 
       <div className="sahadhyayi-home-sections bg-[#FAFAF8] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300">
         {/* 2. Logged-in: Continue Reading first */}
-        {user && (
+        {user?.id && (
           <section className="relative isolate overflow-hidden py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-[#FAFAF8] dark:bg-[#0B0D0C]">
             <div className="relative z-10 max-w-7xl mx-auto">
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
@@ -121,7 +123,9 @@ const Index = () => {
           fallback={<div className="min-h-[640px] sm:min-h-[560px] lg:min-h-[520px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
           minHeightClassName="min-h-[640px] sm:min-h-[560px] lg:min-h-[520px]"
         >
-          <HomeEditorialPreview />
+          <ErrorBoundary fallback={null}>
+            <HomeEditorialPreview />
+          </ErrorBoundary>
         </DeferredSection>
 
         {/* Literary voices discovery */}
