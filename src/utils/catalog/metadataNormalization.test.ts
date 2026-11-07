@@ -40,4 +40,34 @@ describe('book metadata normalization', () => {
       .toBe(createCanonicalClusterKey('The Arthashastra — A Guide', 'Kautilya'));
     expect(createCanonicalClusterKey('महाभारत', null)).toContain('महाभारत::unknown author');
   });
+
+  it('covers subtitle separator precedence, fallback title and bracket cleanup', () => {
+    expect(normalizeTitle('A Title - A Subtitle').subtitle).toBe('A Subtitle');
+    expect(normalizeTitle('A Title (Notes)').cleanTitle).toBe('A Title');
+    expect(normalizeTitle('A Title:').cleanTitle).toBe('A Title:');
+    expect(normalizeTitle('X: Subtitle').cleanTitle).toBe('X: Subtitle');
+    expect(normalizeTitle('   ').cleanTitle).toBe('Untitled');
+  });
+
+  it('handles author edge cases and preserves original input', () => {
+    expect(normalizeAuthor('  ').normalizedAuthor).toBe('Unknown Author');
+    expect(normalizeAuthor('Jane Doe / Editor').normalizedAuthor).toBe('Jane Doe');
+    expect(normalizeAuthor('Jane Doe with John').normalizedAuthor).toBe('Jane Doe');
+    expect(normalizeAuthor('Jane Doe, John Smith, Editor').normalizedAuthor).toBe('Jane Doe');
+    expect(normalizeAuthor('Sir Arthur Conan Doyle').normalizedAuthor).toBe('Arthur Conan Doyle');
+    expect(normalizeAuthor('Jane Doe (born 1970)').originalAuthor).toBe('Jane Doe (born 1970)');
+  });
+
+  it('rejects malformed ISBN formats and accepts trimmed lowercase input', () => {
+    expect(normalizeIsbn(' 9780306406157 ').toMatchObject({ isbn13: '9780306406157', isValid: true });
+    for (const value of ['123', '978030640615', '978030640615X', '9780306406158', '']) {
+      expect(normalizeIsbn(value).isValid).toBe(false);
+    }
+  });
+
+  it('canonicalizes case, punctuation and author fallback consistently', () => {
+    expect(createCanonicalClusterKey('Café!', 'A. Writer')).toBe(createCanonicalClusterKey('CAFÉ', 'A Writer'));
+    expect(createCanonicalClusterKey('A Book', '!!!')).toBe('a book::');
+  });
+
 });
