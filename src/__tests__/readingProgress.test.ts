@@ -12,13 +12,13 @@ describe('Reading Progress Storage', () => {
     localStorage.clear();
   });
 
-  it('generates distinct storage keys for authenticated user vs guest', () => {
+  it('generates distinct storage keys for authenticated users and guests', () => {
     expect(getProgressStorageKey('book-123', 'user-abc')).toBe('sahadhyayi_progress_user-abc_book-123');
     expect(getProgressStorageKey('book-123', null)).toBe('sahadhyayi_progress_guest_book-123');
     expect(getProgressStorageKey('book-123', undefined)).toBe('sahadhyayi_progress_guest_book-123');
   });
 
-  it('saves and restores reading progress accurately', () => {
+  it('saves and restores reading progress for the same account', () => {
     saveProgressLocally(
       {
         bookId: 'book-456',
@@ -41,16 +41,23 @@ describe('Reading Progress Storage', () => {
     expect(loaded?.updatedAt).toBeGreaterThan(0);
   });
 
-  it('falls back to legacy unkeyed localStorage when scoped key is absent', () => {
+  it('does not share local progress between accounts or with the guest scope', () => {
+    saveProgressLocally({ bookId: 'book-private', currentPage: 18, totalPages: 80 }, 'user-1');
+
+    expect(loadProgressLocally('book-private', 'user-1')?.currentPage).toBe(18);
+    expect(loadProgressLocally('book-private', 'user-2')).toBeNull();
+    expect(loadProgressLocally('book-private')).toBeNull();
+  });
+
+  it('does not migrate legacy unscoped progress because its owner is unknown', () => {
     localStorage.setItem('book-legacy-1-page', '17');
     localStorage.setItem('book-legacy-1-position', 'cfi-legacy-pos');
     localStorage.setItem('book-legacy-1-bookmarks', JSON.stringify(['bm-1']));
 
-    const loaded = loadProgressLocally('legacy-1', 'user-2');
-    expect(loaded).not.toBeNull();
-    expect(loaded?.currentPage).toBe(17);
-    expect(loaded?.position).toBe('cfi-legacy-pos');
-    expect(loaded?.bookmarks).toEqual(['bm-1']);
+    expect(loadProgressLocally('legacy-1', 'user-2')).toBeNull();
+    expect(localStorage.getItem('book-legacy-1-page')).toBeNull();
+    expect(localStorage.getItem('book-legacy-1-position')).toBeNull();
+    expect(localStorage.getItem('book-legacy-1-bookmarks')).toBeNull();
   });
 
   it('clamps current page to minimum 1', () => {
@@ -79,7 +86,6 @@ describe('Reading Progress Storage', () => {
       'user-4'
     );
 
-    // Update only the page
     saveProgressLocally(
       {
         bookId: 'book-partial',
