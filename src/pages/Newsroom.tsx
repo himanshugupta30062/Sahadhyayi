@@ -59,7 +59,12 @@ function StoryArtwork({ item, large = false }: { item: NewsItem; large?: boolean
   </div>;
 }
 
-function ImageAttribution({ item }: { item: NewsItem }) {\n  if (!item.image_credit) return null;\n  return <p className=\"mt-1.5 text-[11px] leading-4 text-muted-foreground\">Image: {item.image_source_url ? <a href={item.image_source_url} target=\"_blank\" rel=\"noopener noreferrer\" className=\"underline underline-offset-2 hover:text-foreground\">{item.image_credit}</a> : item.image_credit}</p>;\n}\n\nfunction SourceLink({ item, prominent = false }: { item: NewsItem; prominent?: boolean }) {
+function ImageAttribution({ item }: { item: NewsItem }) {
+  if (!item.image_credit) return null;
+  return <p className=\"mt-1.5 text-[11px] leading-4 text-muted-foreground\">Image: {item.image_source_url ? <a href={item.image_source_url} target=\"_blank\" rel=\"noopener noreferrer\" className=\"underline underline-offset-2 hover:text-foreground\">{item.image_credit}</a> : item.image_credit}</p>;
+}
+
+function SourceLink({ item, prominent = false }: { item: NewsItem; prominent?: boolean }) {
   if (!item.source_url) return <span className="text-xs text-muted-foreground">Sahadhyayi update</span>;
   return <a href={item.source_url} target="_blank" rel="noopener noreferrer" className={prominent ? "inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline" : "inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"}>Read at source <ArrowUpRight className="h-3.5 w-3.5" /></a>;
 }
@@ -115,7 +120,8 @@ export default function Newsroom() {
           {lead && <div className="mb-8 grid gap-6 border-b pb-8 md:grid-cols-[minmax(0,1.65fr)_minmax(260px,1fr)]">
             <article className="min-w-0">
               {lead.source_url ? <a href={lead.source_url} target="_blank" rel="noopener noreferrer" aria-label={`Open source for ${lead.title}`} className="mb-4 block overflow-hidden rounded-xl"><StoryArtwork item={lead} large /></a> : <div className="mb-4"><StoryArtwork item={lead} large /></div>}
-              <ImageAttribution item={lead} />\n              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><Badge>{categoryLabel(lead.category)}</Badge><span>{dateLabel(lead.published_at)}</span><span aria-hidden="true">·</span><span>{lead.source_name || "Sahadhyayi"}</span></div>
+              <ImageAttribution item={lead} />
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><Badge>{categoryLabel(lead.category)}</Badge><span>{dateLabel(lead.published_at)}</span><span aria-hidden="true">·</span><span>{lead.source_name || "Sahadhyayi"}</span></div>
               <h3 className="mt-3"><StoryTitle item={lead} prominent /></h3>
               {lead.summary && <p className="mt-3 text-base leading-7 text-muted-foreground">{lead.summary}</p>}
               <div className="mt-4"><SourceLink item={lead} prominent /></div>
