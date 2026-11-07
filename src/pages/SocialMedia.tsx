@@ -887,7 +887,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                     ) : (
                       <div className="space-y-2.5">
                         {groups.slice(0, 3).map((group) => {
-                          const memberCount = group.group_members?.[0]?.count ?? group.member_count ?? null;
+                          const memberCount = (group as any).group_members?.[0]?.count ?? group.member_count ?? null;
                           return (
                             <div
                               key={group.id}

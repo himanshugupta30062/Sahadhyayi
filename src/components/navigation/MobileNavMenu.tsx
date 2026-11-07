@@ -38,9 +38,14 @@ const MobileNavMenu = ({ isOpen, onClose }: MobileNavMenuProps) => {
   const location = useLocation();
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate('/signin');
-    onClose();
+    try {
+      await signOut();
+    } catch (error) {
+      console.warn("Sign out notice:", error);
+    } finally {
+      onClose();
+      navigate('/signin');
+    }
   };
 
   const isActive = (path: string) => location.pathname === path;

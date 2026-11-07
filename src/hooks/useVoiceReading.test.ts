@@ -39,7 +39,7 @@ describe('useVoiceReading', () => {
         this.text = text;
       }
     }
-    (global as any).SpeechSynthesisUtterance = MockUtterance;
+    (globalThis as any).SpeechSynthesisUtterance = MockUtterance;
   });
 
   afterEach(() => {

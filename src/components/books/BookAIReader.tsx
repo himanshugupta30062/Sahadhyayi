@@ -219,7 +219,7 @@ export default function BookAIReader({ book }: Props) {
                     >
                       <span className="font-bold">[{c.id}]</span>
                       <span>{c.title}</span>
-                      {c.pageNumber && (
+                      {Boolean(c.pageNumber) && (
                         <Link
                           to={`/reader/${book.id}?page=${c.pageNumber}`}
                           className="inline-flex items-center gap-0.5 font-semibold text-violet-600 underline hover:text-violet-800 dark:text-violet-400"

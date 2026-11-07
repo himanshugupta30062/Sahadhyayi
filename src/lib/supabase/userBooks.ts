@@ -12,9 +12,8 @@ export interface CurrentRead {
 
 export const fetchCurrentReads = async (): Promise<CurrentRead[]> => {
   try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const authRes = await supabase.auth.getUser();
+    const user = authRes?.data?.user;
 
     // 1. Primary: Query the active user_bookshelf table
     if (user?.id) {

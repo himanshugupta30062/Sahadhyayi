@@ -71,18 +71,23 @@ export const useGroups = (options: { enabled?: boolean } = {}) => {
 
       // Anonymous discovery uses an aggregate-only RPC; never grant anon access
       // to raw group_chat_members rows just to compute counts.
-      const [{ data: groups, error: groupsError }, { data: counts, error: countsError }] = await Promise.all([
+      const [{ data: groups, error: groupsError }, countsResult] = await Promise.all([
         supabase.from('group_chats').select('*').order('created_at', { ascending: false }),
-        supabase.rpc('get_public_group_member_counts'),
+        Promise.resolve(supabase.rpc('get_public_group_member_counts')).catch(() => ({ data: [], error: null })),
       ]);
-      if (groupsError) throw groupsError;
-      if (countsError) throw countsError;
-      const countByGroupId = new Map((counts || []).map((row: { group_id: string; member_count: number }) => [
-        row.group_id,
-        Number(row.member_count) || 0,
-      ]));
+      if (groupsError) {
+        console.warn('Failed to fetch group chats:', groupsError);
+        return [];
+      }
+      const counts = countsResult?.data ?? [];
+      const countByGroupId = new Map(
+        (Array.isArray(counts) ? counts : []).map((row: { group_id: string; member_count: number }) => [
+          row.group_id,
+          Number(row.member_count) || 0,
+        ])
+      );
       return (groups || []).map((group) => {
-        const count = countByGroupId.get(group.id) ?? 0;
+        const count = countByGroupId.get(group.id) ?? 1;
         return { ...group, member_count: count, group_members: [{ count }] };
       });
     },

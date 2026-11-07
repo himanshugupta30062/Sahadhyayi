@@ -268,3 +268,6 @@ export const StoriesFeed: React.FC = () => {
     </div>
   );
 };
+
+export default StoriesFeed;
+

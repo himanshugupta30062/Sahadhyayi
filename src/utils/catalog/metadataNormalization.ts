@@ -97,8 +97,13 @@ export function normalizeTitle(rawTitle: string): NormalizedTitle {
     .replace(/[ \t]{1,64}(?:खण्ड|खंड|भाग)[ \t]{0,16}[०-९0-9]{1,8}[ \t]{0,16}$/u, '')
     .trim();
 
-  // Clean trailing punctuation
-  cleanTitle = cleanTitle.replace(/[,;:\- \t\r\n]+$/, '').trim();
+  // Clean trailing punctuation safely without catastrophic backtracking
+  const trailingPunctuation = new Set([',', ';', ':', '-', ' ', '\t', '\r', '\n']);
+  let end = cleanTitle.length;
+  while (end > 0 && trailingPunctuation.has(cleanTitle[end - 1])) {
+    end--;
+  }
+  cleanTitle = cleanTitle.slice(0, end).trim();
 
   return {
     cleanTitle: cleanTitle || rawTitle.trim(),
@@ -123,8 +128,8 @@ export function normalizeAuthor(rawAuthor?: string | null): NormalizedAuthor {
 
   // Strip lifecycle dates like ", 1942-2018" or "(1942-2018)" or "b. 1942" without backtracking
   author = author
-    .replace(/\s*\([^\r\n)]*\d{4}[^\r\n)]*\)/g, '')
-    .replace(/,?\s*(?:b\.\s*)?\b\d{4}\b(?:\s*-\s*\d{1,4}\b)?/gi, '')
+    .replace(/\s*\([^\r\n)\d]{0,32}\d{4}[^)\r\n]{0,32}\)/g, '')
+    .replace(/(?:,\s*|\s+)(?:b\.\s*)?\d{4}(?:\s*-\s*\d{1,4})?\b/gi, '')
     .trim();
 
   // If multiple co-authors separated by semicolon, slash, or "et al.", take primary author
@@ -137,9 +142,13 @@ export function normalizeAuthor(rawAuthor?: string | null): NormalizedAuthor {
   }
 
   // If co-authors separated by "and", "&", or "with"
-  const coAuthorMatch = author.match(/[ \t]+(?:and|&|with)[ \t]+/i);
-  if (coAuthorMatch && coAuthorMatch.index !== undefined) {
-    author = author.slice(0, coAuthorMatch.index).trim();
+  const lowerAuthor = author.toLowerCase();
+  for (const sep of [' and ', ' & ', ' with ']) {
+    const idx = lowerAuthor.indexOf(sep);
+    if (idx !== -1) {
+      author = author.slice(0, idx).trim();
+      break;
+    }
   }
 
   // Invert "Last, First" if separated by comma (e.g. "Dostoevsky, Fyodor" -> "Fyodor Dostoevsky")
