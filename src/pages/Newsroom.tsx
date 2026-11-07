@@ -61,7 +61,22 @@ function StoryArtwork({ item, large = false }: { item: NewsItem; large?: boolean
 
 function ImageAttribution({ item }: { item: NewsItem }) {
   if (!item.image_credit) return null;
-  return <p className=\"mt-1.5 text-[11px] leading-4 text-muted-foreground\">Image: {item.image_source_url ? <a href={item.image_source_url} target=\"_blank\" rel=\"noopener noreferrer\" className=\"underline underline-offset-2 hover:text-foreground\">{item.image_credit}</a> : item.image_credit}</p>;
+  return (
+    <p className="mt-1.5 text-[11px] leading-4 text-muted-foreground">
+      Image: {item.image_source_url ? (
+        <a
+          href={item.image_source_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-2 hover:text-foreground"
+        >
+          {item.image_credit}
+        </a>
+      ) : (
+        item.image_credit
+      )}
+    </p>
+  );
 }
 
 function SourceLink({ item, prominent = false }: { item: NewsItem; prominent?: boolean }) {
