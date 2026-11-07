@@ -98,7 +98,7 @@ export function normalizeTitle(rawTitle: string): NormalizedTitle {
     .trim();
 
   // Clean trailing punctuation
-  cleanTitle = cleanTitle.replace(/[,;:\- \t\r\n]{1,256}$/, '').trim();
+  cleanTitle = cleanTitle.replace(/[,;:\- \t\r\n]+$/, '').trim();
 
   return {
     cleanTitle: cleanTitle || rawTitle.trim(),
