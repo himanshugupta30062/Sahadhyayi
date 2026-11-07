@@ -38,9 +38,9 @@ const QuotesProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [quotes, storageKey, loadedStorageKey]);
 
-  const addQuote = (text: string, source?: string, note?: string) => {
+  const addQuote = (text: string, source?: string, note?: string, metadata?: { bookId?: string; page?: number; location?: string }) => {
     if (!text.trim() || loadedStorageKey !== storageKey) return;
-    const newQuote: Quote = { id: Date.now(), text: text.trim(), source, note };
+    const newQuote: Quote = { id: Date.now(), text: text.trim(), source, note, ...metadata };
     setQuotes(prev => [...prev, newQuote]);
   };
 
