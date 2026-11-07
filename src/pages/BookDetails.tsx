@@ -26,6 +26,7 @@ import { logBookEvent } from '@/lib/supabase/events';
 import { BookEditionTransparency } from '@/components/books/BookEditionTransparency';
 import BookReviews from '@/components/books/BookReviews';
 import BookLiteraryVoices from '@/components/books/BookLiteraryVoices';
+import BookAIReader from '@/components/books/BookAIReader';
 
 
 const VALID_BOOK_TABS = ['connect', 'create', 'feedback', 'read'] as const;
@@ -336,7 +337,7 @@ const BookDetails = () => {
                 </div>
               </div>
 
-              {/* Quality & Edition Transparency */}
+              {/* Book-specific Gemini AI */}\n          <BookAIReader book={{ id: book.id, title: book.title, author: book.author, description: book.description, language: book.language }} />\n\n          {/* Quality & Edition Transparency */}
               <BookEditionTransparency book={book} />
 
               {/* Book Description */}
