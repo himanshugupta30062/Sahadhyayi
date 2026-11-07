@@ -17,3 +17,4 @@ REVOKE ALL ON FUNCTION public.get_public_group_member_counts() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.get_public_group_member_counts() TO anon, authenticated, service_role;
 
 COMMENT ON FUNCTION public.get_public_group_member_counts() IS 'Aggregated member counts per group chat for public directory preview without exposing membership rows.';
+
