@@ -337,7 +337,10 @@ const BookDetails = () => {
                 </div>
               </div>
 
-              {/* Book-specific Gemini AI */}\n          <BookAIReader book={{ id: book.id, title: book.title, author: book.author, description: book.description, language: book.language }} />\n\n          {/* Quality & Edition Transparency */}
+              {/* Book-specific Gemini AI */}
+              <BookAIReader book={{ id: book.id, title: book.title, author: book.author, description: book.description, language: book.language }} />
+
+              {/* Quality & Edition Transparency */}
               <BookEditionTransparency book={book} />
 
               {/* Book Description */}

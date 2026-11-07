@@ -77,6 +77,25 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
     ],
   },
   {
+    name: "Social",
+    href: "/social",
+    items: [
+      { name: "Friends Feed", href: "/social", tourTarget: "community" },
+      { name: "Short Stories", href: "/social?tab=stories" },
+      { name: "Community Stories", href: "/community-stories" },
+      { name: "Life Stories", href: "/life-stories" },
+      { name: "Book Reviews", href: "/social?tab=reviews" },
+      { name: "Discover Friends", href: "/social?tab=friends" },
+      { name: "Book Discussions", href: "/social?tab=threads" },
+      { name: "Reading Rooms", href: "/social?tab=rooms" },
+      { name: "Shared Marginalia", href: "/social?tab=margins" },
+      { name: "Reading DNA", href: "/social?tab=dna" },
+      { name: "Reader's Map", href: "/social?tab=map" },
+      { name: "Reader Map by Book", href: "/reader-map" },
+      { name: "Friends & Readers Map", href: "/map" },
+    ],
+  },
+  {
     name: "Read & Write",
     href: "/articles",
     items: [
@@ -104,22 +123,6 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
     ],
   },
   {
-    name: "Social",
-    href: "/social",
-    items: [
-      { name: "Friends Feed", href: "/social", tourTarget: "community" },
-      { name: "Book Reviews", href: "/social?tab=reviews" },
-      { name: "Discover Friends", href: "/social?tab=friends" },
-      { name: "Book Discussions", href: "/social?tab=threads" },
-      { name: "Reading Rooms", href: "/social?tab=rooms" },
-      { name: "Shared Marginalia", href: "/social?tab=margins" },
-      { name: "Reading DNA", href: "/social?tab=dna" },
-      { name: "Reader's Map", href: "/social?tab=map" },
-      { name: "Reader Map by Book", href: "/reader-map" },
-      { name: "Friends & Readers Map", href: "/map" },
-    ],
-  },
-  {
     name: "Activity",
     href: "/activity",
     items: [
@@ -135,20 +138,20 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
 
 const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
   NAVIGATION_SECTIONS[0],
-  NAVIGATION_SECTIONS[1],
-  NAVIGATION_SECTIONS[2],
   {
-    ...NAVIGATION_SECTIONS[3],
-    items: NAVIGATION_SECTIONS[3].items
+    ...NAVIGATION_SECTIONS[1],
+    items: NAVIGATION_SECTIONS[1].items
       .filter((item) => !["Book Discussions", "Reading Rooms", "Shared Marginalia", "Reading DNA"].includes(item.name))
       .concat({
         name: "Book Discussion",
         href: "/social?tab=threads",
-        children: NAVIGATION_SECTIONS[3].items.filter((item) =>
+        children: NAVIGATION_SECTIONS[1].items.filter((item) =>
           ["Book Discussions", "Reading Rooms", "Shared Marginalia", "Reading DNA"].includes(item.name)
         ),
       }),
   },
+  NAVIGATION_SECTIONS[2],
+  NAVIGATION_SECTIONS[3],
   NAVIGATION_SECTIONS[4],
 ];
 
@@ -219,10 +222,19 @@ function pathMatches(pathname: string, href: string) {
 function isNavigationItemActive(pathname: string, search: string, href: string) {
   const [path, queryString] = href.split("?");
   if (!pathMatches(pathname, path)) return false;
-  if (!queryString) return true;
+
+  const current = new URLSearchParams(search);
+  if (!queryString) {
+    if (path === "/social" && current.has("tab") && current.get("tab") !== "feed") {
+      return false;
+    }
+    if (path === "/activity" && current.has("tab") && current.get("tab") !== "hub") {
+      return false;
+    }
+    return true;
+  }
 
   const expected = new URLSearchParams(queryString);
-  const current = new URLSearchParams(search);
   for (const [key, value] of expected.entries()) {
     if (key === "tab" && value === "feed" && !current.has("tab")) continue;
     if (current.get(key) !== value) return false;
@@ -873,7 +885,7 @@ const Navigation = () => {
                 </>
               ) : (
                 <>
-                  {PUBLIC_NAVIGATION_SECTIONS.map(renderPublicDrawerSection)}
+                  {[...PUBLIC_NAVIGATION_SECTIONS].sort((a, b) => NAVIGATION_ORDER.indexOf(a.name) - NAVIGATION_ORDER.indexOf(b.name)).map(renderPublicDrawerSection)}
                   {renderPublicDrawerItem({ name: "Explore More", href: "/articles", children: PEOPLE_AND_MORE }, "public-more")}
                 </>
               )}
