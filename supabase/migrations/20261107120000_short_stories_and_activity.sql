@@ -1,6 +1,15 @@
 -- Migration: 20261107120000_short_stories_and_activity.sql
 -- Description: Schema enhancements for Short Stories (standalone & multi-part series), discovery, reading progress, and social interactions.
 
+-- 0. Create the base stories table (also supports fresh databases).
+CREATE TABLE IF NOT EXISTS public.stories (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  title text NOT NULL,
+  description text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
 -- 1. Enhance public.stories table
 ALTER TABLE public.stories
   ADD COLUMN IF NOT EXISTS cover_image_url text,
