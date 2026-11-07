@@ -1,7 +1,6 @@
 import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ArrowRight,
   BarChart3,
   BookOpen,
   ChevronRight,
@@ -9,10 +8,10 @@ import {
   Heart,
   Instagram,
   Linkedin,
-  Sparkles,
   Twitter,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
+
 const CommunityPulseDialog = lazy(() =>
   import('@/components/community-pulse/CommunityPulseDialog').then(({ CommunityPulseDialog }) => ({
     default: CommunityPulseDialog,
@@ -36,7 +35,7 @@ const footerSections = [
     title: 'Community',
     links: [
       { name: 'Reading Feed', href: '/social' },
-      { name: 'Short Stories', href: '/social?tab=stories' },
+      { name: 'Short Stories', href: '/stories' },
       { name: 'Reading Groups', href: '/groups' },
       { name: 'Live Reading Rooms', href: '/social?tab=rooms' },
       { name: 'Community Guidelines', href: '/community-guidelines' },
@@ -90,49 +89,7 @@ const StructuredFooter = () => {
         <div className="absolute -left-40 bottom-20 h-80 w-80 rounded-full bg-[#1C442D]/[0.06] blur-3xl dark:bg-[#1C442D]/20" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
-        {/* Editorial Community Invitation Card */}
-        <section
-          aria-labelledby="footer-invitation-title"
-          className="relative mb-12 overflow-hidden rounded-[1.75rem] border border-[#DCD5C9] bg-gradient-to-br from-white via-[#FBF8F2] to-[#EBF2EC] p-6 shadow-[0_12px_40px_rgba(28,32,29,0.05)] dark:border-[#29332D] dark:from-[#111614] dark:via-[#111614] dark:to-[#14251B] dark:shadow-none sm:p-8 lg:mb-16 lg:p-10"
-        >
-          <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-10 hidden h-56 w-56 rounded-full border border-[#1C442D]/10 dark:border-[#D5B16D]/10 sm:block" />
-          <div aria-hidden="true" className="pointer-events-none absolute -right-1 top-0 hidden h-44 w-44 rounded-full border border-[#1C442D]/10 dark:border-[#D5B16D]/10 sm:block" />
-          <div className="relative grid items-center gap-7 lg:grid-cols-[minmax(0,1fr)_auto]">
-            <div className="max-w-2xl">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#C8DBCB] bg-white/80 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#1C442D] dark:border-[#315C43] dark:bg-[#0B0D0C]/60 dark:text-[#D5B16D]">
-                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-                A community of fellow readers
-              </div>
-              <h2
-                id="footer-invitation-title"
-                className="max-w-xl font-serif text-3xl font-bold leading-tight tracking-tight text-[#1C201D] dark:text-[#F3F0E7] sm:text-4xl lg:text-[2.75rem]"
-              >
-                Every book can start a conversation.
-              </h2>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-[#636B65] dark:text-[#A5ADA6] sm:text-base">
-                Find your next read, exchange ideas, and meet people who see the world through books.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
-              <Link
-                to="/library"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#1C442D] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#143221] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F4F3EF] dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:hover:bg-[#E2C17D] dark:focus-visible:ring-[#D5B16D] dark:focus-visible:ring-offset-[#0B0D0C]"
-              >
-                Explore the library
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
-              <Link
-                to={user ? '/social' : '/signup'}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#D5CEC2] bg-white/80 px-5 py-3 text-sm font-semibold text-[#1C201D] transition hover:border-[#1C442D]/40 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F4F3EF] dark:border-[#34443A] dark:bg-[#111614]/80 dark:text-[#F3F0E7] dark:hover:border-[#D5B16D]/50 dark:hover:bg-[#161D19] dark:focus-visible:ring-[#D5B16D] dark:focus-visible:ring-offset-[#0B0D0C]"
-              >
-                {user ? 'Open reading feed' : 'Join the community'}
-              </Link>
-            </div>
-          </div>
-        </section>
-
+      <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-14">
         {/* 12-Column Responsive Layout */}
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 sm:gap-x-8 lg:grid-cols-12 lg:gap-x-6 xl:gap-x-8">
           {/* Brand & Live Stats Column */}
@@ -154,8 +111,11 @@ const StructuredFooter = () => {
               <span className="font-serif text-2xl font-bold tracking-tight">Sahadhyayi</span>
             </Link>
 
-            <p className="mt-4 max-w-sm text-sm leading-6 text-[#636B65] dark:text-[#A5ADA6]">
-              Sahadhyayi means “fellow reader” — a place to discover books, share ideas, and make reading a more connected experience.
+            <p className="mt-3 max-w-sm text-sm font-semibold text-[#1C201D] dark:text-[#F3F0E7]">
+              A world of books, stories, and readers.
+            </p>
+            <p className="mt-1.5 max-w-sm text-xs leading-5 text-[#636B65] dark:text-[#A5ADA6]">
+              Sahadhyayi means “fellow reader” — a digital home to discover timeless books, exchange reflections, and connect with people through reading.
             </p>
 
             {/* Live Website Stats Trigger Card */}
@@ -231,7 +191,7 @@ const StructuredFooter = () => {
               <span>© {new Date().getFullYear()} Sahadhyayi. All rights reserved.</span>
               <span aria-hidden="true" className="text-[#B68A35]">•</span>
               <span className="inline-flex items-center gap-1.5">
-                Made for readers everywhere
+                Made for fellow readers
                 <Heart className="h-3 w-3 fill-[#B65C53] text-[#B65C53]" aria-hidden="true" />
               </span>
             </p>
