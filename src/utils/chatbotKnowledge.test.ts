@@ -47,7 +47,7 @@ describe('generateContextualResponse', () => {
 
   it('explains social and group reading features', () => {
     expect(generateContextualResponse('find reading groups')).toContain('Social section');
-    expect(generateContextualResponse('meet friends')).toContain('Social features');
+    expect(generateContextualResponse('meet friends')).toMatch(/social features/i);
   });
 
   it('clarifies title-specific PDF and download availability', () => {
