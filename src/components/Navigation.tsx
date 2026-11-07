@@ -77,6 +77,21 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
     ],
   },
   {
+    name: "Read & Write",
+    href: "/articles",
+    items: [
+      { name: "Articles", href: "/articles", tourTarget: "articles" },
+      { name: "Stories", href: "/stories" },
+      { name: "Community Stories", href: "/community-stories" },
+      { name: "Life Stories", href: "/life-stories" },
+      { name: "Newsroom", href: "/news" },
+      { name: "Blogs", href: "/blog" },
+      { name: "Quotes", href: "/quotes" },
+      { name: "My Articles", href: "/articles/my", authOnly: true },
+      { name: "Write Article", href: "/articles/write", authOnly: true },
+    ],
+  },
+  {
     name: "Authors",
     href: "/authors",
     items: [
@@ -92,8 +107,7 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
     name: "Social",
     href: "/social",
     items: [
-      { name: "Community Feed", href: "/social", tourTarget: "community" },
-      { name: "Short Stories", href: "/social?tab=stories" },
+      { name: "Friends Feed", href: "/social", tourTarget: "community" },
       { name: "Book Reviews", href: "/social?tab=reviews" },
       { name: "Discover Friends", href: "/social?tab=friends" },
       { name: "Book Discussions", href: "/social?tab=threads" },
@@ -103,8 +117,6 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
       { name: "Reader's Map", href: "/social?tab=map" },
       { name: "Reader Map by Book", href: "/reader-map" },
       { name: "Friends & Readers Map", href: "/map" },
-      { name: "Community Stories", href: "/community-stories" },
-      { name: "Life Stories", href: "/life-stories" },
     ],
   },
   {
@@ -124,23 +136,23 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
 const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
   NAVIGATION_SECTIONS[0],
   NAVIGATION_SECTIONS[1],
+  NAVIGATION_SECTIONS[2],
   {
-    ...NAVIGATION_SECTIONS[2],
-    items: NAVIGATION_SECTIONS[2].items
+    ...NAVIGATION_SECTIONS[3],
+    items: NAVIGATION_SECTIONS[3].items
       .filter((item) => !["Book Discussions", "Reading Rooms", "Shared Marginalia", "Reading DNA"].includes(item.name))
       .concat({
         name: "Book Discussion",
         href: "/social?tab=threads",
-        children: NAVIGATION_SECTIONS[2].items.filter((item) =>
+        children: NAVIGATION_SECTIONS[3].items.filter((item) =>
           ["Book Discussions", "Reading Rooms", "Shared Marginalia", "Reading DNA"].includes(item.name)
         ),
       }),
   },
-  NAVIGATION_SECTIONS[3],
+  NAVIGATION_SECTIONS[4],
 ];
 
 const PEOPLE_AND_MORE: NavigationItem[] = [
-  { name: "Articles", href: "/articles", tourTarget: "articles" },
   { name: "Newsroom", href: "/news" },
   { name: "Blogs", href: "/blog" },
   { name: "Quotes", href: "/quotes" },
@@ -218,7 +230,7 @@ function isNavigationItemActive(pathname: string, search: string, href: string) 
   return true;
 }
 
-const NAVIGATION_ORDER = ["Library", "Authors", "Social", "Activity"];
+const NAVIGATION_ORDER = ["Library", "Social", "Read & Write", "Authors", "Activity"];
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -623,6 +635,8 @@ const Navigation = () => {
                             ? "Events, challenges, reading groups, meetups and games"
                             : key === "library"
                             ? "Browse the library, publications and research papers"
+                            : key === "read-write"
+                            ? "Read articles and stories, or share your own writing"
                             : "Meet the authors, critics and thinkers shaping ideas"}
                         </p>
                       </div>
@@ -631,7 +645,7 @@ const Navigation = () => {
                           item.children?.length ? item.children : [item]
                         );
                         const groups = [
-                          { title: "Community", description: "Meet readers and build connections", names: ["Community Feed", "Discover Friends"] },
+                          { title: "Friends", description: "Connect with fellow readers", names: ["Friends Feed", "Discover Friends"] },
                           { title: "Stories", description: "Original stories and series", names: ["Short Stories", "Community Stories", "Life Stories"] },
                           { title: "Discussions", description: "Go deeper into books and reflections", names: ["Book Reviews", "Book Discussion", "Book Discussions", "Reading Rooms", "Shared Marginalia", "Reading DNA"] },
                           { title: "Readers Map", description: "Find fellow readers around you", names: ["Reader's Map", "Reader Map by Book", "Friends & Readers Map"] },
