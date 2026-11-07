@@ -87,11 +87,29 @@ export function MapplsMap({
         if (cancelled || !mapElement.current || mapInstance.current) return;
         const initialCenter = center ?? { lat: 22.9734, lng: 78.6569 };
         // The Web SDK examples initialize the map using the container element's ID.
-        mapInstance.current = new window.mappls!.Map(containerId, {
+        const map = new window.mappls!.Map(containerId, {
           center: { lat: initialCenter.lat, lng: initialCenter.lng },
           zoom: center ? 10 : 4,
         });
-        setStatus('ready');
+        mapInstance.current = map;
+
+        let markedReady = false;
+        const markReady = () => {
+          if (cancelled || markedReady) return;
+          markedReady = true;
+          setStatus('ready');
+        };
+
+        if (typeof map?.on === 'function') {
+          if (typeof map?.loaded === 'function' && map.loaded()) {
+            markReady();
+          } else {
+            map.on('load', markReady);
+            setTimeout(markReady, 1000);
+          }
+        } else {
+          markReady();
+        }
       })
       .catch((error: unknown) => {
         if (cancelled) return;
@@ -184,7 +202,11 @@ export function MapplsMap({
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
-      const popupHtml = `<div style="font-family:sans-serif;padding:4px 6px;min-width:140px;color:#1C201D;"><strong style="font-size:13px;display:block;">${escapedTitle}</strong>${escapedDesc ? `<span style="font-size:12px;color:#636B65;display:block;margin-top:2px;">${escapedDesc}</span>` : ''}</div>`;
+      const isSelf = point.id === 'self';
+      const badgeHtml = isSelf
+        ? '<span style="display:inline-block;padding:2px 6px;margin-bottom:4px;border-radius:9999px;font-size:10px;font-weight:700;background:#DCFCE7;color:#166534;letter-spacing:0.025em;text-transform:uppercase;">You</span>'
+        : '';
+      const popupHtml = `<div style="font-family:sans-serif;padding:4px 6px;min-width:140px;color:#1C201D;">${badgeHtml}<strong style="font-size:13px;display:block;">${escapedTitle}</strong>${escapedDesc ? `<span style="font-size:12px;color:#636B65;display:block;margin-top:2px;">${escapedDesc}</span>` : ''}</div>`;
 
       const marker = new window.mappls!.Marker({
         map,

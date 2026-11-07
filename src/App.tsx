@@ -88,6 +88,8 @@ const AuthorProfilePage = lazy(() => import('./pages/AuthorProfile'));
 const ReaderMap = lazy(() => import('./pages/ReaderMap'));
 const Investors = lazy(() => import('./pages/Investors'));
 const QuotesPage = lazy(() => import('./pages/Quotes'));
+const Activity = lazy(() => import('./pages/Activity'));
+const StoryReader = lazy(() => import('./pages/StoryReader'));
 const CommunityStories = lazy(() => import('./pages/CommunityStories'));
 const LifeStories = lazy(() => import('./pages/LifeStories'));
 const BookLibrary = lazy(() => import('./pages/BookLibrary'));
@@ -423,6 +425,34 @@ const App = memo(() => {
                           element={
                             <Suspense fallback={<LoadingFallback />}>
                               <SocialMedia />
+                            </Suspense>
+                          }
+                        />
+                        <Route
+                          path="/activity"
+                          element={
+                            <Suspense fallback={<LoadingFallback message="Loading activity hub..." />}>
+                              <Activity />
+                            </Suspense>
+                          }
+                        />
+                        <Route
+                          path="/stories"
+                          element={<Navigate to="/social?tab=stories" replace />}
+                        />
+                        <Route
+                          path="/stories/:storyId"
+                          element={
+                            <Suspense fallback={<LoadingFallback message="Opening story reader..." />}>
+                              <StoryReader />
+                            </Suspense>
+                          }
+                        />
+                        <Route
+                          path="/stories/:storyId/part/:partNumber"
+                          element={
+                            <Suspense fallback={<LoadingFallback message="Opening chapter..." />}>
+                              <StoryReader />
                             </Suspense>
                           }
                         />

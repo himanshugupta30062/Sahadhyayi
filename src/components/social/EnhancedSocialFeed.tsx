@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Heart, MessageCircle, Share2, Clock, Repeat2, MoreHorizontal, Trash2, Users, Copy, Check } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Clock, Repeat2, MoreHorizontal, Trash2, Users, Copy, Check, TrendingUp } from 'lucide-react';
 import {
   useSocialPosts,
   useTogglePostLike,
@@ -106,12 +106,13 @@ const EmbeddedOriginalPost: React.FC<{
 
 export const EnhancedSocialFeed = () => {
   const { user } = useAuth();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const requestedPostId = searchParams.get('post');
   const [deepLinkedPost, setDeepLinkedPost] = useState<SocialPost | null>(null);
   const [highlightedPostId, setHighlightedPostId] = useState<string | null>(null);
   const [imageViewer, setImageViewer] = useState<{ src: string; alt: string } | null>(null);
   const [streamMode, setStreamMode] = useState<'community' | 'following'>('community');
+  const [isTrending, setIsTrending] = useState(false);
   const { posts, isLoading, error, refetch, hasMore, isLoadingMore, loadMore, loadMoreError } = useSocialPosts(streamMode);
   const postsRef = useRef(posts);
   postsRef.current = posts;
@@ -137,10 +138,14 @@ export const EnhancedSocialFeed = () => {
     refetch: refetchThreads,
   } = useSpoilerThreads(undefined, { enabled: feedFilter === 'threads' });
 
-  const postsForDisplay = streamMode === 'community' && deepLinkedPost && deepLinkedPost.id === requestedPostId
+  const rawPostsForDisplay = streamMode === 'community' && deepLinkedPost && deepLinkedPost.id === requestedPostId
     && !posts.some((post) => post.id === deepLinkedPost.id)
     ? [deepLinkedPost, ...posts]
     : posts;
+
+  const postsForDisplay = isTrending
+    ? [...rawPostsForDisplay].sort((a, b) => ((b.likes_count || 0) + (b.reposts_count || 0) * 2) - ((a.likes_count || 0) + (a.reposts_count || 0) * 2))
+    : rawPostsForDisplay;
 
   // Shared URLs use /social?post=<id>. Resolve the requested post through the
   // audience-aware RLS boundary; do not depend on a QueryClient being present
@@ -254,27 +259,61 @@ export const EnhancedSocialFeed = () => {
       {/* Live Book Pulse Bar */}
       <BookPulseBar />
 
-      {/* Real server-filtered feed scopes */}
-      <div className="flex items-center gap-2" role="group" aria-label="Choose feed">
+      {/* Feed Navigation Tabs: Posts, Stories, Following, Trending */}
+      <div className="flex items-center gap-2 flex-wrap" role="group" aria-label="Choose feed">
         <Button
           size="sm"
-          variant={streamMode === 'community' ? 'default' : 'outline'}
-          aria-pressed={streamMode === 'community'}
-          onClick={() => setStreamMode('community')}
-          className={streamMode === 'community' ? 'bg-[#1C442D] text-white hover:bg-[#153522] dark:bg-[#1C3024] dark:text-[#F3F0E7]' : 'border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7]'}
+          variant={streamMode === 'community' && !isTrending ? 'default' : 'outline'}
+          aria-pressed={streamMode === 'community' && !isTrending}
+          onClick={() => {
+            setStreamMode('community');
+            setIsTrending(false);
+          }}
+          className={streamMode === 'community' && !isTrending ? 'bg-[#1C442D] text-white hover:bg-[#153522] dark:bg-[#1C3024] dark:text-[#F3F0E7]' : 'border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7]'}
         >
-          <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-          Community
+          <MessageCircle className="w-3.5 h-3.5 mr-1.5" />
+          Posts
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev);
+              next.set('tab', 'stories');
+              return next;
+            }, { replace: true });
+          }}
+          className="border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7] hover:border-[#1C442D] dark:hover:border-[#D5B16D]"
+        >
+          <Sparkles className="w-3.5 h-3.5 mr-1.5 text-amber-500 dark:text-[#D5B16D]" />
+          Stories
         </Button>
         <Button
           size="sm"
           variant={streamMode === 'following' ? 'default' : 'outline'}
           aria-pressed={streamMode === 'following'}
-          onClick={() => setStreamMode('following')}
+          onClick={() => {
+            setStreamMode('following');
+            setIsTrending(false);
+          }}
           className={streamMode === 'following' ? 'bg-[#1C442D] text-white hover:bg-[#153522] dark:bg-[#1C3024] dark:text-[#F3F0E7]' : 'border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7]'}
         >
           <Users className="w-3.5 h-3.5 mr-1.5" />
           Following
+        </Button>
+        <Button
+          size="sm"
+          variant={isTrending ? 'default' : 'outline'}
+          aria-pressed={isTrending}
+          onClick={() => {
+            setStreamMode('community');
+            setIsTrending(true);
+          }}
+          className={isTrending ? 'bg-[#1C442D] text-white hover:bg-[#153522] dark:bg-[#1C3024] dark:text-[#F3F0E7]' : 'border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7]'}
+        >
+          <TrendingUp className="w-3.5 h-3.5 mr-1.5 text-orange-500" />
+          Trending
         </Button>
       </div>
 

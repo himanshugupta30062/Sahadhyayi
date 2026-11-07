@@ -25,6 +25,8 @@ vi.mock('@/integrations/supabase/client-universal', () => {
     query.select = vi.fn(() => query);
     query.update = vi.fn(() => query);
     query.insert = vi.fn(() => query);
+    query.upsert = vi.fn(() => query);
+    query.delete = vi.fn(() => query);
     query.eq = vi.fn(() => query);
     query.maybeSingle = vi.fn(async () => ({ data: mocks.profile, error: null }));
     query.then = (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) =>
@@ -176,5 +178,35 @@ describe('ReadersNearMeMap', () => {
     await waitFor(() => expect(screen.getByText('Location sharing is off')).toBeInTheDocument());
     expect(screen.queryByText('Jane Reader')).not.toBeInTheDocument();
     expect(screen.getByTestId('map-points')).toBeEmptyDOMElement();
+  });
+
+  it('plots both the current user and readers with approximate coordinates on the map', async () => {
+    mocks.profile = { location_sharing: true, location_lat: 28.4595, location_lng: 77.0266 };
+    mocks.rpc.mockImplementation((name: string) => {
+      if (name === 'has_location_consent') return Promise.resolve({ data: true, error: null });
+      if (name === 'get_nearby_book_readers') {
+        return Promise.resolve({
+          data: [
+            {
+              reader_id: 'friend-1',
+              reader_name: 'Jane Reader',
+              approximate_latitude: 28.46,
+              approximate_longitude: 77.03,
+              distance_km: 1.2,
+              is_friend: true,
+            },
+          ],
+          error: null,
+        });
+      }
+      return Promise.resolve({ data: null, error: null });
+    });
+
+    render(<ReadersNearMeMap />);
+    await screen.findByText('Location sharing is on');
+    fireEvent.click(screen.getByRole('button', { name: 'Choose test book' }));
+
+    expect(await screen.findByText('Jane Reader')).toBeInTheDocument();
+    expect(screen.getByTestId('map-points')).toHaveTextContent('Your saved location, Jane Reader');
   });
 });

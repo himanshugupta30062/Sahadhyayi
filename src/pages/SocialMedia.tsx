@@ -49,10 +49,12 @@ const SpoilerThreadsFeed = lazy(() => import('@/components/social/threads/Spoile
 const ReadingRoomsPanel = lazy(() => import('@/components/social/rooms/ReadingRoomsPanel'));
 const ReadingDnaPanel = lazy(() => import('@/components/social/dna/ReadingDnaPanel'));
 const BookReviewsFeed = lazy(() => import('@/components/social/BookReviewsFeed'));
+const StoriesFeed = lazy(() => import('@/components/stories/StoriesFeed'));
 
-const VALID_SOCIAL_TABS = ['feed', 'reviews', 'rooms', 'threads', 'margins', 'dna', 'friends', 'map', 'groups'] as const;
+const VALID_SOCIAL_TABS = ['feed', 'stories', 'reviews', 'rooms', 'threads', 'margins', 'dna', 'friends', 'map', 'groups'] as const;
 const SOCIAL_TAB_LABELS: Record<string, string> = {
   feed: 'Community Feed',
+  stories: 'Short Stories',
   reviews: 'Book Reviews',
   rooms: 'Reading Rooms',
   threads: 'Book Discussions',
@@ -450,6 +452,15 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
               </button>
               <button
                 type="button"
+                aria-pressed={activeTab === 'stories'}
+                onClick={() => handleTabChange('stories')}
+                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'stories' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAFAF8] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
+              >
+                <Sparkles className="h-4 w-4" aria-hidden="true" />
+                Short Stories
+              </button>
+              <button
+                type="button"
                 aria-pressed={activeTab === 'reviews'}
                 onClick={() => handleTabChange('reviews')}
                 className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'reviews' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAFAF8] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
@@ -623,6 +634,14 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                   >
                     <Suspense fallback={<TabLoader />}>
                       <EnhancedSocialFeed />
+                    </Suspense>
+                  </ErrorBoundary>
+                </TabsContent>
+
+                <TabsContent value="stories" className="mt-0 space-y-6">
+                  <ErrorBoundary>
+                    <Suspense fallback={<TabLoader />}>
+                      <StoriesFeed />
                     </Suspense>
                   </ErrorBoundary>
                 </TabsContent>
