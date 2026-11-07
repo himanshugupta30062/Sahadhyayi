@@ -198,10 +198,10 @@ export const sanitizeInput = (input: string, maxLength?: number): string => {
   if (!input || typeof input !== 'string') return '';
   
   let sanitized = input
-    .replace(/<[^>]*>/g, '') // Strip HTML tags
+    .replace(/<[^>]+>/g, '') // Strip HTML tags
     .replace(/[<>]/g, '') // Remove dangling angle brackets
     .replace(/javascript:/gi, '') // Remove javascript protocols
-    .replace(/on\w+[ \t]*=/gi, '') // Remove event handlers
+    .replace(/on[a-z]{1,32}[ \t]*=/gi, '') // Remove event handlers
     .replace(/data:(?!image\/)[^;]+;/gi, '') // Remove non-image data URLs
     .trim();
   
