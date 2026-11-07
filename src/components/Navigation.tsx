@@ -139,18 +139,17 @@ const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
   NAVIGATION_SECTIONS[2],
   {
     ...NAVIGATION_SECTIONS[3],
-    items: NAVIGATION_SECTIONS[1].items
+    items: NAVIGATION_SECTIONS[3].items
       .filter((item) => !["Book Discussions", "Reading Rooms", "Shared Marginalia", "Reading DNA"].includes(item.name))
       .concat({
         name: "Book Discussion",
         href: "/social?tab=threads",
-        children: NAVIGATION_SECTIONS[1].items.filter((item) =>
+        children: NAVIGATION_SECTIONS[3].items.filter((item) =>
           ["Book Discussions", "Reading Rooms", "Shared Marginalia", "Reading DNA"].includes(item.name)
         ),
       }),
   },
-  NAVIGATION_SECTIONS[2],
-  NAVIGATION_SECTIONS[3],
+  NAVIGATION_SECTIONS[4],
 ];
 
 const PEOPLE_AND_MORE: NavigationItem[] = [
