@@ -22,7 +22,7 @@ const LIMITS = {
   embeddingTimeoutMs: 12000,
 };
 
-type SourceType = "book_metadata" | "book_summary" | "approved_text" | "site_article";
+type SourceType = "book_metadata" | "book_summary" | "approved_text" | "site_article" | "book_content" | "book_chapter";
 type SourceItem = {
   sourceType: SourceType;
   sourceRef: string;

@@ -15,6 +15,7 @@ import MarginNoteCard from '@/components/social/margins/MarginNoteCard';
 import { AddMarginNoteDialog } from '@/components/social/margins/AddMarginNoteDialog';
 import { useAuth } from '@/contexts/authHelpers';
 import { useNavigate } from 'react-router-dom';
+import BookReadingJournal from '@/components/journal/BookReadingJournal';
 
 interface ReaderMarginDrawerProps {
   bookId: string;
@@ -148,9 +149,16 @@ export const ReaderMarginDrawer: React.FC<ReaderMarginDrawerProps> = ({
           </div>
         </SheetHeader>
 
-        {/* Notes Scrollable Body */}
+        {/* Notes & Journal Scrollable Body */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {notesLoading ? (
+          {viewScope === 'journal' ? (
+            <BookReadingJournal
+              bookId={bookId}
+              bookTitle={bookTitle}
+              currentPage={currentPage}
+              onAddReflection={() => setAddDialogOpen(true)}
+            />
+          ) : notesLoading ? (
             <div className="text-center py-10 text-xs text-muted-foreground">
               Loading margin notes…
             </div>
@@ -160,7 +168,9 @@ export const ReaderMarginDrawer: React.FC<ReaderMarginDrawerProps> = ({
                 <Quote className="w-6 h-6" />
               </div>
               <h4 className="text-sm font-semibold text-foreground">
-                {viewScope === 'page' ? `No community notes on Page ${currentPage}` : viewScope === 'journal' ? 'Your private journal is empty for this book' : 'No community margin notes for this book yet'}
+                {viewScope === 'page'
+                  ? `No community notes on Page ${currentPage}`
+                  : 'No community margin notes for this book yet'}
               </h4>
               <p className="text-xs text-muted-foreground max-w-xs mx-auto">
                 Keep personal reflections private in My Journal, or share a note with fellow readers. Notes stay attached to book pages.
