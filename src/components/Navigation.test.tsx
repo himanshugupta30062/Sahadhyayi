@@ -114,4 +114,56 @@ describe('Primary Navigation (5 core sections)', () => {
     // 5. Activity
     expect(screen.getByRole('button', { name: /activity/i })).toBeInTheDocument();
   });
+
+  it('renders Social menu with Stories group and links', async () => {
+    const { fireEvent } = await import('@testing-library/react');
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Navigation />
+      </MemoryRouter>
+    );
+
+    const socialButton = screen.getByRole('button', { name: /social/i });
+    expect(socialButton).toBeInTheDocument();
+    fireEvent.mouseEnter(socialButton);
+
+    expect(screen.getByText('Friends')).toBeInTheDocument();
+    expect(screen.getByText('Stories')).toBeInTheDocument();
+    expect(screen.getByText('Discussions')).toBeInTheDocument();
+    expect(screen.getByText('Readers Map')).toBeInTheDocument();
+
+    const shortStoriesLink = screen.getByRole('menuitem', { name: 'Short Stories' });
+    expect(shortStoriesLink).toHaveAttribute('href', '/social?tab=stories');
+
+    const communityStoriesLink = screen.getByRole('menuitem', { name: 'Community Stories' });
+    expect(communityStoriesLink).toHaveAttribute('href', '/community-stories');
+
+    const lifeStoriesLink = screen.getByRole('menuitem', { name: 'Life Stories' });
+    expect(lifeStoriesLink).toHaveAttribute('href', '/life-stories');
+  });
+
+  it('renders Activity menu with all interactive categories', async () => {
+    const { fireEvent } = await import('@testing-library/react');
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Navigation />
+      </MemoryRouter>
+    );
+
+    const activityButton = screen.getByRole('button', { name: /activity/i });
+    expect(activityButton).toBeInTheDocument();
+    fireEvent.mouseEnter(activityButton);
+
+    expect(screen.getByText('Hub & Gatherings')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Events & Festivals' })).toBeInTheDocument();
+    expect(screen.getByText('Challenges & Games')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Reading Groups' })).toBeInTheDocument();
+
+    expect(screen.getByRole('menuitem', { name: 'Activity Hub' })).toHaveAttribute('href', '/activity');
+    expect(screen.getByRole('menuitem', { name: 'Events & Festivals' })).toHaveAttribute('href', '/events');
+    expect(screen.getByRole('menuitem', { name: 'Reading Challenges' })).toHaveAttribute('href', '/activity?tab=challenges');
+    expect(screen.getByRole('menuitem', { name: 'Book Games' })).toHaveAttribute('href', '/games');
+    expect(screen.getByRole('menuitem', { name: 'Reading Groups' })).toHaveAttribute('href', '/groups');
+    expect(screen.getByRole('menuitem', { name: 'Reader Meetups' })).toHaveAttribute('href', '/activity?tab=meetups');
+  });
 });
