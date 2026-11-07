@@ -77,6 +77,18 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
     ],
   },
   {
+    name: "Articles",
+    href: "/articles",
+    items: [
+      { name: "Articles", href: "/articles", tourTarget: "articles" },
+      { name: "Newsroom", href: "/news" },
+      { name: "Blogs", href: "/blog" },
+      { name: "Quotes", href: "/quotes" },
+      { name: "My Articles", href: "/articles/my", authOnly: true },
+      { name: "Write Article", href: "/articles/write", authOnly: true },
+    ],
+  },
+  {
     name: "Authors",
     href: "/authors",
     items: [
@@ -124,23 +136,24 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
 const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
   NAVIGATION_SECTIONS[0],
   NAVIGATION_SECTIONS[1],
+  NAVIGATION_SECTIONS[2],
   {
-    ...NAVIGATION_SECTIONS[2],
-    items: NAVIGATION_SECTIONS[2].items
+    ...NAVIGATION_SECTIONS[3],
+    items: NAVIGATION_SECTIONS[1].items
       .filter((item) => !["Book Discussions", "Reading Rooms", "Shared Marginalia", "Reading DNA"].includes(item.name))
       .concat({
         name: "Book Discussion",
         href: "/social?tab=threads",
-        children: NAVIGATION_SECTIONS[2].items.filter((item) =>
+        children: NAVIGATION_SECTIONS[1].items.filter((item) =>
           ["Book Discussions", "Reading Rooms", "Shared Marginalia", "Reading DNA"].includes(item.name)
         ),
       }),
   },
+  NAVIGATION_SECTIONS[2],
   NAVIGATION_SECTIONS[3],
 ];
 
 const PEOPLE_AND_MORE: NavigationItem[] = [
-  { name: "Articles", href: "/articles", tourTarget: "articles" },
   { name: "Newsroom", href: "/news" },
   { name: "Blogs", href: "/blog" },
   { name: "Quotes", href: "/quotes" },
@@ -218,7 +231,7 @@ function isNavigationItemActive(pathname: string, search: string, href: string) 
   return true;
 }
 
-const NAVIGATION_ORDER = ["Library", "Authors", "Social", "Activity"];
+const NAVIGATION_ORDER = ["Library", "Social", "Articles", "Authors", "Activity"];
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
