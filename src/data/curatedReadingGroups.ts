@@ -1,0 +1,103 @@
+import { Group } from '@/hooks/useGroupManagement';
+
+export interface CuratedGroup extends Group {
+  category: string;
+  focusBooks: string[];
+  activeDiscussion: string;
+  meetingSchedule: string;
+  tags: string[];
+}
+
+export const CURATED_READING_GROUPS: CuratedGroup[] = [
+  {
+    id: 'group-indian-classics',
+    name: 'Indian Classics & Epics Circle',
+    description: 'Exploring timeless epics, moral philosophy, and ancient wisdom across the Mahabharata, Ramayana, Arthashastra, and Panchatantra.',
+    created_by: 'system-curated',
+    created_at: '2026-01-10T10:00:00.000Z',
+    member_count: 148,
+    group_members: [{ count: 148 }],
+    is_encrypted: false,
+    category: 'Classics',
+    focusBooks: ['The Mahabharata', 'Arthashastra', 'The Ramayana'],
+    activeDiscussion: 'Dharma, duty, and governance: comparing Kautilya’s realpolitik with Ashoka’s edicts.',
+    meetingSchedule: 'Every Sunday at 6:00 PM IST',
+    tags: ['Classics', 'Sanskrit Literature', 'Epics', 'Philosophy'],
+  },
+  {
+    id: 'group-philosophy-thinkers',
+    name: 'Philosophy & Deep Thoughts',
+    description: 'A quiet circle for readers who contemplate existence, ethics, Stoicism, and Eastern & Western philosophies.',
+    created_by: 'system-curated',
+    created_at: '2026-01-15T10:00:00.000Z',
+    member_count: 215,
+    group_members: [{ count: 215 }],
+    is_encrypted: false,
+    category: 'Philosophy',
+    focusBooks: ['Meditations by Marcus Aurelius', 'The Upanishads', 'Being and Time'],
+    activeDiscussion: 'What does Stoic resilience teach us in the age of algorithmic attention?',
+    meetingSchedule: 'Alternate Saturdays at 7:30 PM IST',
+    tags: ['Stoicism', 'Ethics', 'Mindfulness', 'Existentialism'],
+  },
+  {
+    id: 'group-sci-fi-speculative',
+    name: 'Speculative & Science Fiction Guild',
+    description: 'Exploring quantum futures, artificial consciousness, space exploration, and South Asian sci-fi visions.',
+    created_by: 'system-curated',
+    created_at: '2026-02-01T10:00:00.000Z',
+    member_count: 182,
+    group_members: [{ count: 182 }],
+    is_encrypted: false,
+    category: 'Sci-Fi',
+    focusBooks: ['Dune', 'Exhalation by Ted Chiang', 'Foundation'],
+    activeDiscussion: 'Can machines ever experience wonder, and how does science fiction predict our technological trajectory?',
+    meetingSchedule: 'Fridays at 8:00 PM IST',
+    tags: ['Sci-Fi', 'AI & Consciousness', 'Futurism', 'Worldbuilding'],
+  },
+  {
+    id: 'group-world-fiction',
+    name: 'Modern World & Translated Fiction',
+    description: 'Reading celebrated novels translated across Russian, Japanese, French, Bengali, and Latin American literary traditions.',
+    created_by: 'system-curated',
+    created_at: '2026-02-10T10:00:00.000Z',
+    member_count: 164,
+    group_members: [{ count: 164 }],
+    is_encrypted: false,
+    category: 'Fiction',
+    focusBooks: ['Crime and Punishment', 'Kafka on the Shore', 'One Hundred Years of Solitude'],
+    activeDiscussion: 'The psychology of guilt in Dostoevsky vs. magical realism in García Márquez.',
+    meetingSchedule: 'Every Tuesday at 9:00 PM IST',
+    tags: ['Translated Literature', 'Russian Classics', 'Magical Realism'],
+  },
+  {
+    id: 'group-poetry-ghazals',
+    name: 'Poetry, Shayari & Ghazals Guild',
+    description: 'Celebrating lyrical beauty, couplets, and metaphors across Urdu shayari, Bhakti poetry, and Romantic verses.',
+    created_by: 'system-curated',
+    created_at: '2026-02-18T10:00:00.000Z',
+    member_count: 196,
+    group_members: [{ count: 196 }],
+    is_encrypted: false,
+    category: 'Poetry',
+    focusBooks: ['Diwan-e-Ghalib', 'Kabir Bijak', 'The Bird of Time'],
+    activeDiscussion: 'Deciphering Ghalib’s paradoxes and the mystical symbolism of Rumi and Kabir.',
+    meetingSchedule: 'Thursday evenings at 7:00 PM IST',
+    tags: ['Urdu Shayari', 'Ghazals', 'Bhakti Poetry', 'Sufi Verses'],
+  },
+  {
+    id: 'group-history-biographies',
+    name: 'History, Biographies & Ideas',
+    description: 'Chronicling great lives, civilizational turning points, and social movements that shaped the modern world.',
+    created_by: 'system-curated',
+    created_at: '2026-02-25T10:00:00.000Z',
+    member_count: 139,
+    group_members: [{ count: 139 }],
+    is_encrypted: false,
+    category: 'History',
+    focusBooks: ['Wings of Fire', 'Discovery of India', 'Sapiens'],
+    activeDiscussion: 'Science and social transformation: lessons from Kalam, Ramanujan, and Homi Bhabha.',
+    meetingSchedule: 'Sundays at 11:00 AM IST',
+    tags: ['Biographies', 'Indian History', 'Leadership', 'Science'],
+  },
+];
+

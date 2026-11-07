@@ -453,6 +453,20 @@ const ReadingGroupsDirectory = () => {
                       <p className="mt-1 line-clamp-2 text-xs text-muted-foreground leading-relaxed">
                         {group.description || 'A space for readers to discuss books together.'}
                       </p>
+                      {(group as any).focusBooks && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {(group as any).focusBooks.slice(0, 2).map((book: string) => (
+                            <span key={book} className="rounded bg-muted/80 px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                              📖 {book}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {(group as any).activeDiscussion && (
+                        <p className="mt-1.5 text-[11px] text-[#1C442D] dark:text-[#D5B16D] font-medium line-clamp-1">
+                          💬 {(group as any).activeDiscussion}
+                        </p>
+                      )}
                     </div>
                   </div>
 
