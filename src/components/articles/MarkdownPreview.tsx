@@ -53,9 +53,9 @@ function markdownToHtml(md: string): string {
     // Blockquotes
     .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
     // Bold & italic
-    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/***([^*]+)***/g, '<strong><em>$1</em></strong>')
+    .replace(/**([^*]+)**/g, '<strong>$1</strong>')
+    .replace(/*([^*]+)*/g, '<em>$1</em>')
     // Inline code
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     // Images
