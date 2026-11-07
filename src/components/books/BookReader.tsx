@@ -514,7 +514,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
 
   const saveSelectedQuote = () => {
     if (!selectedText) return;
-    addQuote(selectedText, bookTitle);
+    addQuote(selectedText, bookTitle, undefined, { bookId, page: currentPage, location: currentLocation || undefined });
     toast({ title: 'Quote Saved', description: 'Highlight added to your quotes.' });
     setSelectedText('');
     setShowSaveQuote(false);
