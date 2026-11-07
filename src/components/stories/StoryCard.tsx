@@ -80,11 +80,20 @@ export const StoryCard: React.FC<StoryCardProps> = ({ story, showContinueReading
               Series
             </Badge>
           )}
+          {user && user.id === story.user_id && (
+            <Badge variant="secondary" className="backdrop-blur-xs bg-amber-500/80 text-white text-[10px] font-semibold border-0">
+              Your Story
+            </Badge>
+          )}
         </div>
 
         {/* Status badge */}
-        <div className="absolute right-3 top-3">
-          {story.completion_status === 'completed' ? (
+        <div className="absolute right-3 top-3 flex items-center gap-1.5">
+          {story.status === 'draft' ? (
+            <Badge className="bg-amber-600/90 text-white backdrop-blur-xs text-[10px] font-medium border-0">
+              Draft
+            </Badge>
+          ) : story.completion_status === 'completed' ? (
             <Badge className="bg-emerald-600/90 text-white backdrop-blur-xs text-[10px] font-medium border-0 gap-1">
               <CheckCircle2 className="h-3 w-3" />
               Completed

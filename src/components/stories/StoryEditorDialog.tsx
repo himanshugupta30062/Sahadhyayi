@@ -78,22 +78,91 @@ export const StoryEditorDialog: React.FC<StoryEditorDialogProps> = ({
     existingStory?.completion_status || 'ongoing',
   );
 
-  // Content / First Part state
-  const initialPart = existingParts[0];
-  const [partTitle, setPartTitle] = useState(initialPart?.title || 'Part 1');
-  const [partContent, setPartContent] = useState(initialPart?.content || '');
-  const [publishStatus, setPublishStatus] = useState<'draft' | 'published'>('published');
+  // Multi-part series state
+  interface EditablePart {
+    id?: string;
+    partNumber: number;
+    title: string;
+    content: string;
+    status: 'draft' | 'published';
+  }
+
+  const [selectedPartIndex, setSelectedPartIndex] = useState(0);
+  const [partsList, setPartsList] = useState<EditablePart[]>(() => {
+    if (existingParts && existingParts.length > 0) {
+      return existingParts.map((p) => ({
+        id: p.id,
+        partNumber: p.part_number,
+        title: p.title,
+        content: p.content,
+        status: p.status,
+      }));
+    }
+    return [
+      {
+        partNumber: 1,
+        title: 'Part 1',
+        content: '',
+        status: 'published',
+      },
+    ];
+  });
+
+  const currentPart = partsList[selectedPartIndex] || partsList[0] || {
+    partNumber: 1,
+    title: 'Part 1',
+    content: '',
+    status: 'published',
+  };
+
+  const updateCurrentPart = (fields: Partial<EditablePart>) => {
+    setPartsList((prev) => {
+      const next = [...prev];
+      if (next[selectedPartIndex]) {
+        next[selectedPartIndex] = { ...next[selectedPartIndex], ...fields };
+      }
+      return next;
+    });
+  };
+
+  const handleAddChapter = () => {
+    if (partsList.length >= STORY_LIMITS.MAX_PARTS_PER_SERIES) {
+      toast.error(`Maximum ${STORY_LIMITS.MAX_PARTS_PER_SERIES} chapters allowed per series.`);
+      return;
+    }
+    const nextNum = partsList.length + 1;
+    const newPart: EditablePart = {
+      partNumber: nextNum,
+      title: `Part ${nextNum}`,
+      content: '',
+      status: 'published',
+    };
+    setPartsList([...partsList, newPart]);
+    setSelectedPartIndex(partsList.length);
+  };
+
+  const handleRemoveChapter = (indexToRemove: number) => {
+    if (partsList.length <= 1) {
+      toast.error('A story must have at least one chapter.');
+      return;
+    }
+    const next = partsList
+      .filter((_, idx) => idx !== indexToRemove)
+      .map((p, idx) => ({ ...p, partNumber: idx + 1 }));
+    setPartsList(next);
+    setSelectedPartIndex((prev) => Math.min(prev, next.length - 1));
+  };
 
   // Series additional parts editor state
-  const [activeTab, setActiveTab] = useState<'details' | 'content' | 'parts'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'content'>('details');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Validation states
   const titleValidation = validateStoryTitle(title);
   const descValidation = validateStoryDescription(description);
   const tagsValidation = validateStoryTags(tags);
-  const partTitleValidation = validatePartTitle(partTitle);
-  const contentValidation = validateStoryContent(partContent);
+  const currentPartTitleValidation = validatePartTitle(currentPart.title);
+  const currentPartContentValidation = validateStoryContent(currentPart.content);
 
   const handleAddTag = (e?: React.KeyboardEvent | React.MouseEvent) => {
     if (e && 'key' in e && e.key !== 'Enter') return;
@@ -120,11 +189,10 @@ export const StoryEditorDialog: React.FC<StoryEditorDialogProps> = ({
     titleValidation.isValid &&
     descValidation.isValid &&
     tagsValidation.isValid &&
-    partTitleValidation.isValid &&
-    contentValidation.isValid;
+    partsList.every((p) => validatePartTitle(p.title).isValid && validateStoryContent(p.content).isValid);
 
   const handleSubmit = async (targetStatus?: 'draft' | 'published') => {
-    const finalStatus = targetStatus || publishStatus;
+    const finalStatus = targetStatus || 'published';
 
     if (!titleValidation.isValid) {
       toast.error(titleValidation.error || 'Please enter a valid title.');
@@ -136,15 +204,24 @@ export const StoryEditorDialog: React.FC<StoryEditorDialogProps> = ({
       setActiveTab('details');
       return;
     }
-    if (!partTitleValidation.isValid) {
-      toast.error(partTitleValidation.error || 'Please enter a part title.');
-      setActiveTab('content');
-      return;
-    }
-    if (!contentValidation.isValid) {
-      toast.error(contentValidation.error || 'Please check story content.');
-      setActiveTab('content');
-      return;
+
+    // Validate all parts
+    for (let i = 0; i < partsList.length; i++) {
+      const p = partsList[i];
+      const pTitleVal = validatePartTitle(p.title);
+      if (!pTitleVal.isValid) {
+        toast.error(`Chapter ${p.partNumber}: ${pTitleVal.error}`);
+        setSelectedPartIndex(i);
+        setActiveTab('content');
+        return;
+      }
+      const pContentVal = validateStoryContent(p.content);
+      if (!pContentVal.isValid) {
+        toast.error(`Chapter ${p.partNumber}: ${pContentVal.error}`);
+        setSelectedPartIndex(i);
+        setActiveTab('content');
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -162,19 +239,31 @@ export const StoryEditorDialog: React.FC<StoryEditorDialogProps> = ({
           completion_status: completionStatus,
         });
 
-        // Update part 1 if exists
-        if (initialPart) {
-          await updatePart.mutateAsync({
-            partId: initialPart.id,
-            storyId: existingStory.id,
-            title: partTitle,
-            content: partContent,
-            status: finalStatus,
-          });
+        // Update each part
+        for (const p of partsList) {
+          const partStatus = targetStatus ? targetStatus : p.status;
+          if (p.id) {
+            await updatePart.mutateAsync({
+              partId: p.id,
+              storyId: existingStory.id,
+              title: p.title,
+              content: p.content,
+              status: partStatus,
+            });
+          } else {
+            await createPart.mutateAsync({
+              storyId: existingStory.id,
+              partNumber: p.partNumber,
+              title: p.title,
+              content: p.content,
+              status: partStatus,
+            });
+          }
         }
       } else {
         // Create new story with initial part
-        await createStory.mutateAsync({
+        const initial = partsList[0];
+        const newStory = await createStory.mutateAsync({
           title,
           description,
           cover_image_url: coverImageUrl || null,
@@ -184,11 +273,25 @@ export const StoryEditorDialog: React.FC<StoryEditorDialogProps> = ({
           status: finalStatus,
           completion_status: storyType === 'standalone' ? 'completed' : completionStatus,
           initial_part: {
-            title: partTitle,
-            content: partContent,
-            status: finalStatus,
+            title: initial.title,
+            content: initial.content,
+            status: targetStatus ? targetStatus : initial.status,
           },
         });
+
+        // If series has more than 1 part created in advance
+        if (storyType === 'series' && newStory?.id && partsList.length > 1) {
+          for (let i = 1; i < partsList.length; i++) {
+            const p = partsList[i];
+            await createPart.mutateAsync({
+              storyId: newStory.id,
+              partNumber: p.partNumber,
+              title: p.title,
+              content: p.content,
+              status: targetStatus ? targetStatus : p.status,
+            });
+          }
+        }
       }
 
       onOpenChange(false);
@@ -200,7 +303,7 @@ export const StoryEditorDialog: React.FC<StoryEditorDialogProps> = ({
     }
   };
 
-  const estimatedMinutes = estimateReadingMinutes(partContent);
+  const estimatedMinutes = estimateReadingMinutes(currentPart.content);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -441,28 +544,81 @@ export const StoryEditorDialog: React.FC<StoryEditorDialogProps> = ({
 
           {/* ── STEP 2: Content & Publishing ── */}
           <TabsContent value="content" className="space-y-4 pt-3">
+            {/* Multi-chapter switcher for series */}
+            {storyType === 'series' && (
+              <div className="space-y-2 rounded-xl border border-[#E8E2D9] bg-[#FAF7F2] p-3 dark:border-[#29332D] dark:bg-[#1A231D]/50">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-[#636B65] dark:text-[#A5ADA6]">
+                    Series Chapters ({partsList.length} / {STORY_LIMITS.MAX_PARTS_PER_SERIES})
+                  </Label>
+                  {partsList.length < STORY_LIMITS.MAX_PARTS_PER_SERIES && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddChapter}
+                      className="h-7 gap-1 rounded-lg text-xs"
+                    >
+                      <Plus className="h-3 w-3" /> Add Chapter
+                    </Button>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  {partsList.map((p, idx) => (
+                    <div key={idx} className="flex items-center">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPartIndex(idx)}
+                        className={`flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
+                          selectedPartIndex === idx
+                            ? 'bg-[#1C442D] text-white font-semibold dark:bg-[#D5B16D] dark:text-[#0B0D0C]'
+                            : 'bg-white text-muted-foreground hover:text-foreground dark:bg-[#111614]'
+                        }`}
+                      >
+                        <span>Part {p.partNumber}</span>
+                        {p.status === 'draft' && (
+                          <span className="text-[9px] uppercase tracking-wider opacity-75">(Draft)</span>
+                        )}
+                      </button>
+                      {partsList.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveChapter(idx)}
+                          className="ml-0.5 p-0.5 text-muted-foreground hover:text-rose-600"
+                          title="Remove this chapter"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Part Title */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label htmlFor="part-title" className="text-xs font-semibold">
-                  {storyType === 'series' ? 'Chapter / Part Title' : 'Story Subtitle or Opening'}
+                  {storyType === 'series' ? `Part ${currentPart.partNumber} Title` : 'Story Subtitle or Opening'}
                 </Label>
                 <span
-                  className={`text-[11px] font-mono ${partTitle.length > STORY_LIMITS.PART_TITLE_MAX ? 'text-rose-600 font-bold' : 'text-[#636B65] dark:text-[#A5ADA6]'}`}
+                  className={`text-[11px] font-mono ${currentPart.title.length > STORY_LIMITS.PART_TITLE_MAX ? 'text-rose-600 font-bold' : 'text-[#636B65] dark:text-[#A5ADA6]'}`}
                 >
-                  {partTitle.length} / {STORY_LIMITS.PART_TITLE_MAX} characters
+                  {currentPart.title.length} / {STORY_LIMITS.PART_TITLE_MAX} characters
                 </span>
               </div>
               <Input
                 id="part-title"
-                placeholder={storyType === 'series' ? 'Part 1: The Departure' : 'Complete Short Story'}
-                value={partTitle}
-                onChange={(e) => setPartTitle(e.target.value)}
+                placeholder={storyType === 'series' ? `Part ${currentPart.partNumber}: The Departure` : 'Complete Short Story'}
+                value={currentPart.title}
+                onChange={(e) => updateCurrentPart({ title: e.target.value })}
                 maxLength={STORY_LIMITS.PART_TITLE_MAX + 15}
                 className="h-10 rounded-xl border-[#E8E2D9] dark:border-[#29332D]"
               />
-              {!partTitleValidation.isValid && (
-                <p className="text-xs text-rose-600 dark:text-rose-400">{partTitleValidation.error}</p>
+              {!currentPartTitleValidation.isValid && (
+                <p className="text-xs text-rose-600 dark:text-rose-400">{currentPartTitleValidation.error}</p>
               )}
             </div>
 
@@ -470,7 +626,7 @@ export const StoryEditorDialog: React.FC<StoryEditorDialogProps> = ({
             <div className="space-y-1.5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <Label htmlFor="part-content" className="text-xs font-semibold">
-                  Story Prose <span className="text-rose-500">*</span>
+                  Chapter Prose <span className="text-rose-500">*</span>
                 </Label>
                 <div className="flex items-center gap-3 text-[11px] font-mono">
                   <span className="flex items-center gap-1 text-[#636B65] dark:text-[#A5ADA6]">
@@ -478,34 +634,34 @@ export const StoryEditorDialog: React.FC<StoryEditorDialogProps> = ({
                   </span>
                   <span
                     className={
-                      partContent.length > STORY_LIMITS.PART_CONTENT_MAX
+                      currentPart.content.length > STORY_LIMITS.PART_CONTENT_MAX
                         ? 'text-rose-600 font-bold'
                         : 'text-[#636B65] dark:text-[#A5ADA6]'
                     }
                   >
-                    {partContent.length.toLocaleString()} / {STORY_LIMITS.PART_CONTENT_MAX.toLocaleString()} characters
+                    {currentPart.content.length.toLocaleString()} / {STORY_LIMITS.PART_CONTENT_MAX.toLocaleString()} characters
                   </span>
                 </div>
               </div>
 
               <Textarea
                 id="part-content"
-                placeholder="Write your story here... Separate paragraphs with natural line breaks (blank lines). Each paragraph should be under 500 characters for comfortable reading flow."
-                value={partContent}
-                onChange={(e) => setPartContent(e.target.value)}
+                placeholder="Write your chapter here... Separate paragraphs with natural line breaks (blank lines). Each paragraph should be under 500 characters for comfortable reading flow."
+                value={currentPart.content}
+                onChange={(e) => updateCurrentPart({ content: e.target.value })}
                 rows={12}
                 className="rounded-xl border-[#E8E2D9] font-serif text-sm leading-relaxed p-4 dark:border-[#29332D] resize-y"
               />
 
               {/* Real-time paragraph feedback */}
-              {!contentValidation.isValid && partContent.length > 0 && (
+              {!currentPartContentValidation.isValid && currentPart.content.length > 0 && (
                 <div
                   className="flex items-start gap-2 rounded-xl border border-rose-300/60 bg-rose-50/70 p-3 text-xs text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/20 dark:text-rose-300"
                   role="alert"
                 >
                   <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-semibold">{contentValidation.error}</p>
+                    <p className="font-semibold">{currentPartContentValidation.error}</p>
                     <p className="mt-1 text-[11px] text-rose-600 dark:text-rose-400">
                       Sahadhyayi keeps reading comfortable on mobile screens by ensuring single continuous blocks of text do not exceed {STORY_LIMITS.PARAGRAPH_MAX} characters.
                     </p>
@@ -513,13 +669,43 @@ export const StoryEditorDialog: React.FC<StoryEditorDialogProps> = ({
                 </div>
               )}
 
-              {contentValidation.isValid && partContent.length > 0 && (
+              {currentPartContentValidation.isValid && currentPart.content.length > 0 && (
                 <div className="flex items-center justify-between text-[11px] text-[#636B65] dark:text-[#A5ADA6] px-1">
-                  <span>✓ {contentValidation.paragraphCount} paragraphs well-formatted</span>
-                  <span>Longest paragraph: {contentValidation.longestParagraphLength} / {STORY_LIMITS.PARAGRAPH_MAX} chars</span>
+                  <span>✓ {currentPartContentValidation.paragraphCount} paragraphs well-formatted</span>
+                  <span>Longest paragraph: {currentPartContentValidation.longestParagraphLength} / {STORY_LIMITS.PARAGRAPH_MAX} chars</span>
                 </div>
               )}
             </div>
+
+            {/* Individual chapter status toggle for series */}
+            {storyType === 'series' && (
+              <div className="flex items-center justify-between rounded-xl border border-[#E8E2D9] bg-muted/30 p-3 dark:border-[#29332D] text-xs">
+                <div>
+                  <p className="font-semibold text-foreground">Publication Status for Part {currentPart.partNumber}</p>
+                  <p className="text-[11px] text-muted-foreground">You can save individual chapters as drafts or publish them immediately.</p>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={currentPart.status === 'published' ? 'default' : 'outline'}
+                    onClick={() => updateCurrentPart({ status: 'published' })}
+                    className={`h-7 text-xs rounded-lg ${currentPart.status === 'published' ? 'bg-[#1C442D] text-white dark:bg-[#D5B16D] dark:text-[#0B0D0C]' : ''}`}
+                  >
+                    Published
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={currentPart.status === 'draft' ? 'default' : 'outline'}
+                    onClick={() => updateCurrentPart({ status: 'draft' })}
+                    className="h-7 text-xs rounded-lg"
+                  >
+                    Draft
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {/* Publishing Action Footer */}
             <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-[#E8E2D9] pt-4 dark:border-[#29332D]">

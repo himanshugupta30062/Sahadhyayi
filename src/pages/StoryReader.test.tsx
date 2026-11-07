@@ -79,6 +79,11 @@ vi.mock('@/hooks/useStories', () => ({
   useToggleStoryBookmark: () => ({ mutate: mockToggleBookmark, isPending: false }),
   useToggleStoryFollow: () => ({ mutate: mockToggleFollow, isPending: false }),
   useSaveStoryProgress: () => mockSaveProgress,
+  useUpdateStory: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useDeleteStoryPart: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useReorderStoryParts: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useCreateStoryPart: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useUpdateStoryPart: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useStoryComments: () => ({
     data: [
       {

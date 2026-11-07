@@ -9,6 +9,7 @@ import {
   PenLine,
   Microscope,
   LibraryBig,
+  Sparkles,
   X,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
@@ -39,18 +40,19 @@ const sections = [
     label: "Explore",
     items: [
       { title: "Library", url: "/library", icon: BookOpen },
-      { title: "Research Papers", url: "/research-papers", icon: Microscope },
-      { title: "Social Media", url: "/social", icon: Users },
-      { title: "Reading Groups", url: "/groups", icon: Users },
-      { title: "Articles", url: "/articles", icon: FileText },
       { title: "Authors", url: "/authors", icon: UserRound },
-      { title: "Games", url: "/games", icon: Gamepad2 },
+      { title: "Social", url: "/social", icon: Users },
+      { title: "Activity", url: "/activity", icon: Sparkles },
+      { title: "Short Stories", url: "/social?tab=stories", icon: BookOpen },
+      { title: "Research Papers", url: "/research-papers", icon: Microscope },
+      { title: "Articles", url: "/articles", icon: FileText },
     ],
   },
   {
     label: "Create",
     items: [
       { title: "Write an Article", url: "/articles/write", icon: PenLine },
+      { title: "Write a Story", url: "/social?tab=stories", icon: Sparkles },
     ],
   },
 ];

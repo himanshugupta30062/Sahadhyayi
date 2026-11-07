@@ -24,6 +24,7 @@ const footerSections = [
     title: 'Explore',
     links: [
       { name: 'Digital Library', href: '/library' },
+      { name: 'Activity Hub', href: '/activity' },
       { name: 'Discover Books', href: '/discovery' },
       { name: 'Authors', href: '/authors' },
       { name: 'Articles', href: '/articles' },
@@ -35,6 +36,7 @@ const footerSections = [
     title: 'Community',
     links: [
       { name: 'Reading Feed', href: '/social' },
+      { name: 'Short Stories', href: '/social?tab=stories' },
       { name: 'Reading Groups', href: '/groups' },
       { name: 'Live Reading Rooms', href: '/social?tab=rooms' },
       { name: 'Community Guidelines', href: '/community-guidelines' },

@@ -619,6 +619,80 @@ export const useUpdateStoryPart = () => {
   });
 };
 
+export const useDeleteStoryPart = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (payload: { partId: string; storyId: string }) => {
+      if (!user) throw new Error('Authentication required');
+
+      const { error } = await supabase
+        .from('story_parts')
+        .delete()
+        .eq('id', payload.partId)
+        .eq('story_id', payload.storyId);
+
+      if (error) throw error;
+
+      // Update story's parts count and recalculate reading time
+      const { data: allParts } = await supabase
+        .from('story_parts')
+        .select('content')
+        .eq('story_id', payload.storyId);
+
+      const totalWords = (allParts || []).reduce((acc: number, p: any) => {
+        return acc + (p.content?.split(/\s+/).filter(Boolean).length || 0);
+      }, 0);
+
+      await supabase
+        .from('stories')
+        .update({
+          parts_count: (allParts || []).length,
+          reading_time_minutes: Math.max(1, Math.ceil(totalWords / 200)),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', payload.storyId);
+    },
+    onSuccess: (_, vars) => {
+      void queryClient.invalidateQueries({ queryKey: ['story-details', vars.storyId] });
+      void queryClient.invalidateQueries({ queryKey: ['story-part', vars.storyId] });
+      void queryClient.invalidateQueries({ queryKey: ['stories'] });
+      toast.success('Chapter deleted.');
+    },
+  });
+};
+
+export const useReorderStoryParts = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (payload: {
+      storyId: string;
+      orderedPartIds: string[];
+    }) => {
+      if (!user) throw new Error('Authentication required');
+
+      for (let i = 0; i < payload.orderedPartIds.length; i++) {
+        const partId = payload.orderedPartIds[i];
+        const { error } = await supabase
+          .from('story_parts')
+          .update({ part_number: i + 1, updated_at: new Date().toISOString() })
+          .eq('id', partId)
+          .eq('story_id', payload.storyId);
+
+        if (error) throw error;
+      }
+    },
+    onSuccess: (_, vars) => {
+      void queryClient.invalidateQueries({ queryKey: ['story-details', vars.storyId] });
+      void queryClient.invalidateQueries({ queryKey: ['story-part', vars.storyId] });
+      toast.success('Chapter order updated successfully!');
+    },
+  });
+};
+
 export const useDeleteStory = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
