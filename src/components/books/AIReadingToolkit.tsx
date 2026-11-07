@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BookMarked, Brain, ClipboardList, Layers, LoaderCircle, MessageCircleQuestion, Sparkles } from "lucide-react";
+import { BookMarked, Brain, Layers, LoaderCircle, MessageCircleQuestion, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client-universal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
