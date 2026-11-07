@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 import { toast } from 'sonner';
 import { uniqueChannelName } from '@/lib/realtime';
+import { CURATED_READING_GROUPS } from '@/data/curatedReadingGroups';
 
 export const DEFAULT_READING_GROUP_NAME = 'Sahadhyayi Community Reading Circle';
 
@@ -65,8 +66,14 @@ export const useGroups = (options: { enabled?: boolean } = {}) => {
             group_members:group_chat_members(count)
           `)
           .order('created_at', { ascending: false });
-        if (error) throw error;
-        return data || [];
+        if (error) {
+          console.warn('Failed to fetch group chats, falling back to curated reading groups:', error.message);
+          return CURATED_READING_GROUPS;
+        }
+        if (!data || data.length === 0) {
+          return CURATED_READING_GROUPS;
+        }
+        return data;
       }
 
       // Anonymous discovery uses an aggregate-only RPC; never grant anon access
@@ -76,8 +83,8 @@ export const useGroups = (options: { enabled?: boolean } = {}) => {
         Promise.resolve(supabase.rpc('get_public_group_member_counts')).catch(() => ({ data: [], error: null })),
       ]);
       if (groupsError) {
-        console.warn('Failed to fetch group chats:', groupsError);
-        return [];
+        console.warn('Failed to fetch group chats, using curated collection:', groupsError);
+        return CURATED_READING_GROUPS;
       }
       const counts = countsResult?.data ?? [];
       const countByGroupId = new Map(
@@ -86,10 +93,11 @@ export const useGroups = (options: { enabled?: boolean } = {}) => {
           Number(row.member_count) || 0,
         ])
       );
-      return (groups || []).map((group) => {
+      const mapped = (groups || []).map((group) => {
         const count = countByGroupId.get(group.id) ?? 1;
         return { ...group, member_count: count, group_members: [{ count }] };
       });
+      return mapped.length > 0 ? mapped : CURATED_READING_GROUPS;
     },
     enabled,
   });
