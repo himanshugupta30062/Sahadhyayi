@@ -100,5 +100,35 @@ describe('authorMappers', () => {
     expect(book.title).toBe('Anonymous Manuscript');
     expect(book.author).toBe('Unknown Author');
   });
-});
 
+  it('normalizes nullish and invalid numeric author fields safely', () => {
+    const author = mapAuthorRecord({
+      id: 'author-edge', name: 'Edge Author', created_at: '', updated_at: '',
+      bio: '', profile_image_url: '', location: null, website_url: '',
+      social_links: null, genres: null, actual_books_count: 'not-a-number',
+      followers_count: 'NaN', rating: 'invalid', upcoming_events: null,
+      verified: null, verification_type: null,
+    });
+    expect(author).toMatchObject({
+      bio: null, profile_image_url: null, location: '', website_url: null,
+      social_links: {}, genres: [], books_count: 0, followers_count: 0,
+      rating: 0, upcoming_events: 0, verified: false,
+    });
+    expect(author.verification_type).toBeUndefined();
+  });
+
+  it('maps author books with optional fields missing and language fallback', () => {
+    expect(mapAuthorBook({ id: 'minimal', title: 'Untitled', created_at: '' }))
+      .toMatchObject({ id: 'minimal', title: 'Untitled', author: 'Unknown Author', language: 'English', price: 0 });
+  });
+
+  it('preserves explicit author book metadata and empty author fallback', () => {
+    const book = mapAuthorBook({
+      id: 'book-edge', title: 'A', author: '', genre: 'Fiction',
+      language: '', publication_year: 2001, pages: 12, isbn: 'x',
+      created_at: '', author_bio: 'Bio',
+    });
+    expect(book).toMatchObject({ author: 'Unknown Author', language: 'English', publication_year: 2001, pages: 12, isbn: 'x', author_bio: 'Bio' });
+  });
+
+});
