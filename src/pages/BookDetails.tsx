@@ -27,6 +27,7 @@ import { BookEditionTransparency } from '@/components/books/BookEditionTranspare
 import BookReviews from '@/components/books/BookReviews';
 import BookLiteraryVoices from '@/components/books/BookLiteraryVoices';
 import BookAIReader from '@/components/books/BookAIReader';
+import AIReadingToolkit from '@/components/books/AIReadingToolkit';
 
 
 const VALID_BOOK_TABS = ['connect', 'create', 'feedback', 'read'] as const;
@@ -337,7 +338,8 @@ const BookDetails = () => {
                 </div>
               </div>
 
-              {/* Book-specific Gemini AI */}\n          <BookAIReader book={{ id: book.id, title: book.title, author: book.author, description: book.description, language: book.language }} />\n\n          {/* Quality & Edition Transparency */}
+              {/* Book-specific Gemini AI */}\n          <BookAIReader book={{ id: book.id, title: book.title, author: book.author, description: book.description, language: book.language }} />
+          <AIReadingToolkit book={{ id: book.id, title: book.title, author: book.author, description: book.description, language: book.language }} />\n\n          {/* Quality & Edition Transparency */}
               <BookEditionTransparency book={book} />
 
               {/* Book Description */}
