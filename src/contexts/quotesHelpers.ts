@@ -5,11 +5,14 @@ export interface Quote {
   text: string;
   source?: string;
   note?: string;
+  bookId?: string;
+  page?: number;
+  location?: string;
 }
 
 interface QuotesContextType {
   quotes: Quote[];
-  addQuote: (text: string, source?: string, note?: string) => void;
+  addQuote: (text: string, source?: string, note?: string, metadata?: { bookId?: string; page?: number; location?: string }) => void;
   removeQuote: (id: number) => void;
 }
 

@@ -62,6 +62,7 @@ const QuotesPage = () => {
               <div>
                 <p className="text-sm text-gray-700">"{q.text}"</p>
                 {q.source && <p className="text-xs text-gray-500">— {q.source}</p>}
+                {(q.page || q.location) && <p className="text-xs text-muted-foreground">{q.page ? `Page ${q.page}` : 'Reading location'}{q.location ? ` · ${q.location.slice(0, 28)}` : ''}</p>}
               </div>
               <Button size="sm" variant="outline" onClick={() => shareQuote(q.text)}>
                 Share Quote
