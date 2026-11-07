@@ -13,7 +13,7 @@ import { format } from "date-fns";
 type NewsCategory = "books" | "authors" | "education" | "research" | "events" | "platform";
 type NewsItem = {
   id: string; title: string; slug: string; summary: string | null;
-  cover_image_url: string | null; category: NewsCategory; source_name: string | null;
+  cover_image_url: string | null; image_credit: string | null; image_source_url: string | null; category: NewsCategory; source_name: string | null;
   source_url: string | null; published_at: string;
 };
 
@@ -59,6 +59,11 @@ function StoryArtwork({ item, large = false }: { item: NewsItem; large?: boolean
   </div>;
 }
 
+function ImageAttribution({ item }: { item: NewsItem }) {
+  if (!item.image_credit) return null;
+  return <p className=\"mt-1.5 text-[11px] leading-4 text-muted-foreground\">Image: {item.image_source_url ? <a href={item.image_source_url} target=\"_blank\" rel=\"noopener noreferrer\" className=\"underline underline-offset-2 hover:text-foreground\">{item.image_credit}</a> : item.image_credit}</p>;
+}
+
 function SourceLink({ item, prominent = false }: { item: NewsItem; prominent?: boolean }) {
   if (!item.source_url) return <span className="text-xs text-muted-foreground">Sahadhyayi update</span>;
   return <a href={item.source_url} target="_blank" rel="noopener noreferrer" className={prominent ? "inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline" : "inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"}>Read at source <ArrowUpRight className="h-3.5 w-3.5" /></a>;
@@ -73,7 +78,7 @@ export default function Newsroom() {
     queryKey: ["newsroom", "published"],
     queryFn: async () => {
       const { data, error } = await (supabase as any).from("news_articles")
-        .select("id,title,slug,summary,cover_image_url,category,source_name,source_url,published_at")
+        .select("id,title,slug,summary,cover_image_url,image_credit,image_source_url,category,source_name,source_url,published_at")
         .eq("status", "published").order("published_at", { ascending: false }).limit(500);
       if (error) throw error;
       return (data || []) as NewsItem[];
@@ -115,6 +120,7 @@ export default function Newsroom() {
           {lead && <div className="mb-8 grid gap-6 border-b pb-8 md:grid-cols-[minmax(0,1.65fr)_minmax(260px,1fr)]">
             <article className="min-w-0">
               {lead.source_url ? <a href={lead.source_url} target="_blank" rel="noopener noreferrer" aria-label={`Open source for ${lead.title}`} className="mb-4 block overflow-hidden rounded-xl"><StoryArtwork item={lead} large /></a> : <div className="mb-4"><StoryArtwork item={lead} large /></div>}
+              <ImageAttribution item={lead} />
               <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><Badge>{categoryLabel(lead.category)}</Badge><span>{dateLabel(lead.published_at)}</span><span aria-hidden="true">·</span><span>{lead.source_name || "Sahadhyayi"}</span></div>
               <h3 className="mt-3"><StoryTitle item={lead} prominent /></h3>
               {lead.summary && <p className="mt-3 text-base leading-7 text-muted-foreground">{lead.summary}</p>}
@@ -129,7 +135,7 @@ export default function Newsroom() {
           </div>}
           {rest.length > 0 && <div className="grid gap-x-6 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">{visibleRest.map((item) => <article key={item.id} className="group min-w-0 overflow-hidden rounded-xl border bg-card transition hover:-translate-y-0.5 hover:shadow-md">
             {item.source_url ? <a href={item.source_url} target="_blank" rel="noopener noreferrer" aria-label={`Open source for ${item.title}`} className="block overflow-hidden"><StoryArtwork item={item} /></a> : <StoryArtwork item={item} />}
-            <div className="p-4"><div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><Badge variant="secondary">{categoryLabel(item.category)}</Badge><span>{dateLabel(item.published_at)}</span></div><h3 className="mt-2"><StoryTitle item={item} /></h3>{item.summary && <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">{item.summary}</p>}<div className="mt-4 flex items-center justify-between gap-2 border-t pt-3"><span className="truncate text-xs text-muted-foreground">{item.source_name || "Sahadhyayi"}</span><SourceLink item={item} /></div></div>
+            <div className="p-4"><ImageAttribution item={item} /><div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><Badge variant="secondary">{categoryLabel(item.category)}</Badge><span>{dateLabel(item.published_at)}</span></div><h3 className="mt-2"><StoryTitle item={item} /></h3>{item.summary && <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">{item.summary}</p>}<div className="mt-4 flex items-center justify-between gap-2 border-t pt-3"><span className="truncate text-xs text-muted-foreground">{item.source_name || "Sahadhyayi"}</span><SourceLink item={item} /></div></div>
           </article>)}</div>}
           {rest.length > visibleRest.length && <div className="mt-8 flex justify-center"><Button variant="outline" onClick={() => setVisibleCount((count) => count + 12)}>Load more news <ArrowUpRight className="ml-2 h-4 w-4" /></Button></div>}
           {items.length >= 500 && <p className="mt-5 text-center text-xs text-muted-foreground">Showing the latest 500 updates. Search or choose a section to narrow results.</p>}
