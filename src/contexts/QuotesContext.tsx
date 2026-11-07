@@ -1,38 +1,51 @@
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/authHelpers';
 import { QuotesContext, type Quote } from './quotesHelpers';
 
+const getStorageKey = (userId?: string) => `savedQuotes:${userId ?? 'guest'}`;
+
 const QuotesProvider = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuth();
+  const storageKey = getStorageKey(user?.id);
   const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [loadedStorageKey, setLoadedStorageKey] = useState<string | null>(null);
 
+  // Keep personal quote collections separate for guests and every signed-in account.
   useEffect(() => {
+    setLoadedStorageKey(null);
     try {
-      const stored = window.localStorage.getItem('savedQuotes');
-      if (!stored) return;
-
-      const parsed: unknown = JSON.parse(stored);
-      if (Array.isArray(parsed)) {
-        setQuotes(parsed as Quote[]);
+      const stored = window.localStorage.getItem(storageKey);
+      if (!stored) {
+        setQuotes([]);
+      } else {
+        const parsed: unknown = JSON.parse(stored);
+        setQuotes(Array.isArray(parsed) ? parsed as Quote[] : []);
       }
     } catch {
-      // Ignore unavailable storage or malformed persisted data.
+      setQuotes([]);
+    } finally {
+      setLoadedStorageKey(storageKey);
     }
-  }, []);
+  }, [storageKey]);
 
   useEffect(() => {
+    // Never persist the previous account's in-memory quotes under a new account key.
+    if (loadedStorageKey !== storageKey) return;
     try {
-      window.localStorage.setItem('savedQuotes', JSON.stringify(quotes));
+      window.localStorage.setItem(storageKey, JSON.stringify(quotes));
     } catch {
       // Quotes remain usable in memory when persistence is unavailable.
     }
-  }, [quotes]);
+  }, [quotes, storageKey, loadedStorageKey]);
 
   const addQuote = (text: string, source?: string, note?: string) => {
-    if (!text) return;
-    const newQuote: Quote = { id: Date.now(), text, source, note };
+    if (!text.trim() || loadedStorageKey !== storageKey) return;
+    const newQuote: Quote = { id: Date.now(), text: text.trim(), source, note };
     setQuotes(prev => [...prev, newQuote]);
   };
 
   const removeQuote = (id: number) => {
+    if (loadedStorageKey !== storageKey) return;
     setQuotes(prev => prev.filter(q => q.id !== id));
   };
 
