@@ -30,15 +30,15 @@ import { toast } from "sonner";
 
 type EventCategory = { id: string; name: string; slug: string; description?: string | null };
 
-const categoryFallback = [
-  { slug: "book-fair", name: "Book Fairs" },
-  { slug: "literature-festival", name: "Literature Festivals" },
-  { slug: "book-launch", name: "Book Launches" },
-  { slug: "author-talk", name: "Author Talks" },
-  { slug: "workshop", name: "Writing Workshops" },
-  { slug: "reader-meetup", name: "Reader Meetups" },
-  { slug: "booktech", name: "BookTech & Hackathons" },
-  { slug: "online", name: "Online Events" },
+const categoryFallback: EventCategory[] = [
+  { id: "book-fair", slug: "book-fair", name: "Book Fairs" },
+  { id: "literature-festival", slug: "literature-festival", name: "Literature Festivals" },
+  { id: "book-launch", slug: "book-launch", name: "Book Launches" },
+  { id: "author-talk", slug: "author-talk", name: "Author Talks" },
+  { id: "workshop", slug: "workshop", name: "Writing Workshops" },
+  { id: "reader-meetup", slug: "reader-meetup", name: "Reader Meetups" },
+  { id: "booktech", slug: "booktech", name: "BookTech & Hackathons" },
+  { id: "online", slug: "online", name: "Online Events" },
 ];
 
 const formatDate = (value: string) =>
@@ -78,8 +78,9 @@ const EventCard = ({
     if (navigator.share) {
       navigator.share({ title: event.title, url }).catch(() => {});
     } else {
-      navigator.clipboard.writeText(url);
-      toast.success("Event link copied to clipboard!");
+      void navigator.clipboard.writeText(url).then(() => {
+        toast.success("Event link copied to clipboard!");
+      }).catch(() => {});
     }
   };
 

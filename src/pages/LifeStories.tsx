@@ -217,7 +217,7 @@ const stories: LifeStory[] = [
     ],
     lesson: 'Courage is walking through hostility every morning so the next generation can learn in freedom.',
     sourceLabel: 'Savitribai Phule Pune University Biography',
-    sourceUrl: 'http://www.unipune.ac.in/',
+    sourceUrl: 'https://www.unipune.ac.in/',
     accent: 'from-rose-950 via-pink-900 to-purple-800',
     initials: 'SP',
     readingMinutes: 4,
@@ -277,7 +277,7 @@ const stories: LifeStory[] = [
     ],
     lesson: 'A setback is not a dead end; your own hardships can become the bridge that lifts others.',
     sourceLabel: 'Super 30 Official Portal',
-    sourceUrl: 'http://www.super30.org/',
+    sourceUrl: 'https://www.super30.org/',
     accent: 'from-emerald-950 via-amber-900 to-stone-800',
     initials: 'AK',
     readingMinutes: 4,
@@ -387,8 +387,9 @@ const LifeStories = () => {
     if (navigator.share) {
       navigator.share({ title: `${storyItem.name} — Life Story`, url }).catch(() => {});
     } else {
-      navigator.clipboard.writeText(url);
-      toast.success('Story link copied to clipboard!');
+      void navigator.clipboard.writeText(url).then(() => {
+        toast.success('Story link copied to clipboard!');
+      }).catch(() => {});
     }
   };
 

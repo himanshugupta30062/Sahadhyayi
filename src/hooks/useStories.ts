@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client-universal';
+import { supabase as typedSupabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 import { toast } from 'sonner';
 import { estimateReadingMinutes } from '@/lib/storyValidation';
 import { STARTER_STORIES, STARTER_STORY_PARTS } from '@/data/starterStories';
+
+const supabase = typedSupabase as any;
 
 export interface Story {
   id: string;
@@ -354,7 +356,7 @@ export const useStoryPart = (storyId?: string, partNumber?: number) => {
       // Query all parts headers (for drawer chapter selection)
       let allPartsQuery = supabase
         .from('story_parts')
-        .select('id, part_number, title, status')
+        .select('*')
         .eq('story_id', storyId)
         .order('part_number', { ascending: true });
 
@@ -367,7 +369,7 @@ export const useStoryPart = (storyId?: string, partNumber?: number) => {
       return {
         story: storyData as unknown as Story,
         part: partData as StoryPart,
-        allParts: (allParts || []) as Array<{ id: string; part_number: number; title: string; status: string }>,
+        allParts: (allParts || []) as StoryPart[],
         isAuthor,
       };
     },

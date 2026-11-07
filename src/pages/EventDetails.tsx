@@ -135,8 +135,9 @@ export default function EventDetails() {
     if (navigator.share) {
       navigator.share({ title: event?.title || "Book Event", url }).catch(() => {});
     } else {
-      navigator.clipboard.writeText(url);
-      toast.success("Event URL copied to clipboard!");
+      void navigator.clipboard.writeText(url).then(() => {
+        toast.success("Event URL copied to clipboard!");
+      }).catch(() => {});
     }
   };
 
