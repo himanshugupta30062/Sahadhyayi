@@ -134,11 +134,19 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
   const activeReadUrl = readUrls[activeReadUrlIndex];
 
   useEffect(() => {
+    // An explicit page in the URL is intentional (shared link, chapter link,
+    // or reader navigation). It must win over the user's last saved position.
+    const requestedPage = Number.parseInt(pageParam ?? '', 10);
+    if (pageParam !== null && Number.isFinite(requestedPage) && requestedPage > 0) {
+      setCurrentPage(requestedPage);
+      return;
+    }
+
     const saved = readingProgress?.find((item) => item.book_id === bookId);
     const local = loadProgressLocally(bookId, user?.id);
     const resumePage = saved?.current_page || local?.currentPage || 1;
     if (resumePage > 1) setCurrentPage(resumePage);
-  }, [bookId, readingProgress, user?.id]);
+  }, [bookId, readingProgress, user?.id, pageParam]);
 
   // Determine book type and URLs
   const isEpub = epubUrl && epubUrl.length > 0;
