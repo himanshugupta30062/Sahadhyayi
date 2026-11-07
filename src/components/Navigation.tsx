@@ -71,44 +71,59 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
     items: [
       { name: "Library", href: "/library", tourTarget: "library" },
       { name: "Research Papers", href: "/research-papers" },
+      { name: "My Bookshelf", href: "/bookshelf", authOnly: true },
+      { name: "Publish Book", href: "/publish", authOnly: true },
+      { name: "My Publications", href: "/my-publications", authOnly: true },
     ],
   },
   {
-    name: "Articles",
-    href: "/articles",
+    name: "Authors",
+    href: "/authors",
     items: [
-      { name: "Articles", href: "/articles", tourTarget: "articles" },
-      { name: "Newsroom", href: "/news" },
-      { name: "Blogs", href: "/blog" },
-      { name: "Quotes", href: "/quotes" },
-      { name: "My Articles", href: "/articles/my", authOnly: true },
-      { name: "Write Article", href: "/articles/write", authOnly: true },
+      { name: "Authors", href: "/authors" },
+      { name: "Reviewers & Critics", href: "/reviewers-critics" },
+      { name: "Scientists", href: "/scientists" },
+      { name: "Social Activists", href: "/social-activists" },
+      { name: "Freedom Fighters", href: "/freedom-fighters" },
+      { name: "Author Connect", href: "/author-connect" },
     ],
   },
   {
-    name: "Social Media",
+    name: "Social",
     href: "/social",
     items: [
       { name: "Community Feed", href: "/social", tourTarget: "community" },
+      { name: "Short Stories", href: "/social?tab=stories" },
       { name: "Book Reviews", href: "/social?tab=reviews" },
       { name: "Discover Friends", href: "/social?tab=friends" },
-      { name: "Reading Groups", href: "/groups" },
-      { name: "Reader's Map", href: "/social?tab=map" },
-      { name: "Reader Map by Book", href: "/reader-map" },
       { name: "Book Discussions", href: "/social?tab=threads" },
       { name: "Reading Rooms", href: "/social?tab=rooms" },
       { name: "Shared Marginalia", href: "/social?tab=margins" },
       { name: "Reading DNA", href: "/social?tab=dna" },
+      { name: "Reader's Map", href: "/social?tab=map" },
+      { name: "Reader Map by Book", href: "/reader-map" },
+      { name: "Friends & Readers Map", href: "/map" },
       { name: "Community Stories", href: "/community-stories" },
       { name: "Life Stories", href: "/life-stories" },
-      { name: "Friends & Readers Map", href: "/map" },
+    ],
+  },
+  {
+    name: "Activity",
+    href: "/activity",
+    items: [
+      { name: "Activity Hub", href: "/activity" },
+      { name: "Events & Festivals", href: "/events" },
+      { name: "Reading Challenges", href: "/activity?tab=challenges" },
+      { name: "Book Games", href: "/games" },
+      { name: "Reading Groups", href: "/groups" },
+      { name: "Reader Meetups", href: "/activity?tab=meetups" },
     ],
   },
 ];
 
 const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
-  // Reuse the authenticated navigation definitions and filter access-only items.
   NAVIGATION_SECTIONS[0],
+  NAVIGATION_SECTIONS[1],
   {
     ...NAVIGATION_SECTIONS[2],
     items: NAVIGATION_SECTIONS[2].items
@@ -121,24 +136,16 @@ const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
         ),
       }),
   },
-  {
-    ...NAVIGATION_SECTIONS[1],
-    items: NAVIGATION_SECTIONS[1].items.filter((item) => !item.authOnly),
-  },
-  {
-    name: "Authors",
-    href: "/authors",
-    items: [
-      { name: "Authors", href: "/authors" },
-      { name: "Reviewers & Critics", href: "/reviewers-critics" },
-      { name: "Scientists", href: "/scientists" },
-      { name: "Social Activists", href: "/social-activists" },
-      { name: "Freedom Fighters", href: "/freedom-fighters" },
-    ],
-  },
+  NAVIGATION_SECTIONS[3],
 ];
 
 const PEOPLE_AND_MORE: NavigationItem[] = [
+  { name: "Articles", href: "/articles", tourTarget: "articles" },
+  { name: "Newsroom", href: "/news" },
+  { name: "Blogs", href: "/blog" },
+  { name: "Quotes", href: "/quotes" },
+  { name: "My Articles", href: "/articles/my", authOnly: true },
+  { name: "Write Article", href: "/articles/write", authOnly: true },
   { name: "Scientists", href: "/scientists" },
   { name: "Publishers", href: "/publishers" },
   { name: "Author Connect", href: "/author-connect" },
@@ -185,7 +192,15 @@ function pathMatches(pathname: string, href: string) {
       pathname.startsWith("/books/") ||
       pathname.startsWith("/reader/");
   }
-  if (path === "/social") return pathname === path;
+  if (path === "/social") return pathname === path || pathname.startsWith("/stories");
+  if (path === "/activity") {
+    return (
+      pathname === path ||
+      pathname.startsWith("/events") ||
+      pathname.startsWith("/games") ||
+      pathname.startsWith("/groups")
+    );
+  }
   return pathname === path || pathname.startsWith(path + "/");
 }
 
@@ -203,7 +218,7 @@ function isNavigationItemActive(pathname: string, search: string, href: string) 
   return true;
 }
 
-const NAVIGATION_ORDER = ["Library", "Social Media", "Articles", "Authors"];
+const NAVIGATION_ORDER = ["Library", "Authors", "Social", "Activity"];
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -248,10 +263,7 @@ const Navigation = () => {
 
   const desktopSections = useMemo(() => {
     const sections = user
-      ? [
-          ...NAVIGATION_SECTIONS,
-          ...PUBLIC_NAVIGATION_SECTIONS.filter((section) => section.name === "Authors"),
-        ]
+      ? [...NAVIGATION_SECTIONS]
       : [...PUBLIC_NAVIGATION_SECTIONS];
 
     return sections
@@ -600,26 +612,79 @@ const Navigation = () => {
                       sideOffset={6}
                       avoidCollisions={true}
                       collisionPadding={12}
-                      className={"z-[60] max-h-[min(75vh,600px)] overflow-y-auto rounded-xl border border-border/80 bg-popover/95 p-3 shadow-2xl backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:slide-in-from-top-1 data-[state=closed]:slide-out-to-top-1 duration-150 " + (key === "social-media" ? "w-[min(760px,calc(100vw-2rem))]" : "w-64")}
+                      className={"z-[60] max-h-[min(75vh,600px)] overflow-y-auto rounded-xl border border-border/80 bg-popover/95 p-3 shadow-2xl backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:slide-in-from-top-1 data-[state=closed]:slide-out-to-top-1 duration-150 " + (key === "social" || key === "social-media" || key === "activity" ? "w-[min(760px,calc(100vw-2rem))]" : "w-64")}
                     >
                       <div className="mb-3 overflow-hidden rounded-lg border border-[hsl(var(--brand-primary)/0.18)] bg-gradient-to-r from-[hsl(var(--brand-primary)/0.12)] via-[hsl(var(--brand-primary)/0.06)] to-transparent px-3 py-2.5">
                         <p className="text-sm font-bold tracking-tight text-foreground">{section.name}</p>
-                        <p className="mt-0.5 text-xs text-muted-foreground">{key === "social-media" ? "Connect, discover readers and explore conversations" : key === "library" ? "Browse the library and research papers" : key === "articles" ? "Read ideas, updates and stories" : "Meet the people shaping ideas and knowledge"}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {key === "social" || key === "social-media"
+                            ? "Connect, read stories, meet readers and join discussions"
+                            : key === "activity"
+                            ? "Events, challenges, reading groups, meetups and games"
+                            : key === "library"
+                            ? "Browse the library, publications and research papers"
+                            : "Meet the authors, critics and thinkers shaping ideas"}
+                        </p>
                       </div>
-                      {key === "social-media" ? (() => {
+                      {key === "social" || key === "social-media" ? (() => {
                         const socialItems = visibleItems(section.items).flatMap((item) =>
                           item.children?.length ? item.children : [item]
                         );
                         const groups = [
-                          { title: "Community", description: "Meet readers and build connections", names: ["Feed", "Community Feed", "Discover Friends", "Reading Groups"] },
-                          { title: "Discover", description: "Find readers and reading activity", names: ["Reader's Map", "Reader Map by Book", "Friends & Readers Map"] },
-                          { title: "Book Discussions", description: "Go deeper into every book", names: ["Book Discussion", "Book Discussions", "Reading Rooms", "Shared Marginalia", "Reading DNA"] },
-                          { title: "Stories", description: "Ideas and experiences from readers", names: ["Community Stories", "Life Stories"] },
+                          { title: "Community", description: "Meet readers and build connections", names: ["Community Feed", "Discover Friends"] },
+                          { title: "Stories", description: "Original stories and series", names: ["Short Stories", "Community Stories", "Life Stories"] },
+                          { title: "Discussions", description: "Go deeper into books and reflections", names: ["Book Reviews", "Book Discussion", "Book Discussions", "Reading Rooms", "Shared Marginalia", "Reading DNA"] },
+                          { title: "Readers Map", description: "Find fellow readers around you", names: ["Reader's Map", "Reader Map by Book", "Friends & Readers Map"] },
                         ];
                         return (
                           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                             {groups.map((group) => {
                               const items = socialItems.filter((item) => group.names.includes(item.name));
+                              if (!items.length) return null;
+                              return (
+                                <section key={group.title} className="min-w-0 rounded-lg border border-border/70 bg-card/70 p-2.5 shadow-sm transition-colors hover:border-[hsl(var(--brand-primary)/0.28)]">
+                                  <h3 className="px-1 pb-1 text-xs font-bold uppercase tracking-wider text-[hsl(var(--brand-primary))]">{group.title}</h3>
+                                  <p className="px-1 pb-2 text-xs leading-relaxed text-muted-foreground/80">{group.description}</p>
+                                  <div className="space-y-0.5">
+                                    {items.map((item) => {
+                                      const active = isCurrentRoute(item.href);
+                                      return (
+                                        <DropdownMenuItem key={item.name} asChild>
+                                          <Link
+                                            to={item.href}
+                                            onClick={() => handleDesktopNavigationClick(item.href)}
+                                            data-tour-target={item.tourTarget}
+                                            aria-current={active ? "page" : undefined}
+                                            className={
+                                              "flex min-h-10 cursor-pointer items-center rounded-lg px-2 py-2 text-sm transition-colors " +
+                                              (active
+                                                ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]"
+                                                : "text-foreground hover:bg-muted")
+                                            }
+                                          >
+                                            {item.name}
+                                          </Link>
+                                        </DropdownMenuItem>
+                                      );
+                                    })}
+                                  </div>
+                                </section>
+                              );
+                            })}
+                          </div>
+                        );
+                      })() : key === "activity" ? (() => {
+                        const activityItems = visibleItems(section.items);
+                        const groups = [
+                          { title: "Hub & Gatherings", description: "Central home and local meetups", names: ["Activity Hub", "Reader Meetups"] },
+                          { title: "Events & Festivals", description: "Literary sessions and festivals", names: ["Events & Festivals"] },
+                          { title: "Challenges & Games", description: "Milestones and book trivia", names: ["Reading Challenges", "Book Games"] },
+                          { title: "Reading Groups", description: "Read together in active clubs", names: ["Reading Groups"] },
+                        ];
+                        return (
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            {groups.map((group) => {
+                              const items = activityItems.filter((item) => group.names.includes(item.name));
                               if (!items.length) return null;
                               return (
                                 <section key={group.title} className="min-w-0 rounded-lg border border-border/70 bg-card/70 p-2.5 shadow-sm transition-colors hover:border-[hsl(var(--brand-primary)/0.28)]">
@@ -684,22 +749,6 @@ const Navigation = () => {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ))}
-                <Link
-                  to="/events"
-                  onClick={() => handleDesktopNavigationClick("/events")}
-                  aria-current={isCurrentRoute("/events") ? "page" : undefined}
-                  className={"min-h-10 rounded-md px-2.5 py-2 text-sm font-medium transition-colors hover:bg-muted " + (isCurrentRoute("/events") ? "text-[hsl(var(--brand-primary))]" : "text-muted-foreground hover:text-foreground")}
-                >
-                  Events
-                </Link>
-                <Link
-                  to="/games"
-                  onClick={() => handleDesktopNavigationClick("/games")}
-                  aria-current={isCurrentRoute("/games") ? "page" : undefined}
-                  className={"min-h-10 rounded-md px-2.5 py-2 text-sm font-medium transition-colors hover:bg-muted " + (isCurrentRoute("/games") ? "text-[hsl(var(--brand-primary))]" : "text-muted-foreground hover:text-foreground")}
-                >
-                  Games
-                </Link>
               </nav>
               </>
             )}
@@ -806,17 +855,12 @@ const Navigation = () => {
               {user ? (
                 <>
                   {[...NAVIGATION_SECTIONS].sort((a, b) => NAVIGATION_ORDER.indexOf(a.name) - NAVIGATION_ORDER.indexOf(b.name)).map(renderDrawerSection)}
-                  {renderDrawerLink({ name: "Authors", href: "/authors" })}
-                  {renderDrawerLink({ name: "Reviewers & Critics", href: "/reviewers-critics" })}
-                  {renderDrawerLink({ name: "Events", href: "/events" })}
-                  {renderDrawerLink({ name: "Games", href: "/games" })}
-                  {renderPublicDrawerItem({ name: "More", href: "/about", children: PEOPLE_AND_MORE }, "authenticated-more")}
+                  {renderPublicDrawerItem({ name: "Explore More", href: "/articles", children: PEOPLE_AND_MORE }, "authenticated-more")}
                 </>
               ) : (
                 <>
                   {PUBLIC_NAVIGATION_SECTIONS.map(renderPublicDrawerSection)}
-                  {renderDrawerLink({ name: "Events", href: "/events" })}
-                  {renderDrawerLink({ name: "Games", href: "/games" })}
+                  {renderPublicDrawerItem({ name: "Explore More", href: "/articles", children: PEOPLE_AND_MORE }, "public-more")}
                 </>
               )}
             </div>
