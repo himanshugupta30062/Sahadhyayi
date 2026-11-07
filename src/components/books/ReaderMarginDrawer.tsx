@@ -33,14 +33,16 @@ export const ReaderMarginDrawer: React.FC<ReaderMarginDrawerProps> = ({
 }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [viewScope, setViewScope] = useState<'page' | 'all'>('page');
+  const [viewScope, setViewScope] = useState<'page' | 'all' | 'journal'>('page');
   const [addDialogOpen, setAddDialogOpen] = useState(false);
 
   const { data: allNotes = [], isLoading: notesLoading } = useMarginNotes({ bookId });
   const { data: rooms = [] } = useReadingRooms();
 
-  const pageNotes = allNotes.filter((n) => Number(n.page) === Number(currentPage));
-  const displayedNotes = viewScope === 'page' ? pageNotes : allNotes;
+  const pageNotes = allNotes.filter((n) => n.visibility !== 'private' && Number(n.page) === Number(currentPage));
+  const journalNotes = allNotes.filter((n) => user && n.user_id === user.id && n.visibility === 'private');
+  const communityNotes = allNotes.filter((n) => n.visibility !== 'private');
+  const displayedNotes = viewScope === 'page' ? pageNotes : viewScope === 'journal' ? journalNotes : communityNotes;
   const activeBookRoom = rooms.find((r) => r.book_id === bookId);
 
   return (
@@ -117,7 +119,7 @@ export const ReaderMarginDrawer: React.FC<ReaderMarginDrawerProps> = ({
             </div>
           )}
 
-          {/* Tabs: This Page vs All Notes */}
+          {/* Reader tabs: community notes and private journal */}
           <div className="flex items-center gap-1.5 pt-2">
             <Button
               size="sm"
@@ -133,8 +135,16 @@ export const ReaderMarginDrawer: React.FC<ReaderMarginDrawerProps> = ({
               className="h-7 text-xs px-2.5"
               onClick={() => setViewScope('all')}
             >
-              All Pages ({allNotes.length})
+              Community ({communityNotes.length})
             </Button>
+            {user && <Button
+              size="sm"
+              variant={viewScope === 'journal' ? 'secondary' : 'ghost'}
+              className="h-7 text-xs px-2.5"
+              onClick={() => setViewScope('journal')}
+            >
+              My Journal ({journalNotes.length})
+            </Button>}
           </div>
         </SheetHeader>
 
@@ -150,10 +160,10 @@ export const ReaderMarginDrawer: React.FC<ReaderMarginDrawerProps> = ({
                 <Quote className="w-6 h-6" />
               </div>
               <h4 className="text-sm font-semibold text-foreground">
-                {viewScope === 'page' ? `No notes on Page ${currentPage}` : 'No margin notes for this book yet'}
+                {viewScope === 'page' ? `No community notes on Page ${currentPage}` : viewScope === 'journal' ? 'Your private journal is empty for this book' : 'No community margin notes for this book yet'}
               </h4>
               <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-                Highlight passages and record your thoughts or reactions. Notes are pinned to exact pages for fellow readers to discover.
+                Keep personal reflections private in My Journal, or share a note with fellow readers. Notes stay attached to book pages.
               </p>
               {user ? (
                 <Button
