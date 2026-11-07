@@ -58,6 +58,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import GroupMessaging from './GroupMessaging';
 import SignInLink from '@/components/SignInLink';
+import AIReadingGroupAssistant from './AIReadingGroupAssistant';
 import { toast } from 'sonner';
 
 type EditableGroup = Pick<Group, 'id' | 'name'> & { description: string };
@@ -357,6 +358,11 @@ const ReadingGroupsDirectory = () => {
           </AlertDescription>
         </Alert>
       )}
+
+      {/* ── AI Reading Group Assistant ── */}
+      <div className="mb-6">
+        <AIReadingGroupAssistant />
+      </div>
 
       {/* ── Skeletons ── */}
       {isLoading && (

@@ -13,6 +13,7 @@ import { useAddToBookshelf } from '@/hooks/useUserBookshelf';
 import { useAuth } from '@/contexts/authHelpers';
 import { BookOpen, Plus, Search, Sparkles } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import SemanticBookDiscovery from '@/components/discovery/SemanticBookDiscovery';
 
 const Discovery = () => {
   const { user } = useAuth();
@@ -64,6 +65,10 @@ const Discovery = () => {
         url="https://sahadhyayi.com/discovery"
       />
       <h1 className="text-3xl font-bold mb-6 text-center">Discover New Books</h1>
+
+      <div className="mb-10">
+        <SemanticBookDiscovery />
+      </div>
 
       <Card className="mb-8 border-border">
         <CardContent className="pt-6 space-y-4">
