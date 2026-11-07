@@ -35,6 +35,8 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 import { useAuth } from '@/contexts/authHelpers';
 import { Quote, Lock, Sparkles } from 'lucide-react';
+import { BookReelsStrip } from './BookReelsStrip';
+import { SampleReaderFeedCards } from './SampleReaderFeedCards';
 
 const EmbeddedOriginalPost: React.FC<{
   post?: SocialPost | null;
@@ -360,6 +362,7 @@ export const EnhancedSocialFeed = () => {
         )
       ) : (
         <>
+          <BookReelsStrip className="mb-6" />
           <FeedComposer />
 
           {error ? (
@@ -374,29 +377,39 @@ export const EnhancedSocialFeed = () => {
               </CardContent>
             </Card>
           ) : postsForDisplay.length === 0 ? (
-            <Card className="bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs">
-              <CardContent className="p-10 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#EBF2EC] dark:bg-[#1C3024] border border-[#C8DBCB] dark:border-[#315C43]/50 flex items-center justify-center text-[#1C442D] dark:text-[#D5B16D]">
-                  <MessageCircle className="w-8 h-8" />
-                </div>
-                <h3 className="text-lg font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-1">
-                  {streamMode === 'following' ? 'Your Following feed is quiet' : 'No posts yet'}
-                </h3>
-                <p className="text-sm text-[#636B65] dark:text-[#A5ADA6]">
-                  {streamMode === 'following'
-                    ? 'Follow readers to see their eligible book discussions and reading updates here.'
-                    : 'Be the first to share something with the community.'}
-                </p>
-                {streamMode === 'following' && (
+            streamMode === 'following' ? (
+              <Card className="bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs">
+                <CardContent className="p-10 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#EBF2EC] dark:bg-[#1C3024] border border-[#C8DBCB] dark:border-[#315C43]/50 flex items-center justify-center text-[#1C442D] dark:text-[#D5B16D]">
+                    <MessageCircle className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-lg font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-1">
+                    Your Following feed is quiet
+                  </h3>
+                  <p className="text-sm text-[#636B65] dark:text-[#A5ADA6]">
+                    Follow readers to see their eligible book discussions and reading updates here.
+                  </p>
                   <Link
                     to="/social?tab=friends"
                     className="inline-flex mt-4 text-sm font-medium text-[#1C442D] dark:text-[#D5B16D] hover:underline"
                   >
                     Discover readers to follow
                   </Link>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-dashed border-[#C8DBCB] bg-[#FAF7F2] p-4 text-center dark:border-[#315C43] dark:bg-[#111614]">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[#1C442D] dark:text-[#D5B16D]">
+                    Community highlights
+                  </p>
+                  <p className="mt-1 text-xs text-[#636B65] dark:text-[#A5ADA6]">
+                    Be the first to post today, or join the conversation with these fellow readers:
+                  </p>
+                </div>
+                <SampleReaderFeedCards showHeading={false} />
+              </div>
+            )
           ) : (
         postsForDisplay.map((post, idx) => {
           const isRepost = !!post.repost_of_id && !!post.reposted_post;

@@ -66,7 +66,7 @@ async function fetchFilteredBooks(
 
     if (safeSearchQuery) {
       query = query.or(
-        `title.ilike.%${safeSearchQuery}%,author.ilike.%${safeSearchQuery}%,genre.ilike.%${safeSearchQuery}%`
+        `title.ilike.%${safeSearchQuery}%,author.ilike.%${safeSearchQuery}%,genre.ilike.%${safeSearchQuery}%,description.ilike.%${safeSearchQuery}%`
       );
     }
     if (selectedGenre && selectedGenre !== 'All' && contentType !== 'research-papers') {
@@ -100,7 +100,7 @@ async function fetchFilteredBooks(
 
         if (safeSearchQuery) {
           fallbackQuery = fallbackQuery.or(
-            `title.ilike.%${safeSearchQuery}%,author.ilike.%${safeSearchQuery}%,genre.ilike.%${safeSearchQuery}%`
+            `title.ilike.%${safeSearchQuery}%,author.ilike.%${safeSearchQuery}%,genre.ilike.%${safeSearchQuery}%,description.ilike.%${safeSearchQuery}%`
           );
         }
         if (selectedGenre && selectedGenre !== 'All' && contentType !== 'research-papers') {
@@ -173,6 +173,68 @@ async function fetchFilteredBooks(
       catalog_status: row.catalog_status,
     };
   });
+
+  // Include approved community publications
+  if (contentType !== 'research-papers') {
+    try {
+      let userQuery = supabase
+        .from('user_published_books')
+        .select('id, title, subtitle, author_name, description, genre, language, pages, isbn, cover_image_url, pdf_url, created_at, status')
+        .eq('status', 'approved');
+
+      if (safeSearchQuery) {
+        userQuery = userQuery.or(
+          `title.ilike.%${safeSearchQuery}%,author_name.ilike.%${safeSearchQuery}%,genre.ilike.%${safeSearchQuery}%,description.ilike.%${safeSearchQuery}%`
+        );
+      }
+      if (selectedGenre && selectedGenre !== 'All') {
+        if (selectedGenre === 'Hindi') {
+          userQuery = userQuery.eq('language', 'Hindi');
+        } else {
+          userQuery = userQuery.eq('genre', selectedGenre);
+        }
+      }
+      if (selectedAuthor && selectedAuthor !== 'All') {
+        userQuery = userQuery.eq('author_name', selectedAuthor);
+      }
+      if (selectedLanguage && selectedLanguage !== 'All') {
+        userQuery = userQuery.eq('language', selectedLanguage);
+      }
+
+      const { data: approvedUserBooks, error: userBooksError } = await userQuery.limit(100);
+      if (!userBooksError && Array.isArray(approvedUserBooks)) {
+        for (const row of approvedUserBooks) {
+          catalogBooks.push({
+            id: String(row.id),
+            title: row.title,
+            author: row.author_name || 'Community Author',
+            genre: row.genre || 'Community',
+            cover_image_url: normalizeCoverUrl(row.cover_image_url),
+            description: row.description || row.subtitle || null,
+            publication_year: row.created_at ? new Date(row.created_at).getFullYear() : undefined,
+            language: row.language || 'English',
+            pdf_url: row.pdf_url,
+            epub_url: undefined,
+            created_at: row.created_at || new Date().toISOString(),
+            price: 0,
+            isbn: row.isbn,
+            pages: row.pages,
+            author_bio: null,
+            accessStatus: 'open',
+            qualityScore: 85,
+            qualityReasons: ['Community approved publication'],
+            whyThisEdition: 'Approved community-submitted publication',
+            isPreferredEdition: true,
+            assets: row.pdf_url ? [{ format: 'pdf', downloadUrl: row.pdf_url }] : [],
+            status: 'approved',
+            catalog_status: 'active',
+          });
+        }
+      }
+    } catch {
+      // Ignore if user_published_books is unreachable
+    }
+  }
 
   // Sort deterministically by library completeness hierarchy
   let typedBooks = contentType === 'research-papers'

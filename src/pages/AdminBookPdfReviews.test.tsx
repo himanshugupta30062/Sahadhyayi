@@ -280,4 +280,40 @@ describe('AdminBookPdfReviews', () => {
     expect(screen.queryByText('Already linked')).not.toBeInTheDocument();
     expect(screen.getByLabelText(/Find book/)).toHaveValue('other author');
   });
+
+  it('displays pending publishing banner when approved but not yet published', () => {
+    mocks.submissions = [submission({ status: 'approved', published_book_id: null })];
+    renderPage();
+    expect(screen.getByText(/Submission Approved — Pending Library Catalog Publication/i)).toBeInTheDocument();
+  });
+
+  it('displays published banner with library link when published_book_id is present', () => {
+    mocks.submissions = [submission({ status: 'approved', published_book_id: 'book-1' })];
+    renderPage();
+    expect(screen.getByText(/This book PDF is published and publicly visible in the Library/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /View in Library Catalog/i })).toBeInTheDocument();
+  });
+
+  it('supports publishing as a new catalogue book', async () => {
+    mocks.submissions = [submission({ status: 'approved' })];
+    renderPage();
+
+    // Switch to "Publish as New Library Book" tab
+    fireEvent.click(screen.getByRole('tab', { name: /Publish as New Library Book/i }));
+
+    const evidenceInput = screen.getByLabelText(/HTTPS licence \/ permission evidence URL/i);
+    fireEvent.change(evidenceInput, { target: { value: 'https://en.wikipedia.org/wiki/Songs_of_Kabir' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Create Catalogue Book & Publish PDF/i }));
+
+    await waitFor(() => expect(mocks.invoke).toHaveBeenCalledWith('review-book-pdf', {
+      body: expect.objectContaining({
+        action: 'publish',
+        createNewBook: true,
+        newBookTitle: 'A Test Book',
+        evidenceUrl: 'https://en.wikipedia.org/wiki/Songs_of_Kabir',
+      }),
+    }));
+    expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'PDF published' }));
+  });
 });

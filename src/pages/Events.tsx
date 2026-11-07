@@ -116,9 +116,21 @@ export default function Events() {
     <>
       <SEO title="Book Events & Literary Festivals" description="Discover upcoming book fairs, literature festivals, author talks, book launches, reading meetups and BookTech hackathons across India." canonical="https://sahadhyayi.com/events" keywords={["book events India","book fairs","literature festivals","author events","book launch","reading meetups","BookTech hackathons"]} schema={{"@context":"https://schema.org","@type":"CollectionPage","name":"Sahadhyayi Events","description":"Discover book and literary events across India.","url":"https://sahadhyayi.com/events"}} />
       <div className="min-h-[calc(100vh-4rem)] bg-background text-foreground">
-        <section className="relative overflow-hidden border-b border-border/60 bg-gradient-to-br from-primary/10 via-background to-amber-500/5">
-          <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
-          <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+        <section className="relative isolate overflow-hidden border-b border-border/60 bg-gradient-to-br from-primary/10 via-background to-amber-500/5">
+          <img
+            src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=2400&q=85"
+            alt=""
+            aria-hidden="true"
+            className="absolute right-0 top-0 z-0 h-full w-full object-cover object-[center_30%] sm:w-[65%] lg:w-[60%]"
+            loading="eager"
+          />
+          {/* Mobile scrim for crisp legibility */}
+          <div aria-hidden="true" className="absolute inset-0 z-0 bg-background/94 sm:hidden" />
+          {/* Desktop gradient blend */}
+          <div aria-hidden="true" className="hidden sm:block absolute inset-0 z-0 bg-gradient-to-r from-background via-background/88 to-background/25" />
+          <div aria-hidden="true" className="hidden sm:block absolute inset-0 z-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+          <div className="pointer-events-none absolute -right-24 -top-24 z-0 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
+          <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
             <div className="relative max-w-3xl">
               <Badge variant="outline" className="mb-4 gap-1.5 border-primary/30 bg-background/60 px-3 py-1"><CalendarDays className="h-3.5 w-3.5" /> THE LITERARY WORLD, IRL</Badge>
               <h1 className="max-w-2xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">Books bring us <span className="text-primary">together.</span></h1>

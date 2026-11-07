@@ -58,10 +58,16 @@ vi.mock('./contexts/ThemeContext', () => ({
 vi.mock('./components/ui/tooltip', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./components/ui/tooltip')>()),
   TooltipProvider: ({ children }: React.PropsWithChildren) => <>{children}</>,
+  Tooltip: ({ children }: React.PropsWithChildren) => <>{children}</>,
+  TooltipTrigger: ({ children }: React.PropsWithChildren) => <>{children}</>,
+  TooltipContent: ({ children }: React.PropsWithChildren) => <>{children}</>,
 }));
 vi.mock('@/components/ui/tooltip', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/components/ui/tooltip')>()),
   TooltipProvider: ({ children }: React.PropsWithChildren) => <>{children}</>,
+  Tooltip: ({ children }: React.PropsWithChildren) => <>{children}</>,
+  TooltipTrigger: ({ children }: React.PropsWithChildren) => <>{children}</>,
+  TooltipContent: ({ children }: React.PropsWithChildren) => <>{children}</>,
 }));
 vi.mock('./components/ui/toaster', () => ({ Toaster: () => null }));
 vi.mock('./components/Navigation', () => ({ default: () => <nav>Test navigation</nav> }));

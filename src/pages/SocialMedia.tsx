@@ -35,6 +35,8 @@ import { useSendFriendRequest } from '@/hooks/useFriends';
 import { useReadingProgress } from '@/hooks/useReadingProgress';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { toast } from 'sonner';
+import { BookReelsStrip } from '@/components/social/BookReelsStrip';
+import { SampleReaderFeedCards } from '@/components/social/SampleReaderFeedCards';
 
 // Lazy-load social feature panels so the active tab determines what JavaScript is fetched
 const MarginNotesFeed = lazy(() => import('@/components/social/margins/MarginNotesFeed'));
@@ -112,65 +114,250 @@ const iconColorMap = {
   fuchsia: 'bg-fuchsia-50 text-fuchsia-800 border border-fuchsia-200 dark:bg-fuchsia-500/15 dark:text-fuchsia-400 dark:border-fuchsia-500/30',
 };
 
-// ─── Guest posts-first community preview ─────────────────────────────────────
-const SAMPLE_READER_POSTS = [
-  { name: 'Priya Sharma', handle: '@priya_reads_late', initials: 'PS', tone: 'bg-rose-100 text-rose-700', book: 'The Song of Achilles', author: 'Madeline Miller', kind: 'Currently feeling', text: "Finished this at 2:47 AM and I’m still not okay. That ending is going to live in my head for a very long time. 😭", prompt: 'What book emotionally wrecked you?' },
-  { name: 'Aarav Mehta', handle: '@aarav_pages', initials: 'AM', tone: 'bg-amber-100 text-amber-800', book: 'Atomic Habits', author: 'James Clear', kind: 'A small reading win', text: 'Phone in another room, 20 pages before bed. Somehow that turned into 40—and I finally got out of my reading slump. Tiny wins count ☕', prompt: 'What helps you read consistently?' },
-  { name: 'Kabir D.', handle: '@kabir_in_the_margins', initials: 'KD', tone: 'bg-emerald-100 text-emerald-800', book: 'The God of Small Things', author: 'Arundhati Roy', kind: 'Book discovery', text: 'Found a second-hand copy at Daryaganj for ₹80. There’s a handwritten note in the margin: “Read this when you miss home.” Whoever owned this before me, thank you.', prompt: 'Have you ever found a note inside a used book?' },
-  { name: 'Sneha Rao', handle: '@sneha_bookish', initials: 'SR', tone: 'bg-violet-100 text-violet-800', book: 'Before the Coffee Gets Cold', author: 'Toshikazu Kawaguchi', kind: 'Need to discuss', text: 'I thought this would be a cute café read. Now I’m rethinking every conversation I’ve ever left unfinished. Can we talk about the second story?!', prompt: 'Which story stayed with you most?' },
-  { name: 'Rohan Verma', handle: '@rohanbetweenpages', initials: 'RV', tone: 'bg-sky-100 text-sky-800', book: 'The Midnight Library', author: 'Matt Haig', kind: 'Unpopular opinion', text: 'Unpopular opinion: sometimes a book doesn’t need to change your life. It can just keep you company on a difficult Tuesday—and that’s enough.', prompt: 'What is your comfort read?' },
-  { name: 'Ananya Iyer', handle: '@ananya.turns.pages', initials: 'AI', tone: 'bg-pink-100 text-pink-800', book: 'Pride and Prejudice', author: 'Jane Austen', kind: 'Reading mood', text: 'Re-reading this for the fifth time. I know exactly what happens and still kick my feet at the same scenes. No regrets.', prompt: 'Which book do you happily re-read?' },
-];
-
-const SampleReaderPost: React.FC<{ post: typeof SAMPLE_READER_POSTS[number] }> = ({ post }) => (
-  <article className="rounded-2xl border border-[#E8E2D9] bg-white p-5 shadow-[0_3px_14px_rgba(28,32,29,0.035)] transition hover:border-[#D5C8B7] dark:border-[#29332D] dark:bg-[#111614] dark:hover:border-[#3C5143] sm:p-6">
-    <div className="flex items-start gap-3">
-      <Avatar className="h-11 w-11 shrink-0"><AvatarFallback className={post.tone + " font-semibold"}>{post.initials}</AvatarFallback></Avatar>
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="font-semibold text-[#202620] dark:text-[#F3F0E7]">{post.name}</span>
-          <span className="text-sm text-[#7C827C] dark:text-[#A5ADA6]">{post.handle}</span>
-          <span className="rounded-full bg-[#F4F1EB] px-2 py-0.5 text-[10px] font-medium text-[#746650] dark:bg-[#24271F] dark:text-[#D5B16D]">Sample reader</span>
-        </div>
-        <p className="mt-1 text-xs text-[#858B85] dark:text-[#8D988F]">{post.kind} · just now</p>
-      </div>
-      <BookOpen className="h-4 w-4 shrink-0 text-[#9B8664]" aria-label="Book post" />
-    </div>
-    <p className="mt-4 whitespace-pre-wrap text-[15px] leading-7 text-[#303630] dark:text-[#E4E5DC]">{post.text}</p>
-    <div className="mt-4 inline-flex max-w-full items-center gap-2 rounded-xl border border-[#E9E1D5] bg-[#FAF7F2] px-3 py-2.5 dark:border-[#34372D] dark:bg-[#191D18]">
-      <span aria-hidden="true">📚</span><span className="min-w-0"><span className="block truncate text-sm font-semibold text-[#45483F] dark:text-[#E6D9BD]">{post.book}</span><span className="block truncate text-xs text-[#858477] dark:text-[#A5ADA6]">{post.author}</span></span>
-    </div>
-    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#F0ECE6] pt-3 dark:border-[#29332D]">
-      <span className="text-xs text-[#8A8E87] dark:text-[#929A92]">💬 {post.prompt}</span>
-      <Link to="/signup" className="text-xs font-semibold text-[#1C442D] hover:underline dark:text-[#D5B16D]">Join the conversation →</Link>
-    </div>
-  </article>
-);
-
 const GuestLanding: React.FC = () => {
   const [searchParams] = useSearchParams();
   const queryString = searchParams.toString();
-  const signInRedirect = `/social${queryString ? `?${queryString}` : ''};
+  const signInRedirect = `/social${queryString ? `?${queryString}` : ''}`;
 
   return (
     <>
-      <SEO title="Bookish conversations & reader posts | Sahadhyayi" description="Read everyday book thoughts, recommendations, reading updates and conversations from fellow readers." canonical="https://sahadhyayi.com/social" url="https://sahadhyayi.com/social" />
-      <main className="min-h-screen bg-[#FAFAF8] text-[#202620] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
-        <div className="mx-auto max-w-3xl px-4 pb-16 pt-8 sm:px-6">
-          <header className="mb-7">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A7656]">Sahadhyayi · Social</p>
-            <h1 className="mt-2 font-serif text-3xl font-semibold tracking-tight sm:text-4xl">Readers talking about books.</h1>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-[#737A73] dark:text-[#A5ADA6]">Reading updates, honest reactions, recommendations and the little things only book people understand.</p>
-          </header>
-          <section className="mb-6 rounded-2xl border border-[#E8E2D9] bg-[#F4EFEA] p-4 dark:border-[#29332D] dark:bg-[#141915] sm:p-5">
-            <div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg dark:bg-[#222820]">✍️</div><div className="flex-1"><p className="font-medium">What’s on your mind about books?</p><p className="text-xs text-[#7C827C] dark:text-[#A5ADA6]">Share a thought, a quote, or your current read.</p></div></div>
-            <div className="mt-3 flex flex-wrap gap-2"><Link to="/signup"><Button className="rounded-xl bg-[#1C442D] text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C]">Write your first post</Button></Link><SignInLink redirectPath={signInRedirect}><Button variant="outline" className="rounded-xl">Sign in</Button></SignInLink></div>
-          </section>
-          <div className="mb-4 flex items-center justify-between"><h2 className="font-serif text-xl font-semibold">Around the bookshelf</h2><span className="text-xs text-[#8A8E87]">Community preview</span></div>
-          <div className="space-y-4">{SAMPLE_READER_POSTS.map((post) => <SampleReaderPost key={post.handle} post={post} />)}</div>
-          <div className="mt-8 rounded-2xl border border-dashed border-[#D8D0C4] p-6 text-center dark:border-[#394238]"><p className="font-medium">Your reading life belongs here.</p><p className="mt-1 text-sm text-[#737A73] dark:text-[#A5ADA6]">Join in and share what you’re reading with fellow book lovers.</p><Link to="/signup" className="mt-3 inline-block text-sm font-semibold text-[#1C442D] hover:underline dark:text-[#D5B16D]">Create a free account →</Link></div>
-        </div>
-      </main>
+      <SEO
+        title="Where Readers Connect Around Books | Sahadhyayi"
+        description="Join Sahadhyayi's reading community. Experience live reading rooms, public marginalia, spoiler-free chapter threads, and reader taste matching."
+        canonical="https://sahadhyayi.com/social"
+        url="https://sahadhyayi.com/social"
+      />
+
+      <div className="min-h-screen bg-[#FAFAF8] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-200">
+        {/* ── Photo-Led Hero Section ── */}
+        <section className="relative isolate overflow-hidden border-b border-[#E8E8E3] bg-[#F4EFEA] px-4 py-14 dark:border-[#29332D] dark:bg-[#111614] sm:px-6 sm:py-20 lg:px-8">
+          <img
+            src="https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=2200&q=85"
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-y-0 right-0 h-full w-full object-cover object-center sm:w-[68%]"
+            loading="eager"
+          />
+          {/* Mobile readable scrim */}
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-[#FAF7F2]/95 via-[#FAF7F2]/88 to-[#FAF7F2]/80 dark:from-[#0B0D0C]/95 dark:via-[#0B0D0C]/88 dark:to-[#0B0D0C]/80 sm:hidden" />
+          {/* Desktop horizontal blend */}
+          <div aria-hidden="true" className="hidden sm:block absolute inset-0 bg-gradient-to-r from-[#FAF7F2] via-[#FAF7F2]/85 to-[#FAF7F2]/15 dark:from-[#0B0D0C] dark:via-[#0B0D0C]/85 dark:to-[#0B0D0C]/20" />
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute -top-32 -right-32 w-[32rem] h-[32rem] rounded-full bg-emerald-500/10 dark:bg-emerald-950/20 blur-3xl" />
+            <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-[#B68A35]/10 dark:bg-[#D5B16D]/5 blur-3xl" />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-7xl text-left">
+            {/* Eyebrow Label */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-[#111614] border border-[#E8E8E3] dark:border-[#29332D] text-[11px] font-semibold uppercase tracking-widest text-[#1C442D] dark:text-[#D5B16D] mb-5 shadow-xs">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              The Bookish Corner of the Internet
+            </div>
+
+            <h1 className="max-w-2xl text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-5 tracking-tight leading-[1.12]">
+              Where readers connect{' '}
+              <span className="block text-[#1C442D] dark:text-[#D5B16D]">around books.</span>
+            </h1>
+
+            <p className="max-w-xl text-sm sm:text-lg text-[#636B65] dark:text-[#A5ADA6] mb-8 leading-relaxed font-normal">
+              Share what you're reading, explore ideas, join reading rooms, and find people who see the world through books. No toxic algorithms, no doomscrolling — just real book lovers, reels, and honest reactions.
+            </p>
+
+            {/* Action CTAs */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-8">
+              <Link to="/signup">
+                <Button className="w-full sm:w-auto bg-[#1C442D] hover:bg-[#143221] text-white dark:bg-[#D5B16D] dark:hover:bg-[#c49f5c] dark:text-[#0B0D0C] font-semibold px-7 h-11 text-sm shadow-md gap-2">
+                  Create an account
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+              <SignInLink redirectPath={signInRedirect}>
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto border-[#E8E8E3] dark:border-[#29332D] bg-white dark:bg-[#111614] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#F4F3EF] dark:hover:bg-[#1B241E] px-7 h-11 text-sm font-medium"
+                >
+                  Sign in
+                </Button>
+              </SignInLink>
+            </div>
+
+            {/* Live Activity Pulse bar */}
+            <div className="max-w-3xl">
+              <ErrorBoundary fallback={null}>
+                <BookPulseBar />
+              </ErrorBoundary>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Book Reels Strip (Interactive Micro-Moments) ── */}
+        <section className="mx-auto max-w-7xl px-4 pt-10 sm:px-6 lg:px-8">
+          <BookReelsStrip />
+        </section>
+
+        {/* ── Community Stream & Reading Vibes ── */}
+        <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            {/* Left 2 Cols: Real everyday reader feed */}
+            <div className="lg:col-span-2">
+              <SampleReaderFeedCards isGuest={true} />
+            </div>
+
+            {/* Right 1 Col: Community highlights & moods */}
+            <div className="space-y-6">
+              {/* Mood Pills */}
+              <div className="rounded-2xl border border-[#E8E8E3] bg-white p-5 shadow-sm dark:border-[#29332D] dark:bg-[#111614]">
+                <h3 className="font-serif text-base font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-2 flex items-center gap-2">
+                  <span>☕</span>
+                  <span>Browse by Reading Mood</span>
+                </h3>
+                <p className="text-xs text-[#636B65] dark:text-[#A5ADA6] mb-4">
+                  Find fellow readers currently in the exact same headspace:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { label: '🌙 Late-Night Binge', path: '/library?genre=fiction' },
+                    { label: '⚡ Slump Breakers', path: '/library?genre=thriller' },
+                    { label: '☕ Cozy Chai Reads', path: '/library?genre=classics' },
+                    { label: '💔 Sobbing at Chapter 20', path: '/library?genre=fiction' },
+                    { label: '✍️ Second-Hand & Margins', path: '/library?genre=philosophy' },
+                    { label: '🌱 Habit Builders', path: '/library?genre=non-fiction' },
+                    { label: '📖 Hindi Sahitya', path: '/library?genre=hindi' },
+                  ].map((mood) => (
+                    <Link
+                      key={mood.label}
+                      to={mood.path}
+                      className="rounded-full border border-[#E8E8E3] bg-[#FAF7F2] px-3 py-1.5 text-xs font-medium text-[#1C442D] transition hover:border-[#1C442D] hover:bg-[#EBF2EC] dark:border-[#29332D] dark:bg-[#18221B] dark:text-[#D5B16D] dark:hover:border-[#315C43]"
+                    >
+                      {mood.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              {/* Why Readers Gather Here */}
+              <div className="rounded-2xl border border-[#E8E8E3] bg-gradient-to-br from-[#F4F3EF] to-white p-5 shadow-sm dark:border-[#29332D] dark:from-[#111614] dark:to-[#0B0D0C]">
+                <h3 className="font-serif text-base font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-3">
+                  Why readers choose Sahadhyayi
+                </h3>
+                <ul className="space-y-3 text-xs leading-relaxed text-[#636B65] dark:text-[#A5ADA6]">
+                  <li className="flex items-start gap-2">
+                    <span className="font-bold text-[#1C442D] dark:text-[#D5B16D]">✓</span>
+                    <span><strong>100% Book Centric:</strong> No political spams or viral rage-bait. Every thread connects to literature.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="font-bold text-[#1C442D] dark:text-[#D5B16D]">✓</span>
+                    <span><strong>Spoiler-Safe Threads:</strong> Discuss plot twists with fellow readers without ruining it for newcomers.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="font-bold text-[#1C442D] dark:text-[#D5B16D]">✓</span>
+                    <span><strong>Shared Marginalia:</strong> Leave and read digital pencil notes right in the margins of classic books.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="font-bold text-[#1C442D] dark:text-[#D5B16D]">✓</span>
+                    <span><strong>Reading Rooms:</strong> Cozy silent reading rooms with ambient audio to read together in real time.</span>
+                  </li>
+                </ul>
+
+                <div className="mt-5 pt-4 border-t border-[#E8E8E3] dark:border-[#29332D]">
+                  <Link to="/signup" className="block w-full">
+                    <Button className="w-full bg-[#1C442D] text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:hover:bg-[#c49f5c] text-xs font-semibold h-9">
+                      Create Your Reader Profile
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 4 Feature Pillar Cards ── */}
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 border-t border-[#E8E8E3] dark:border-[#29332D]">
+          <div className="text-center max-w-xl mx-auto mb-10">
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-2">
+              Built for Deep Reading Culture
+            </h2>
+            <p className="text-xs sm:text-sm text-[#636B65] dark:text-[#A5ADA6] leading-relaxed">
+              Every feature is anchored to a specific book and chapter — no empty scrolling, just meaningful literary connection.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {PILLARS.map(({ icon: Icon, color, title, desc, cta, tab }) => (
+              <SignInLink
+                key={tab}
+                redirectPath={`/social?tab=${tab}`}
+                className="block group"
+              >
+                <Card className="h-full border border-[#E8E8E3] dark:border-[#29332D] bg-white dark:bg-[#111614] hover:bg-[#F4F3EF] dark:hover:bg-[#161D19] hover:border-[#1C442D]/40 dark:hover:border-[#315C43] transition-all duration-200 shadow-xs hover:shadow-md cursor-pointer">
+                  <CardContent className="p-4 sm:p-5 flex flex-col h-full text-[#1C201D] dark:text-[#F3F0E7]">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3.5 ${iconColorMap[color]}`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-[#1C201D] dark:text-[#F3F0E7] mb-1.5 group-hover:text-[#1C442D] dark:group-hover:text-[#D5B16D] transition-colors">
+                      {title}
+                    </h3>
+                    <p className="text-xs text-[#636B65] dark:text-[#A5ADA6] leading-relaxed flex-1">
+                      {desc}
+                    </p>
+                    <div className="mt-3.5 text-xs font-semibold flex items-center gap-1 text-[#1C442D] dark:text-[#D5B16D] group-hover:underline">
+                      <span>{cta}</span>
+                      <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </SignInLink>
+            ))}
+          </div>
+        </section>
+
+        {/* ── How It Works (3 Steps) ── */}
+        <section className="bg-[#F4F3EF] dark:bg-[#111614] border-t border-[#E8E8E3] dark:border-[#29332D] py-14 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center gap-1.5 mb-2 text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">
+              <TrendingUp className="w-3.5 h-3.5" />
+              How It Works
+            </div>
+            <h2 className="text-xl sm:text-2xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-10">
+              Get started in 3 steps
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
+              {[
+                {
+                  step: '1',
+                  title: 'Create an Account',
+                  body: 'Sign up free — no credit card needed. Your reading data stays private.',
+                },
+                {
+                  step: '2',
+                  title: 'Add Books You’re Reading',
+                  body: 'Search books in our catalog or start your personal digital shelf.',
+                },
+                {
+                  step: '3',
+                  title: 'Join the Community',
+                  body: 'Share your 2 AM thoughts, annotate a passage, or match your reading DNA.',
+                },
+              ].map(({ step, title, body }) => (
+                <div key={step} className="flex flex-col gap-2.5 p-4 rounded-xl bg-white dark:bg-[#0B0D0C]/50 border border-[#E8E8E3] dark:border-[#29332D]/60 shadow-xs">
+                  <div className="w-8 h-8 rounded-full bg-[#EBF2EC] dark:bg-[#1C3024] border border-[#C8DBCB] dark:border-[#315C43] text-[#1C442D] dark:text-[#D5B16D] flex items-center justify-center text-xs font-bold">
+                    {step}
+                  </div>
+                  <h3 className="text-sm font-semibold text-[#1C201D] dark:text-[#F3F0E7]">{title}</h3>
+                  <p className="text-xs text-[#636B65] dark:text-[#A5ADA6] leading-relaxed">{body}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-10 flex justify-center gap-3">
+              <Link to="/signup">
+                <Button className="bg-[#1C442D] hover:bg-[#143221] text-white dark:bg-[#D5B16D] dark:hover:bg-[#c49f5c] dark:text-[#0B0D0C] font-semibold px-8 h-10 text-sm gap-2 shadow-sm">
+                  Join for Free <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      </div>
     </>
   );
 };

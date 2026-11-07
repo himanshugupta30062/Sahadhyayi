@@ -27,7 +27,39 @@ export const useBookById = (id?: string) => {
         throw error;
       }
 
-      if (!data || !isBookPubliclyVisible(data)) return null;
+      if (!data || !isBookPubliclyVisible(data)) {
+        const { data: pubData } = await supabase
+          .from('user_published_books')
+          .select('*')
+          .eq('id', id)
+          .eq('status', 'approved')
+          .maybeSingle();
+
+        if (pubData) {
+          return {
+            id: pubData.id,
+            title: pubData.title,
+            author: pubData.author_name || 'Community Author',
+            genre: pubData.genre,
+            description: pubData.description || pubData.subtitle,
+            author_bio: undefined,
+            cover_image_url: pubData.cover_image_url,
+            ebook_url: undefined,
+            pdf_url: pubData.pdf_url,
+            price: undefined,
+            amazon_url: undefined,
+            google_books_url: undefined,
+            isbn: pubData.isbn,
+            publication_year: pubData.created_at ? new Date(pubData.created_at).getFullYear() : undefined,
+            pages: pubData.pages,
+            language: pubData.language,
+            created_at: pubData.created_at || new Date().toISOString(),
+            status: 'approved',
+            catalog_status: 'active',
+          } as Book;
+        }
+        return null;
+      }
 
       return {
         id: data.id,
