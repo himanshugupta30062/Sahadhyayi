@@ -305,10 +305,18 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
         setTocItems(nav.toc || []);
       });
 
-      // Get book metadata for total pages estimation
+      // Generate EPUB locations so page links can resolve to a stable CFI.
       bookRef.current.ready.then(() => {
         bookRef.current.locations.generate(1024).then(() => {
-          setTotalPages(bookRef.current.locations.total);
+          const pageCount = bookRef.current.locations.total;
+          setTotalPages(pageCount);
+
+          const requestedPage = Number.parseInt(pageParam ?? '', 10);
+          if (Number.isInteger(requestedPage) && requestedPage > 0) {
+            const targetPage = Math.min(pageCount, requestedPage);
+            const targetCfi = bookRef.current.locations.cfiFromLocation(targetPage - 1);
+            if (targetCfi) renditionRef.current.display(targetCfi);
+          }
         });
       });
 
@@ -333,8 +341,10 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
       });
 
       // Load previous reading position
+      const explicitPage = Number.parseInt(pageParam ?? '', 10);
+      const hasExplicitPage = Number.isInteger(explicitPage) && explicitPage > 0;
       const local = loadProgressLocally(bookId, user?.id);
-      if (local?.position) {
+      if (!hasExplicitPage && local?.position) {
         renditionRef.current.display(local.position);
       }
 
