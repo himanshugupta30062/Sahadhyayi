@@ -23,6 +23,10 @@ import {
   Trash2,
   Type,
   UserPlus,
+  Volume2,
+  VolumeX,
+  Play,
+  Pause,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -86,8 +90,57 @@ export default function StoryReader() {
   const [isChapterListOpen, setIsChapterListOpen] = useState(false);
   const [isPartDialogOpen, setIsPartDialogOpen] = useState(false);
   const [partToEdit, setPartToEdit] = useState<StoryPart | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isSpeechPaused, setIsSpeechPaused] = useState(false);
   const articleRef = useRef<HTMLElement>(null);
   const lastSavedPartKeyRef = useRef<string | null>(null);
+
+  // Clean up speech synthesis when component unmounts or part changes
+  useEffect(() => {
+    return () => {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, [part?.id]);
+
+  const handleToggleAudio = () => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      toast.error('Text-to-speech is not supported on this device/browser.');
+      return;
+    }
+
+    if (isSpeaking && !isSpeechPaused) {
+      window.speechSynthesis.pause();
+      setIsSpeechPaused(true);
+      return;
+    }
+
+    if (isSpeaking && isSpeechPaused) {
+      window.speechSynthesis.resume();
+      setIsSpeechPaused(false);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const textToSpeak = `${part?.title || ''}. ${part?.content || ''}`;
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.rate = 0.95;
+
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      setIsSpeechPaused(false);
+    };
+
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+      setIsSpeechPaused(false);
+    };
+
+    window.speechSynthesis.speak(utterance);
+    setIsSpeaking(true);
+    setIsSpeechPaused(false);
+  };
 
   // Monitor Scroll Progress
   useEffect(() => {
@@ -250,7 +303,7 @@ export default function StoryReader() {
         <p className="mt-2 text-sm text-[#636B65] dark:text-[#A5ADA6]">
           {error instanceof Error ? error.message : 'The requested story chapter could not be found.'}
         </p>
-        <Link to="/social?tab=stories">
+        <Link to="/stories">
           <Button className="mt-5 rounded-xl bg-[#1C442D] text-white hover:bg-[#143221]">
             ← Return to Stories Feed
           </Button>
@@ -293,7 +346,7 @@ export default function StoryReader() {
           <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3 sm:px-6">
             <div className="flex items-center gap-3 truncate">
               <Link
-                to="/social?tab=stories"
+                to="/stories"
                 className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#E8E2D9] text-[#636B65] hover:bg-[#FAF7F2] hover:text-[#1C201D] dark:border-[#29332D] dark:text-[#A5ADA6] dark:hover:bg-[#1A231D]"
                 aria-label="Back to stories"
               >
@@ -319,6 +372,38 @@ export default function StoryReader() {
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">
+              {/* Voice Audio Listen Companion */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleToggleAudio}
+                className={`gap-1.5 rounded-xl border-[#E8E2D9] text-xs h-9 px-3 font-medium transition ${
+                  isSpeaking
+                    ? 'border-[#1C442D] bg-[#1C442D] text-white dark:border-[#D5B16D] dark:bg-[#D5B16D] dark:text-[#0B0D0C]'
+                    : 'dark:border-[#29332D]'
+                }`}
+                title={isSpeaking ? (isSpeechPaused ? 'Resume narration' : 'Pause narration') : 'Listen to chapter narration'}
+              >
+                {isSpeaking ? (
+                  isSpeechPaused ? (
+                    <>
+                      <Play className="h-3.5 w-3.5 fill-current" />
+                      <span className="hidden sm:inline">Resume</span>
+                    </>
+                  ) : (
+                    <>
+                      <Pause className="h-3.5 w-3.5 fill-current" />
+                      <span className="hidden sm:inline">Pause</span>
+                    </>
+                  )
+                ) : (
+                  <>
+                    <Volume2 className="h-3.5 w-3.5 text-primary" />
+                    <span className="hidden sm:inline">Listen</span>
+                  </>
+                )}
+              </Button>
+
               {/* Font Resizer */}
               <div className="hidden sm:flex items-center rounded-xl border border-[#E8E2D9] p-0.5 dark:border-[#29332D]">
                 <button
