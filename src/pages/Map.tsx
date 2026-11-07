@@ -141,46 +141,96 @@ const MapPage = () => {
     };
   }, [selectedBook?.id, locationSharingEnabled]);
 
-  const readerPoints = useMemo<MapplsPoint[]>(
-    () =>
-      readers
-        .filter((reader) => reader.latitude != null && reader.longitude != null && Number.isFinite(reader.latitude) && Number.isFinite(reader.longitude) && !(reader.latitude === 0 && reader.longitude === 0))
-        .map((reader) => ({
+  // Sync reader book location so other users reading this book can discover this reader
+  useEffect(() => {
+    if (!user?.id || !selectedBook?.id || !locationSharingEnabled || !currentLocation) return;
+    let active = true;
+    const syncBookLocation = async () => {
+      try {
+        await supabase.rpc('share_book_location', {
+          book_uuid: selectedBook.id,
+          lat: currentLocation.lat,
+          lng: currentLocation.lng,
+        });
+      } catch (err) {
+        if (active) console.warn('Could not register book location for reader discovery:', err);
+      }
+    };
+    void syncBookLocation();
+    return () => {
+      active = false;
+    };
+  }, [user?.id, selectedBook?.id, locationSharingEnabled, currentLocation]);
+
+  const readerPoints = useMemo<MapplsPoint[]>(() => {
+    const points: MapplsPoint[] = [];
+    if (locationSharingEnabled && currentLocation) {
+      points.push({
+        id: 'self',
+        lat: currentLocation.lat,
+        lng: currentLocation.lng,
+        title: 'You (Your location)',
+        description: selectedBook ? `Reading: ${selectedBook.title}` : 'Your shared location',
+      });
+    }
+    readers
+      .filter(
+        (reader) =>
+          reader.latitude != null &&
+          reader.longitude != null &&
+          Number.isFinite(reader.latitude) &&
+          Number.isFinite(reader.longitude) &&
+          !(reader.latitude === 0 && reader.longitude === 0),
+      )
+      .forEach((reader) => {
+        points.push({
           id: reader.user_id,
           lat: reader.latitude!,
           lng: reader.longitude!,
           title: reader.profiles?.full_name || reader.profiles?.username || 'Reader',
           description: reader.distance == null ? 'Reading this book' : `${reader.distance.toFixed(1)} km away`,
-        })),
-    [readers]
-  );
+        });
+      });
+    return points;
+  }, [readers, locationSharingEnabled, currentLocation, selectedBook]);
 
   const friendPoints = useMemo<MapplsPoint[]>(() => {
+    const points: MapplsPoint[] = [];
+    if (locationSharingEnabled && currentLocation) {
+      points.push({
+        id: 'self',
+        lat: currentLocation.lat,
+        lng: currentLocation.lng,
+        title: 'You (Your location)',
+        description: 'Your shared location',
+      });
+    }
     const friends = friendsQuery.data || [];
-    if (!Array.isArray(friends)) return [];
-    return friends.flatMap((friend: any) => {
+    if (!Array.isArray(friends)) return points;
+    friends.forEach((friend: any) => {
       const profile = friend?.friend_profile;
       if (
         !profile?.location_sharing ||
         profile.location_lat == null ||
         profile.location_lng == null
       ) {
-        return [];
+        return;
       }
 
       const lat = Number(profile.location_lat);
       const lng = Number(profile.location_lng);
-      if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) return [];
+      if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) return;
 
-      return [{
+      points.push({
         id: String(friend.id ?? profile.id ?? `${lat},${lng}`),
         lat,
         lng,
         title: profile.full_name || profile.username || 'Friend',
         description: 'Friend who has enabled location sharing',
-      }];
+      });
     });
-  }, [friendsQuery.data]);
+    return points;
+  }, [friendsQuery.data, locationSharingEnabled, currentLocation]);
 
   return (
     <>

@@ -17,6 +17,8 @@ interface NearbyReader {
   id: string;
   full_name: string;
   distance: number;
+  approximate_lat?: number | null;
+  approximate_lng?: number | null;
   reading_since?: string | null;
   is_friend: boolean;
 }
@@ -132,12 +134,16 @@ export const ReadersNearMeMap: React.FC = () => {
       setNearbyReaders(((data || []) as unknown as Array<{
         reader_id: string;
         reader_name: string;
+        approximate_latitude?: number | null;
+        approximate_longitude?: number | null;
         distance_km: number;
         reading_since?: string | null;
         is_friend: boolean;
       }>).map((reader) => ({
         id: reader.reader_id,
         full_name: reader.reader_name || 'Reader',
+        approximate_lat: reader.approximate_latitude != null ? Number(reader.approximate_latitude) : null,
+        approximate_lng: reader.approximate_longitude != null ? Number(reader.approximate_longitude) : null,
         distance: Number(reader.distance_km),
         reading_since: reader.reading_since ?? null,
         is_friend: Boolean(reader.is_friend),
@@ -151,6 +157,27 @@ export const ReadersNearMeMap: React.FC = () => {
       if (requestId === requestIdRef.current) setIsLoadingReaders(false);
     }
   }, [user?.id, selectedBook, isLocationSharing, userLocation]);
+
+  // Sync reader book location so other users reading this book can discover this reader
+  useEffect(() => {
+    if (!user?.id || !selectedBook?.id || !isLocationSharing || !userLocation) return;
+    let active = true;
+    const syncBookLocation = async () => {
+      try {
+        await supabase.rpc('share_book_location', {
+          book_uuid: selectedBook.id,
+          lat: userLocation.lat,
+          lng: userLocation.lng,
+        });
+      } catch (err) {
+        if (active) console.warn('Could not register book location for reader discovery:', err);
+      }
+    };
+    void syncBookLocation();
+    return () => {
+      active = false;
+    };
+  }, [user?.id, selectedBook?.id, isLocationSharing, userLocation]);
 
   useEffect(() => {
     if (isLocationSharing && selectedBook) {
@@ -195,6 +222,33 @@ export const ReadersNearMeMap: React.FC = () => {
             full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Reader',
           });
       if (profileWrite.error) throw profileWrite.error;
+
+      // Keep legacy user_locations row active and synced
+      try {
+        await supabase
+          .from('user_locations')
+          .upsert({
+            user_id: user.id,
+            latitude: position.lat,
+            longitude: position.lng,
+            is_active: true,
+            last_updated: new Date().toISOString(),
+          });
+      } catch (locationSyncErr) {
+        console.warn('Could not update user_locations row:', locationSyncErr);
+      }
+
+      if (selectedBook?.id) {
+        try {
+          await supabase.rpc('share_book_location', {
+            book_uuid: selectedBook.id,
+            lat: position.lat,
+            lng: position.lng,
+          });
+        } catch (bookSyncErr) {
+          console.warn('Could not sync user book location:', bookSyncErr);
+        }
+      }
 
       setUserLocation(position);
       setMapCenter(position);
@@ -247,6 +301,18 @@ export const ReadersNearMeMap: React.FC = () => {
         .eq('user_id', user.id);
       if (locationRowError) {
         console.warn('Could not deactivate legacy user location row:', locationRowError);
+      }
+
+      if (selectedBook?.id) {
+        try {
+          await supabase
+            .from('user_books_location')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('book_id', selectedBook.id);
+        } catch (clearBookErr) {
+          console.warn('Could not clear user_books_location entry:', clearBookErr);
+        }
       }
 
       setIsLocationSharing(false);
@@ -325,7 +391,30 @@ export const ReadersNearMeMap: React.FC = () => {
             />
           </div>
 
-          <MapplsMap apiKey={MAPPLS_API_KEY} points={userLocation && isLocationSharing ? [{ id: 'self', lat: userLocation.lat, lng: userLocation.lng, title: 'Your saved location' }] : []} center={mapCenter || (isLocationSharing ? userLocation : null)} emptyMessage="Your saved location will appear here when sharing is enabled." />
+          <MapplsMap
+            apiKey={MAPPLS_API_KEY}
+            points={[
+              ...(userLocation && isLocationSharing ? [{ id: 'self', lat: userLocation.lat, lng: userLocation.lng, title: 'Your saved location' }] : []),
+              ...nearbyReaders
+                .filter(
+                  (reader) =>
+                    reader.approximate_lat != null &&
+                    reader.approximate_lng != null &&
+                    Number.isFinite(reader.approximate_lat) &&
+                    Number.isFinite(reader.approximate_lng) &&
+                    !(reader.approximate_lat === 0 && reader.approximate_lng === 0),
+                )
+                .map((reader) => ({
+                  id: reader.id,
+                  lat: reader.approximate_lat!,
+                  lng: reader.approximate_lng!,
+                  title: reader.full_name,
+                  description: `${reader.distance.toFixed(1)} km away · ${selectedBook?.title || 'Selected book'}`,
+                })),
+            ]}
+            center={mapCenter || (isLocationSharing ? userLocation : null)}
+            emptyMessage="Your saved location will appear here when sharing is enabled."
+          />
 
           <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">
             For privacy, the map does not plot other readers’ exact positions. Confirmed nearby matches appear below with distance only; no placeholder or guessed map pins are used.

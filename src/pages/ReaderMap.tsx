@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import { useParams } from 'react-router-dom';
 import { MapplsMap, type MapplsPoint } from '@/components/maps/MapplsMap';
 import { MAPPLS_API_KEY } from '@/config/mappls';
+import { useAuth } from '@/contexts/authHelpers';
 
 interface ReaderProfile {
   id: string;
@@ -15,7 +16,70 @@ interface ReaderProfile {
 
 const ReaderMap = () => {
   const { bookId } = useParams<{ bookId: string }>();
+  const { user } = useAuth();
   const [readers, setReaders] = useState<ReaderProfile[]>([]);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [isSharingLocation, setIsSharingLocation] = useState(false);
+
+  // Load current user's location if sharing is enabled
+  useEffect(() => {
+    let active = true;
+    if (!user?.id) {
+      setUserLocation(null);
+      setIsSharingLocation(false);
+      return;
+    }
+
+    const checkUserLocation = async () => {
+      try {
+        const [profileResult, consentResult] = await Promise.all([
+          supabase
+            .from('profiles')
+            .select('location_sharing, location_lat, location_lng')
+            .eq('id', user.id)
+            .maybeSingle(),
+          supabase.rpc('has_location_consent', { user_uuid: user.id }),
+        ]);
+
+        if (!active) return;
+
+        const sharingEnabled =
+          !profileResult.error &&
+          !consentResult.error &&
+          consentResult.data === true &&
+          profileResult.data?.location_sharing === true &&
+          profileResult.data.location_lat != null &&
+          profileResult.data.location_lng != null;
+
+        setIsSharingLocation(sharingEnabled);
+        if (sharingEnabled) {
+          const loc = {
+            lat: Number(profileResult.data!.location_lat),
+            lng: Number(profileResult.data!.location_lng),
+          };
+          setUserLocation(loc);
+
+          // If bookId is present, ensure user is registered for this book
+          if (bookId) {
+            void supabase.rpc('share_book_location', {
+              book_uuid: bookId,
+              lat: loc.lat,
+              lng: loc.lng,
+            }).catch((err) => console.warn('Could not sync user book location:', err));
+          }
+        } else {
+          setUserLocation(null);
+        }
+      } catch (err) {
+        console.warn('Could not verify reader location state:', err);
+      }
+    };
+
+    void checkUserLocation();
+    return () => {
+      active = false;
+    };
+  }, [user?.id, bookId]);
 
   useEffect(() => {
     let active = true;
@@ -32,15 +96,33 @@ const ReaderMap = () => {
     return () => { active = false; };
   }, [bookId]);
 
-  const points = useMemo<MapplsPoint[]>(() => readers
-    .filter((reader) => reader.location_lat != null && reader.location_lng != null)
-    .map((reader) => ({
-      id: reader.id,
-      lat: Number(reader.location_lat),
-      lng: Number(reader.location_lng),
-      title: reader.full_name || 'Reader',
-    }))
-    .filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng)), [readers]);
+  const points = useMemo<MapplsPoint[]>(() => {
+    const list: MapplsPoint[] = [];
+    if (isSharingLocation && userLocation) {
+      list.push({
+        id: 'self',
+        lat: userLocation.lat,
+        lng: userLocation.lng,
+        title: 'You (Your location)',
+        description: 'Your shared location',
+      });
+    }
+    readers
+      .filter((reader) => reader.location_lat != null && reader.location_lng != null)
+      .forEach((reader) => {
+        const lat = Number(reader.location_lat);
+        const lng = Number(reader.location_lng);
+        if (Number.isFinite(lat) && Number.isFinite(lng) && !(lat === 0 && lng === 0)) {
+          list.push({
+            id: reader.id,
+            lat,
+            lng,
+            title: reader.full_name || 'Reader',
+          });
+        }
+      });
+    return list;
+  }, [readers, isSharingLocation, userLocation]);
 
   return (
     <>
@@ -50,8 +132,13 @@ const ReaderMap = () => {
         canonical={`https://sahadhyayi.com/map/${bookId ?? ''}`}
         url={`https://sahadhyayi.com/map/${bookId ?? ''}`}
       />
-      <MapplsMap apiKey={MAPPLS_API_KEY} points={points} emptyMessage="No readers have shared a mappable location for this book yet." />
-      {readers.length === 0 && (
+      <MapplsMap
+        apiKey={MAPPLS_API_KEY}
+        points={points}
+        center={userLocation}
+        emptyMessage="No readers have shared a mappable location for this book yet."
+      />
+      {readers.length === 0 && !isSharingLocation && (
         <Card className="mt-4">
           <CardContent className="p-4 text-center text-sm text-gray-600">
             No readers found for this book.

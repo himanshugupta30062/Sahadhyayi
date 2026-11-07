@@ -231,6 +231,21 @@ export const FriendsLocationMap: React.FC = () => {
           });
       if (writeResult.error) throw writeResult.error;
 
+      // Keep legacy user_locations row active and synced
+      try {
+        await supabase
+          .from('user_locations')
+          .upsert({
+            user_id: user.id,
+            latitude: position.lat,
+            longitude: position.lng,
+            is_active: true,
+            last_updated: new Date().toISOString(),
+          });
+      } catch (locationSyncErr) {
+        console.warn('Could not update user_locations row:', locationSyncErr);
+      }
+
       setUserLocation(position);
       setMapCenter(position);
       setIsSharingLocation(true);
