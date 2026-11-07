@@ -1,13 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
+  ArrowDown,
   ArrowLeft,
   ArrowRight,
+  ArrowUp,
   Bookmark,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Clock,
+  Edit3,
   Heart,
   Layers,
   List,
@@ -17,6 +20,7 @@ import {
   Radio,
   Share2,
   Sparkles,
+  Trash2,
   Type,
   UserPlus,
 } from 'lucide-react';
@@ -35,14 +39,19 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import SEO from '@/components/SEO';
 import {
+  StoryPart,
   useAddStoryComment,
+  useDeleteStoryPart,
+  useReorderStoryParts,
   useSaveStoryProgress,
   useStoryComments,
   useStoryPart,
   useToggleStoryBookmark,
   useToggleStoryFollow,
   useToggleStoryLike,
+  useUpdateStory,
 } from '@/hooks/useStories';
+import { StoryPartDialog } from '@/components/stories/StoryPartDialog';
 import { useAuth } from '@/contexts/authHelpers';
 import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 import { toast } from 'sonner';
@@ -63,6 +72,9 @@ export default function StoryReader() {
   const toggleBookmark = useToggleStoryBookmark();
   const toggleFollow = useToggleStoryFollow();
   const saveProgress = useSaveStoryProgress();
+  const updateStory = useUpdateStory();
+  const deletePart = useDeleteStoryPart();
+  const reorderParts = useReorderStoryParts();
   const { data: comments = [], isLoading: isLoadingComments } = useStoryComments(storyId);
   const addComment = useAddStoryComment();
 
@@ -72,7 +84,10 @@ export default function StoryReader() {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isChapterListOpen, setIsChapterListOpen] = useState(false);
+  const [isPartDialogOpen, setIsPartDialogOpen] = useState(false);
+  const [partToEdit, setPartToEdit] = useState<StoryPart | null>(null);
   const articleRef = useRef<HTMLElement>(null);
+  const lastSavedPartKeyRef = useRef<string | null>(null);
 
   // Monitor Scroll Progress
   useEffect(() => {
@@ -93,15 +108,19 @@ export default function StoryReader() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [part?.content]);
 
-  // Save progress when user views a part
+  // Save progress once when user views a part
   useEffect(() => {
     if (user && storyId && part?.id) {
-      saveProgress.mutate({
-        storyId,
-        partId: part.id,
-        partNumber: currentPartNum,
-        percentage: 100,
-      });
+      const partKey = `${storyId}-${part.id}-${currentPartNum}`;
+      if (lastSavedPartKeyRef.current !== partKey) {
+        lastSavedPartKeyRef.current = partKey;
+        saveProgress.mutate({
+          storyId,
+          partId: part.id,
+          partNumber: currentPartNum,
+          percentage: 100,
+        });
+      }
     }
   }, [user, storyId, part?.id, currentPartNum, saveProgress]);
 
@@ -153,6 +172,63 @@ export default function StoryReader() {
       toast.error(err?.message || 'Failed to post comment.');
     } finally {
       setIsSubmittingComment(false);
+    }
+  };
+
+  const handleOpenAddPart = () => {
+    setPartToEdit(null);
+    setIsPartDialogOpen(true);
+  };
+
+  const handleOpenEditPart = (targetPart?: StoryPart) => {
+    setPartToEdit(targetPart || part || null);
+    setIsPartDialogOpen(true);
+  };
+
+  const handleMovePart = async (idx: number, direction: 'up' | 'down') => {
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= allParts.length || !story?.id) return;
+    const newOrdered = [...allParts];
+    const temp = newOrdered[idx];
+    newOrdered[idx] = newOrdered[targetIdx];
+    newOrdered[targetIdx] = temp;
+    try {
+      await reorderParts.mutateAsync({
+        storyId: story.id,
+        orderedPartIds: newOrdered.map((p) => p.id),
+      });
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to reorder chapters.');
+    }
+  };
+
+  const handleDeletePart = async (partId: string) => {
+    if (!story?.id) return;
+    if (allParts.length <= 1) {
+      toast.error('A story must have at least one part.');
+      return;
+    }
+    if (!window.confirm('Are you sure you want to delete this chapter?')) return;
+    try {
+      await deletePart.mutateAsync({ partId, storyId: story.id });
+      if (part?.id === partId) {
+        navigate(`/stories/${story.id}/part/1`);
+      }
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to delete chapter.');
+    }
+  };
+
+  const handleToggleCompletion = async () => {
+    if (!story?.id) return;
+    const nextStatus = story.completion_status === 'completed' ? 'ongoing' : 'completed';
+    try {
+      await updateStory.mutateAsync({
+        storyId: story.id,
+        completion_status: nextStatus,
+      });
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to update story status.');
     }
   };
 
@@ -281,35 +357,130 @@ export default function StoryReader() {
                       <span className="hidden sm:inline">Parts</span>
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="right" className="w-[340px] sm:w-[400px] border-[#E8E2D9] dark:border-[#29332D]">
+                  <SheetContent side="right" className="w-[340px] sm:w-[420px] border-[#E8E2D9] dark:border-[#29332D]">
                     <SheetHeader className="pb-3 border-b border-[#E8E2D9] dark:border-[#29332D]">
-                      <SheetTitle className="font-serif text-lg font-bold">Chapter List</SheetTitle>
+                      <div className="flex items-center justify-between">
+                        <SheetTitle className="font-serif text-lg font-bold">Chapter List</SheetTitle>
+                        {isAuthor && (
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setIsChapterListOpen(false);
+                              handleOpenAddPart();
+                            }}
+                            className="gap-1 rounded-xl text-xs bg-[#1C442D] text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C] h-8 px-2.5 font-medium"
+                          >
+                            <Plus className="h-3.5 w-3.5" /> Add Chapter
+                          </Button>
+                        )}
+                      </div>
                       <SheetDescription className="text-xs">
                         {story.title} ({totalParts} parts)
                       </SheetDescription>
+                      {isAuthor && (
+                        <div className="pt-2 flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">Series status:</span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleToggleCompletion}
+                            className="h-7 text-[11px] rounded-lg"
+                          >
+                            {story.completion_status === 'completed' ? '✓ Completed (mark ongoing)' : '⏳ Ongoing (mark completed)'}
+                          </Button>
+                        </div>
+                      )}
                     </SheetHeader>
-                    <div className="mt-4 space-y-1 overflow-y-auto max-h-[80vh] pr-1">
-                      {allParts.map((item) => {
+                    <div className="mt-4 space-y-1.5 overflow-y-auto max-h-[75vh] pr-1">
+                      {allParts.map((item, idx) => {
                         const isCurrent = item.part_number === currentPartNum;
                         return (
-                          <button
+                          <div
                             key={item.id}
-                            type="button"
-                            onClick={() => {
-                              setIsChapterListOpen(false);
-                              navigate(`/stories/${story.id}/part/${item.part_number}`);
-                            }}
-                            className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-xs transition-colors ${
+                            className={`flex items-center justify-between rounded-xl p-2 text-xs transition-colors ${
                               isCurrent
                                 ? 'bg-[#1C442D] text-white font-semibold dark:bg-[#D5B16D] dark:text-[#0B0D0C]'
                                 : 'text-[#1C201D] hover:bg-[#FAF7F2] dark:text-[#F3F0E7] dark:hover:bg-[#1A231D]'
                             }`}
                           >
-                            <span className="truncate">
-                              Part {item.part_number}: {item.title}
-                            </span>
-                            {isCurrent && <span className="text-[10px] font-bold uppercase ml-2">Reading</span>}
-                          </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsChapterListOpen(false);
+                                navigate(`/stories/${story.id}/part/${item.part_number}`);
+                              }}
+                              className="min-w-0 flex-1 text-left"
+                            >
+                              <div className="truncate flex items-center gap-1.5">
+                                <span>Part {item.part_number}: {item.title}</span>
+                                {item.status === 'draft' && (
+                                  <span className="rounded bg-amber-500/20 px-1 py-0.5 text-[9px] font-bold text-amber-700 dark:text-amber-300">
+                                    Draft
+                                  </span>
+                                )}
+                              </div>
+                            </button>
+
+                            {isAuthor ? (
+                              <div className="flex items-center gap-0.5 ml-2 shrink-0">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  disabled={idx === 0}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMovePart(idx, 'up');
+                                  }}
+                                  className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                                  title="Move chapter up"
+                                >
+                                  <ArrowUp className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  disabled={idx === allParts.length - 1}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMovePart(idx, 'down');
+                                  }}
+                                  className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                                  title="Move chapter down"
+                                >
+                                  <ArrowDown className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsChapterListOpen(false);
+                                    handleOpenEditPart(item);
+                                  }}
+                                  className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                                  title="Edit chapter"
+                                >
+                                  <Edit3 className="h-3 w-3" />
+                                </Button>
+                                {allParts.length > 1 && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeletePart(item.id);
+                                    }}
+                                    className="h-6 w-6 p-0 text-rose-500 hover:text-rose-700"
+                                    title="Delete chapter"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                )}
+                              </div>
+                            ) : (
+                              isCurrent && <span className="text-[10px] font-bold uppercase ml-2">Reading</span>
+                            )}
+                          </div>
                         );
                       })}
                     </div>
@@ -333,6 +504,39 @@ export default function StoryReader() {
 
         {/* ── Main Prose Container ── */}
         <main ref={articleRef} className="mx-auto max-w-2xl px-4 sm:px-6 pt-10 sm:pt-14">
+          {/* Author Mode Toolbar */}
+          {isAuthor && (
+            <div className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-300/60 bg-amber-50/70 p-3.5 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-200">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                <span className="font-semibold">Author Controls</span>
+                <span className="text-muted-foreground">·</span>
+                <span className="text-[11px]">
+                  {part.status === 'draft' ? '⚠️ Private draft' : '✓ Published'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleOpenEditPart(part)}
+                  className="h-8 gap-1 rounded-xl text-xs font-medium"
+                >
+                  <Edit3 className="h-3.5 w-3.5" /> Edit Chapter
+                </Button>
+                {isSeries && (
+                  <Button
+                    size="sm"
+                    onClick={handleOpenAddPart}
+                    className="h-8 gap-1 rounded-xl bg-[#1C442D] text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C] text-xs font-medium"
+                  >
+                    <Plus className="h-3.5 w-3.5" /> Next Chapter
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Header Meta */}
           <div className="mb-10 text-center space-y-3">
             <div className="inline-flex items-center gap-2">
@@ -557,6 +761,18 @@ export default function StoryReader() {
           </section>
         </main>
       </div>
+
+      <StoryPartDialog
+        open={isPartDialogOpen}
+        onOpenChange={setIsPartDialogOpen}
+        storyId={story.id}
+        storyTitle={story.title}
+        partToEdit={partToEdit}
+        suggestedPartNumber={(allParts.length || 0) + 1}
+        onSuccess={(num) => {
+          navigate(`/stories/${story.id}/part/${num}`);
+        }}
+      />
     </>
   );
 }

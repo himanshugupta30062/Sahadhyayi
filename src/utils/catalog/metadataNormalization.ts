@@ -29,7 +29,7 @@ export interface NormalizedIsbn {
  * Extracts subtitles after ':', ' - ', or ' — '.
  */
 export function normalizeTitle(rawTitle: string): NormalizedTitle {
-  if (!rawTitle) return { cleanTitle: 'Untitled' };
+  if (!rawTitle || !rawTitle.trim()) return { cleanTitle: 'Untitled' };
 
   // Normalize Unicode to Canonical Decomposition followed by Canonical Composition
   let title = rawTitle.normalize('NFC').trim();
