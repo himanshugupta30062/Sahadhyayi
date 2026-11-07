@@ -36,4 +36,4 @@ const Stories: React.FC = () => {
 };
 
 export default Stories;
-
+export { Stories, StoriesFeed };

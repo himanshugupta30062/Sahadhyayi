@@ -121,9 +121,13 @@ export const useStories = (options?: StoryFilterOptions) => {
       let stories: Story[] = [];
       const { data, error } = await query.limit(50);
       if (error) {
+      let stories: Story[] = [];
+      const { data, error } = await query.limit(50);
+      if (error) {
         console.warn('Stories query encountered issue, falling back to curated collection:', error.message);
       } else if (data && data.length > 0) {
         stories = data as unknown as Story[];
+      }
       }
 
       // If database has 0 stories and user is not looking at their private drafts, supply curated starter stories
