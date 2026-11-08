@@ -848,7 +848,7 @@ export const AdminLibraryArchive: React.FC<AdminLibraryArchiveProps> = ({ defaul
                         <div
                           key={cand.id}
                           className={`p-3 rounded-xl border flex items-start gap-3 text-xs ${
-                            cand.isRecommendedPrimary
+                            cand.isPrimary
                               ? 'bg-emerald-50/50 border-emerald-200'
                               : 'bg-slate-50 border-slate-200'
                           }`}
@@ -869,7 +869,7 @@ export const AdminLibraryArchive: React.FC<AdminLibraryArchiveProps> = ({ defaul
                             </div>
                             <div className="text-[11px] text-slate-500 truncate">{cand.author}</div>
                             <div className="text-[10px] text-slate-400 font-mono">ID: {cand.id.slice(0, 8)}...</div>
-                            {cand.isRecommendedPrimary && (
+                            {cand.isPrimary && (
                               <div className="text-[10px] font-bold text-emerald-700 flex items-center gap-1 mt-1">
                                 <CheckCircle2 className="w-3 h-3" /> Recommended Primary Edition
                               </div>

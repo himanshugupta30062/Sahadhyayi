@@ -65,7 +65,7 @@ const makePdf = (name = 'sample.pdf', bytes = '%PDF-1.7 test body', type = 'appl
     configurable: true,
     value: (start = 0, end = encoded.length) => ({
       arrayBuffer: async () => {
-        const buffer = encoded.slice(start, end).buffer;
+        const buffer: any = encoded.slice(start, end).buffer;
         return buffer instanceof ArrayBuffer ? buffer : buffer.slice(0);
       },
     }),

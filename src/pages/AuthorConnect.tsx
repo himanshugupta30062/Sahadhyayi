@@ -360,7 +360,9 @@ const AuthorConnect = () => {
                             {author.name}
                           </h3>
                           {author.verified && (
-                            <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" title="Verified Author" />
+                            <span title="Verified Author">
+                              <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" aria-label="Verified Author" />
+                            </span>
                           )}
                         </div>
 

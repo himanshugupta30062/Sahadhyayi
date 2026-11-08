@@ -42,7 +42,7 @@ export default function BookSelector({ onSelect, onBack, loading }: BookSelector
         if (caps.hasStatus) selectCols.push('status');
         if (caps.hasCatalogStatus) selectCols.push('catalog_status');
 
-        let query = supabase
+        let query = (supabase as any)
           .from('books_library')
           .select(selectCols.join(', '));
 
@@ -54,7 +54,7 @@ export default function BookSelector({ onSelect, onBack, loading }: BookSelector
 
         const { data, error } = await query.limit(50);
         if (error) throw error;
-        const activeBooks = filterPublicBooks(data || []);
+        const activeBooks = filterPublicBooks(data || []) as unknown as Book[];
         setBooks(activeBooks);
       } catch (err) {
         console.error('Error fetching books:', err);

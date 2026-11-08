@@ -24,7 +24,7 @@ export interface SpoilerComment {
   body: string;
   min_chapter: number;
   created_at: string;
-  profiles?: { full_name: string | null; profile_photo_url: string | null } | null;
+  profiles?: { full_name?: string | null; profile_photo_url?: string | null } | null;
 }
 
 export const useSpoilerThreads = (bookId?: string, options?: { enabled?: boolean }) => {
@@ -53,14 +53,14 @@ export const useSpoilerThreads = (bookId?: string, options?: { enabled?: boolean
       if (booksResult.error) throw booksResult.error;
       const booksById = new Map((booksResult.data ?? []).map((b: any) => [b.id, b]));
       const profilesById = new Map((profilesResult.data ?? []).map((p: any) => [p.id, p]));
-      return threads.map((thread) => ({ ...thread, books_library: booksById.get(thread.book_id) ?? null, profiles: profilesById.get(thread.user_id) ?? null }));
+      return (threads as SafeSpoilerThread[]).map((thread) => ({ ...thread, books_library: (booksById.get(thread.book_id) as any) ?? null, profiles: (profilesById.get(thread.user_id) as any) ?? null })) as SafeSpoilerThread[];
     },
     staleTime: 45_000,
   });
 };
 
 export const useSpoilerThreadComments = (threadId?: string, isUnlocked?: boolean) => {
-  return useQuery({
+  return useQuery<SpoilerComment[]>({
     queryKey: ["spoiler-thread-comments", threadId],
     enabled: !!threadId && !!isUnlocked,
     queryFn: async () => {
@@ -77,7 +77,7 @@ export const useSpoilerThreadComments = (threadId?: string, isUnlocked?: boolean
       const userIds = [...new Set(comments.map((comment) => comment.user_id))];
       const { data: profiles } = userIds.length ? await (supabase as any).from("public_profiles").select("*").in("id", userIds) : { data: [] };
       const byId = new Map((profiles ?? []).map((p: any) => [p.id, p]));
-      return comments.map((comment) => ({ ...comment, profiles: byId.get(comment.user_id) ?? null }));
+      return comments.map((comment) => ({ ...comment, profiles: byId.get(comment.user_id) ?? null })) as SpoilerComment[];
     },
     staleTime: 30_000,
   });

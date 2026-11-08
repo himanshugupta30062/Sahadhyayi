@@ -54,7 +54,7 @@ export default function Activity() {
   // 2. Reading Groups
   const { data: groups = [], isLoading: isLoadingGroups } = useGroups({ enabled: true });
   const { data: joinedGroups = [] } = useUserJoinedGroups();
-  const joinedGroupIds = new Set(joinedGroups.map((g) => g.id));
+  const joinedGroupIds = new Set(joinedGroups.map((g) => g.group_id || g.id));
 
   // 3. Events & Meetups from Supabase
   const [events, setEvents] = useState<any[]>([]);
@@ -279,24 +279,28 @@ export default function Activity() {
                 })}
 
                 {/* Joined Groups */}
-                {joinedGroups.slice(0, 3).map((group) => (
-                  <Card key={group.id} className="rounded-xl border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] p-3.5 shadow-xs">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-semibold text-[#1C201D] dark:text-[#F3F0E7] truncate">
-                        {group.name}
-                      </span>
-                      <Badge variant="outline" className="text-[10px]">
-                        Joined
-                      </Badge>
-                    </div>
-                    <p className="line-clamp-1 text-[11px] text-[#636B65] dark:text-[#A5ADA6]">
-                      {group.description || 'Active reading group'}
-                    </p>
-                    <Link to={`/groups/${group.id}`} className="mt-2 block text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D] hover:underline">
-                      Open Club Discussion →
-                    </Link>
-                  </Card>
-                ))}
+                {joinedGroups.slice(0, 3).map((member) => {
+                  const group = member.groups || { id: member.group_id, name: 'Reading Group', description: '' };
+                  const groupId = member.group_id || group.id;
+                  return (
+                    <Card key={member.id} className="rounded-xl border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] p-3.5 shadow-xs">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-semibold text-[#1C201D] dark:text-[#F3F0E7] truncate">
+                          {group.name}
+                        </span>
+                        <Badge variant="outline" className="text-[10px]">
+                          Joined
+                        </Badge>
+                      </div>
+                      <p className="line-clamp-1 text-[11px] text-[#636B65] dark:text-[#A5ADA6]">
+                        {group.description || 'Active reading group'}
+                      </p>
+                      <Link to={`/groups/${groupId}`} className="mt-2 block text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D] hover:underline">
+                        Open Club Discussion →
+                      </Link>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
           )}

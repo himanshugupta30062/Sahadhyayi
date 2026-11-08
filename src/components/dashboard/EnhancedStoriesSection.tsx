@@ -31,9 +31,20 @@ const EnhancedStoriesSection = () => {
       return;
     }
 
-    // Fix: add audio_url: null for type compatibility
     createStory.mutate(
-      { ...formData, audio_url: null },
+      {
+        title: formData.title,
+        description: formData.description,
+        genre: 'General',
+        tags: [],
+        story_type: 'standalone',
+        format: formData.format,
+        audio_url: null,
+        initial_part: {
+          title: 'Chapter 1',
+          content: formData.content,
+        },
+      },
       {
         onSuccess: () => {
           setIsDialogOpen(false);

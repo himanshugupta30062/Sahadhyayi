@@ -242,9 +242,10 @@ export async function generateLibraryDuplicateAudit(
     totalRedundant += rec.archiveCandidateIds.length;
     totalFieldsToEnrich += Object.keys(rec.proposedMergedMetadata).length;
 
-    let proposedGroupAction = rec.archiveCandidateIds.length > 0
-      ? 'merge_and_archive_duplicates' as const
-      : 'keep_top_editions' as const;
+    let proposedGroupAction: 'merge_and_archive_duplicates' | 'keep_top_editions' | 'mark_for_review' =
+      rec.archiveCandidateIds.length > 0
+        ? 'merge_and_archive_duplicates'
+        : 'keep_top_editions';
 
     if (rec.requiresManualReview) {
       proposedGroupAction = 'mark_for_review' as const;

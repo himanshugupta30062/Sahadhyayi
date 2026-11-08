@@ -58,14 +58,15 @@ const Auth = () => {
       const bookId = searchParams.get('book_id') || location.state?.bookId;
 
       if (intent === 'add_shelf' && bookId) {
-        supabase
-          .from('user_bookshelf')
-          .insert({
-            user_id: user.id,
-            book_id: bookId,
-            status: 'want_to_read',
-          })
-          .then(({ error: insertError }) => {
+        void (async () => {
+          try {
+            const { error: insertError } = await supabase
+              .from('user_bookshelf')
+              .insert({
+                user_id: user.id,
+                book_id: bookId,
+                status: 'want_to_read',
+              });
             if (!insertError) {
               window.dispatchEvent(new Event('shelfUpdated'));
               try {
@@ -78,11 +79,12 @@ const Auth = () => {
                 description: 'We saved this book to your shelf automatically.',
               });
             }
-          })
-          .catch(() => {})
-          .finally(() => {
+          } catch {
+            // ignore in restricted mode
+          } finally {
             navigate(redirectPath, { replace: true });
-          });
+          }
+        })();
       } else {
         navigate(redirectPath, { replace: true });
       }

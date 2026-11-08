@@ -55,7 +55,7 @@ const QuotesPage = () => {
   const [quoteSubView, setQuoteSubView] = useState<'all' | 'saved' | 'curated'>('all');
   const [curatedCategory, setCuratedCategory] = useState<string>('all');
   const [curatedSearch, setCuratedSearch] = useState<string>('');
-  const [copiedQuoteId, setCopiedQuoteId] = useState<string | null>(null);
+  const [copiedQuoteId, setCopiedQuoteId] = useState<string | number | null>(null);
 
   const { quotes, addQuote, removeQuote } = useQuotes();
   const { data: highlights = [], isLoading: highlightsLoading } = useReaderHighlights();
@@ -87,7 +87,7 @@ const QuotesPage = () => {
     });
   };
 
-  const handleCopyQuote = (id: string, text: string, attribution: string) => {
+  const handleCopyQuote = (id: string | number, text: string, attribution: string) => {
     const formatted = `“${text}”\n— ${attribution} (via Sahadhyayi)`;
     void navigator.clipboard.writeText(formatted).then(() => {
       setCopiedQuoteId(id);

@@ -64,7 +64,7 @@ describe('Admin-Controlled Book Archive, Hide and Restore System Acceptance Test
         error: null,
       });
 
-      const rpcSpy = vi.spyOn(supabase, 'rpc').mockImplementation(async (fnName, params: any) => {
+      const rpcSpy = (vi.spyOn(supabase, 'rpc') as any).mockImplementation(async (fnName: string, params: any) => {
         if (fnName === 'is_admin') return { data: true, error: null } as any;
         if (fnName === 'archive_library_book') {
           return {
@@ -101,7 +101,7 @@ describe('Admin-Controlled Book Archive, Hide and Restore System Acceptance Test
         error: null,
       });
 
-      const rpcSpy = vi.spyOn(supabase, 'rpc').mockImplementation(async (fnName) => {
+      const rpcSpy = (vi.spyOn(supabase, 'rpc') as any).mockImplementation(async (fnName: string) => {
         if (fnName === 'is_admin') return { data: true, error: null } as any;
         if (fnName === 'archive_library_book') {
           return {
@@ -132,7 +132,7 @@ describe('Admin-Controlled Book Archive, Hide and Restore System Acceptance Test
         error: null,
       });
 
-      vi.spyOn(supabase, 'rpc').mockImplementation(async (fnName) => {
+      (vi.spyOn(supabase, 'rpc') as any).mockImplementation(async (fnName: string) => {
         if (fnName === 'is_admin') return { data: true, error: null } as any;
         return { data: null, error: new Error('RPC not found') } as any;
       });
@@ -204,7 +204,7 @@ describe('Admin-Controlled Book Archive, Hide and Restore System Acceptance Test
         error: null,
       });
 
-      const rpcSpy = vi.spyOn(supabase, 'rpc').mockImplementation(async (fnName, params: any) => {
+      const rpcSpy = (vi.spyOn(supabase, 'rpc') as any).mockImplementation(async (fnName: string, params: any) => {
         if (fnName === 'is_admin') return { data: true, error: null } as any;
         if (fnName === 'restore_library_book') {
           return {
@@ -234,7 +234,7 @@ describe('Admin-Controlled Book Archive, Hide and Restore System Acceptance Test
         error: null,
       });
 
-      vi.spyOn(supabase, 'rpc').mockImplementation(async (fnName) => {
+      (vi.spyOn(supabase, 'rpc') as any).mockImplementation(async (fnName: string) => {
         if (fnName === 'is_admin') return { data: true, error: null } as any;
         return { data: null, error: new Error('RPC not found') } as any;
       });
@@ -290,7 +290,7 @@ describe('Admin-Controlled Book Archive, Hide and Restore System Acceptance Test
         },
       ];
 
-      const rpcSpy = vi.spyOn(supabase, 'rpc').mockImplementation(async (fnName) => {
+      const rpcSpy = (vi.spyOn(supabase, 'rpc') as any).mockImplementation(async (fnName: string) => {
         if (fnName === 'is_admin') return { data: true, error: null } as any;
         if (fnName === 'get_admin_archived_books') {
           return { data: sampleVault, error: null } as any;
@@ -334,7 +334,7 @@ describe('Admin-Controlled Book Archive, Hide and Restore System Acceptance Test
         error: null,
       });
 
-      const rpcSpy = vi.spyOn(supabase, 'rpc').mockImplementation(async (fnName) => {
+      const rpcSpy = (vi.spyOn(supabase, 'rpc') as any).mockImplementation(async (fnName: string) => {
         if (fnName === 'is_admin') return { data: true, error: null } as any;
         if (fnName === 'cleanup_unused_books') {
           return { data: 3, error: null } as any; // 3 archived safely

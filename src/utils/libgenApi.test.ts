@@ -14,15 +14,14 @@ describe('searchLibgen', () => {
 
   it('returns error when not on localhost and no backend is configured', async () => {
     const origLocation = window.location;
-    // @ts-expect-error mock window.location
-    delete window.location;
-    window.location = { hostname: 'production.com', origin: 'https://production.com' } as any;
+    delete (window as any).location;
+    (window as any).location = { hostname: 'production.com', origin: 'https://production.com' };
 
     const res = await searchLibgen('calculus');
     expect(res.success).toBe(false);
     expect(res.error).toContain('Libgen proxy is only enabled on local dev proxies');
 
-    window.location = origLocation;
+    (window as any).location = origLocation;
   });
 
   it('fetches and returns json results on successful response', async () => {

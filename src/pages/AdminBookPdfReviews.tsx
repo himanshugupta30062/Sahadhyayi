@@ -246,7 +246,7 @@ export default function AdminBookPdfReviews() {
               {submissions.map((item) => (
                 <button type="button" key={item.id} onClick={() => { setSelectedId(item.id); setTargetBookId(''); }}
                   className={`w-full rounded-xl border p-3 text-left transition hover:border-primary ${selected?.id === item.id ? 'border-primary bg-primary/5' : 'bg-card'}`}>
-                  <div className="flex items-start justify-between gap-2"><span className="line-clamp-2 font-medium">{item.submitted_title || item.original_filename}</span><Badge variant={statusVariant(item.status)}>{item.status.replaceAll('_', ' ')}</Badge></div>
+                  <div className="flex items-start justify-between gap-2"><span className="line-clamp-2 font-medium">{item.submitted_title || item.original_filename}</span><Badge variant={statusVariant(item.status)}>{item.status.replace(/_/g, ' ')}</Badge></div>
                   <p className="mt-1 text-xs text-muted-foreground">{item.submitted_author || 'Author not supplied'} · {new Date(item.created_at).toLocaleDateString()}</p>
                 </button>
               ))}
@@ -255,7 +255,7 @@ export default function AdminBookPdfReviews() {
             {selected && <section className="space-y-5 rounded-xl border bg-card p-4 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div><h2 className="text-xl font-semibold">{selected.submitted_title || selected.original_filename}</h2><p className="text-sm text-muted-foreground">{selected.submitted_author || 'Unknown author'} · {(selected.file_size_bytes || 0) / (1024 * 1024) > 0 ? `${((selected.file_size_bytes || 0) / (1024 * 1024)).toFixed(1)} MB` : 'Size unavailable'}</p></div>
-                <Badge variant={statusVariant(selected.status)}>{selected.status.replaceAll('_', ' ')}</Badge>
+                <Badge variant={statusVariant(selected.status)}>{selected.status.replace(/_/g, ' ')}</Badge>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" onClick={() => void invokeReview('preview')} disabled={Boolean(busyAction)}><ExternalLink className="mr-2 h-4 w-4" /> Preview PDF</Button>
@@ -277,7 +277,7 @@ export default function AdminBookPdfReviews() {
                       ['Recommendation', report.recommendation],
                       ['Confidence', typeof selected.match_confidence === 'number' ? `${Math.round(selected.match_confidence * 100)}%` : 'Not available'],
                       ['Model', selected.verification_model || 'Not recorded'],
-                    ].map(([label, value]) => <div key={String(label)}><dt className="text-xs text-muted-foreground">{label}</dt><dd className="break-words text-sm font-medium">{typeof value === 'string' || typeof value === 'number' ? String(value) : 'Not provided'}</dd></div>)}
+                    ].map(([label, value]) => <div key={String(label)}><dt className="text-xs text-muted-foreground">{String(label)}</dt><dd className="break-words text-sm font-medium">{typeof value === 'string' || typeof value === 'number' ? String(value) : 'Not provided'}</dd></div>)}
                   </dl>
                 )}
                 {findings.length > 0 && <div className="mt-4 rounded-md bg-muted p-3"><p className="text-sm font-medium">Warnings</p><ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-muted-foreground">{findings.map((finding, index) => <li key={index}>{typeof finding === 'string' ? finding : JSON.stringify(finding)}</li>)}</ul></div>}

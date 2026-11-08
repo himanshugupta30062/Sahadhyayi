@@ -14,6 +14,12 @@ export interface BookshelfItem {
   added_at: string;
   notes?: string;
   rating?: number;
+  progress?: number;
+  book?: {
+    id?: string;
+    title: string;
+    author?: string;
+  };
   is_favorite?: boolean;
   books_library?: {
     id: string;

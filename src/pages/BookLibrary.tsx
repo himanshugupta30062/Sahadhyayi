@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookOpen, Users } from 'lucide-react';
 import { SearchBar } from '@/components/ui/search-bar';
 import FilterPopup from '@/components/library/FilterPopup';

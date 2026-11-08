@@ -58,8 +58,8 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
 
 vi.mock('@/hooks/useLibraryBooks', () => ({
   getBookCompletenessScore: () => 1,
-  compareLibraryBooks: (...args: any[]) => mocks.compare(...args),
-  diversifyBooksPerPage: (...args: any[]) => mocks.diversify(...args),
+  compareLibraryBooks: (a: any, b: any) => mocks.compare(a, b),
+  diversifyBooksPerPage: (...args: any[]) => (mocks.diversify as any)(...args),
 }));
 
 vi.mock('@/utils/catalog/deduplicationEngine', () => ({
@@ -68,9 +68,9 @@ vi.mock('@/utils/catalog/deduplicationEngine', () => ({
 
 vi.mock('@/utils/catalog/bookVisibility', () => ({
   BASE_BOOK_SELECT_COLUMNS: 'base columns',
-  detectBookSchemaCapabilities: (...args: unknown[]) => mocks.detectCaps(...args),
-  getPublicBookSelectColumns: (...args: unknown[]) => mocks.selectColumns(...args),
-  applyPublicBookFilter: (query: any, ...args: unknown[]) => mocks.applyFilter(query, ...args),
+  detectBookSchemaCapabilities: (...args: any[]) => (mocks.detectCaps as any)(...args),
+  getPublicBookSelectColumns: (...args: any[]) => (mocks.selectColumns as any)(...args),
+  applyPublicBookFilter: (query: any, ...args: any[]) => (mocks.applyFilter as any)(query, ...args),
   filterPublicBooks: (rows: any[]) => mocks.filterBooks(rows),
 }));
 

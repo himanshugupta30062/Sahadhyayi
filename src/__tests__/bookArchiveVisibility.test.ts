@@ -212,7 +212,7 @@ describe('Fix 1: Enforce Archived Book Visibility Across Sahadhyayi', () => {
       } as any);
 
       // Mock admin check profile RPC
-      const mockRpc = vi.spyOn(supabase, 'rpc').mockImplementation(async (fn: string, params: any) => {
+      const mockRpc = (vi.spyOn(supabase, 'rpc') as any).mockImplementation(async (fn: string, params: any) => {
         if (fn === 'is_admin' || fn === 'is_app_admin') {
           return { data: true, error: null } as any;
         }

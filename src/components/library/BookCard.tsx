@@ -21,10 +21,10 @@ import { trackBookOpened } from '@/lib/analytics';
 
 interface BookCardProps {
   book: Book;
-  onDownloadPDF: (book: Book) => void;
+  onDownloadPDF?: (book: Book) => void;
 }
 
-const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
+const BookCard = ({ book, onDownloadPDF = () => {} }: BookCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();

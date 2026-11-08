@@ -16,7 +16,7 @@ export const useBookById = (id?: string) => {
       const caps = await detectBookSchemaCapabilities();
       const selectCols = getPublicBookSelectColumns(caps);
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('books_library')
         .select(selectCols)
         .eq('id', id)

@@ -106,7 +106,7 @@ export function loadRecaptcha(): Promise<void> {
     } else {
       script.addEventListener('load', onLoad, { once: true });
       script.addEventListener('error', onError, { once: true });
-      if (script.readyState === 'complete') {
+      if ((script as any).readyState === 'complete') {
         onLoad();
       }
     }
@@ -132,7 +132,7 @@ export async function executeRecaptcha(
 
   // In automated test environments without a configured site key, return a mock token
   // so tests exercising auth flows do not fail on external network dependencies.
-  if (!SITE_KEY && (import.meta.env.MODE === 'test' || typeof vi !== 'undefined')) {
+  if (!SITE_KEY && (import.meta.env.MODE === 'test' || typeof (globalThis as any).vi !== 'undefined')) {
     return 'test-recaptcha-token';
   }
 

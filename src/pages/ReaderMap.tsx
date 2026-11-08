@@ -61,11 +61,13 @@ const ReaderMap = () => {
 
           // If bookId is present, ensure user is registered for this book
           if (bookId) {
-            void supabase.rpc('share_book_location', {
-              book_uuid: bookId,
-              lat: loc.lat,
-              lng: loc.lng,
-            }).catch((err) => console.warn('Could not sync user book location:', err));
+            void Promise.resolve(
+              supabase.rpc('share_book_location', {
+                book_uuid: bookId,
+                lat: loc.lat,
+                lng: loc.lng,
+              }),
+            ).catch((err) => console.warn('Could not sync user book location:', err));
           }
         } else {
           setUserLocation(null);

@@ -94,10 +94,10 @@ export const ReadingPassportCard: React.FC = () => {
             </span>
           </div>
           <p className="text-xs font-semibold text-[#1C201D] dark:text-[#F3F0E7] truncate">
-            {activeBook.book?.title || 'Current Book'}
+            {activeBook.book?.title || activeBook.books_library?.title || 'Current Book'}
           </p>
           <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6] truncate mb-2">
-            {activeBook.book?.author || 'Unknown Author'}
+            {activeBook.book?.author || activeBook.books_library?.author || 'Unknown Author'}
           </p>
           <Progress value={activeBook.progress || 10} className="h-1.5" />
         </div>

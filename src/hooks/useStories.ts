@@ -20,7 +20,7 @@ export interface Story {
   status: 'draft' | 'published' | 'archived';
   completion_status: 'ongoing' | 'completed';
   published_at: string | null;
-  created_at: string;
+  created_at?: string;
   updated_at: string;
   views_count: number;
   reads_count: number;
@@ -29,6 +29,8 @@ export interface Story {
   follows_count: number;
   parts_count: number;
   reading_time_minutes: number;
+  format?: string | null;
+  audio_url?: string | null;
   user_liked?: boolean;
   user_bookmarked?: boolean;
   user_following?: boolean;
@@ -42,14 +44,14 @@ export interface Story {
 
 export interface StoryPart {
   id: string;
-  story_id: string;
+  story_id?: string;
   part_number: number;
   title: string;
-  content: string;
+  content?: string;
   status: 'draft' | 'published';
-  published_at: string | null;
-  created_at: string;
-  updated_at: string;
+  published_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface StoryComment {
@@ -121,13 +123,9 @@ export const useStories = (options?: StoryFilterOptions) => {
       let stories: Story[] = [];
       const { data, error } = await query.limit(50);
       if (error) {
-      let stories: Story[] = [];
-      const { data, error } = await query.limit(50);
-      if (error) {
         console.warn('Stories query encountered issue, falling back to curated collection:', error.message);
       } else if (data && data.length > 0) {
         stories = data as unknown as Story[];
-      }
       }
 
       // If database has 0 stories and user is not looking at their private drafts, supply curated starter stories
@@ -160,7 +158,7 @@ export const useStories = (options?: StoryFilterOptions) => {
           user_liked: likedSet.has(s.id),
           user_bookmarked: bookmarkedSet.has(s.id),
           user_following: followedSet.has(s.id),
-          last_read_part_number: progressMap.get(s.id) || 1,
+          last_read_part_number: Number(progressMap.get(s.id) || 1),
         }));
       }
 
@@ -208,7 +206,7 @@ export const useContinueReadingStories = () => {
       const progressMap = new Map(progressRows.map((r: any) => [r.story_id, r.last_read_part_number]));
       return (storiesData as unknown as Story[]).map((s) => ({
         ...s,
-        last_read_part_number: progressMap.get(s.id) || 1,
+        last_read_part_number: Number(progressMap.get(s.id) || 1),
       }));
     },
     enabled: !!user,
@@ -398,6 +396,8 @@ export const useCreateStory = () => {
       story_type: 'standalone' | 'series';
       status?: 'draft' | 'published';
       completion_status?: 'ongoing' | 'completed';
+      audio_url?: string | null;
+      format?: string | null;
       initial_part?: {
         title: string;
         content: string;

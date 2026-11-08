@@ -8,7 +8,11 @@ export interface MarginNoteReply {
   user_id: string;
   body: string;
   created_at: string;
-  profiles?: { full_name: string | null; profile_photo_url: string | null; username: string | null } | null;
+  profiles?: {
+    full_name?: string | null;
+    username?: string | null;
+    profile_photo_url?: string | null;
+  } | null;
 }
 
 export interface MarginNote {
@@ -93,23 +97,23 @@ export const useMarginNotes = (options?: { bookId?: string; filter?: "all" | "fr
           reactionsByNote.set(r.margin_note_id, list);
         });
 
-        return notes.map((n) => ({
+        return (notes as MarginNote[]).map((n) => ({
           ...n,
           user_reactions: reactionsByNote.get(n.id) || [],
         }));
       }
 
-      return notes;
+      return notes as unknown as MarginNote[];
     },
     staleTime: 30_000,
   });
 };
 
 export const useMarginNoteReplies = (noteId?: string) => {
-  return useQuery({
+  return useQuery<MarginNoteReply[]>({
     queryKey: ["margin-note-replies", noteId],
     enabled: !!noteId,
-    queryFn: async () => {
+    queryFn: async (): Promise<MarginNoteReply[]> => {
       if (!noteId) return [];
       const { data, error } = await supabase
         .from("margin_note_replies")
@@ -123,7 +127,7 @@ export const useMarginNoteReplies = (noteId?: string) => {
       const userIds = [...new Set(replies.map((r) => r.user_id))];
       const { data: profiles } = userIds.length ? await (supabase as any).from("public_profiles").select("*").in("id", userIds) : { data: [] };
       const byId = new Map((profiles ?? []).map((p: any) => [p.id, p]));
-      return replies.map((reply) => ({ ...reply, profiles: byId.get(reply.user_id) ?? null }));
+      return replies.map((reply) => ({ ...reply, profiles: byId.get(reply.user_id) ?? null })) as MarginNoteReply[];
     },
     staleTime: 20_000,
   });
