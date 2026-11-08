@@ -47,6 +47,7 @@ export const useUserGroups = () => {
           group_id,
           user_id,
           role,
+          status,
           joined_at,
           groups:group_chats (
             id,
