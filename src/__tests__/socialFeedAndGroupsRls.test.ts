@@ -34,6 +34,12 @@ const groupModerationDirectory = readFileSync(
   'utf8',
 );
 
+
+const groupReadingBoard = readFileSync(
+  toPath('../../supabase/migrations/20261108160000_reading_groups_phase6_shared_reading_board.sql'),
+  'utf8',
+);
+
 describe('social feed and reading group RLS policies', () => {
   it('replaces the historical broad feed rule with audience-scoped post visibility', () => {
     // This historical migration introduced authenticated-wide visibility; the later
@@ -103,4 +109,24 @@ describe('social feed and reading group RLS policies', () => {
     expect(groupModerationDirectory).toContain('REVOKE ALL ON FUNCTION public.get_reading_group_moderation_members(uuid) FROM PUBLIC, anon');
     expect(groupModerationDirectory).toContain('GRANT EXECUTE ON FUNCTION public.get_reading_group_moderation_members(uuid) TO authenticated');
   });
+
+  it('keeps shared reading books and progress behind active membership and scoped RPCs', () => {
+    expect(groupReadingBoard).toMatch(/ALTER TABLE public\\.group_reading_books ENABLE ROW LEVEL SECURITY/i);
+    expect(groupReadingBoard).toMatch(/ALTER TABLE public\\.group_reading_progress ENABLE ROW LEVEL SECURITY/i);
+    expect(groupReadingBoard).toMatch(/REVOKE ALL ON TABLE public\\.group_reading_books FROM PUBLIC, anon, authenticated/i);
+    expect(groupReadingBoard).toMatch(/REVOKE ALL ON TABLE public\\.group_reading_progress FROM PUBLIC, anon, authenticated/i);
+    expect(groupReadingBoard).toMatch(/v_actor uuid := auth\\.uid\\(\\)/i);
+    expect(groupReadingBoard).toMatch(/member_row\\.status = 'active'/i);
+    expect(groupReadingBoard).toMatch(/member_row\\.role IN \\('owner', 'admin', 'moderator'\\)/i);
+    expect(groupReadingBoard).toMatch(/progress\\.is_shared/);
+    expect(groupReadingBoard).toMatch(/my_progress\\.user_id = v_actor/i);
+    expect(groupReadingBoard).toContain('FOR UPDATE OF reading_book');
+    expect(groupReadingBoard).toContain('Reading-list entry not found or permission denied');
+    expect(groupReadingBoard).toContain('LEAST(100, (progress.current_page::numeric / NULLIF(book.pages, 0)) * 100)');
+    expect(groupReadingBoard).toMatch(/ON CONFLICT \\(group_reading_book_id, user_id\\)/i);
+    expect(groupReadingBoard.match(/SET search_path = ''/g)?.length).toBe(5);
+    expect(groupReadingBoard).toMatch(/REVOKE ALL ON FUNCTION public\\.save_reading_group_progress\\(uuid, integer, boolean\\) FROM PUBLIC, anon/i);
+    expect(groupReadingBoard).toMatch(/GRANT EXECUTE ON FUNCTION public\\.list_reading_group_books\\(uuid\\) TO authenticated/i);
+  });
+
 });

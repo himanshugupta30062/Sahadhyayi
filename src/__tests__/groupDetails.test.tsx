@@ -8,6 +8,14 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import GroupDetails from '@/pages/GroupDetails';
 
+vi.mock('@/components/groups/GroupReadingBoard', () => ({
+  default: () => <div data-testid="group-reading-board">Shared reading board</div>,
+}));
+
+vi.mock('@/components/groups/GroupModerationPanel', () => ({
+  default: () => <div data-testid="group-moderation-panel">Group moderation</div>,
+}));
+
 vi.mock('@/contexts/authHelpers', () => ({
   useAuth: () => ({
     user: { id: 'test-user-123', email: 'reader@example.com' },
@@ -41,7 +49,7 @@ vi.mock('@/hooks/useGroupManagement', () => ({
 
 vi.mock('@/hooks/useUserGroups', () => ({
   useUserJoinedGroups: () => ({
-    data: [{ id: 'group-101', name: 'Classical Sanskrit Readers' }],
+    data: [{ id: 'membership-101', group_id: 'group-101', status: 'active', role: 'admin', name: 'Classical Sanskrit Readers' }],
     isLoading: false,
   }),
 }));
@@ -54,6 +62,7 @@ vi.mock('@/hooks/useGroupMessaging', () => ({
         group_id: 'group-101',
         user_id: 'test-user-123',
         role: 'admin',
+        status: 'active',
         joined_at: '2026-01-01',
         user_profile: {
           id: 'test-user-123',
@@ -86,6 +95,18 @@ describe('GroupDetails Page Tests', () => {
     window.localStorage.clear();
   });
 
+  it('renders the shared reading board for active members', () => {
+    const queryClient = createTestQueryClient();
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/groups/group-101']}>
+          <Routes><Route path="/groups/:id" element={<GroupDetails />} /></Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+    expect(screen.getByTestId('group-reading-board')).toBeInTheDocument();
+  });
+
   it('renders group details with membership status and chat button', () => {
     const queryClient = createTestQueryClient();
 
@@ -107,7 +128,7 @@ describe('GroupDetails Page Tests', () => {
 
     // Member status badge and count
     expect(screen.getByText('Joined Member')).toBeInTheDocument();
-    expect(screen.getByText('12 members')).toBeInTheDocument();
+    expect(screen.getByText('1 member')).toBeInTheDocument();
 
     // Open Chat & Invite buttons rendered for member
     expect(screen.getByText('Open Group Chat')).toBeInTheDocument();

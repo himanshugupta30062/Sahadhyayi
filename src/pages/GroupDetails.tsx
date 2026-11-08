@@ -28,6 +28,7 @@ import { useGroupMembers } from '@/hooks/useGroupMessaging';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import GroupMessaging from '@/components/groups/GroupMessaging';
+import GroupReadingBoard from '@/components/groups/GroupReadingBoard';
 import { toast } from 'sonner';
 
 const GroupDetails = () => {
@@ -331,6 +332,8 @@ const GroupDetails = () => {
               </div>
             </CardContent>
           </Card>
+
+          {isMember && <GroupReadingBoard groupId={group.id} canManage={canManageGroup} />}
 
           {/* Members List */}
           <Card className="border-border bg-card">
