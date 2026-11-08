@@ -87,9 +87,10 @@ const GroupDetails = () => {
   const actorRole = myMembership?.role;
   const canManageGroup = isMember && ['owner', 'admin', 'moderator'].includes(actorRole ?? '');
   const activeMembers = members.filter((member) => member.status === 'active');
-  const memberCount = membersLoading || !user?.id
+  const memberCount = membersLoading || !user?.id || !isMember
     ? Number(group?.member_count ?? group?.group_members?.[0]?.count ?? 0)
     : activeMembers.length;
+  const requiresInvitation = group?.join_policy === 'invite_only' || group?.is_encrypted === true;
   const isDefaultReadingGroup = group?.name === DEFAULT_READING_GROUP_NAME;
 
   const copyInviteLink = async () => {
@@ -185,7 +186,7 @@ const GroupDetails = () => {
                 <Badge variant={isMember ? 'default' : isBanned ? 'destructive' : 'secondary'} className="text-xs">
                   {isMember ? 'Joined Member' : isRequestPending ? 'Request Pending' : isBanned ? 'Blocked' : 'Not Joined'}
                 </Badge>
-                {group.join_policy === 'invite_only' ? (
+                {requiresInvitation ? (
                   <Badge variant="outline" className="text-xs gap-1 border-amber-500/40 text-amber-600 dark:text-amber-400 bg-background/80">
                     <Lock className="w-3 h-3" /> Invite-Only Group
                   </Badge>
@@ -265,7 +266,7 @@ const GroupDetails = () => {
                         <Badge variant="secondary" className="text-xs">Join request pending</Badge>
                       ) : isBanned ? (
                         <Badge variant="destructive" className="text-xs">You cannot join this group</Badge>
-                      ) : group.join_policy === 'invite_only' ? (
+                      ) : requiresInvitation ? (
                         <Badge variant="secondary" className="text-xs">An invitation is required to join</Badge>
                       ) : (
                         <Button
@@ -278,7 +279,7 @@ const GroupDetails = () => {
                           Join Group
                         </Button>
                       )}
-                      {group.visibility !== 'private' && group.join_policy !== 'invite_only' && (
+                      {group.visibility !== 'private' && !requiresInvitation && (
                         <Button
                           variant="outline"
                           onClick={() => void copyGroupPageLink()}
