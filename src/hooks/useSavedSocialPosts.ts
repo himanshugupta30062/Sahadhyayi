@@ -48,3 +48,18 @@ export function useToggleSavedSocialPost() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["reading-cabinet", user?.id] }),
   });
 }
+
+export function useSavedSocialPostIds() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["reading-cabinet-ids", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      if (!user?.id) return new Set<string>();
+      const { data, error } = await (supabase as any).from("social_post_saves")
+        .select("post_id").eq("user_id", user.id);
+      if (error) throw error;
+      return new Set<string>((data ?? []).map((row: { post_id: string }) => row.post_id));
+    },
+  });
+}
