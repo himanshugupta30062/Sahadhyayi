@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Heart, MessageCircle, Share2, Clock, Repeat2, MoreHorizontal, Trash2, Users, Copy, Check, TrendingUp } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Clock, Repeat2, MoreHorizontal, Trash2, Users, Copy, Check } from 'lucide-react';
 import {
   useSocialPosts,
   useTogglePostLike,
@@ -36,7 +36,6 @@ import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 import { useAuth } from '@/contexts/authHelpers';
 import { Quote, Lock, Sparkles } from 'lucide-react';
 import { BookReelsStrip } from './BookReelsStrip';
-import { SampleReaderFeedCards } from './SampleReaderFeedCards';
 
 const EmbeddedOriginalPost: React.FC<{
   post?: SocialPost | null;
@@ -111,8 +110,7 @@ export const EnhancedSocialFeed = () => {
   const [deepLinkedPost, setDeepLinkedPost] = useState<SocialPost | null>(null);
   const [highlightedPostId, setHighlightedPostId] = useState<string | null>(null);
   const [imageViewer, setImageViewer] = useState<{ src: string; alt: string } | null>(null);
-  const [streamMode, setStreamMode] = useState<'community' | 'following'>('community');
-  const [isTrending, setIsTrending] = useState(false);
+  const [streamMode, setStreamMode] = useState<'for_you' | 'following' | 'latest'>('for_you');
   const { posts, isLoading, error, refetch, hasMore, isLoadingMore, loadMore, loadMoreError } = useSocialPosts(streamMode);
   const postsRef = useRef(posts);
   postsRef.current = posts;
@@ -138,14 +136,14 @@ export const EnhancedSocialFeed = () => {
     refetch: refetchThreads,
   } = useSpoilerThreads(undefined, { enabled: feedFilter === 'threads' });
 
-  const rawPostsForDisplay = streamMode === 'community' && deepLinkedPost && deepLinkedPost.id === requestedPostId
+  const rawPostsForDisplay = deepLinkedPost && deepLinkedPost.id === requestedPostId
     && !posts.some((post) => post.id === deepLinkedPost.id)
     ? [deepLinkedPost, ...posts]
     : posts;
 
-  const postsForDisplay = isTrending
-    ? [...rawPostsForDisplay].sort((a, b) => ((b.likes_count || 0) + (b.reposts_count || 0) * 2) - ((a.likes_count || 0) + (a.reposts_count || 0) * 2))
-    : rawPostsForDisplay;
+  // All feed modes are chronological and use the same stable cursor.
+  // For You changes which RLS-visible posts qualify; it does not invent an engagement ranking.
+  const postsForDisplay = rawPostsForDisplay;
 
   // Shared URLs use /social?post=<id>. Resolve the requested post through the
   // audience-aware RLS boundary; do not depend on a QueryClient being present
@@ -156,7 +154,7 @@ export const EnhancedSocialFeed = () => {
   }, [requestedPostId]);
 
   useEffect(() => {
-    if (!requestedPostId || !user?.id || streamMode !== 'community' || isLoading) return;
+    if (!requestedPostId || !user?.id || isLoading) return;
 
     let cancelled = false;
     let scrollTimer: number | undefined;
@@ -259,20 +257,37 @@ export const EnhancedSocialFeed = () => {
       {/* Live Book Pulse Bar */}
       <BookPulseBar />
 
-      {/* Feed Navigation Tabs: Posts, Stories, Following, Trending */}
+      {/* Feed Navigation: personalized, followed readers, and chronological */}
       <div className="flex items-center gap-2 flex-wrap" role="group" aria-label="Choose feed">
         <Button
           size="sm"
-          variant={streamMode === 'community' && !isTrending ? 'default' : 'outline'}
-          aria-pressed={streamMode === 'community' && !isTrending}
-          onClick={() => {
-            setStreamMode('community');
-            setIsTrending(false);
-          }}
-          className={streamMode === 'community' && !isTrending ? 'bg-[#1C442D] text-white hover:bg-[#153522] dark:bg-[#1C3024] dark:text-[#F3F0E7]' : 'border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7]'}
+          variant={streamMode === 'for_you' ? 'default' : 'outline'}
+          aria-pressed={streamMode === 'for_you'}
+          onClick={() => setStreamMode('for_you')}
+          className={streamMode === 'for_you' ? 'bg-[#1C442D] text-white hover:bg-[#153522] dark:bg-[#1C3024] dark:text-[#F3F0E7]' : 'border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7]'}
         >
-          <MessageCircle className="w-3.5 h-3.5 mr-1.5" />
-          Posts
+          <Sparkles className="w-3.5 h-3.5 mr-1.5 text-amber-500 dark:text-[#D5B16D]" />
+          For You
+        </Button>
+        <Button
+          size="sm"
+          variant={streamMode === 'following' ? 'default' : 'outline'}
+          aria-pressed={streamMode === 'following'}
+          onClick={() => setStreamMode('following')}
+          className={streamMode === 'following' ? 'bg-[#1C442D] text-white hover:bg-[#153522] dark:bg-[#1C3024] dark:text-[#F3F0E7]' : 'border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7]'}
+        >
+          <Users className="w-3.5 h-3.5 mr-1.5" />
+          Following
+        </Button>
+        <Button
+          size="sm"
+          variant={streamMode === 'latest' ? 'default' : 'outline'}
+          aria-pressed={streamMode === 'latest'}
+          onClick={() => setStreamMode('latest')}
+          className={streamMode === 'latest' ? 'bg-[#1C442D] text-white hover:bg-[#153522] dark:bg-[#1C3024] dark:text-[#F3F0E7]' : 'border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7]'}
+        >
+          <Clock className="w-3.5 h-3.5 mr-1.5" />
+          Latest
         </Button>
         <Button
           size="sm"
@@ -288,32 +303,6 @@ export const EnhancedSocialFeed = () => {
         >
           <Sparkles className="w-3.5 h-3.5 mr-1.5 text-amber-500 dark:text-[#D5B16D]" />
           Stories
-        </Button>
-        <Button
-          size="sm"
-          variant={streamMode === 'following' ? 'default' : 'outline'}
-          aria-pressed={streamMode === 'following'}
-          onClick={() => {
-            setStreamMode('following');
-            setIsTrending(false);
-          }}
-          className={streamMode === 'following' ? 'bg-[#1C442D] text-white hover:bg-[#153522] dark:bg-[#1C3024] dark:text-[#F3F0E7]' : 'border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7]'}
-        >
-          <Users className="w-3.5 h-3.5 mr-1.5" />
-          Following
-        </Button>
-        <Button
-          size="sm"
-          variant={isTrending ? 'default' : 'outline'}
-          aria-pressed={isTrending}
-          onClick={() => {
-            setStreamMode('community');
-            setIsTrending(true);
-          }}
-          className={isTrending ? 'bg-[#1C442D] text-white hover:bg-[#153522] dark:bg-[#1C3024] dark:text-[#F3F0E7]' : 'border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7]'}
-        >
-          <TrendingUp className="w-3.5 h-3.5 mr-1.5 text-orange-500" />
-          Trending
         </Button>
       </div>
 
@@ -420,13 +409,13 @@ export const EnhancedSocialFeed = () => {
               <Card className="bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs">
                 <CardContent className="p-10 text-center">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#EBF2EC] dark:bg-[#1C3024] border border-[#C8DBCB] dark:border-[#315C43]/50 flex items-center justify-center text-[#1C442D] dark:text-[#D5B16D]">
-                    <MessageCircle className="w-8 h-8" />
+                    <Users className="w-8 h-8" />
                   </div>
                   <h3 className="text-lg font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-1">
                     Your Following feed is quiet
                   </h3>
                   <p className="text-sm text-[#636B65] dark:text-[#A5ADA6]">
-                    Follow readers to see their eligible book discussions and reading updates here.
+                    Follow readers to see the posts they have chosen to share with you.
                   </p>
                   <Link
                     to="/social?tab=friends"
@@ -436,18 +425,55 @@ export const EnhancedSocialFeed = () => {
                   </Link>
                 </CardContent>
               </Card>
+            ) : streamMode === 'for_you' ? (
+              <Card className="bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs">
+                <CardContent className="p-10 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#EBF2EC] dark:bg-[#1C3024] border border-[#C8DBCB] dark:border-[#315C43]/50 flex items-center justify-center text-[#1C442D] dark:text-[#D5B16D]">
+                    <BookOpen className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-lg font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-1">
+                    Your reading interests shape this feed
+                  </h3>
+                  <p className="text-sm text-[#636B65] dark:text-[#A5ADA6]">
+                    For You brings together eligible posts from readers you follow and books on your reading shelf. Add a book or follow a reader to get started.
+                  </p>
+                  <div className="mt-4 flex flex-wrap justify-center gap-3">
+                    <Link to="/bookshelf" className="text-sm font-medium text-[#1C442D] hover:underline dark:text-[#D5B16D]">
+                      Add books to your shelf
+                    </Link>
+                    <Link to="/social?tab=friends" className="text-sm font-medium text-[#1C442D] hover:underline dark:text-[#D5B16D]">
+                      Find readers
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
             ) : (
-              <div className="space-y-4">
-                <div className="rounded-2xl border border-dashed border-[#C8DBCB] bg-[#FAF7F2] p-4 text-center dark:border-[#315C43] dark:bg-[#111614]">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-[#1C442D] dark:text-[#D5B16D]">
-                    Community highlights
+              <Card className="bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs">
+                <CardContent className="p-10 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#EBF2EC] dark:bg-[#1C3024] border border-[#C8DBCB] dark:border-[#315C43]/50 flex items-center justify-center text-[#1C442D] dark:text-[#D5B16D]">
+                    <MessageCircle className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-lg font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-1">
+                    Start the first conversation
+                  </h3>
+                  <p className="text-sm text-[#636B65] dark:text-[#A5ADA6]">
+                    There are no eligible posts in Latest yet. Share a reading moment to get the conversation started.
                   </p>
-                  <p className="mt-1 text-xs text-[#636B65] dark:text-[#A5ADA6]">
-                    Be the first to post today, or join the conversation with these fellow readers:
-                  </p>
-                </div>
-                <SampleReaderFeedCards showHeading={false} />
-              </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-4"
+                    onClick={() => {
+                      const composer = document.getElementById('feed-composer-textarea');
+                      composer?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      composer?.focus();
+                    }}
+                  >
+                    Create a post
+                  </Button>
+                </CardContent>
+              </Card>
             )
           ) : (
         postsForDisplay.map((post, idx) => {
