@@ -54,6 +54,32 @@ interface SocialFeedContext {
   bookIds: string[];
 }
 
+const FOLLOW_LOOKUP_PAGE_SIZE = 500;
+
+const fetchAllFollowedUserIds = async (userId: string): Promise<string[]> => {
+  const followedUserIds: string[] = [];
+
+  for (let offset = 0; ; offset += FOLLOW_LOOKUP_PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from('user_follows')
+      .select('following_id')
+      .eq('follower_id', userId)
+      .order('following_id', { ascending: true })
+      .range(offset, offset + FOLLOW_LOOKUP_PAGE_SIZE - 1);
+
+    if (error) throw error;
+
+    const page = (data || [])
+      .map((row) => row.following_id)
+      .filter((followingId): followingId is string => Boolean(followingId));
+    followedUserIds.push(...page);
+
+    if (page.length < FOLLOW_LOOKUP_PAGE_SIZE) break;
+  }
+
+  return [...new Set(followedUserIds)];
+};
+
 const resolveSocialFeedContext = async (
   userId: string | undefined,
   feedMode: SocialFeedMode,
@@ -67,26 +93,12 @@ const resolveSocialFeedContext = async (
   }
 
   if (mode === 'following') {
-    const { data, error } = await supabase
-      .from('user_follows')
-      .select('following_id')
-      .eq('follower_id', userId)
-      .limit(100);
-    if (error) throw error;
-
-    return {
-      userId,
-      followedUserIds: [...new Set((data || []).map((row) => row.following_id).filter(Boolean))],
-      bookIds: [],
-    };
+    const followedUserIds = await fetchAllFollowedUserIds(userId);
+    return { userId, followedUserIds, bookIds: [] };
   }
 
-  const [followsResult, shelfResult] = await Promise.all([
-    supabase
-      .from('user_follows')
-      .select('following_id')
-      .eq('follower_id', userId)
-      .limit(100),
+  const [followedUserIds, shelfResult] = await Promise.all([
+    fetchAllFollowedUserIds(userId),
     supabase
       .from('user_bookshelf')
       .select('book_id')
@@ -96,12 +108,11 @@ const resolveSocialFeedContext = async (
       .limit(40),
   ]);
 
-  if (followsResult.error) throw followsResult.error;
   if (shelfResult.error) throw shelfResult.error;
 
   return {
     userId,
-    followedUserIds: [...new Set((followsResult.data || []).map((row) => row.following_id).filter(Boolean))],
+    followedUserIds,
     bookIds: [...new Set((shelfResult.data || []).map((row) => row.book_id).filter(Boolean))],
   };
 };
