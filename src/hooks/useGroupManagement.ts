@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 import { toast } from 'sonner';
 import { uniqueChannelName } from '@/lib/realtime';
-import { CURATED_READING_GROUPS } from '@/data/curatedReadingGroups';
 
 export const DEFAULT_READING_GROUP_NAME = 'Sahadhyayi Community Reading Circle';
 
@@ -36,16 +35,19 @@ export const useGroups = (options: { enabled?: boolean } = {}) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const enabled = options.enabled ?? true;
+  const queryEnabled = enabled && Boolean(user?.id);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!queryEnabled) return;
+
     const refreshGroups = () => {
       void queryClient.invalidateQueries({ queryKey: ['all-groups'] });
       void queryClient.invalidateQueries({ queryKey: ['user-groups'] });
       void queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
     };
+
     const channel = supabase
-      .channel(uniqueChannelName(`reading-groups-directory-${user?.id ?? 'guest'}`))
+      .channel(uniqueChannelName(`reading-groups-directory-${user.id}`))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'group_chats' }, refreshGroups)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'group_chat_members' }, refreshGroups)
       .subscribe();
@@ -53,53 +55,33 @@ export const useGroups = (options: { enabled?: boolean } = {}) => {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [queryClient, user?.id, enabled]);
+  }, [queryClient, user?.id, queryEnabled]);
 
   return useQuery({
     queryKey: ['all-groups', user?.id],
     queryFn: async () => {
-      if (user?.id) {
-        const { data, error } = await supabase
-          .from('group_chats')
-          .select(`
-            *,
-            group_members:group_chat_members(count)
-          `)
-          .order('created_at', { ascending: false });
-        if (error) {
-          console.warn('Failed to fetch group chats, falling back to curated reading groups:', error.message);
-          return CURATED_READING_GROUPS;
-        }
-        if (!data || data.length === 0) {
-          return CURATED_READING_GROUPS;
-        }
-        return data;
+      if (!user?.id) {
+        throw new Error('Sign in to browse reading groups.');
       }
 
-      // Anonymous discovery uses an aggregate-only RPC; never grant anon access
-      // to raw group_chat_members rows just to compute counts.
-      const [{ data: groups, error: groupsError }, countsResult] = await Promise.all([
-        supabase.from('group_chats').select('*').order('created_at', { ascending: false }),
-        Promise.resolve(supabase.rpc('get_public_group_member_counts')).catch(() => ({ data: [], error: null })),
-      ]);
-      if (groupsError) {
-        console.warn('Failed to fetch group chats, using curated collection:', groupsError);
-        return CURATED_READING_GROUPS;
+      const { data, error } = await supabase
+        .from('group_chats')
+        .select(`
+          *,
+          group_members:group_chat_members(count)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Failed to load reading groups:', error);
+        throw error;
       }
-      const counts = countsResult?.data ?? [];
-      const countByGroupId = new Map(
-        (Array.isArray(counts) ? counts : []).map((row: { group_id: string; member_count: number }) => [
-          row.group_id,
-          Number(row.member_count) || 0,
-        ])
-      );
-      const mapped = (groups || []).map((group) => {
-        const count = countByGroupId.get(group.id) ?? 1;
-        return { ...group, member_count: count, group_members: [{ count }] };
-      });
-      return mapped.length > 0 ? mapped : CURATED_READING_GROUPS;
+
+      // An empty result is a genuine empty state. Never replace backend failures or
+      // zero rows with hard-coded demo groups and fabricated member counts.
+      return data ?? [];
     },
-    enabled,
+    enabled: queryEnabled,
   });
 };
 
