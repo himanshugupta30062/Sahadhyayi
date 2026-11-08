@@ -51,6 +51,7 @@ const WebsiteTour = lazy(() => import("./components/onboarding/WebsiteTour"));
 // Secondary pages (can be loaded later)
 const Profile = lazy(() => import('./pages/Profile'));
 const SocialMedia = lazy(() => import('./pages/SocialMedia'));
+const ReadingCabinet = lazy(() => import('./pages/ReadingCabinet'));
 const Stories = lazy(() => import('./pages/Stories'));
 const Authors = lazy(() => import('./pages/Authors'));
 const Scientists = lazy(() => import('./pages/Scientists'));
@@ -430,6 +431,7 @@ const App = memo(() => {
                             </Suspense>
                           }
                         />
+                        <Route path="/reading-cabinet" element={<ProtectedRoute><Suspense fallback={<LoadingFallback message="Loading your Reading Cabinet..." />}><ReadingCabinet /></Suspense></ProtectedRoute>} />
                         <Route
                           path="/activity"
                           element={
