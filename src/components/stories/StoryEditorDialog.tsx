@@ -340,35 +340,35 @@ export const StoryEditorDialog: React.FC<StoryEditorDialogProps> = ({
                 onValueChange={(v: 'standalone' | 'series') => setStoryType(v)}
                 className="grid grid-cols-1 gap-3 sm:grid-cols-2"
               >
-                <div
-                  onClick={() => setStoryType('standalone')}
+                <label
+                  htmlFor="type-standalone"
                   className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 transition-colors ${storyType === 'standalone' ? 'border-[#1C442D] bg-[#FAF7F2] dark:border-[#D5B16D] dark:bg-[#1A231D]' : 'border-[#E8E2D9] dark:border-[#29332D]'}`}
                 >
                   <RadioGroupItem value="standalone" id="type-standalone" className="mt-0.5" />
                   <div className="space-y-0.5">
-                    <Label htmlFor="type-standalone" className="cursor-pointer text-sm font-semibold">
+                    <span className="text-sm font-semibold">
                       Standalone Story
-                    </Label>
+                    </span>
                     <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">
                       A complete short story in a single reading experience.
                     </p>
                   </div>
-                </div>
+                </label>
 
-                <div
-                  onClick={() => setStoryType('series')}
+                <label
+                  htmlFor="type-series"
                   className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 transition-colors ${storyType === 'series' ? 'border-[#1C442D] bg-[#FAF7F2] dark:border-[#D5B16D] dark:bg-[#1A231D]' : 'border-[#E8E2D9] dark:border-[#29332D]'}`}
                 >
                   <RadioGroupItem value="series" id="type-series" className="mt-0.5" />
                   <div className="space-y-0.5">
-                    <Label htmlFor="type-series" className="cursor-pointer text-sm font-semibold">
+                    <span className="text-sm font-semibold">
                       Series / Multi-Part
-                    </Label>
+                    </span>
                     <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">
                       Episodic chapters. Publish parts over time up to {STORY_LIMITS.MAX_PARTS_PER_SERIES} parts.
                     </p>
                   </div>
-                </div>
+                </label>
               </RadioGroup>
             </div>
 

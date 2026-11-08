@@ -373,18 +373,11 @@ export const LeftSidebar = ({ onSelectConversation }: LeftSidebarProps) => {
         </CardHeader>
         <CardContent className="space-y-2">
           {conversations.map((conv) => (
-            <div
+            <button
+              type="button"
               key={conv.id}
-              role="button"
-              tabIndex={0}
               onClick={() => onSelectConversation(conv)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  onSelectConversation(conv);
-                }
-              }}
-              className="flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+              className="w-full text-left flex items-center justify-between p-2 hover:bg-amber-50 rounded-lg cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
             >
               <div className="flex items-center gap-3">
                 <Avatar className="w-8 h-8">
@@ -400,7 +393,7 @@ export const LeftSidebar = ({ onSelectConversation }: LeftSidebarProps) => {
               {conv.unreadCount > 0 && (
                 <Badge className="bg-red-500 text-white text-xs">{conv.unreadCount}</Badge>
               )}
-            </div>
+            </button>
           ))}
         </CardContent>
       </Card>

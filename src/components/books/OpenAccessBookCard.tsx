@@ -16,10 +16,10 @@ const OpenAccessBookCard: React.FC<Props> = ({ book }) => {
           <p className="text-sm text-muted-foreground">{book.author}</p>
         )}
         <div className="text-xs text-muted-foreground flex flex-wrap gap-2">
-          {book.year && <span>{book.year}</span>}
+          {Boolean(book.year) && <span>{book.year}</span>}
           {book.language && <span>{book.language}</span>}
           {book.extension && <span>{book.extension.toUpperCase()}</span>}
-          {book.size && <span>{book.size}</span>}
+          {Boolean(book.size) && <span>{book.size}</span>}
         </div>
         <Button asChild size="sm" className="mt-2">
           <a href={book.downloadUrl} target="_blank" rel="noopener noreferrer">

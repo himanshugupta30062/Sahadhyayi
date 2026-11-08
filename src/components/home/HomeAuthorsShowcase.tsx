@@ -115,7 +115,7 @@ export const HomeAuthorsShowcase: React.FC = () => {
                           <BookOpen className="w-3 h-3 text-[#1C442D] dark:text-[#D5B16D]" />
                           {author.books_count || 1} {author.books_count === 1 ? 'book' : 'books'}
                         </span>
-                        {author.rating && (
+                        {Boolean(author.rating) && (
                           <span className="flex items-center gap-0.5 text-amber-600 dark:text-amber-400 font-semibold">
                             <Star className="w-3 h-3 fill-current" /> {author.rating}
                           </span>
