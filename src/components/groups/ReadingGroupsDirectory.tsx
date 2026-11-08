@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import {
   AlertCircle,
@@ -27,6 +27,8 @@ import {
   useJoinGroup,
   useLeaveGroup,
   useUpdateGroup,
+  useCreateGroupInvitation,
+  useRedeemGroupInvitation,
 } from '@/hooks/useGroupManagement';
 import { useUserJoinedGroups } from '@/hooks/useUserGroups';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -85,22 +87,24 @@ const GroupSkeleton = () => (
   </Card>
 );
 
-/** Copies an invite link and shows feedback */
-const useGroupInvite = () => {
+/** Creates a revocable, expiring credential-backed invitation link. */
+const useGroupInvite = (createInvitation: ReturnType<typeof useCreateGroupInvitation>) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
-
-  const copyInviteLink = (group: Pick<Group, 'id' | 'name'>) => {
-    const url = `${window.location.origin}/social?tab=groups&join=${group.id}`;
-    navigator.clipboard.writeText(url).then(() => {
+  const copyInviteLink = async (group: Pick<Group, 'id' | 'name'>) => {
+    try {
+      const invitation = await createInvitation.mutateAsync({ groupId: group.id, expiresInDays: 7 });
+      const url = new URL('/social', window.location.origin);
+      url.searchParams.set('tab', 'groups');
+      url.searchParams.set('invite', invitation.token);
+      await navigator.clipboard.writeText(url.toString());
       setCopiedId(group.id);
-      toast.success(`Invite link copied! Share it with friends to join "${group.name}".`);
-      setTimeout(() => setCopiedId(null), 3000);
-    }).catch(() => {
-      toast.error('Could not copy link. Try manually sharing the page URL.');
-    });
+      toast.success('Secure invite copied (expires in 7 days).');
+      window.setTimeout(() => setCopiedId(null), 3000);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not create or copy invitation.');
+    }
   };
-
-  return { copiedId, copyInviteLink };
+  return { copiedId, copyInviteLink, creatingInvite: createInvitation.isPending };
 };
 
 const ReadingGroupsDirectory = () => {
@@ -113,10 +117,23 @@ const ReadingGroupsDirectory = () => {
   const leaveGroup = useLeaveGroup();
   const updateGroup = useUpdateGroup();
   const deleteGroup = useDeleteGroup();
-  const { copiedId, copyInviteLink } = useGroupInvite();
+  const createInvitation = useCreateGroupInvitation();
+  const redeemInvitation = useRedeemGroupInvitation();
+  const { copiedId, copyInviteLink, creatingInvite } = useGroupInvite(createInvitation);
 
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const joinGroupId = searchParams.get('join');
+  const inviteToken = searchParams.get('invite');
+  useEffect(() => {
+    if (!user || !inviteToken) return;
+    redeemInvitation.mutate(inviteToken, {
+      onSuccess: () => toast.success('Invitation accepted. You joined the reading group!'),
+      onError: (error) => toast.error(error instanceof Error ? error.message : 'Invitation could not be accepted.'),
+    });
+    const next = new URLSearchParams(searchParams);
+    next.delete('invite');
+    setSearchParams(next, { replace: true });
+  }, [user, inviteToken]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'mine'>('all');
@@ -459,7 +476,7 @@ const ReadingGroupsDirectory = () => {
                                   <Users className="mr-2 h-4 w-4" /> View Details
                                 </Link>
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => copyInviteLink(group)}>
+                              <DropdownMenuItem onClick={() => void copyInviteLink(group)}>
                                 <Link2 className="mr-2 h-4 w-4" /> Copy Invite Link
                               </DropdownMenuItem>
                               {canEdit && (
@@ -540,7 +557,7 @@ const ReadingGroupsDirectory = () => {
                           size="sm"
                           className="gap-1.5 text-xs"
                           onClick={() => copyInviteLink(group)}
-                          title="Copy invite link to share with others"
+                          title="Create a secure invite link (expires in 7 days)"
                         >
                           {isCopied ? (
                             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
@@ -591,7 +608,7 @@ const ReadingGroupsDirectory = () => {
                           size="sm"
                           className="gap-1.5 text-xs"
                           onClick={() => copyInviteLink(group)}
-                          title="Copy a link to share this group"
+                          title="Create a secure invite link (expires in 7 days)"
                         >
                           {isCopied ? (
                             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />

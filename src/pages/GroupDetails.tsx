@@ -21,7 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import SEO from '@/components/SEO';
 import Breadcrumb from '@/components/Breadcrumb';
 import { useAuth } from '@/contexts/authHelpers';
-import { DEFAULT_READING_GROUP_NAME, useGroups, useJoinGroup, useLeaveGroup, Group } from '@/hooks/useGroupManagement';
+import { DEFAULT_READING_GROUP_NAME, useGroups, useJoinGroup, useLeaveGroup, useCreateGroupInvitation, Group } from '@/hooks/useGroupManagement';
 import { useUserJoinedGroups } from '@/hooks/useUserGroups';
 import { useGroupMembers } from '@/hooks/useGroupMessaging';
 import { useQuery } from '@tanstack/react-query';
@@ -40,7 +40,7 @@ const GroupDetails = () => {
   const { data: members = [], isLoading: membersLoading } = useGroupMembers(id || '');
 
   const joinGroup = useJoinGroup();
-  const leaveGroup = useLeaveGroup();
+  const leaveGroup = useLeaveGroup();\n  const createInvitation = useCreateGroupInvitation();
 
   // Try finding group in cache first, fallback to direct query for deep links
   const cachedGroup = groups.find(g => g.id === id);
@@ -82,17 +82,26 @@ const GroupDetails = () => {
   const memberCount = group?.group_members?.[0]?.count ?? members.length;
   const isDefaultReadingGroup = group?.name === DEFAULT_READING_GROUP_NAME;
 
-  const copyInviteLink = () => {
+  const copyInviteLink = async () => {
     if (!group) return;
-    const url = `${window.location.origin}/groups?join=${group.id}`;
-    if (navigator.clipboard) {
-      void navigator.clipboard.writeText(url).then(() => {
-        setIsCopied(true);
-        toast.success('Group invite link copied to clipboard!');
-        window.setTimeout(() => setIsCopied(false), 2500);
-      }).catch(() => {
-        toast.error('Could not copy the invite link. Please copy it from the address bar.');
+    try {
+      const bytes = new Uint8Array(32);
+      crypto.getRandomValues(bytes);
+      const token = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+      const expiresAt = new Date(Date.now() + 7 * 86400000).toISOString();
+      const { error } = await supabase.rpc('create_reading_group_invitation', {
+        p_group_id: group.id, p_token: token, p_expires_at: expiresAt, p_max_uses: null,
       });
+      if (error) throw error;
+      const url = new URL('/social', window.location.origin);
+      url.searchParams.set('tab', 'groups');
+      url.searchParams.set('invite', token);
+      await navigator.clipboard.writeText(url.toString());
+      setIsCopied(true);
+      toast.success('Secure invite copied (expires in 7 days).');
+      window.setTimeout(() => setIsCopied(false), 2500);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not create or copy invitation.');
     }
   };
 
@@ -197,7 +206,7 @@ const GroupDetails = () => {
 
                       <Button
                         variant="outline"
-                        onClick={copyInviteLink}
+                        onClick={() => void copyInviteLink()}
                         aria-label="Copy group invite link"
                         className="gap-1.5 border-border"
                       >
