@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Bookmark, Clock, BookOpen, Layers, CheckCircle2, Flame, Heart } from 'lucide-react';
+import { Bookmark, Clock, BookOpen, Layers, CheckCircle2, Flame, Heart, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Story, useToggleStoryBookmark, useToggleStoryLike } from '@/hooks/useStories';
+import { Story, useToggleStoryBookmark, useToggleStoryLike, useDeleteStory } from '@/hooks/useStories';
 import { useAuth } from '@/contexts/authHelpers';
 import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 
@@ -18,6 +18,7 @@ export const StoryCard: React.FC<StoryCardProps> = ({ story, showContinueReading
   const { user } = useAuth();
   const toggleBookmark = useToggleStoryBookmark();
   const toggleLike = useToggleStoryLike();
+  const deleteStory = useDeleteStory();
 
   const isSeries = story.story_type === 'series' || Boolean(story.parts_count && story.parts_count > 1);
   const authorName = story.author_name || story.profiles?.full_name || 'Reader';
@@ -28,6 +29,14 @@ export const StoryCard: React.FC<StoryCardProps> = ({ story, showContinueReading
     e.preventDefault();
     e.stopPropagation();
     toggleBookmark.mutate({ storyId: story.id, isBookmarked: Boolean(story.user_bookmarked) });
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user || user.id !== story.user_id || deleteStory.isPending) return;
+    const confirmed = window.confirm(`Delete “${story.title}”? This action cannot be undone.`);
+    if (confirmed) deleteStory.mutate(story.id);
   };
 
   const handleLike = (e: React.MouseEvent) => {
@@ -161,6 +170,20 @@ export const StoryCard: React.FC<StoryCardProps> = ({ story, showContinueReading
           </div>
 
           <div className="flex items-center gap-1">
+            {user?.id === story.user_id && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Delete short story"
+                title="Delete short story"
+                disabled={deleteStory.isPending}
+                onClick={handleDelete}
+                className="h-7 w-7 rounded-lg text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-950/30"
+              >
+                {deleteStory.isPending ? <span className="text-[10px]">…</span> : <Trash2 className="h-3.5 w-3.5" />}
+              </Button>
+            )}
             <Button
               type="button"
               variant="ghost"
