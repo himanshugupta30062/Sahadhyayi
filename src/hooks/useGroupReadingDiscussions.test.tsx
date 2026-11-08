@@ -6,7 +6,12 @@ import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const mocks = vi.hoisted(() => ({
+  user: { id: 'reader-1' } as { id: string } | null,
   rpc: vi.fn(),
+}));
+
+vi.mock('@/contexts/authHelpers', () => ({
+  useAuth: () => ({ user: mocks.user }),
 }));
 
 vi.mock('@/integrations/supabase/client-universal', () => ({
@@ -30,12 +35,13 @@ const makeWrapper = () => {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
-  return { wrapper, invalidateQueries };
+  return { wrapper, invalidateQueries, queryClient };
 };
 
 describe('useGroupReadingDiscussions RPC hooks', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.user = { id: 'reader-1' };
     mocks.rpc.mockResolvedValue({ data: 'result-1', error: null });
   });
 
@@ -64,6 +70,31 @@ describe('useGroupReadingDiscussions RPC hooks', () => {
     expect(emptyGroup.result.current.fetchStatus).toBe('idle');
     expect(disabled.result.current.fetchStatus).toBe('idle');
     expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+
+  it('isolates spoiler-sensitive discussion caches when the active reader changes', async () => {
+    const context = makeWrapper();
+    const first = renderHook(() => useGroupReadingDiscussions('group-1', true), {
+      wrapper: context.wrapper,
+    });
+    await waitFor(() => expect(first.result.current.isSuccess).toBe(true));
+    first.unmount();
+
+    mocks.user = { id: 'reader-2' };
+    const second = renderHook(() => useGroupReadingDiscussions('group-1', true), {
+      wrapper: context.wrapper,
+    });
+    await waitFor(() => expect(second.result.current.isSuccess).toBe(true));
+
+    expect(mocks.rpc).toHaveBeenCalledTimes(2);
+    const cachedKeys = context.queryClient
+      .getQueryCache()
+      .findAll({ queryKey: ['group-reading-discussions', 'group-1'] })
+      .map((query) => query.queryKey);
+    expect(cachedKeys).toEqual(expect.arrayContaining([
+      ['group-reading-discussions', 'group-1', 'reader-1'],
+      ['group-reading-discussions', 'group-1', 'reader-2'],
+    ]));
   });
 
   it('surfaces group discussion errors with a safe fallback', async () => {
@@ -140,7 +171,7 @@ describe('useGroupReadingDiscussions RPC hooks', () => {
       p_body: 'I want to discuss this decision.',
     });
     await waitFor(() => expect(context.invalidateQueries).toHaveBeenCalledWith({
-      queryKey: ['group-reading-discussions', 'group-1'],
+      queryKey: ['group-reading-discussions', 'group-1', 'reader-1'],
     }));
   });
 
@@ -177,10 +208,10 @@ describe('useGroupReadingDiscussions RPC hooks', () => {
       p_spoiler_chapter: 8,
     });
     await waitFor(() => expect(context.invalidateQueries).toHaveBeenCalledWith({
-      queryKey: ['group-reading-discussion-comments', 'discussion-2'],
+      queryKey: ['group-reading-discussion-comments', 'discussion-2', 'reader-1'],
     }));
     expect(context.invalidateQueries).toHaveBeenCalledWith({
-      queryKey: ['group-reading-discussions', 'group-2'],
+      queryKey: ['group-reading-discussions', 'group-2', 'reader-1'],
     });
   });
 
@@ -211,7 +242,7 @@ describe('useGroupReadingDiscussions RPC hooks', () => {
       p_discussion_id: 'discussion-3',
     });
     await waitFor(() => expect(context.invalidateQueries).toHaveBeenCalledWith({
-      queryKey: ['group-reading-discussions', 'group-3'],
+      queryKey: ['group-reading-discussions', 'group-3', 'reader-1'],
     }));
   });
 
@@ -241,10 +272,10 @@ describe('useGroupReadingDiscussions RPC hooks', () => {
       p_comment_id: 'comment-4',
     });
     await waitFor(() => expect(context.invalidateQueries).toHaveBeenCalledWith({
-      queryKey: ['group-reading-discussion-comments', 'discussion-4'],
+      queryKey: ['group-reading-discussion-comments', 'discussion-4', 'reader-1'],
     }));
     expect(context.invalidateQueries).toHaveBeenCalledWith({
-      queryKey: ['group-reading-discussions', 'group-4'],
+      queryKey: ['group-reading-discussions', 'group-4', 'reader-1'],
     });
   });
 

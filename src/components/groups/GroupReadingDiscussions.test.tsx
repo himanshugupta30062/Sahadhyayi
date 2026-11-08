@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import GroupReadingDiscussions from '@/components/groups/GroupReadingDiscussions';
 import type { GroupReadingDiscussion } from '@/hooks/useGroupReadingDiscussions';
@@ -222,7 +222,9 @@ describe('GroupReadingDiscussions', () => {
       },
       expect.objectContaining({ onSuccess: expect.any(Function), onError: expect.any(Function) }),
     );
-    mocks.createDiscussionMutate.mock.calls[0][1].onSuccess();
+    act(() => {
+      mocks.createDiscussionMutate.mock.calls[0][1].onSuccess();
+    });
     expect(mocks.toastSuccess).toHaveBeenCalledWith('Discussion started for The Shared Novel.');
     expect(screen.queryByText('Start a conversation')).not.toBeInTheDocument();
   });
@@ -298,7 +300,9 @@ describe('GroupReadingDiscussions', () => {
       },
       expect.objectContaining({ onSuccess: expect.any(Function), onError: expect.any(Function) }),
     );
-    mocks.createCommentMutate.mock.calls[0][1].onSuccess();
+    act(() => {
+      mocks.createCommentMutate.mock.calls[0][1].onSuccess();
+    });
     expect(mocks.toastSuccess).toHaveBeenCalledWith('Reply added.');
   });
 

@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/authHelpers';
 import { supabase } from '@/integrations/supabase/client-universal';
 
 export type GroupReadingDiscussionType = 'discussion' | 'question' | 'reflection' | 'quote';
@@ -35,12 +36,20 @@ export interface GroupReadingDiscussionComment {
   created_at: string;
 }
 
-const discussionsKey = (groupId: string) => ['group-reading-discussions', groupId] as const;
-const commentsKey = (discussionId: string) => ['group-reading-discussion-comments', discussionId] as const;
+// Discussion bodies are reader-dependent because the RPC unlocks spoilers per user.
+// Keep every cached response isolated by authenticated identity, including during
+// account switches that do not emit a SIGNED_OUT event.
+const discussionsKey = (groupId: string, userId: string | null) =>
+  ['group-reading-discussions', groupId, userId] as const;
+const commentsKey = (discussionId: string, userId: string | null) =>
+  ['group-reading-discussion-comments', discussionId, userId] as const;
 
-export const useGroupReadingDiscussions = (groupId: string, enabled = false) =>
-  useQuery({
-    queryKey: discussionsKey(groupId),
+export const useGroupReadingDiscussions = (groupId: string, enabled = false) => {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+
+  return useQuery({
+    queryKey: discussionsKey(groupId, userId),
     queryFn: async () => {
       const { data, error } = await supabase.rpc('list_group_reading_discussions', {
         p_group_id: groupId,
@@ -49,13 +58,17 @@ export const useGroupReadingDiscussions = (groupId: string, enabled = false) =>
       if (error) throw new Error(error.message || 'Could not load group discussions.');
       return (data ?? []) as GroupReadingDiscussion[];
     },
-    enabled: Boolean(groupId && enabled),
+    enabled: Boolean(groupId && userId && enabled),
     staleTime: 20_000,
   });
+};
 
-export const useGroupReadingDiscussionComments = (discussionId: string, enabled = false) =>
-  useQuery({
-    queryKey: commentsKey(discussionId),
+export const useGroupReadingDiscussionComments = (discussionId: string, enabled = false) => {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+
+  return useQuery({
+    queryKey: commentsKey(discussionId, userId),
     queryFn: async () => {
       const { data, error } = await supabase.rpc('list_group_reading_discussion_comments', {
         p_discussion_id: discussionId,
@@ -64,11 +77,14 @@ export const useGroupReadingDiscussionComments = (discussionId: string, enabled 
       if (error) throw new Error(error.message || 'Could not load replies.');
       return (data ?? []) as GroupReadingDiscussionComment[];
     },
-    enabled: Boolean(discussionId && enabled),
+    enabled: Boolean(discussionId && userId && enabled),
     staleTime: 15_000,
   });
+};
 
 export const useCreateGroupReadingDiscussion = () => {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: {
@@ -93,12 +109,14 @@ export const useCreateGroupReadingDiscussion = () => {
       return data as string;
     },
     onSuccess: (_, input) => {
-      void queryClient.invalidateQueries({ queryKey: discussionsKey(input.groupId) });
+      void queryClient.invalidateQueries({ queryKey: discussionsKey(input.groupId, userId) });
     },
   });
 };
 
 export const useCreateGroupReadingDiscussionComment = () => {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: {
@@ -116,13 +134,15 @@ export const useCreateGroupReadingDiscussionComment = () => {
       return data as string;
     },
     onSuccess: (_, input) => {
-      void queryClient.invalidateQueries({ queryKey: commentsKey(input.discussionId) });
-      void queryClient.invalidateQueries({ queryKey: discussionsKey(input.groupId) });
+      void queryClient.invalidateQueries({ queryKey: commentsKey(input.discussionId, userId) });
+      void queryClient.invalidateQueries({ queryKey: discussionsKey(input.groupId, userId) });
     },
   });
 };
 
 export const useDeleteGroupReadingDiscussion = () => {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ discussionId }: { groupId: string; discussionId: string }) => {
@@ -132,12 +152,14 @@ export const useDeleteGroupReadingDiscussion = () => {
       if (error) throw new Error(error.message || 'Could not remove this discussion.');
     },
     onSuccess: (_, input) => {
-      void queryClient.invalidateQueries({ queryKey: discussionsKey(input.groupId) });
+      void queryClient.invalidateQueries({ queryKey: discussionsKey(input.groupId, userId) });
     },
   });
 };
 
 export const useDeleteGroupReadingDiscussionComment = () => {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: {
@@ -151,8 +173,8 @@ export const useDeleteGroupReadingDiscussionComment = () => {
       if (error) throw new Error(error.message || 'Could not remove this reply.');
     },
     onSuccess: (_, input) => {
-      void queryClient.invalidateQueries({ queryKey: commentsKey(input.discussionId) });
-      void queryClient.invalidateQueries({ queryKey: discussionsKey(input.groupId) });
+      void queryClient.invalidateQueries({ queryKey: commentsKey(input.discussionId, userId) });
+      void queryClient.invalidateQueries({ queryKey: discussionsKey(input.groupId, userId) });
     },
   });
 };
