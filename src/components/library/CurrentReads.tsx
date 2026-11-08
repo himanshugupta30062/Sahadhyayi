@@ -112,6 +112,12 @@ const CurrentReads: React.FC = () => {
             type="button"
             key={item.id || item.book_id || idx}
             onClick={() => { void handleOpen(item); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                void handleOpen(item);
+              }
+            }}
             className="w-full text-left group relative flex gap-3.5 p-4 rounded-xl bg-white dark:bg-[#111614] hover:bg-[#F4EFEA] dark:hover:bg-[#161D19] border border-[#E8E2D9] dark:border-[#29332D] hover:border-[#1C442D]/40 dark:hover:border-[#315C43] transition-all duration-200 cursor-pointer shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"
           >
             {/* Book Cover */}

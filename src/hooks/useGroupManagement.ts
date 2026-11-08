@@ -170,6 +170,18 @@ export const useLeaveGroup = () => {
   return useMutation({
     mutationFn: async (groupId: string) => {
       if (!groupId) throw new Error('Group ID is required');
+
+      const { data: group, error: groupLookupError } = await supabase
+        .from('group_chats')
+        .select('name')
+        .eq('id', groupId)
+        .maybeSingle();
+
+      if (groupLookupError) throw groupLookupError;
+      if (group?.name === DEFAULT_READING_GROUP_NAME) {
+        throw new Error('You cannot leave the Sahadhyayi Community Reading Circle.');
+      }
+
       const { error } = await supabase.rpc('leave_reading_group', { p_group_id: groupId });
       if (error) throw new Error(error.message || 'Unable to leave this group.');
     },
