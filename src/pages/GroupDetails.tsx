@@ -30,6 +30,7 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import GroupMessaging from '@/components/groups/GroupMessaging';
 import GroupReadingBoard from '@/components/groups/GroupReadingBoard';
 import GroupReadingDiscussions from '@/components/groups/GroupReadingDiscussions';
+import GroupEventsPanel from '@/components/groups/GroupEventsPanel';
 import { toast } from 'sonner';
 
 const GroupDetails = () => {
@@ -335,7 +336,7 @@ const GroupDetails = () => {
           </Card>
 
           {isMember && <GroupReadingBoard groupId={group.id} canManage={canManageGroup} />}
-          {isMember && <GroupReadingDiscussions groupId={group.id} canModerate={canManageGroup} />}
+          {isMember && <GroupReadingDiscussions groupId={group.id} canModerate={canManageGroup} />}\n          {isMember && user?.id && (\n            <GroupEventsPanel\n              groupId={group.id}\n              userId={user.id}\n              canManage={actorRole === 'owner' || actorRole === 'admin'}\n            />\n          )}
 
           {/* Members List */}
           <Card className="border-border bg-card">
