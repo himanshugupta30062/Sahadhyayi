@@ -83,10 +83,10 @@ const GroupDetails = () => {
 
   const group = cachedGroup || directGroup;
   const myMembership = group ? joinedGroups.find((membership) => membership.group_id === group.id) : undefined;
-  const isMember = myMembership?.status === 'active';
+  const isMember = myMembership ? (myMembership.status ? myMembership.status === 'active' : true) : false;
   const isRequestPending = myMembership?.status === 'pending';
   const isBanned = myMembership?.status === 'banned';
-  const actorRole = myMembership?.role;
+  const actorRole = myMembership?.role || (group?.created_by && user?.id && group.created_by === user.id ? 'owner' : undefined);
   const canManageGroup = isMember && (
     actorRole === 'owner' || actorRole === 'admin' || actorRole === 'moderator'
   );
@@ -235,7 +235,7 @@ const GroupDetails = () => {
                         <Button
                           variant="outline"
                           onClick={() => void copyInviteLink()}
-                          aria-label="Create secure group invite link"
+                          aria-label="Copy group invite link"
                           disabled={createInvitation.isPending}
                           className="gap-1.5 border-border"
                         >
