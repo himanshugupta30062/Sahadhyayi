@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Heart, MessageCircle, Share2, Clock, Repeat2, MoreHorizontal, Trash2, Users, Copy, Check } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Clock, Repeat2, MoreHorizontal, Trash2, Users, Copy, Check, Bookmark } from 'lucide-react';
 import {
   useSocialPosts,
   useTogglePostLike,
@@ -36,6 +36,7 @@ import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 import { useAuth } from '@/contexts/authHelpers';
 import { Quote, Lock, Sparkles } from 'lucide-react';
 import { BookReelsStrip } from './BookReelsStrip';
+import { useSavedSocialPostIds, useToggleSavedSocialPost } from '@/hooks/useSavedSocialPosts';
 
 const EmbeddedOriginalPost: React.FC<{
   post?: SocialPost | null;
@@ -117,6 +118,8 @@ export const EnhancedSocialFeed = () => {
   const toggleLike = useTogglePostLike();
   const toggleRepost = useToggleRepost();
   const deletePost = useDeletePost();
+  const { data: savedPostIds = new Set<string>() } = useSavedSocialPostIds();
+  const savePost = useToggleSavedSocialPost();
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [repostPost, setRepostPost] = useState<SocialPost | null>(null);
   const [selectedPost, setSelectedPost] = useState<SocialPost | null>(null);
@@ -546,6 +549,17 @@ export const EnhancedSocialFeed = () => {
                     <DropdownMenuContent align="end" className="bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7]">
                       <DropdownMenuItem onClick={() => handleShare(post)} className="cursor-pointer">
                         <Share2 className="w-4 h-4 mr-2" /> Share
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="cursor-pointer"
+                        disabled={savePost.isPending}
+                        onClick={() => savePost.mutate({ postId: post.id, isSaved: savedPostIds.has(post.id) }, {
+                          onSuccess: () => toast({ title: savedPostIds.has(post.id) ? "Removed from Reading Cabinet" : "Saved to Reading Cabinet" }),
+                          onError: (error) => toast({ title: "Couldn't save post", description: error.message, variant: "destructive" }),
+                        })}
+                      >
+                        <Bookmark className={`w-4 h-4 mr-2 ${savedPostIds.has(post.id) ? "fill-current" : ""}`} />
+                        {savedPostIds.has(post.id) ? "Remove from Reading Cabinet" : "Save to Reading Cabinet"}
                       </DropdownMenuItem>
                       {isOwn && (
                         <DropdownMenuItem
