@@ -75,6 +75,21 @@ vi.mock('@/hooks/useSpoilerThreads', () => ({
   useSpoilerThreads: (...args: unknown[]) => mockUseSpoilerThreads(...args),
 }));
 
+vi.mock('@/hooks/useSocialPostBookmarks', () => ({
+  useSocialPostBookmarks: () => ({
+    bookmarks: [],
+    savedPostIds: [],
+    savedPosts: [],
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
+    savePost: vi.fn(),
+    removePost: vi.fn(),
+    isSaving: false,
+    isRemoving: false,
+  }),
+}));
+
 vi.mock('@/components/social/BookPulseBar', () => ({
   BookPulseBar: () => <div data-testid="book-pulse-bar">Book Pulse</div>,
 }));

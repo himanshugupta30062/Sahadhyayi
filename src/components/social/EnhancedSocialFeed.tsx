@@ -399,7 +399,11 @@ export const EnhancedSocialFeed = () => {
           {!showSavedPosts && <><BookReelsStrip className="mb-6" />
           <FeedComposer /></>}
 
-          {showSavedPosts && cabinet.isLoading ? (\n            <div className="flex justify-center py-8" role="status"><LoadingSpinner /></div>\n          ) : showSavedPosts && cabinet.error ? (\n            <Card role="alert" className="p-8 text-center"><p className="text-sm text-destructive mb-3">Your Reading Cabinet could not be loaded.</p><Button variant="outline" size="sm" onClick={() => void cabinet.refetch()}>Retry</Button></Card>\n          ) : error && !showSavedPosts ? (
+          {showSavedPosts && cabinet.isLoading ? (
+            <div className="flex justify-center py-8" role="status"><LoadingSpinner /></div>
+          ) : showSavedPosts && cabinet.error ? (
+            <Card role="alert" className="p-8 text-center"><p className="text-sm text-destructive mb-3">Your Reading Cabinet could not be loaded.</p><Button variant="outline" size="sm" onClick={() => void cabinet.refetch()}>Retry</Button></Card>
+          ) : error && !showSavedPosts ? (
             <Card className="bg-white dark:bg-[#111614] border-destructive/40 text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs">
               <CardContent className="p-8 text-center">
                 <p className="text-sm text-destructive font-medium mb-3">

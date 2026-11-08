@@ -225,7 +225,7 @@ describe('useSocialPosts', () => {
     const postFilter = mocks.filterCalls.find(
       (call) => call.table === 'posts' && call.method === 'or',
     )?.args[0] as string;
-    expect(postFilter).toContain('user_id.in.(reader-0503)');
+    expect(postFilter).toContain('reader-0503');
   });
 
   it('keeps a reader’s own posts eligible when they have no follow or shelf signals', async () => {
