@@ -97,6 +97,31 @@ describe('useGroupReadingDiscussions RPC hooks', () => {
     ]));
   });
 
+  it('isolates spoiler-sensitive reply caches when the active reader changes', async () => {
+    const context = makeWrapper();
+    const first = renderHook(() => useGroupReadingDiscussionComments('discussion-1', true), {
+      wrapper: context.wrapper,
+    });
+    await waitFor(() => expect(first.result.current.isSuccess).toBe(true));
+    first.unmount();
+
+    mocks.user = { id: 'reader-2' };
+    const second = renderHook(() => useGroupReadingDiscussionComments('discussion-1', true), {
+      wrapper: context.wrapper,
+    });
+    await waitFor(() => expect(second.result.current.isSuccess).toBe(true));
+
+    expect(mocks.rpc).toHaveBeenCalledTimes(2);
+    const cachedKeys = context.queryClient
+      .getQueryCache()
+      .findAll({ queryKey: ['group-reading-discussion-comments', 'discussion-1'] })
+      .map((query) => query.queryKey);
+    expect(cachedKeys).toEqual(expect.arrayContaining([
+      ['group-reading-discussion-comments', 'discussion-1', 'reader-1'],
+      ['group-reading-discussion-comments', 'discussion-1', 'reader-2'],
+    ]));
+  });
+
   it('surfaces group discussion errors with a safe fallback', async () => {
     mocks.rpc.mockResolvedValueOnce({ data: null, error: { message: 'active member required' } });
     const first = renderHook(() => useGroupReadingDiscussions('group-1', true), {
