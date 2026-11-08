@@ -98,6 +98,8 @@ describe('social feed and reading group RLS policies', () => {
     expect(groupModerationDirectory).toContain('v_actor uuid := auth.uid();');
     expect(groupModerationDirectory).toContain("actor_membership.status = 'active'");
     expect(groupModerationDirectory).toContain("actor_membership.role IN ('owner', 'admin', 'moderator')");
+    expect(groupModerationDirectory).toContain('creator_membership.user_id = group_row.created_by');
+    expect(groupModerationDirectory).toContain("SET role = 'owner'");
     expect(groupModerationDirectory).toContain('REVOKE ALL ON FUNCTION public.get_reading_group_moderation_members(uuid) FROM PUBLIC, anon');
     expect(groupModerationDirectory).toContain('GRANT EXECUTE ON FUNCTION public.get_reading_group_moderation_members(uuid) TO authenticated');
   });
