@@ -281,8 +281,8 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
 
       const sectionButtons = [
         screen.getByRole('button', { name: /library submenu/i }),
-        screen.getByRole('button', { name: /social media submenu/i }),
-        screen.getByRole('button', { name: /articles submenu/i }),
+        screen.getByRole('button', { name: /social submenu/i }),
+        screen.getByRole('button', { name: /read & write submenu/i }),
         screen.getByRole('button', { name: /authors submenu/i }),
       ];
       sectionButtons.forEach((button) => {
@@ -309,7 +309,7 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
       const mainNav = screen.getByRole('navigation', { name: /main navigation/i });
       expect(mainNav).toBeInTheDocument();
 
-      for (const name of [/^library$/i, /^social media$/i, /^articles$/i, /^authors$/i]) {
+      for (const name of [/^library$/i, /^social$/i, /^read & write$/i, /^authors$/i]) {
         const trigger = screen.getByRole('button', { name });
         expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
         expect(trigger).toHaveAttribute('aria-expanded', 'false');
@@ -328,7 +328,7 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
       );
 
       fireEvent.click(screen.getByRole('button', { name: /open navigation menu/i }));
-      fireEvent.click(screen.getByRole('button', { name: /social media submenu/i }));
+      fireEvent.click(screen.getByRole('button', { name: /social submenu/i }));
       fireEvent.click(screen.getByRole('button', { name: /^book discussion$/i }));
 
       expect(screen.getByRole('link', { name: /book discussions/i })).toHaveAttribute('href', '/social?tab=threads');
