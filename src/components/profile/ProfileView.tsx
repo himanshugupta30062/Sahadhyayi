@@ -454,7 +454,7 @@ export const ProfileView: React.FC = () => {
                           <Clock className="w-2.5 h-2.5 text-muted-foreground" />
                           {item.status.replace('_', ' ')}
                         </span>
-                        {item.rating && (
+                        {Boolean(item.rating) && (
                           <span className="text-[10px] text-amber-500 font-semibold flex items-center gap-0.5">
                             ★ {item.rating}
                           </span>
