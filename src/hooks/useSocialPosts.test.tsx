@@ -208,6 +208,46 @@ describe('useSocialPosts', () => {
     });
   });
 
+  it('applies For You match signals and the stable cursor together when loading older posts', async () => {
+    mocks.user = { id: 'reader-1' };
+    const firstPage = Array.from({ length: 25 }, (_, index) =>
+      post({
+        id: `post-${index + 1}`,
+        created_at: new Date(Date.UTC(2026, 10, 8, 0, 0, 25 - index)).toISOString(),
+      }),
+    );
+    mocks.hookPosts = firstPage;
+    const cursor = firstPage[firstPage.length - 1];
+    const olderPost = post({
+      id: 'post-26',
+      user_id: 'reader-2',
+      book_id: 'book-1',
+      created_at: '2026-11-07T23:59:00.000Z',
+    });
+
+    setResponses({
+      user_follows: [{ data: [{ following_id: 'reader-2' }], error: null }],
+      user_bookshelf: [{ data: [{ book_id: 'book-1' }], error: null }],
+      posts: [
+        { data: [olderPost], error: null },
+        { data: [], error: null },
+      ],
+      post_likes: [{ data: [], error: null }],
+    });
+
+    const { result } = renderHook(() => useSocialPosts('for_you'));
+    await result.current.loadMore();
+
+    const pageFilter = mocks.filterCalls.find(
+      (call) => call.table === 'posts' && call.method === 'or',
+    )?.args[0] as string;
+
+    expect(pageFilter).toContain('and(or(user_id.eq.reader-1,user_id.in.(reader-2),book_id.in.(book-1))');
+    expect(pageFilter).toContain(`created_at.lt.${cursor.created_at}`);
+    expect(pageFilter).toContain(`id.lt.${cursor.id}`);
+    expect(mocks.setQueryData).toHaveBeenCalled();
+  });
+
   it('keeps Latest chronological and does not query personalization signals', async () => {
     mocks.user = { id: 'reader-1' };
     setResponses({ posts: [{ data: [post()], error: null }] });
