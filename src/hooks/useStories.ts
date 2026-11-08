@@ -380,6 +380,41 @@ export const useStoryPart = (storyId?: string, partNumber?: number) => {
 };
 
 /**
+ * Delete a story owned by the current user. Database RLS remains the
+ * authoritative authorization boundary; the user_id filter is defense in depth.
+ */
+export const useDeleteStory = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (storyId: string) => {
+      if (!user) throw new Error('Authentication required');
+      const { data, error } = await supabase
+        .from('stories')
+        .delete()
+        .eq('id', storyId)
+        .eq('user_id', user.id)
+        .select('id')
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) throw new Error('Story was not deleted. You may not own this story.');
+      return storyId;
+    },
+    onSuccess: (storyId) => {
+      void queryClient.invalidateQueries({ queryKey: ['stories'] });
+      void queryClient.invalidateQueries({ queryKey: ['story-details', storyId] });
+      void queryClient.invalidateQueries({ queryKey: ['continue-reading-stories'] });
+      toast.success('Short story deleted.');
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Unable to delete story.');
+    },
+  });
+};
+
+/**
  * Story Mutations
  */
 export const useCreateStory = () => {
