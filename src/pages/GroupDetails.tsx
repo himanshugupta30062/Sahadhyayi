@@ -22,6 +22,7 @@ import SEO from '@/components/SEO';
 import Breadcrumb from '@/components/Breadcrumb';
 import { useAuth } from '@/contexts/authHelpers';
 import { DEFAULT_READING_GROUP_NAME, useGroups, useJoinGroup, useLeaveGroup, useCreateGroupInvitation, Group } from '@/hooks/useGroupManagement';
+import GroupModerationPanel from '@/components/groups/GroupModerationPanel';
 import { useUserJoinedGroups } from '@/hooks/useUserGroups';
 import { useGroupMembers } from '@/hooks/useGroupMessaging';
 import { useQuery } from '@tanstack/react-query';
@@ -40,7 +41,8 @@ const GroupDetails = () => {
   const { data: members = [], isLoading: membersLoading } = useGroupMembers(id || '');
 
   const joinGroup = useJoinGroup();
-  const leaveGroup = useLeaveGroup();\n  const createInvitation = useCreateGroupInvitation();
+  const leaveGroup = useLeaveGroup();
+  const createInvitation = useCreateGroupInvitation();
 
   // Try finding group in cache first, fallback to direct query for deep links
   const cachedGroup = groups.find(g => g.id === id);
@@ -78,30 +80,40 @@ const GroupDetails = () => {
   });
 
   const group = cachedGroup || directGroup;
-  const isMember = group ? joinedGroups.some(g => g.id === group.id || (g as any).group_id === group.id) : false;
-  const memberCount = group?.group_members?.[0]?.count ?? members.length;
+  const myMembership = group ? joinedGroups.find((membership) => membership.group_id === group.id) : undefined;
+  const isMember = myMembership?.status === 'active';
+  const actorRole = myMembership?.role;
+  const canManageGroup = isMember && ['owner', 'admin', 'moderator'].includes(actorRole ?? '');
+  const activeMembers = members.filter((member) => member.status === 'active');
+  const memberCount = membersLoading ? Number(group?.group_members?.[0]?.count ?? 0) : activeMembers.length;
   const isDefaultReadingGroup = group?.name === DEFAULT_READING_GROUP_NAME;
 
   const copyInviteLink = async () => {
     if (!group) return;
     try {
-      const bytes = new Uint8Array(32);
-      crypto.getRandomValues(bytes);
-      const token = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
-      const expiresAt = new Date(Date.now() + 7 * 86400000).toISOString();
-      const { error } = await supabase.rpc('create_reading_group_invitation', {
-        p_group_id: group.id, p_token: token, p_expires_at: expiresAt, p_max_uses: null,
-      });
-      if (error) throw error;
+      const invitation = await createInvitation.mutateAsync({ groupId: group.id, expiresInDays: 7 });
       const url = new URL('/social', window.location.origin);
       url.searchParams.set('tab', 'groups');
-      url.searchParams.set('invite', token);
+      url.searchParams.set('invite', invitation.token);
       await navigator.clipboard.writeText(url.toString());
       setIsCopied(true);
       toast.success('Secure invite copied (expires in 7 days).');
       window.setTimeout(() => setIsCopied(false), 2500);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Could not create or copy invitation.');
+    }
+  };
+
+  const copyGroupPageLink = async () => {
+    if (!group) return;
+    try {
+      const url = new URL(`/groups/${group.id}`, window.location.origin);
+      await navigator.clipboard.writeText(url.toString());
+      setIsCopied(true);
+      toast.success('Group page link copied.');
+      window.setTimeout(() => setIsCopied(false), 2500);
+    } catch {
+      toast.error('Could not copy the group link. Please try again.');
     }
   };
 
@@ -204,15 +216,23 @@ const GroupDetails = () => {
                         Open Group Chat
                       </Button>
 
-                      <Button
-                        variant="outline"
-                        onClick={() => void copyInviteLink()}
-                        aria-label="Copy group invite link"
-                        className="gap-1.5 border-border"
-                      >
-                        {isCopied ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Share2 className="w-4 h-4" />}
-                        {isCopied ? 'Link Copied' : 'Invite'}
-                      </Button>
+                      {canManageGroup && (
+                        <Button
+                          variant="outline"
+                          onClick={() => void copyInviteLink()}
+                          aria-label="Create secure group invite link"
+                          disabled={createInvitation.isPending}
+                          className="gap-1.5 border-border"
+                        >
+                          {isCopied ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Share2 className="w-4 h-4" />}
+                          {isCopied ? 'Link Copied' : 'Invite'}
+                        </Button>
+                      )}
+                      {!canManageGroup && group.visibility !== 'private' && group.join_policy !== 'invite_only' && (
+                        <Button variant="outline" onClick={() => void copyGroupPageLink()} className="gap-1.5 border-border">
+                          <Share2 className="h-4 w-4" /> Share Group
+                        </Button>
+                      )}
 
                       {isDefaultReadingGroup ? (
                       <Badge variant="secondary" className="text-xs">Permanent Community Member</Badge>
@@ -231,25 +251,30 @@ const GroupDetails = () => {
                     </>
                   ) : (
                     <>
-                      <Button
-                        onClick={handleMembership}
-                        disabled={joinGroup.isPending}
-                        aria-label="Join reading group"
-                        className="bg-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.9)] text-white gap-1.5"
-                      >
-                        {joinGroup.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
-                        Join Group
-                      </Button>
-
-                      <Button
-                        variant="outline"
-                        onClick={copyInviteLink}
-                        aria-label="Share reading group link"
-                        className="gap-1.5 border-border"
-                      >
-                        {isCopied ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Share2 className="w-4 h-4" />}
-                        {isCopied ? 'Link Copied' : 'Share Group'}
-                      </Button>
+                      {group.visibility === 'private' || group.join_policy === 'invite_only' ? (
+                        <Badge variant="secondary" className="text-xs">An invitation is required to join</Badge>
+                      ) : (
+                        <Button
+                          onClick={handleMembership}
+                          disabled={joinGroup.isPending}
+                          aria-label="Join reading group"
+                          className="bg-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.9)] text-white gap-1.5"
+                        >
+                          {joinGroup.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+                          Join Group
+                        </Button>
+                      )}
+                      {group.visibility !== 'private' && group.join_policy !== 'invite_only' && (
+                        <Button
+                          variant="outline"
+                          onClick={() => void copyGroupPageLink()}
+                          aria-label="Share reading group page"
+                          className="gap-1.5 border-border"
+                        >
+                          {isCopied ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Share2 className="w-4 h-4" />}
+                          {isCopied ? 'Link Copied' : 'Share Group'}
+                        </Button>
+                      )}
                     </>
                   )}
                 </div>
@@ -296,7 +321,7 @@ const GroupDetails = () => {
               <CardTitle className="text-base font-semibold flex items-center justify-between">
                 <span className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-[hsl(var(--brand-primary))]" />
-                  Group Members ({members.length})
+                  Group Members ({activeMembers.length})
                 </span>
                 {isMember && (
                   <span className="text-xs text-muted-foreground font-normal">
@@ -315,13 +340,13 @@ const GroupDetails = () => {
                     </div>
                   ))}
                 </div>
-              ) : members.length === 0 ? (
+               ) : activeMembers.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-4 text-center">
                   No member profiles loaded yet.
                 </p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                  {members.map(member => (
+                  {activeMembers.map(member => (
                     <div 
                       key={member.id} 
                       className="flex items-center gap-2.5 p-2 rounded-lg bg-muted/30 border border-border/50 hover:bg-muted/60 transition-colors"
@@ -351,6 +376,14 @@ const GroupDetails = () => {
               )}
             </CardContent>
           </Card>
+
+          {canManageGroup && actorRole && (
+            <GroupModerationPanel
+              groupId={group.id}
+              currentUserId={user?.id || ''}
+              actorRole={actorRole}
+            />
+          )}
         </div>
       </div>
 
