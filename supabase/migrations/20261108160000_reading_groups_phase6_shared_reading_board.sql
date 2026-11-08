@@ -116,7 +116,12 @@ BEGIN
     SELECT
       count(*) FILTER (WHERE progress.is_shared)::integer AS shared_reader_count,
       round(
-        avg(LEAST(100, (progress.current_page::numeric / NULLIF(book.pages, 0)) * 100))
+        avg(
+        CASE
+          WHEN book.pages IS NULL OR book.pages <= 0 THEN NULL
+          ELSE LEAST(100::numeric, (progress.current_page::numeric / book.pages) * 100)
+        END
+      )
           FILTER (WHERE progress.is_shared),
         1
       ) AS average_progress

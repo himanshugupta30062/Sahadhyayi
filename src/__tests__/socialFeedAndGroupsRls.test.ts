@@ -125,7 +125,8 @@ describe('social feed and reading group RLS policies', () => {
     expect(groupReadingBoard).toMatch(/my_progress\\.user_id = v_actor/i);
     expect(groupReadingBoard).toContain('FOR UPDATE OF reading_book');
     expect(groupReadingBoard).toContain('Reading-list entry not found or permission denied');
-    expect(groupReadingBoard).toContain('LEAST(100, (progress.current_page::numeric / NULLIF(book.pages, 0)) * 100)');
+    expect(groupReadingBoard).toContain('WHEN book.pages IS NULL OR book.pages <= 0 THEN NULL');
+    expect(groupReadingBoard).toContain('LEAST(100::numeric, (progress.current_page::numeric / book.pages) * 100)');
     expect(groupReadingBoard).toMatch(/ON CONFLICT \\(group_reading_book_id, user_id\\)/i);
     expect(groupReadingBoard.match(/SET search_path = ''/g)?.length).toBe(6);
     expect(groupReadingBoard).toMatch(/REVOKE ALL ON FUNCTION public\\.save_reading_group_progress\\(uuid, integer, boolean\\) FROM PUBLIC, anon/i);
