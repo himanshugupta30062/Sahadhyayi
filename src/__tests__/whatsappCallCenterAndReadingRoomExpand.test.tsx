@@ -121,6 +121,21 @@ describe("WhatsAppCallCenterFab & Reading Room Expand/Collapse UI", () => {
     expect(dialog.className).toContain("sm:w-[min(420px,calc(100vw-3rem))]");
   });
 
+  it("minimizes Reading Room to an icon and restores the same open panel", () => {
+    render(<BookExpert />);
+    fireEvent.click(screen.getByRole("button", { name: /open the sahadhyayi reading room/i }));
+    const dialog = screen.getByRole("dialog", { name: /the reading room/i });
+
+    fireEvent.click(within(dialog).getByRole("button", { name: /minimize reading room to floating icon/i }));
+    expect(screen.queryByRole("dialog", { name: /the reading room/i })).not.toBeInTheDocument();
+
+    const launcher = screen.getByRole("button", { name: /restore reading room ai/i });
+    expect(launcher).toHaveAttribute("data-testid", "reading-room-mini-launcher");
+    fireEvent.click(launcher);
+
+    expect(screen.getByRole("dialog", { name: /the reading room/i })).toBeInTheDocument();
+  });
+
   it("includes a direct WhatsApp Help button in the Reading Room header", () => {
     const windowOpenSpy = vi.spyOn(window, "open").mockImplementation(() => null);
     render(<BookExpert />);
