@@ -150,7 +150,7 @@ const ReadingGroupsDirectory = () => {
         setSearchParams(next, { replace: true });
       },
     });
-  }, [user?.id, inviteToken, redeemInvitation.mutate, setSearchParams]);
+  }, [user?.id, inviteToken, redeemInvitation, setSearchParams]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'mine'>('all');

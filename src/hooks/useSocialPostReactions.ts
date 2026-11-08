@@ -74,7 +74,7 @@ export const useBatchPostReactions = (postIds: string[]) => {
   const { user } = useAuth();
 
   return useQuery<Record<string, PostReactionSummary>>({
-    queryKey: ['post-reactions-batch', postIds.sort().join(',')],
+    queryKey: ['post-reactions-batch', [...postIds].sort().join(',')],
     queryFn: async () => {
       if (!postIds || postIds.length === 0) return {};
 

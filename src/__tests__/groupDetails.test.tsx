@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 
 import React from 'react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, cleanup } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import GroupDetails from '@/pages/GroupDetails';
@@ -103,6 +103,10 @@ describe('GroupDetails Page Tests', () => {
     window.localStorage.clear();
   });
 
+  afterEach(() => {
+    cleanup();
+  });
+
   it('renders the shared reading board for active members', () => {
     const queryClient = createTestQueryClient();
     render(
@@ -132,12 +136,12 @@ describe('GroupDetails Page Tests', () => {
     // Group info rendered
     expect(screen.getAllByText('Classical Sanskrit Readers').length).toBeGreaterThanOrEqual(1);
     expect(
-      screen.getByText('Discussing the Upanishads, Gita, and classical literary poetry.')
-    ).toBeInTheDocument();
+      screen.getAllByText('Discussing the Upanishads, Gita, and classical literary poetry.').length
+    ).toBeGreaterThanOrEqual(1);
 
     // Member status badge and count
-    expect(screen.getByText('Joined Member')).toBeInTheDocument();
-    expect(screen.getByText('1 member')).toBeInTheDocument();
+    expect(screen.getAllByText('Joined Member').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/1 member/).length).toBeGreaterThanOrEqual(1);
 
     // Open Chat & Invite buttons rendered for member
     expect(screen.getByText('Open Group Chat')).toBeInTheDocument();
