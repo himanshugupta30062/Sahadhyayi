@@ -35,10 +35,11 @@ export const useGroups = (options: { enabled?: boolean } = {}) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const enabled = options.enabled ?? true;
-  const queryEnabled = enabled && Boolean(user?.id);
+  const userId = user?.id;
+  const queryEnabled = enabled && Boolean(userId);
 
   useEffect(() => {
-    if (!queryEnabled) return;
+    if (!queryEnabled || !userId) return;
 
     const refreshGroups = () => {
       void queryClient.invalidateQueries({ queryKey: ['all-groups'] });
@@ -47,7 +48,7 @@ export const useGroups = (options: { enabled?: boolean } = {}) => {
     };
 
     const channel = supabase
-      .channel(uniqueChannelName(`reading-groups-directory-${user.id}`))
+      .channel(uniqueChannelName(`reading-groups-directory-${userId}`))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'group_chats' }, refreshGroups)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'group_chat_members' }, refreshGroups)
       .subscribe();
@@ -55,10 +56,10 @@ export const useGroups = (options: { enabled?: boolean } = {}) => {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [queryClient, user?.id, queryEnabled]);
+  }, [queryClient, userId, queryEnabled]);
 
   return useQuery({
-    queryKey: ['all-groups', user?.id],
+    queryKey: ['all-groups', userId],
     queryFn: async () => {
       if (!user?.id) {
         throw new Error('Sign in to browse reading groups.');
