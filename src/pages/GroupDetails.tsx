@@ -241,7 +241,7 @@ const GroupDetails = () => {
                           {isCopied ? 'Link Copied' : 'Invite'}
                         </Button>
                       )}
-                      {!canManageGroup && group.visibility !== 'private' && group.join_policy !== 'invite_only' && (
+                      {!canManageGroup && group.visibility !== 'private' && !requiresInvitation && (
                         <Button variant="outline" onClick={() => void copyGroupPageLink()} className="gap-1.5 border-border">
                           <Share2 className="h-4 w-4" /> Share Group
                         </Button>
