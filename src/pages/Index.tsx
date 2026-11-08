@@ -14,15 +14,12 @@ const CurrentReads = lazy(() => import("@/components/library/CurrentReads"));
 // Section 02: Sliding Books / Discovery (LOCKED)
 const HomeBookDiscovery = lazy(() => import("@/components/home/HomeBookDiscovery"));
 
-// Sections 03 to 11: Homepage Redesign
-const HomeExploreCategories = lazy(() => import("@/components/home/HomeExploreCategories"));
-const HomeSocialFeedPreview = lazy(() => import("@/components/home/HomeSocialFeedPreview"));
-const HomeBookExpertShowcase = lazy(() => import("@/components/home/HomeBookExpertShowcase"));
-const HomeReadAndWriteSection = lazy(() => import("@/components/home/HomeReadAndWriteSection"));
-const HomeReadingPeopleSection = lazy(() => import("@/components/home/HomeReadingPeopleSection"));
-const HomeAuthorsShowcase = lazy(() => import("@/components/home/HomeAuthorsShowcase"));
-const HomeActivityHubSection = lazy(() => import("@/components/home/HomeActivityHubSection"));
-const HomeResearchKnowledgeSection = lazy(() => import("@/components/home/HomeResearchKnowledgeSection"));
+// Section 03: The Sahadhyayi Bicycle Adventure Journey (Immersive 2.5D Journey through 8 Destinations)
+const SahadhyayiJourney = lazy(() =>
+  import("@/components/home/journey/SahadhyayiJourney").then((m) => ({ default: m.SahadhyayiJourney }))
+);
+
+// Section 04: Final Join Sahadhyayi
 const HomeFinalCtaSection = lazy(() => import("@/components/home/HomeFinalCtaSection"));
 
 const Index = () => {
@@ -109,87 +106,17 @@ const Index = () => {
           </ErrorBoundary>
         </DeferredSection>
 
-        {/* 03. Explore Sahadhyayi */}
+        {/* 03. The Sahadhyayi Bicycle Adventure Journey */}
         <DeferredSection
-          fallback={<div className="min-h-[480px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
-          minHeightClassName="min-h-[480px]"
+          fallback={<div className="min-h-[800px] bg-background" aria-hidden="true" />}
+          minHeightClassName="min-h-[800px]"
         >
           <ErrorBoundary fallback={null}>
-            <HomeExploreCategories />
+            <SahadhyayiJourney />
           </ErrorBoundary>
         </DeferredSection>
 
-        {/* 04. The Social Reading Experience */}
-        <DeferredSection
-          fallback={<div className="min-h-[580px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
-          minHeightClassName="min-h-[580px]"
-        >
-          <ErrorBoundary fallback={null}>
-            <HomeSocialFeedPreview />
-          </ErrorBoundary>
-        </DeferredSection>
-
-        {/* 05. Meet Your Book Expert AI */}
-        <DeferredSection
-          fallback={<div className="min-h-[520px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
-          minHeightClassName="min-h-[520px]"
-        >
-          <ErrorBoundary fallback={null}>
-            <HomeBookExpertShowcase />
-          </ErrorBoundary>
-        </DeferredSection>
-
-        {/* 06. Read & Write */}
-        <DeferredSection
-          fallback={<div className="min-h-[540px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
-          minHeightClassName="min-h-[540px]"
-        >
-          <ErrorBoundary fallback={null}>
-            <HomeReadAndWriteSection />
-          </ErrorBoundary>
-        </DeferredSection>
-
-        {/* 07. Find Your Reading People */}
-        <DeferredSection
-          fallback={<div className="min-h-[520px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
-          minHeightClassName="min-h-[520px]"
-        >
-          <ErrorBoundary fallback={null}>
-            <HomeReadingPeopleSection />
-          </ErrorBoundary>
-        </DeferredSection>
-
-        {/* 08. Discover Authors & Literary Experts */}
-        <DeferredSection
-          fallback={<div className="min-h-[540px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
-          minHeightClassName="min-h-[540px]"
-        >
-          <ErrorBoundary fallback={null}>
-            <HomeAuthorsShowcase />
-          </ErrorBoundary>
-        </DeferredSection>
-
-        {/* 09. Activity Hub */}
-        <DeferredSection
-          fallback={<div className="min-h-[500px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
-          minHeightClassName="min-h-[500px]"
-        >
-          <ErrorBoundary fallback={null}>
-            <HomeActivityHubSection />
-          </ErrorBoundary>
-        </DeferredSection>
-
-        {/* 10. Research & Knowledge */}
-        <DeferredSection
-          fallback={<div className="min-h-[480px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
-          minHeightClassName="min-h-[480px]"
-        >
-          <ErrorBoundary fallback={null}>
-            <HomeResearchKnowledgeSection />
-          </ErrorBoundary>
-        </DeferredSection>
-
-        {/* 11. Final Join Sahadhyayi */}
+        {/* 04. Final Join Sahadhyayi */}
         <DeferredSection
           fallback={<div className="min-h-[380px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
           minHeightClassName="min-h-[380px]"
