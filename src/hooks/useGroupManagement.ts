@@ -248,3 +248,66 @@ export const useDeleteGroup = () => {
     onError: (error: Error) => toast.error(`Failed to delete group: ${error.message}`),
   });
 };
+
+/** Creates a high-entropy invitation credential; the database stores only its digest. */
+export const useCreateGroupInvitation = () => {
+  return useMutation({
+    mutationFn: async ({ groupId, expiresInDays = 7, maxUses }: { groupId: string; expiresInDays?: number; maxUses?: number }) => {
+      if (!groupId) throw new Error('Group ID is required');
+      if (!Number.isInteger(expiresInDays) || expiresInDays < 1 || expiresInDays > 90) {
+        throw new Error('Invitation expiry must be between 1 and 90 days.');
+      }
+      const bytes = new Uint8Array(32);
+      crypto.getRandomValues(bytes);
+      const token = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+      const expiresAt = new Date(Date.now() + expiresInDays * 86400000).toISOString();
+      const { data, error } = await supabase.rpc('create_reading_group_invitation', {
+        p_group_id: groupId,
+        p_token: token,
+        p_expires_at: expiresAt,
+        p_max_uses: maxUses ?? null,
+      });
+      if (error) throw new Error(error.message || 'Could not create invitation.');
+      return { token, invitationId: data as string, expiresAt };
+    },
+  });
+};
+
+/** Redeems an invitation token; only the token is sent to the server. */
+export const useRedeemGroupInvitation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (token: string) => {
+      if (!token || token.length !== 64 || !/^[a-f0-9]+$/i.test(token)) {
+        throw new Error('This invitation link is invalid.');
+      }
+      const { data, error } = await supabase.rpc('redeem_reading_group_invitation', { p_token: token });
+      if (error) throw new Error(error.message || 'Invitation could not be redeemed.');
+      return data as 'active';
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['user-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['all-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
+    },
+  });
+};
+
+export const useModerateGroupMember = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ groupId, userId, action }: {
+      groupId: string; userId: string; action: 'approve' | 'reject' | 'ban' | 'unban';
+    }) => {
+      const { data, error } = await supabase.rpc('moderate_reading_group_member', {
+        p_group_id: groupId, p_user_id: userId, p_action: action,
+      });
+      if (error) throw new Error(error.message || 'Membership moderation failed.');
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      void queryClient.invalidateQueries({ queryKey: ['group-members', variables.groupId] });
+      void queryClient.invalidateQueries({ queryKey: ['user-groups'] });
+    },
+  });
+};
