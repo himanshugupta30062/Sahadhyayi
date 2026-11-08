@@ -3,7 +3,11 @@ import SEO from '@/components/SEO';
 const CommunityGuidelines = () => {
   return (
     <>
-      <SEO title="Community Guidelines - Sahadhyayi" description="Learn about our community standards and expectations." />
+      <SEO
+        title="Community Guidelines - Sahadhyayi"
+        description="Learn about our community standards and expectations."
+        canonical="https://sahadhyayi.com/community-guidelines"
+      />
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 py-8">
         <div className="max-w-4xl mx-auto px-4">
           <div className="bg-white rounded-lg shadow-lg p-8">

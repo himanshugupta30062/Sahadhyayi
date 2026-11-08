@@ -92,10 +92,8 @@ const BookLibrary = () => {
         description="Explore our digital library of books across multiple genres. Check each title's available reading options, track progress, and join discussions with fellow readers."
         canonical="https://sahadhyayi.com/library"
         keywords={['digital library', 'online books', 'read books online', 'ebooks', 'book collection', 'reading platform']}
+        schema={structuredData}
       />
-      <script type="application/ld+json">
-        {JSON.stringify(structuredData)}
-      </script>
       <div className="min-h-screen bg-[#FAFAF8] text-[#1C201D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
       {/* Photo-led Library hero: real bookshelves anchor the page in the act of reading. */}
       <section aria-labelledby="library-hero-title" className="relative isolate overflow-hidden border-b border-[#E8E8E3] bg-[#F4F3EF] dark:border-[#29332D] dark:bg-[#101711]" style={{ scrollMarginTop: '80px' }}>

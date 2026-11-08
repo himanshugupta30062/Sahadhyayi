@@ -220,7 +220,7 @@ export default function AdminScientists() {
 
   return (
     <main className="min-h-screen bg-[#FAF7F2] px-4 py-8 text-[#1C201D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7] sm:px-6 lg:px-8">
-      <SEO title="Scientists Content Manager | Sahadhyayi Admin" description="Create, edit and publish scientist profiles and research records." />
+      <SEO title="Scientists Content Manager | Sahadhyayi Admin" description="Create, edit and publish scientist profiles and research records." noIndex={true} />
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>

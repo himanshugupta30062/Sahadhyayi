@@ -174,6 +174,14 @@ const GroupDetails = () => {
         title={`${group.name} | Sahadhyayi Reading Group`}
         description={group.description || `Join ${group.name} to read and discuss books together on Sahadhyayi.`}
         canonical={`https://sahadhyayi.com/groups/${group.id}`}
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "CommunityGroup",
+          "name": group.name,
+          "description": group.description || `Reading and book discussions in ${group.name}.`,
+          "url": `https://sahadhyayi.com/groups/${group.id}`,
+          "memberCount": memberCount
+        }}
       />
 
       <div className="min-h-screen bg-background py-8 px-4">

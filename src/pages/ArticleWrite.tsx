@@ -269,6 +269,7 @@ const ArticleWrite = () => {
       <SEO
         title={isEditMode ? 'Edit Article - Sahadhyayi' : 'Write Article - Sahadhyayi'}
         description={isEditMode ? 'Update your article on Sahadhyayi.' : 'Write and share your article with the Sahadhyayi community.'}
+        noIndex={true}
       />
       <div className="min-h-screen bg-background">
         {/* Top bar */}

@@ -52,7 +52,7 @@ const MyArticles = () => {
 
   return (
     <>
-      <SEO title="My Articles - Sahadhyayi" description="Manage your articles and drafts." />
+      <SEO title="My Articles - Sahadhyayi" description="Manage your articles and drafts." noIndex={true} />
       <div className="min-h-screen bg-background">
         <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
           {/* Header */}

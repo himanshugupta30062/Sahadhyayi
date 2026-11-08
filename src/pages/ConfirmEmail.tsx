@@ -281,7 +281,7 @@ const ConfirmEmail = () => {
 
   return (
     <>
-      <SEO title="Verify Email - Sahadhyayi" description="Verify your email to activate your Sahadhyayi account." canonical="https://sahadhyayi.com/confirm-email" url="https://sahadhyayi.com/confirm-email" />
+      <SEO title="Verify Email - Sahadhyayi" description="Verify your email to activate your Sahadhyayi account." canonical="https://sahadhyayi.com/confirm-email" url="https://sahadhyayi.com/confirm-email" noIndex={true} />
       <div className="min-h-screen flex items-center justify-center p-4 bg-[#FAF7F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7]">
         <div className="w-full max-w-md">
           <div className="text-center mb-6">

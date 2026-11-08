@@ -58,7 +58,7 @@ const AdminFeedback = () => {
 
   return (
     <>
-      <SEO title="Feedback Admin" description="Review user feedback" />
+      <SEO title="Feedback Admin" description="Review user feedback" noIndex={true} />
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-background to-orange-50 py-8">
         <div className="max-w-4xl mx-auto px-4 space-y-6">
           <h1 className="text-3xl font-bold text-foreground">User Feedback</h1>

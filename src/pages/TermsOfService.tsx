@@ -7,6 +7,7 @@ const TermsOfService = () => {
       <SEO
         title="Terms of Service - Sahadhyayi"
         description="Read Sahadhyayi's terms of service to understand the rules and guidelines for using our reading community platform."
+        canonical="https://sahadhyayi.com/terms-of-service"
       />
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 py-8">
         <div className="max-w-4xl mx-auto px-4">

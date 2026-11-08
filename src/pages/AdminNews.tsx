@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import SEO from "@/components/SEO";
 
 const NEWS_CATEGORIES = [
   { value: "books", label: "Books News" },
@@ -97,6 +98,7 @@ export default function AdminNews() {
   });
 
   return <main className="mx-auto max-w-6xl space-y-7">
+    <SEO title="Manage News | Sahadhyayi Admin" description="Manage newsroom articles and announcements." noIndex={true} />
     <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><div className="flex items-center gap-2 text-sm text-muted-foreground"><Newspaper className="h-4 w-4" /> Editorial desk</div><h1 className="mt-1 text-3xl font-bold">Newsroom Manager</h1><p className="mt-1 text-muted-foreground">Create and publish verified updates across books, authors, education and research.</p></div><Button variant="outline" onClick={() => newsQuery.refetch()} disabled={newsQuery.isFetching}><RefreshCw className={"mr-2 h-4 w-4 " + (newsQuery.isFetching ? "animate-spin" : "")} />Refresh</Button></header>
     <section className="rounded-2xl border bg-card p-5 sm:p-7"><h2 className="flex items-center gap-2 text-xl font-semibold">{editingId ? <Pencil className="h-5 w-5" /> : <Plus className="h-5 w-5" />}{editingId ? "Edit news story" : "Create news story"}</h2><p className="mb-5 mt-1 text-sm text-muted-foreground">Use your own reporting or clearly attribute the original source. Do not copy full articles from other publishers.</p>
       <form className="grid gap-4" onSubmit={(e) => { e.preventDefault(); saveMutation.mutate(true); }}>

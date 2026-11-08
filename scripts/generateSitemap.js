@@ -11,7 +11,8 @@ const staticPages = [
   '/discovery', '/scientists', '/games', '/quotes', '/community-stories',
   '/life-stories', '/social-activists', '/freedom-fighters', '/about',
   '/social', '/map', '/book-search', '/help-center', '/community-guidelines',
-  '/privacy-policy', '/terms-of-service', '/cookie-policy', '/dmca'
+  '/privacy-policy', '/terms-of-service', '/cookie-policy', '/dmca',
+  '/events', '/investors', '/publishers', '/newsroom', '/licenses', '/reviewers-critics'
 ];
 
 const blogSlugs = [

@@ -58,6 +58,14 @@ const AuthorDetails = () => {
         description={toSeoDescription(author.bio || `Discover books by ${author.name} on Sahadhyayi.`)}
         canonical={`https://sahadhyayi.com/authors/${slug}`}
         url={`https://sahadhyayi.com/authors/${slug}`}
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "Person",
+          "name": author.name,
+          "description": author.bio || `Author profile of ${author.name} on Sahadhyayi.`,
+          "url": `https://sahadhyayi.com/authors/${slug}`,
+          ...(author.profile_image_url ? { "image": author.profile_image_url } : {})
+        }}
       />
 
       <div className="min-h-screen bg-background">

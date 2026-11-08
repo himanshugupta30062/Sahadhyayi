@@ -167,6 +167,7 @@ const ResetPassword = () => {
         description="Choose a new secure password for your Sahadhyayi account."
         canonical="https://sahadhyayi.com/reset-password"
         url="https://sahadhyayi.com/reset-password"
+        noIndex={true}
       />
       <div className="min-h-screen flex items-center justify-center p-4 bg-[#FAF7F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-200">
         <div className="w-full max-w-md">

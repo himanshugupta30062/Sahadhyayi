@@ -93,6 +93,7 @@ const DashboardContent = () => {
         description="Manage your personal reading collection, track progress, and discover new books in your customized library."
         canonical="https://sahadhyayi.com/dashboard"
         url="https://sahadhyayi.com/dashboard"
+        noIndex={true}
       />
       
       <div className="min-h-screen bg-background">

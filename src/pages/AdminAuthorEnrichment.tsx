@@ -77,7 +77,7 @@ export default function AdminAuthorEnrichment() {
 
   const percent = stats.total ? Math.round(stats.enriched / stats.total * 100) : 0;
   return <div className="min-h-screen bg-[#FAF7F2] px-4 py-8 text-[#1C201D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7] sm:px-6 lg:px-8">
-    <SEO title="Author Data Import | Sahadhyayi Admin" description="Import author biographies, portraits and verified source metadata." />
+    <SEO title="Author Data Import | Sahadhyayi Admin" description="Import author biographies, portraits and verified source metadata." noIndex={true} />
     <div className="mx-auto max-w-7xl space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div><div className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-[#8B6C32]"><Sparkles className="h-4 w-4"/> Author enrichment</div><h1 className="text-3xl font-bold sm:text-4xl">Bring authors to life</h1><p className="mt-2 max-w-2xl text-sm text-muted-foreground">Import portraits, short biographies, birth/death dates, alternate names and source attribution from Wikidata, Wikimedia Commons and Wikipedia. Existing biographies and profile images are preserved.</p></div>

@@ -75,8 +75,9 @@ const OpenSourceLicenses = () => {
   return (
     <>
       <SEO 
-        title="Open Source Licenses - Digital Library" 
+        title="Open Source Licenses - Digital Library | Sahadhyayi" 
         description="Attribution and licenses for third-party packages used in our digital library platform." 
+        canonical="https://sahadhyayi.com/licenses"
       />
       
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8">

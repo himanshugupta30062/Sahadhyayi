@@ -290,6 +290,7 @@ const Bookshelf = () => {
         description="Manage your books, track reading progress, and get AI-powered assistance in your personal digital bookshelf."
         canonical="https://sahadhyayi.com/bookshelf"
         url="https://sahadhyayi.com/bookshelf"
+        noIndex={true}
       />
       <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
       

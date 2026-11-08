@@ -406,6 +406,7 @@ export default function Games() {
       <SEO 
         title="Book Quiz Game - Test Your Knowledge | Sahadhyayi"
         description="Challenge yourself with our KBC-style book quiz. Answer questions, earn points, and climb the leaderboard!"
+        canonical="https://sahadhyayi.com/games"
       />
       
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-20">

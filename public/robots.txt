@@ -19,6 +19,8 @@ Allow: /help-center
 Allow: /community-guidelines
 
 # Keep account and editing surfaces out of crawling. These are not access controls.
+Disallow: /admin
+Disallow: /admin/
 Disallow: /dashboard
 Disallow: /profile
 Disallow: /settings

@@ -4,6 +4,7 @@ import { Activity, ArrowUpRight, BookOpen, CalendarDays, FileCheck2, MessageSqua
 import { supabase } from "@/integrations/supabase/client-universal";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import SEO from "@/components/SEO";
 
 const shortcuts = [
   { title: "Growth Intelligence", description: "Manage bookstore, library and literary partnership prospects and outreach.", href: "/admin/growth-intelligence", icon: Users },
@@ -31,6 +32,7 @@ export default function AdminOverview() {
 
   return (
     <main className="mx-auto max-w-7xl space-y-8">
+      <SEO title="Admin Overview | Sahadhyayi" description="Sahadhyayi Administrative Control Panel." noIndex={true} />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-600">Sahadhyayi control center</p>

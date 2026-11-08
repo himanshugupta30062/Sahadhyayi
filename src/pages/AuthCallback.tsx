@@ -41,6 +41,7 @@ const AuthCallback = () => {
         description="Securely completing your Sahadhyayi sign-in."
         canonical="https://sahadhyayi.com/auth/callback"
         url="https://sahadhyayi.com/auth/callback"
+        noIndex={true}
       />
       <main className="min-h-[70vh] flex items-center justify-center p-4 bg-[#FAF7F2] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7]">
         <Card className="w-full max-w-md border border-[#E8E2D9] dark:border-[#26302A] bg-white dark:bg-[#111614] rounded-2xl">

@@ -7,6 +7,7 @@ const CookiePolicy = () => {
       <SEO
         title="Cookie Policy - Sahadhyayi"
         description="Learn about how Sahadhyayi uses cookies and similar technologies to enhance your reading experience."
+        canonical="https://sahadhyayi.com/cookie-policy"
       />
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 py-8">
         <div className="max-w-4xl mx-auto px-4">
