@@ -46,16 +46,33 @@ Deno.serve(async (req: Request) => {
     const userId = userData.user.id;
 
     // Rate limit: 1 / 5 min
-    const { data: allowed } = await supabase.rpc("check_rate_limit", {
-      p_identifier: userId,
-      p_endpoint: "generate-reading-dna",
-      p_max_requests: 1,
-      p_window_minutes: 5,
-    });
-    if (allowed === false) {
-      return new Response(JSON.stringify({ error: "Try again in a few minutes." }), {
+    let rateLimitAllowed: boolean | null = null;
+    try {
+      const { data, error } = await supabase.rpc("check_rate_limit", {
+        p_identifier: userId,
+        p_endpoint: "generate-reading-dna",
+        p_max_requests: 1,
+        p_window_minutes: 5,
+      });
+      if (error || typeof data !== "boolean") {
+        console.error("[generate-reading-dna] Rate-limit check unavailable:", error?.message ?? "invalid response");
+      } else {
+        rateLimitAllowed = data;
+      }
+    } catch (rateLimitError) {
+      console.error("[generate-reading-dna] Rate-limit check failed:", rateLimitError);
+    }
+
+    if (rateLimitAllowed === null) {
+      return new Response(JSON.stringify({ error: "Reading DNA is temporarily unavailable while usage limits are checked.", code: "RATE_LIMIT_UNAVAILABLE" }), {
+        status: 503,
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "30" },
+      });
+    }
+    if (!rateLimitAllowed) {
+      return new Response(JSON.stringify({ error: "Try again in a few minutes.", code: "RATE_LIMIT_EXCEEDED" }), {
         status: 429,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "300" },
       });
     }
 
