@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { resolveSocialPostImages } from '@/lib/socialPostMedia';
@@ -37,6 +37,8 @@ import { useAuth } from '@/contexts/authHelpers';
 import { Quote, Lock, Sparkles } from 'lucide-react';
 import { BookReelsStrip } from './BookReelsStrip';
 import { useSocialPostBookmarks } from '@/hooks/useSocialPostBookmarks';
+import { useBatchPostReactions } from '@/hooks/useSocialPostReactions';
+import { LiteraryReactionPicker } from './LiteraryReactionPicker';
 
 const EmbeddedOriginalPost: React.FC<{
   post?: SocialPost | null;
@@ -147,6 +149,11 @@ export const EnhancedSocialFeed = () => {
   // All feed modes are chronological and use the same stable cursor.
   // For You changes which RLS-visible posts qualify; it does not invent an engagement ranking.
   const postsForDisplay = showSavedPosts ? cabinet.savedPosts : rawPostsForDisplay;
+  const postIds = useMemo(
+    () => postsForDisplay.map((p) => p.id).filter(Boolean),
+    [postsForDisplay]
+  );
+  const { data: batchReactions } = useBatchPostReactions(postIds);
 
   // Shared URLs use /social?post=<id>. Resolve the requested post through the
   // audience-aware RLS boundary; do not depend on a QueryClient being present
@@ -700,17 +707,14 @@ export const EnhancedSocialFeed = () => {
                 {showSavedPosts && <div className="mb-2 flex justify-end"><Button variant="ghost" size="sm" className="text-xs text-[#636B65] dark:text-[#A5ADA6]" onClick={() => cabinet.removePost(post.id)}><Bookmark className="w-3.5 h-3.5 mr-1 fill-current"/>Remove saved item</Button></div>}
                 {/* Post Actions */}
                 <div className="flex items-center justify-around gap-1 pt-3 border-t border-[#E8E2D9] dark:border-[#29332D]">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    aria-label={post.user_liked ? `Unlike post, ${post.likes_count} likes` : `Like post, ${post.likes_count} likes`}
-                    onClick={() => handleLike(post)}
-                    disabled={toggleLike.isPending || !user}
-                    className={`flex-1 rounded-lg gap-2 text-xs h-8 ${post.user_liked ? 'text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/20' : 'text-[#636B65] hover:text-[#1C201D] hover:bg-[#FAF7F2] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] dark:hover:bg-[#1B241E]'}`}
-                  >
-                    <Heart className={`w-4 h-4 ${post.user_liked ? 'fill-current' : ''}`} />
-                    <span className="font-medium">{post.likes_count}</span>
-                  </Button>
+                  <LiteraryReactionPicker
+                    postId={post.id}
+                    reactionSummary={batchReactions?.[post.id]}
+                    legacyLikesCount={post.likes_count}
+                    userLikedLegacy={post.user_liked}
+                    onLegacyLikeToggle={() => handleLike(post)}
+                    isPendingLegacy={toggleLike.isPending}
+                  />
                   <Button
                     variant="ghost"
                     size="sm"

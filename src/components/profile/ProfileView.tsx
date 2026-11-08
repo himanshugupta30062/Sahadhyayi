@@ -22,7 +22,10 @@ import {
   Sparkles, 
   Library, 
   CheckCircle,
-  FileText
+  FileText,
+  LayoutGrid,
+  List,
+  Clock
 } from "lucide-react";
 import ProfileAvatar from "./ProfileAvatar";
 import ProfileInfo from "./ProfileInfo";
@@ -46,6 +49,7 @@ export const ProfileView: React.FC = () => {
   const deleteProfile = useDeleteUserProfile();
 
   const [editMode, setEditMode] = useState<EditMode>("view");
+  const [shelfViewMode, setShelfViewMode] = useState<'grid' | 'timeline'>('grid');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const defaultValues: ProfileFormValues = {
@@ -135,7 +139,7 @@ export const ProfileView: React.FC = () => {
   );
 
   const completedBooks = bookshelf.filter(b => b.status === 'completed');
-  const showcaseBooks = completedBooks.length > 0 ? completedBooks.slice(0, 3) : bookshelf.slice(0, 3);
+  const showcaseBooks = completedBooks.length > 0 ? completedBooks.slice(0, 6) : bookshelf.slice(0, 6);
   const favoriteBooks = bookshelf.filter((book) => book.is_favorite === true).slice(0, 6);
 
   if (isLoading) {
@@ -336,52 +340,132 @@ export const ProfileView: React.FC = () => {
           )}
         </Card>
 
-        {/* Showcase Shelf */}
+        {/* Showcase Shelf (Pixelfed Visual Grid vs. Timeline View) */}
         {showcaseBooks.length > 0 && (
           <Card className="rounded-2xl border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <div className="flex items-center gap-2">
                 <Library className="w-4 h-4 text-[hsl(var(--brand-primary))]" />
                 <h3 className="text-sm font-semibold text-foreground">Reader Bookshelf Showcase</h3>
+                <span className="text-xs text-muted-foreground">({bookshelf.length} books)</span>
               </div>
-              <Link to="/bookshelf" className="text-xs text-[hsl(var(--brand-primary))] hover:underline flex items-center">
-                View Shelf ({bookshelf.length}) <ArrowRight className="w-3 h-3 ml-1" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              {showcaseBooks.map((item) => (
-                <Link
-                  key={item.id}
-                  to={`/book/${item.book_id}`}
-                  className="group block text-center"
-                >
-                  <div className="aspect-[2/3] rounded-lg overflow-hidden bg-muted shadow-xs group-hover:shadow-md transition-all mb-1.5 relative">
-                    {item.books_library?.cover_image_url ? (
-                      <img
-                        src={item.books_library.cover_image_url}
-                        alt={item.books_library.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-muted">
-                        <BookOpen className="w-6 h-6 text-muted-foreground" />
-                      </div>
-                    )}
-                    {item.status === 'completed' && (
-                      <div className="absolute top-1.5 right-1.5 bg-emerald-600/90 text-white p-0.5 rounded-full shadow-xs">
-                        <CheckCircle className="w-3 h-3" />
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-xs font-medium text-foreground truncate group-hover:text-[hsl(var(--brand-primary))] transition-colors">
-                    {item.books_library?.title || 'Untitled'}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground capitalize">
-                    {item.status.replace('_', ' ')}
-                  </p>
+
+              <div className="flex items-center gap-2">
+                {/* View Mode Toggle: Grid vs Timeline */}
+                <div className="flex items-center rounded-lg bg-muted/60 p-0.5 border border-border/60">
+                  <button
+                    type="button"
+                    onClick={() => setShelfViewMode('grid')}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md transition-all ${
+                      shelfViewMode === 'grid'
+                        ? 'bg-background text-foreground shadow-xs'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <LayoutGrid className="w-3.5 h-3.5" />
+                    <span>Visual Grid</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShelfViewMode('timeline')}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md transition-all ${
+                      shelfViewMode === 'timeline'
+                        ? 'bg-background text-foreground shadow-xs'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <List className="w-3.5 h-3.5" />
+                    <span>Timeline</span>
+                  </button>
+                </div>
+
+                <Link to="/bookshelf" className="text-xs text-[hsl(var(--brand-primary))] hover:underline flex items-center ml-2">
+                  View All <ArrowRight className="w-3 h-3 ml-1" />
                 </Link>
-              ))}
+              </div>
             </div>
+
+            {shelfViewMode === 'grid' ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                {showcaseBooks.map((item) => (
+                  <Link
+                    key={item.id}
+                    to={`/book/${item.book_id}`}
+                    className="group block text-center"
+                  >
+                    <div className="aspect-[2/3] rounded-lg overflow-hidden bg-muted shadow-xs group-hover:shadow-md transition-all mb-1.5 relative">
+                      {item.books_library?.cover_image_url ? (
+                        <img
+                          src={item.books_library.cover_image_url}
+                          alt={item.books_library.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-muted">
+                          <BookOpen className="w-6 h-6 text-muted-foreground" />
+                        </div>
+                      )}
+                      {item.status === 'completed' && (
+                        <div className="absolute top-1.5 right-1.5 bg-emerald-600/90 text-white p-0.5 rounded-full shadow-xs">
+                          <CheckCircle className="w-3 h-3" />
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs font-medium text-foreground truncate group-hover:text-[hsl(var(--brand-primary))] transition-colors">
+                      {item.books_library?.title || 'Untitled'}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground capitalize">
+                      {item.status.replace('_', ' ')}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-3 relative before:absolute before:inset-0 before:left-3 before:w-0.5 before:bg-border/60 pl-6">
+                {showcaseBooks.map((item) => (
+                  <Link
+                    key={item.id}
+                    to={`/book/${item.book_id}`}
+                    className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 hover:bg-muted/70 transition-colors group relative"
+                  >
+                    <span className="absolute -left-4.5 w-2.5 h-2.5 rounded-full bg-[hsl(var(--brand-primary))] ring-4 ring-background" />
+                    <div className="w-10 h-14 rounded-md overflow-hidden bg-muted shrink-0 shadow-xs">
+                      {item.books_library?.cover_image_url ? (
+                        <img
+                          src={item.books_library.cover_image_url}
+                          alt={item.books_library.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <BookOpen className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-medium text-foreground truncate group-hover:text-[hsl(var(--brand-primary))]">
+                        {item.books_library?.title || 'Untitled'}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {item.books_library?.author || 'Unknown author'}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground capitalize bg-background px-1.5 py-0.5 rounded border border-border/50">
+                          <Clock className="w-2.5 h-2.5 text-muted-foreground" />
+                          {item.status.replace('_', ' ')}
+                        </span>
+                        {item.rating && (
+                          <span className="text-[10px] text-amber-500 font-semibold flex items-center gap-0.5">
+                            ★ {item.rating}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-[hsl(var(--brand-primary))] transition-transform group-hover:translate-x-0.5" />
+                  </Link>
+                ))}
+              </div>
+            )}
           </Card>
         )}
 
