@@ -9,7 +9,7 @@ import { BookOpen, MessageSquare, ShieldAlert } from 'lucide-react';
 type ReviewRow = { id:string; book_id:string; user_id:string; review_text:string; contains_spoilers:boolean; created_at:string; book?:{title:string;author:string|null;cover_image_url:string|null}|null; reviewer?:{full_name:string|null;username:string|null;profile_photo_url:string|null}|null };
 export default function BookReviewsFeed() {
  const query=useQuery({queryKey:['community-book-reviews'],queryFn:async()=>{
-  const {data,error}=await supabase.from('book_reviews').select('id,book_id,user_id,review_text,contains_spoilers,created_at,books_library(title,author,cover_image_url)').order('created_at',{ascending:false}).limit(40);
+  const {data,error}=await supabase.from('book_reviews').select('id,book_id,user_id,review_text,contains_spoilers,created_at,book:books_library(title,author,cover_image_url)').order('created_at',{ascending:false}).limit(40);
   if(error) throw error;
   const rows=(data||[]) as unknown as ReviewRow[];
   const ids=[...new Set(rows.map(r=>r.user_id))];
