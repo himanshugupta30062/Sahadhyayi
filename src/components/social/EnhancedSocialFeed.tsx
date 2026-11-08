@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Heart, MessageCircle, Share2, Clock, Repeat2, MoreHorizontal, Trash2, Users, Copy, Check } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Clock, Repeat2, MoreHorizontal, Trash2, Users, Copy, Check, Bookmark } from 'lucide-react';
 import {
   useSocialPosts,
   useTogglePostLike,
@@ -36,6 +36,7 @@ import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 import { useAuth } from '@/contexts/authHelpers';
 import { Quote, Lock, Sparkles } from 'lucide-react';
 import { BookReelsStrip } from './BookReelsStrip';
+import { useSocialPostBookmarks } from '@/hooks/useSocialPostBookmarks';
 
 const EmbeddedOriginalPost: React.FC<{
   post?: SocialPost | null;
@@ -111,6 +112,8 @@ export const EnhancedSocialFeed = () => {
   const [highlightedPostId, setHighlightedPostId] = useState<string | null>(null);
   const [imageViewer, setImageViewer] = useState<{ src: string; alt: string } | null>(null);
   const [streamMode, setStreamMode] = useState<'for_you' | 'following' | 'latest'>('for_you');
+  const [showSavedPosts, setShowSavedPosts] = useState(false);
+  const cabinet = useSocialPostBookmarks();
   const { posts, isLoading, error, refetch, hasMore, isLoadingMore, loadMore, loadMoreError } = useSocialPosts(streamMode);
   const postsRef = useRef(posts);
   postsRef.current = posts;
@@ -143,7 +146,7 @@ export const EnhancedSocialFeed = () => {
 
   // All feed modes are chronological and use the same stable cursor.
   // For You changes which RLS-visible posts qualify; it does not invent an engagement ranking.
-  const postsForDisplay = rawPostsForDisplay;
+  const postsForDisplay = showSavedPosts ? cabinet.savedPosts : rawPostsForDisplay;
 
   // Shared URLs use /social?post=<id>. Resolve the requested post through the
   // audience-aware RLS boundary; do not depend on a QueryClient being present
@@ -283,7 +286,7 @@ export const EnhancedSocialFeed = () => {
           size="sm"
           variant={streamMode === 'latest' ? 'default' : 'outline'}
           aria-pressed={streamMode === 'latest'}
-          onClick={() => setStreamMode('latest')}
+          onClick={() => { setShowSavedPosts(false); setStreamMode('latest'); }}
           className={streamMode === 'latest' ? 'bg-[#1C442D] text-white hover:bg-[#153522] dark:bg-[#1C3024] dark:text-[#F3F0E7]' : 'border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7]'}
         >
           <Clock className="w-3.5 h-3.5 mr-1.5" />
@@ -393,7 +396,7 @@ export const EnhancedSocialFeed = () => {
           <BookReelsStrip className="mb-6" />
           <FeedComposer />
 
-          {error ? (
+          {showSavedPosts && cabinet.isLoading ? (\n            <div className="flex justify-center py-8" role="status"><LoadingSpinner /></div>\n          ) : showSavedPosts && cabinet.error ? (\n            <Card role="alert" className="p-8 text-center"><p className="text-sm text-destructive mb-3">Your Reading Cabinet could not be loaded.</p><Button variant="outline" size="sm" onClick={() => void cabinet.refetch()}>Retry</Button></Card>\n          ) : error && !showSavedPosts ? (
             <Card className="bg-white dark:bg-[#111614] border-destructive/40 text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs">
               <CardContent className="p-8 text-center">
                 <p className="text-sm text-destructive font-medium mb-3">
