@@ -36,7 +36,7 @@ export const useGroups = (options: { enabled?: boolean } = {}) => {
   const queryClient = useQueryClient();
   const enabled = options.enabled ?? true;
   const userId = user?.id;
-  const queryEnabled = enabled && Boolean(userId);
+  const queryEnabled = enabled && Boolean(user?.id);
 
   useEffect(() => {
     if (!queryEnabled || !userId) return;

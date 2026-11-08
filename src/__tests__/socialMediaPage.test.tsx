@@ -51,6 +51,14 @@ vi.mock('@/hooks/useFriends', () => ({
   }),
 }));
 
+vi.mock('@/hooks/useUserBookshelf', () => ({
+  useUserBookshelf: () => ({ data: [], isLoading: false, error: null }),
+}));
+
+vi.mock('@/hooks/useReadingStreak', () => ({
+  useReadingStreak: () => ({ data: { current: 0, longest: 0 }, isLoading: false }),
+}));
+
 vi.mock('@/components/social/BookPulseBar', () => ({
   BookPulseBar: () => <div data-testid="book-pulse-bar" />,
 }));
