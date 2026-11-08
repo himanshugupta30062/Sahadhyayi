@@ -1,6 +1,6 @@
 export interface BlogPostSummary {
   id: string;
-  slug: string;
+  slug?: string;
   title: string;
   excerpt: string;
   author: string;
@@ -8,6 +8,7 @@ export interface BlogPostSummary {
   category: string;
   readTime: string;
   image: string;
+  featured?: boolean;
 }
 
 export const blogPosts: BlogPostSummary[] = [

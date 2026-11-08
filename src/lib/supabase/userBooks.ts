@@ -7,7 +7,7 @@ export interface CurrentRead {
   status: string;
   progress?: number | null;
   last_opened_at?: string | null;
-  books_library: Book;
+  books_library: Book | (Partial<Book> & { id: string; title: string; cover_image_url?: string | null });
 }
 
 export const fetchCurrentReads = async (): Promise<CurrentRead[]> => {

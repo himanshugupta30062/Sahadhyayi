@@ -6,7 +6,7 @@ type Scientist = {
   era: string;
   field: string;
   contribution: string;
-  image: string;
+  image?: string;
   papers: { title: string; year: string; href: string; note: string }[];
 };
 

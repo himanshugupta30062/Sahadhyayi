@@ -84,6 +84,7 @@ interface BookSelectionModalProps {
   externalBooks?: ExternalBook[];
   searchTerm: string;
   onBooksAdded?: () => void;
+  onSaveSuccess?: () => void;
 }
 
 const BookSelectionModal = ({

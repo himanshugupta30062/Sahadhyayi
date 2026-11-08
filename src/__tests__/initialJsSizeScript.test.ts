@@ -73,7 +73,7 @@ describe("initial JavaScript size guard", () => {
   });
 
   it("fails when the manifest has no supported application entry", () => {
-    const result = runCheck(fixture({ manifest: { "assets/other.js": { file: "assets/other.js" } } }));
+    const result = runCheck(fixture({ manifest: { "assets/other.js": { file: "assets/other.js" } } as any }));
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain("Missing index.html or src/main.tsx entry");
   });
@@ -82,7 +82,7 @@ describe("initial JavaScript size guard", () => {
     const result = runCheck(fixture({
       manifest: {
         "index.html": { file: "index.html", isEntry: true, imports: ["assets/missing.js"] },
-      },
+      } as any,
     }));
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain("Missing manifest import: assets/missing.js");

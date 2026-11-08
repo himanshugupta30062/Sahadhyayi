@@ -21,6 +21,8 @@ export interface BookEvent {
   status: string;
   featured?: boolean;
   attendees_count?: number;
+  date?: string;
+  location?: string;
 }
 
 export const CURATED_LITERARY_EVENTS: BookEvent[] = [

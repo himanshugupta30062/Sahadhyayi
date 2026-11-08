@@ -11,10 +11,12 @@ export interface Author {
   name: string;
   bio: string | null;
   profile_image_url: string | null;
+  image_url?: string | null;
   location: string;
   website_url: string | null;
   social_links: SocialLinks;
   genres: string[];
+  genre?: string;
   books_count: number;
   followers_count: number;
   rating: number;
@@ -53,7 +55,7 @@ export const usePaginatedAuthors = (page = 1, pageSize = 10) =>
     queryFn: async (): Promise<PaginatedAuthors> => {
       const startIndex = (page - 1) * pageSize;
       const endIndex = page * pageSize - 1;
-      const { data, error, count } = await supabase
+      const { data, error, count } = await (supabase as any)
         .rpc('get_authors_with_books', {}, { count: 'exact' })
         .range(startIndex, endIndex)
         .order('name', { ascending: true });

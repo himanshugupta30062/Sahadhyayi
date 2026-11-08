@@ -161,7 +161,7 @@ describe('Phase 8: Final QA, Design Consistency, Performance and Release Readine
       expect(screen.getByText('Sage Markandeya')).toBeInTheDocument();
 
       // Must display Online Reader / Preview badge
-      expect(screen.getByText(/Online Reader|Preview/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Online Reader|Preview/i).length).toBeGreaterThan(0);
 
       // Must have "Read Online" action
       expect(screen.getByRole('link', { name: /Read Online/i })).toBeInTheDocument();

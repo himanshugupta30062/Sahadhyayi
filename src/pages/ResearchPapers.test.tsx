@@ -129,7 +129,7 @@ describe('ResearchPapers', () => {
     vi.mocked(supabase.functions.invoke).mockResolvedValueOnce(searchResult([
       { id: 'not-an-openalex-id', display_name: 'Invalid record' },
       { id: 'https://openalex.org/W124', title: 'Valid fallback title' },
-    ], 2) as never);
+    ] as any, 2) as never);
     renderPage();
     expect(await screen.findByRole('heading', { name: 'Valid fallback title' })).toBeInTheDocument();
     expect(screen.queryByText('Invalid record')).not.toBeInTheDocument();

@@ -161,7 +161,7 @@ export default function AdminScientists() {
       };
       const existing = selectedId !== "new" ? scientists.find((item) => item.id === selectedId) : undefined;
       const { data: saved, error } = await supabase.from("scientists")
-        .upsert(existing ? { ...payload, id: existing.id } : payload, { onConflict: "slug" })
+        .upsert((existing ? { ...payload, id: existing.id } : payload) as any, { onConflict: "slug" })
         .select("id").single();
       if (error) throw error;
       const scientistId = saved.id;

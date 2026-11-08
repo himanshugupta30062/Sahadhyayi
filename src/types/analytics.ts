@@ -11,8 +11,9 @@ export type MetricStatus = 'available' | 'unavailable';
 
 export interface AnalyticsMetric<T = number> {
   value: T | null;
-  status: MetricStatus;
+  status?: MetricStatus;
   definition?: string;
+  comparison?: any;
 }
 
 export interface MetricComparison {
@@ -60,29 +61,30 @@ export interface ReadingEngagementStats {
 }
 
 export interface CommunityPulseResponse {
-  schemaVersion: 1;
+  schemaVersion?: number;
   timeframe: AnalyticsTimeframe;
   periodStart: string;
   periodEnd: string;
-  lastUpdated: string;
-  freshness: 'fresh' | 'cached';
+  lastUpdated?: string;
+  freshness?: 'fresh' | 'cached';
 
   metrics: {
     registeredReaders: AnalyticsMetric;
-    totalPageViews: AnalyticsMetric;
+    totalPageViews?: AnalyticsMetric;
     periodPageViews: AnalyticsMetric;
     uniqueVisitors: AnalyticsMetric;
     newReaders: AnalyticsMetric;
     averageSessionDurationSeconds: AnalyticsMetric;
   };
 
-  comparisons: {
+  comparisons?: {
     pageViewsChangePercent: number | null;
     uniqueVisitorsChangePercent: number | null;
     newReadersChangePercent: number | null;
   };
 
-  hourlyActivity: HourlyBucket[];
+  hourlyActivity?: HourlyBucket[];
+  hourlyTraffic?: any[];
 
   breakdowns: {
     countries: BreakdownStat[];

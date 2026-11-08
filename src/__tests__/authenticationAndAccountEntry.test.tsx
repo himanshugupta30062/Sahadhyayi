@@ -70,7 +70,7 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
       verifyOtp: (...args: any[]) => mockVerifyOtp(...args),
       exchangeCodeForSession: (...args: any[]) => mockExchangeCodeForSession(...args),
       resend: (...args: any[]) => mockResend(...args),
-      onAuthStateChange: (...args: any[]) => mockOnAuthStateChange(...args),
+      onAuthStateChange: (...args: any[]) => (mockOnAuthStateChange as any)(...args),
       getUser: vi.fn().mockResolvedValue({ data: { user: { email: 'reader@example.com' } } }),
     },
     from: vi.fn(() => ({

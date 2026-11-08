@@ -208,7 +208,7 @@ describe('GroupReadingDiscussions', () => {
     fireEvent.change(screen.getByLabelText('Spoiler chapter (0 = none)'), { target: { value: '6' } });
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Why does the narrator change?' } });
     fireEvent.change(screen.getByLabelText('Your thoughts'), { target: { value: 'I would like to explore this decision.' } });
-    fireEvent.click(screen.getAllByRole('button', { name: 'Start discussion', exact: true }).slice(-1)[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Start discussion' }).slice(-1)[0]);
 
     expect(mocks.createDiscussionMutate).toHaveBeenCalledWith(
       {
@@ -246,7 +246,7 @@ describe('GroupReadingDiscussions', () => {
     fireEvent.change(screen.getByLabelText('Spoiler chapter (0 = none)'), { target: { value: '3' } });
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'My title' } });
     fireEvent.change(screen.getByLabelText('Your thoughts'), { target: { value: 'My thoughts' } });
-    fireEvent.click(screen.getAllByRole('button', { name: 'Start discussion', exact: true }).slice(-1)[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Start discussion' }).slice(-1)[0]);
     expect(mocks.createDiscussionMutate).not.toHaveBeenCalled();
     expect(mocks.toastError).toHaveBeenCalledWith('The spoiler level must be the same as or later than the discussion chapter.');
   });
@@ -256,7 +256,7 @@ describe('GroupReadingDiscussions', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Start discussion' }));
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'A useful question' } });
     fireEvent.change(screen.getByLabelText('Your thoughts'), { target: { value: 'Some details.' } });
-    fireEvent.click(screen.getAllByRole('button', { name: 'Start discussion', exact: true }).slice(-1)[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Start discussion' }).slice(-1)[0]);
     mocks.createDiscussionMutate.mock.calls[0][1].onError(new Error('You are not an active member'));
     expect(mocks.toastError).toHaveBeenCalledWith('You are not an active member');
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));

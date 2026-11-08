@@ -1020,7 +1020,7 @@ export const useGenres = () => {
       if (error) throw error;
 
       const visible = filterPublicBooks(data || []);
-      const uniqueGenres = [...new Set((visible as Array<{ genre: string }>).map(item => item.genre).filter(Boolean))];
+      const uniqueGenres = [...new Set((visible as unknown as Array<{ genre: string }>).map(item => item.genre).filter(Boolean))];
       return uniqueGenres.map((genre, index) => ({
         id: index.toString(),
         name: genre as string,

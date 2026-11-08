@@ -170,16 +170,16 @@ export const HomeActivityHubSection: React.FC = () => {
                 <p className="text-xs text-[#636B65] dark:text-[#A5ADA6] mt-0.5 flex items-center gap-3">
                   <span className="flex items-center gap-1">
                     <Clock className="w-3.5 h-3.5" />
-                    {new Date(upcomingEvents[0].date).toLocaleDateString('en-US', {
+                    {new Date(upcomingEvents[0].start_at || upcomingEvents[0].date || '').toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
                       year: 'numeric',
                     })}
                   </span>
-                  {upcomingEvents[0].location && (
+                  {(upcomingEvents[0].city || upcomingEvents[0].location) && (
                     <span className="flex items-center gap-1">
                       <MapPin className="w-3.5 h-3.5" />
-                      {upcomingEvents[0].location}
+                      {upcomingEvents[0].city || upcomingEvents[0].location}
                     </span>
                   )}
                 </p>

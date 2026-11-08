@@ -13,7 +13,7 @@ import { toast } from "@/hooks/use-toast";
 type Prospect={id:string;organization_name:string;organization_type:string;city:string|null;website:string|null;contact_name:string|null;contact_email:string|null;contact_phone:string|null;status:string;notes:string|null};
 const kinds=["bookstore","library","book_club","publisher","literary_organization","event_venue","author","other"];
 const states=["new","researching","ready_to_contact","contacted","replied","interested","meeting","partnered","not_a_fit"];
-const pretty=(s:string)=>s.replaceAll("_"," ");
+const pretty=(s:string)=>s.replace(/_/g," ");
 export default function AdminGrowthIntelligence(){
  const [items,setItems]=useState<Prospect[]>([]),[loading,setLoading]=useState(true),[q,setQ]=useState(""),[filter,setFilter]=useState("all"),[adding,setAdding]=useState(false);
  const [draft,setDraft]=useState({organization_name:"",organization_type:"bookstore",city:"",website:"",contact_name:"",contact_email:"",contact_phone:"",source_url:"",notes:""});

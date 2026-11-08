@@ -220,7 +220,7 @@ async function fetchFilteredBooks(
             isbn: row.isbn,
             pages: row.pages,
             author_bio: null,
-            accessStatus: 'open',
+            accessStatus: 'verified_full_text',
             qualityScore: 85,
             qualityReasons: ['Community approved publication'],
             whyThisEdition: 'Approved community-submitted publication',

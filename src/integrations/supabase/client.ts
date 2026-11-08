@@ -30,7 +30,7 @@ const SUPABASE_PUBLISHABLE_KEY = configuredKey || 'missing-supabase-public-key';
 
 export const isSupabaseConfigured = Boolean(configuredUrl && configuredKey);
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     storage: brokeredPreviewStorage(),
     persistSession: true,

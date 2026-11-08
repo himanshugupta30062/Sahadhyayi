@@ -7,9 +7,20 @@ export type DailyThemeId =
   | 'soft-pink'
   | 'sky-blue';
 
+export type WeekdayKey =
+  | 'sunday'
+  | 'monday'
+  | 'tuesday'
+  | 'wednesday'
+  | 'thursday'
+  | 'friday'
+  | 'saturday';
+
+export type WeekdayThemeKey = WeekdayKey;
+
 export type ThemeMode = 'daily' | 'light' | 'dark' | 'custom';
 
-export type WeekdayThemeKey =\n  | 'monday'\n  | 'tuesday'\n  | 'wednesday'\n  | 'thursday'\n  | 'friday'\n  | 'saturday'\n  | 'sunday';\n\nexport interface DailyThemeConfig {
+export interface DailyThemeConfig {
   id: DailyThemeId;
   dayIndex: number; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
   dayName: string;
@@ -26,7 +37,7 @@ export type WeekdayThemeKey =\n  | 'monday'\n  | 'tuesday'\n  | 'wednesday'\n  |
   description: string;
 }
 
-export const DAILY_THEMES: Record<WeekdayThemeKey, DailyThemeConfig> = {
+export const DAILY_THEMES: Record<WeekdayKey, DailyThemeConfig> = {
   monday: {
     id: 'pure-white',
     dayIndex: 1,
@@ -179,10 +190,19 @@ export function getTodayDailyTheme(): DailyThemeId {
   return getDailyThemeForDayIndex(localDayIndex);
 }
 
+export const DAILY_THEMES_BY_ID: Record<DailyThemeId, DailyThemeConfig> = {
+  cream: DAILY_THEMES.sunday,
+  'pure-white': DAILY_THEMES.monday,
+  lavender: DAILY_THEMES.tuesday,
+  mint: DAILY_THEMES.wednesday,
+  'warm-yellow': DAILY_THEMES.thursday,
+  'soft-pink': DAILY_THEMES.friday,
+  'sky-blue': DAILY_THEMES.saturday,
+};
+
 /**
  * Finds the config object for a given theme id.
  */
 export function getThemeConfigById(themeId: DailyThemeId): DailyThemeConfig {
-  const match = Object.values(DAILY_THEMES).find((t) => t.id === themeId);
-  return match || DAILY_THEMES.sunday;
+  return DAILY_THEMES_BY_ID[themeId] || DAILY_THEMES.sunday;
 }

@@ -23,6 +23,7 @@ describe('EventCard', () => {
     end_date: '2026-12-01T16:00:00Z',
     location: 'Central Library, New Delhi',
     event_url: 'https://example.com/event',
+    is_published: true,
     max_attendees: 50,
     created_at: '2026-11-01T00:00:00Z',
     updated_at: '2026-11-01T00:00:00Z',

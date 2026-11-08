@@ -120,7 +120,7 @@ describe("Cloudflare deployment routing guard", () => {
           routes: [
             { pattern: "sahadhyayi.com", custom_domain: true },
             { pattern: "www.sahadhyayi.com", custom_domain: true },
-            { pattern: "sahadhyayi.com/*" },
+            { pattern: "sahadhyayi.com/*" } as any,
           ],
         },
       }),

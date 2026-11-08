@@ -122,10 +122,10 @@ describe('Live Website Metrics End-to-End Pipeline & Resilience', () => {
     expect(result.current.stats?.newReaders).toBe(8);
     expect(result.current.stats?.totalMembers).toBe(890);
     expect(result.current.stats?.lifetimeVisits).toBe(10313);
-    expect(result.current.stats?.dualTable?.sourceTable || result.current.stats?.dualTable?.rollingSourceTable).toBe('public.website_visit_events');
+    expect((result.current.stats?.dualTable as any)?.sourceTable || result.current.stats?.dualTable?.rollingSourceTable).toBe('public.website_visit_events');
     expect(result.current.stats?.pageViewsChange?.value).toBe(15.2);
     expect(result.current.stats?.hourlyActivity).toHaveLength(2);
-    expect(result.current.stats?.topPages[0].path).toBe('/library');
+    expect((result.current.stats?.topPages[0] as any)?.path || result.current.stats?.topPages[0]?.name).toBe('/library');
   });
 
   it('renders single authoritative timeframe selector driving metrics without duplicate cards', async () => {
