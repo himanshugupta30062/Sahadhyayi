@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, Calendar, MapPin, BookOpen, MessageCircle, ShieldCheck } from 'lucide-react';
+import { Users, Calendar, MapPin, BookOpen, MessageCircle, ShieldCheck, Lock } from 'lucide-react';
 import { Group } from '@/hooks/useGroupManagement';
 import { DEFAULT_READING_GROUP_NAME, useJoinGroup, useLeaveGroup } from '@/hooks/useGroupManagement';
 import { useAuth } from '@/contexts/authHelpers';
@@ -32,6 +32,11 @@ const GroupCard: React.FC<GroupCardProps> = ({
   const handleJoinLeave = () => {
     if (!user) {
       toast.error('Please sign in to join groups');
+      return;
+    }
+
+    if (!isJoined && group.is_encrypted) {
+      toast.error('This reading group is invite-only. Request an invitation from an admin to join.');
       return;
     }
 
@@ -101,16 +106,28 @@ const GroupCard: React.FC<GroupCardProps> = ({
           )}
           <Button
             onClick={handleJoinLeave}
-            disabled={joinGroup.isPending || leaveGroup.isPending || (isJoined && group.name === DEFAULT_READING_GROUP_NAME)}
+            disabled={joinGroup.isPending || leaveGroup.isPending || (isJoined && group.name === DEFAULT_READING_GROUP_NAME) || (!isJoined && Boolean(group.is_encrypted))}
             className={`${isJoined && onChat ? 'flex-1' : 'w-full'} ${
               isJoined && group.name === DEFAULT_READING_GROUP_NAME
                 ? "bg-muted text-muted-foreground cursor-default"
                 : isJoined
                   ? "bg-red-600 hover:bg-red-700"
-                  : "bg-amber-600 hover:bg-amber-700"
+                  : group.is_encrypted
+                    ? "bg-muted text-muted-foreground border border-border cursor-not-allowed opacity-80"
+                    : "bg-amber-600 hover:bg-amber-700"
             }`}
           >
-            {isJoined && group.name === DEFAULT_READING_GROUP_NAME ? 'Permanent Community Member' : isJoined ? 'Leave Group' : 'Join Group'}
+            {isJoined && group.name === DEFAULT_READING_GROUP_NAME
+              ? 'Permanent Community Member'
+              : isJoined
+                ? 'Leave Group'
+                : group.is_encrypted
+                  ? (
+                    <span className="flex items-center justify-center gap-1.5">
+                      <Lock className="w-3.5 h-3.5" /> Invite-Only
+                    </span>
+                  )
+                  : 'Join Group'}
           </Button>
         </div>
       </CardContent>

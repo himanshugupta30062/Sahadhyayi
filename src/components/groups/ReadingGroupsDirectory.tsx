@@ -584,17 +584,30 @@ const ReadingGroupsDirectory = () => {
                     ) : (
                       <>
                         {user ? (
-                          <Button
-                            size="sm"
-                            className="flex-1 bg-gradient-button text-primary-foreground gap-1.5"
-                            disabled={membershipPending}
-                            onClick={() => void handleMembership(group, false)}
-                          >
-                            {membershipPending
-                              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                              : <UserPlus className="h-3.5 w-3.5" />}
-                            Join Group
-                          </Button>
+                          group.is_encrypted ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled
+                              className="flex-1 opacity-80 gap-1.5 text-xs cursor-not-allowed bg-muted/30"
+                              title="This reading circle is invite-only. Request an invitation from a group admin to join."
+                            >
+                              <Lock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                              Invite-Only
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              className="flex-1 bg-gradient-button text-primary-foreground gap-1.5"
+                              disabled={membershipPending}
+                              onClick={() => void handleMembership(group, false)}
+                            >
+                              {membershipPending
+                                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                : <UserPlus className="h-3.5 w-3.5" />}
+                              Join Group
+                            </Button>
+                          )
                         ) : (
                           <SignInLink>
                             <Button size="sm" className="flex-1 bg-gradient-button text-primary-foreground gap-1.5">
