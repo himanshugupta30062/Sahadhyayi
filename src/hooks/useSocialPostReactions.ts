@@ -74,7 +74,7 @@ export const useBatchPostReactions = (postIds: string[]) => {
   const { user } = useAuth();
 
   return useQuery<Record<string, PostReactionSummary>>({
-    queryKey: ['post-reactions-batch', [...postIds].sort().join(',')],
+    queryKey: ['post-reactions-batch', [...postIds].sort((a, b) => a.localeCompare(b)).join(',')],
     queryFn: async () => {
       if (!postIds || postIds.length === 0) return {};
 
@@ -182,9 +182,9 @@ export const useTogglePostReaction = () => {
     onMutate: async ({ postId, reactionType }) => {
       await queryClient.cancelQueries({ queryKey: ['post-reactions-batch'] });
     },
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['post-reactions-batch'] });
-      queryClient.invalidateQueries({ queryKey: ['social-posts'] });
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['post-reactions-batch'] });
+      void queryClient.invalidateQueries({ queryKey: ['social-posts'] });
     },
     onError: (err) => {
       toast({

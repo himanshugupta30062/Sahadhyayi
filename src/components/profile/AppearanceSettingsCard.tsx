@@ -120,9 +120,9 @@ export const AppearanceSettingsCard: React.FC = () => {
       <CardContent className="p-5 sm:p-6 space-y-6">
         {/* Mode Selector Tabs */}
         <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
             Theme Mode
-          </label>
+          </span>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             {/* 1. Daily Theme */}
             <button
@@ -203,9 +203,9 @@ export const AppearanceSettingsCard: React.FC = () => {
         {/* 7 Daily Theme Swatches & Cards */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block">
               7 Day-Wise Literary Palettes
-            </label>
+            </span>
             <span className="text-[11px] text-muted-foreground">
               {mode === 'daily'
                 ? `Today is ${todayConfig.dayName}`

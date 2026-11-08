@@ -1,7 +1,18 @@
 export function parseLibgenHtml(html) {
   const books = [];
   if (!html || typeof html !== 'string') return books;
-  const strip = (str) => (str ? str.replace(/<[^>]+>/g, '').trim() : '');
+  const strip = (str) => {
+    if (!str) return '';
+    let result = '';
+    let inTag = false;
+    for (let i = 0; i < str.length; i++) {
+      const ch = str[i];
+      if (ch === '<') inTag = true;
+      else if (ch === '>') inTag = false;
+      else if (!inTag) result += ch;
+    }
+    return result.trim();
+  };
 
   const rawRows = html.split(/<tr\b[^>]*>/i).slice(1);
   let index = 0;

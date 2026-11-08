@@ -51,11 +51,24 @@ function hasUsableCover(raw) {
   return trimmed.startsWith('http://') || trimmed.startsWith('https://');
 }
 
+function stripBrackets(str) {
+  let result = '';
+  let parenDepth = 0;
+  let bracketDepth = 0;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i];
+    if (ch === '(') parenDepth++;
+    else if (ch === ')' && parenDepth > 0) parenDepth--;
+    else if (ch === '[') bracketDepth++;
+    else if (ch === ']' && bracketDepth > 0) bracketDepth--;
+    else if (parenDepth === 0 && bracketDepth === 0) result += ch;
+  }
+  return result;
+}
+
 function cleanTitleForMatch(title) {
   if (!title) return '';
-  return title
-    .replace(/\[[^\]]*\]/g, '')
-    .replace(/\([^)]*\)/g, '')
+  return stripBrackets(title)
     .replace(/[^\w\s]/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim()

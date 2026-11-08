@@ -252,7 +252,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const toggleTheme = useCallback(() => {
     if (isDark) {
-      setMode(prefs.customTheme ? 'daily' : 'daily');
+      setMode(prefs.customTheme ? 'custom' : 'daily');
     } else {
       setMode('dark');
     }

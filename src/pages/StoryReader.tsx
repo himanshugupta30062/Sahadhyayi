@@ -65,7 +65,7 @@ export default function StoryReader() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const currentPartNum = partNumParam ? Math.max(1, parseInt(partNumParam, 10) || 1) : 1;
+  const currentPartNum = partNumParam ? Math.max(1, Number.parseInt(partNumParam, 10) || 1) : 1;
 
   // Query part details
   const { data, isLoading, isError, error } = useStoryPart(storyId, currentPartNum);
@@ -514,7 +514,7 @@ export default function StoryReader() {
                                   disabled={idx === 0}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleMovePart(idx, 'up');
+                                    void handleMovePart(idx, 'up');
                                   }}
                                   className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
                                   title="Move chapter up"
@@ -527,7 +527,7 @@ export default function StoryReader() {
                                   disabled={idx === allParts.length - 1}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleMovePart(idx, 'down');
+                                    void handleMovePart(idx, 'down');
                                   }}
                                   className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
                                   title="Move chapter down"
@@ -553,7 +553,7 @@ export default function StoryReader() {
                                     size="icon"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleDeletePart(item.id);
+                                      void handleDeletePart(item.id);
                                     }}
                                     className="h-6 w-6 p-0 text-rose-500 hover:text-rose-700"
                                     title="Delete chapter"

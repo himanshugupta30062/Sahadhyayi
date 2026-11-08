@@ -61,7 +61,7 @@ function markdownToHtml(md: string): string {
     // Images
     .replace(/!\[([^\]]*)\]\(([^\s)]+)\)/g, '<img src="$2" alt="$1" class="rounded-lg max-w-full my-6" loading="lazy" />')
     // Links
-    .replace(/\[([^\]]+)\]\(([^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-[hsl(var(--brand-primary))] underline">$1</a>')
+    .replace(/\[([^[\]\r\n]+)\]\(([^()\s\r\n]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-[hsl(var(--brand-primary))] underline">$1</a>')
     // Unordered lists
     .replace(/^- (.+)$/gm, '<li>$1</li>')
     // Ordered lists

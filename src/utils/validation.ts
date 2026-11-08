@@ -197,8 +197,17 @@ export const validateUsername = (username: string): { isValid: boolean; message?
 export const sanitizeInput = (input: string, maxLength?: number): string => {
   if (!input || typeof input !== 'string') return '';
   
-  let sanitized = input
-    .replace(/<[^>]+>/g, '') // Strip HTML tags
+  // Strip HTML tags with linear scan to eliminate regex backtracking
+  let stripped = '';
+  let inTag = false;
+  for (let i = 0; i < input.length; i++) {
+    const ch = input[i];
+    if (ch === '<') inTag = true;
+    else if (ch === '>') inTag = false;
+    else if (!inTag) stripped += ch;
+  }
+
+  let sanitized = stripped
     .replace(/[<>]/g, '') // Remove dangling angle brackets
     .replace(/javascript:/gi, '') // Remove javascript protocols
     .replace(/on[a-z]{1,32}[ \t]*=/gi, '') // Remove event handlers

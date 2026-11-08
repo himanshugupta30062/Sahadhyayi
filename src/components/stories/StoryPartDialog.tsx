@@ -140,7 +140,7 @@ export const StoryPartDialog: React.FC<StoryPartDialogProps> = ({
                 min={1}
                 max={STORY_LIMITS.MAX_PARTS_PER_SERIES}
                 value={partNumber}
-                onChange={(e) => setPartNumber(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                onChange={(e) => setPartNumber(Math.max(1, Number.parseInt(e.target.value, 10) || 1))}
                 disabled={isEditing}
                 className="h-10 rounded-xl border-[#E8E2D9] dark:border-[#29332D]"
               />

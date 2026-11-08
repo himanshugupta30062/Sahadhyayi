@@ -219,7 +219,7 @@ const ReadingGroupsDirectory = () => {
       setShowCreateDialog(false);
       toast.success(`Reading group "${name}" created!`);
       // Auto-copy invite link after creation
-      if (created) copyInviteLink({ id: (created as Group).id, name });
+      if (created) void copyInviteLink({ id: (created as Group).id, name });
     } catch (error) {
       toast.error(getErrorMessage(error, 'Could not create the group. Please try again.'));
     }

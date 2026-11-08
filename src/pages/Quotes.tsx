@@ -69,9 +69,9 @@ const QuotesPage = () => {
 
   const handleAddQuote = () => {
     if (!quoteText.trim()) return;
-    const pageNum = parseInt(quotePage.trim(), 10);
+    const pageNum = Number.parseInt(quotePage.trim(), 10);
     addQuote(quoteText, quoteSource, undefined, {
-      page: !isNaN(pageNum) ? pageNum : undefined,
+      page: !Number.isNaN(pageNum) ? pageNum : undefined,
     });
     setQuoteText('');
     setQuoteSource('');
@@ -298,7 +298,7 @@ const QuotesPage = () => {
                             <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/40 text-xs text-muted-foreground">
                               <div>
                                 {q.source && <span className="font-semibold text-foreground">— {q.source}</span>}
-                                {(q.page || q.location) && (
+                                {Boolean(q.page || q.location) && (
                                   <span className="ml-2 text-muted-foreground">
                                     ({q.page ? `Page ${q.page}` : 'Reading location'})
                                   </span>
