@@ -24,6 +24,11 @@ const groupDiscoveryHardening = readFileSync(
   'utf8',
 );
 
+const groupMembershipHardening = readFileSync(
+  toPath('../../supabase/migrations/20261108120000_harden_reading_group_membership_and_invite_security.sql'),
+  'utf8',
+);
+
 describe('social feed and reading group RLS policies', () => {
   it('replaces the historical broad feed rule with audience-scoped post visibility', () => {
     // This historical migration introduced authenticated-wide visibility; the later
@@ -68,5 +73,17 @@ describe('social feed and reading group RLS policies', () => {
     expect(groupDiscoveryHardening).toMatch(/REVOKE ALL PRIVILEGES ON TABLE public\.group_chat_members FROM anon/i);
     expect(groupDiscoveryHardening).toMatch(/REVOKE ALL PRIVILEGES ON TABLE public\.group_messages FROM anon/i);
     expect(groupDiscoveryHardening).toMatch(/GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public\.group_messages TO authenticated/i);
+  });
+
+  it('restricts reading group membership insertion to public groups and authorized admins', () => {
+    expect(groupMembershipHardening).toMatch(
+      /DROP POLICY IF EXISTS "Authenticated users can join reading groups" ON public\.group_chat_members/i,
+    );
+    expect(groupMembershipHardening).toMatch(
+      /CREATE POLICY "Authenticated users can join public reading groups"[\s\S]*ON public\.group_chat_members[\s\S]*FOR INSERT[\s\S]*TO authenticated[\s\S]*gc\.is_encrypted IS NOT TRUE/i,
+    );
+    expect(groupMembershipHardening).toMatch(
+      /CREATE POLICY "Group admins can add members"[\s\S]*ON public\.group_chat_members[\s\S]*FOR INSERT[\s\S]*TO authenticated[\s\S]*admin_member\.role = 'admin'/i,
+    );
   });
 });
