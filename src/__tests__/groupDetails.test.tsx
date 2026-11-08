@@ -45,6 +45,10 @@ vi.mock('@/hooks/useGroupManagement', () => ({
     mutateAsync: vi.fn(),
     isPending: false,
   }),
+  useCreateGroupInvitation: () => ({
+    mutateAsync: vi.fn(),
+    isPending: false,
+  }),
 }));
 
 vi.mock('@/hooks/useUserGroups', () => ({

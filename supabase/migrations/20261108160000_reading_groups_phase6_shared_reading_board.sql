@@ -196,7 +196,7 @@ BEGIN
   IF v_actor IS NULL THEN
     RAISE EXCEPTION 'Authentication required' USING ERRCODE = '28000';
   END IF;
-  IF p_status NOT IN ('current', 'up_next', 'completed', 'archived') THEN
+  IF p_status IS NULL OR p_status NOT IN ('current', 'up_next', 'completed', 'archived') THEN
     RAISE EXCEPTION 'Unsupported reading-list status' USING ERRCODE = '22023';
   END IF;
 
