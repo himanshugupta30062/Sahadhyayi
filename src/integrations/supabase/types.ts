@@ -3103,6 +3103,30 @@ export type Database = {
         }
         Relationships: []
       }
+      reader_discovery_locations: {
+        Row: {
+          consented_at: string
+          latitude: number
+          longitude: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          consented_at?: string
+          latitude: number
+          longitude: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          consented_at?: string
+          latitude?: number
+          longitude?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_bookshelf: {
         Row: {
           added_at: string | null
@@ -4201,11 +4225,24 @@ export type Database = {
       get_nearby_book_readers: {
         Args: { book_uuid: string; radius_km?: number }
         Returns: {
+          approximate_latitude: number | null
+          approximate_longitude: number | null
           distance_km: number
           is_friend: boolean
           reader_id: string
           reader_name: string
           reading_since: string
+        }[]
+      }
+      get_nearby_reader_matches: {
+        Args: { book_uuid: string; radius_km?: number }
+        Returns: {
+          distance_band: string
+          is_friend: boolean
+          profile_photo_url: string | null
+          reader_id: string
+          reader_name: string
+          username: string | null
         }[]
       }
       get_nearby_readers: {
