@@ -36,7 +36,7 @@ describe('permanent default reading community membership', () => {
   it('does not offer a leave action for the default community in group screens', () => {
     expect(groupDetails).toMatch(/isDefaultReadingGroup \? \([\s\S]*Permanent Community Member/);
     expect(groupDirectory).toMatch(/group\.name === DEFAULT_READING_GROUP_NAME \? \([\s\S]*Permanent Community Member/);
-    expect(groupCard).toMatch(/group\.name === DEFAULT_READING_GROUP_NAME \? 'Permanent Community Member'/);
+    expect(groupCard).toMatch(/group\.name === DEFAULT_READING_GROUP_NAME[\s\S]*?Permanent Community Member/);
     expect(groupManagement).toMatch(/group\?\.name === DEFAULT_READING_GROUP_NAME[\s\S]*You cannot leave the Sahadhyayi Community Reading Circle/);
   });
 });

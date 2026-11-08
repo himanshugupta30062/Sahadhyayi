@@ -143,6 +143,12 @@ vi.mock('@/hooks/useGroupManagement', () => ({
     mutateAsync: vi.fn(),
     isPending: false,
   }),
+  useCreateGroupInvitation: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false }),
+  useRedeemGroupInvitation: () => ({ mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false }),
+  useGroupModerationMembers: () => ({ data: [], isLoading: false, error: null, refetch: vi.fn() }),
+  useModerateGroupMember: () => ({ mutate: vi.fn(), isPending: false }),
+  useSetGroupMemberRole: () => ({ mutate: vi.fn(), isPending: false }),
+  useTransferGroupOwnership: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
 vi.mock('@/hooks/useUserGroups', () => ({
@@ -190,6 +196,7 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
         }),
       }),
     }),
+    rpc: vi.fn().mockResolvedValue({ data: [], error: null }),
   },
 }));
 

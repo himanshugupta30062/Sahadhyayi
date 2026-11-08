@@ -181,7 +181,7 @@ const BookCard = ({ book, onDownloadPDF }: BookCardProps) => {
               onClick={() => void trackBookOpened(book.id, book.title)}
               className="group/btn relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 transform hover:scale-110 active:scale-95 shadow-lg hover:shadow-xl backdrop-blur-sm bg-amber-600 text-white hover:bg-amber-500"
               title="Read Online"
-              aria-label={`Read ${book.title} online`}
+              aria-label={`Read Online: ${book.title}`}
             >
               <BookOpen className="w-5 h-5" />
               <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-200 pointer-events-none">

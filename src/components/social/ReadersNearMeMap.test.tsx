@@ -1,4 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import '@testing-library/jest-dom/vitest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ReadersNearMeMap } from './ReadersNearMeMap';
@@ -41,6 +42,12 @@ vi.mock('@/lib/locationService', () => ({
   getCurrentLocation: mocks.getCurrentLocation,
 }));
 
+vi.mock('@/hooks/useFriends', () => ({
+  useFriends: () => ({ data: [], isLoading: false }),
+  useFriendRequests: () => ({ data: [], isLoading: false }),
+  useSendFriendRequest: () => ({ mutate: vi.fn(), isPending: false }),
+}));
+
 vi.mock('@/components/social/BookFilterDropdown', () => ({
   BookFilterDropdown: ({ onBookSelect }: { onBookSelect: (book: { id: string; title: string }) => void }) => (
     <button type="button" onClick={() => onBookSelect({ id: 'book-1', title: 'The Test Book' })}>
@@ -72,6 +79,18 @@ vi.mock('sonner', () => ({
   toast: { error: vi.fn(), success: vi.fn() },
 }));
 
+const renderReaderMap = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <ReadersNearMeMap />
+    </QueryClientProvider>,
+  );
+};
+
 describe('ReadersNearMeMap', () => {
   beforeEach(() => {
     mocks.user = { id: 'user-1', email: 'reader@example.com', user_metadata: { full_name: 'Current Reader' } };
@@ -93,7 +112,7 @@ describe('ReadersNearMeMap', () => {
 
   it('does not request GPS or nearby readers just because the map is opened', async () => {
     mocks.user = null;
-    render(<ReadersNearMeMap />);
+    renderReaderMap();
 
     expect(await screen.findByText('Location sharing is off')).toBeInTheDocument();
     expect(mocks.getCurrentLocation).not.toHaveBeenCalled();
@@ -102,7 +121,7 @@ describe('ReadersNearMeMap', () => {
   });
 
   it('requests GPS only after the user enables sharing and confirms consent', async () => {
-    render(<ReadersNearMeMap />);
+    renderReaderMap();
 
     await screen.findByText('Location sharing is off');
     fireEvent.click(screen.getByRole('button', { name: 'Enable location sharing' }));
@@ -134,7 +153,7 @@ describe('ReadersNearMeMap', () => {
       return Promise.resolve({ data: null, error: null });
     });
 
-    render(<ReadersNearMeMap />);
+    renderReaderMap();
     await screen.findByText('Location sharing is on');
     fireEvent.click(screen.getByRole('button', { name: 'Choose test book' }));
 
@@ -169,7 +188,7 @@ describe('ReadersNearMeMap', () => {
       return Promise.resolve({ data: null, error: null });
     });
 
-    render(<ReadersNearMeMap />);
+    renderReaderMap();
     await screen.findByText('Location sharing is on');
     fireEvent.click(screen.getByRole('button', { name: 'Choose test book' }));
     expect(await screen.findByText('Jane Reader')).toBeInTheDocument();
@@ -202,7 +221,7 @@ describe('ReadersNearMeMap', () => {
       return Promise.resolve({ data: null, error: null });
     });
 
-    render(<ReadersNearMeMap />);
+    renderReaderMap();
     await screen.findByText('Location sharing is on');
     fireEvent.click(screen.getByRole('button', { name: 'Choose test book' }));
 
