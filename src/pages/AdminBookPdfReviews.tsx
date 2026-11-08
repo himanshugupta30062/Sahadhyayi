@@ -216,7 +216,7 @@ export default function AdminBookPdfReviews() {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <SEO title="PDF Verification Review | Sahadhyayi Admin" description="Review AI-assisted book PDF submissions before publication." />
+      <SEO title="PDF Verification Review | Sahadhyayi Admin" description="Review AI-assisted book PDF submissions before publication." noIndex={true} />
       <div className="container mx-auto max-w-7xl space-y-6 px-4 py-8">
         <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>

@@ -79,6 +79,7 @@ const HelpCenter = () => {
       <SEO
         title="Help Center - Sahadhyayi"
         description="Get help with Sahadhyayi features, find answers to frequently asked questions, and learn how to make the most of your reading experience."
+        canonical="https://sahadhyayi.com/help-center"
       />
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 py-8">
         <div className="max-w-4xl mx-auto px-4">

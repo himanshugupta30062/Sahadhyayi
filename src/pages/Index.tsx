@@ -54,12 +54,11 @@ const Index = () => {
       <SEO
         title="Sahadhyayi - Digital Reading Community & Book Library"
         description="Sahadhyayi means 'fellow reader' in Sanskrit. Join our reading community, discover books, and connect with fellow readers worldwide."
+        canonical="https://sahadhyayi.com/"
         url="https://sahadhyayi.com/"
         keywords={['Sahadhyayi', 'fellow reader', 'digital reading community', 'book library', 'reading platform', 'book lovers']}
+        schema={structuredData}
       />
-      <script type="application/ld+json">
-        {JSON.stringify(structuredData)}
-      </script>
 
       {/* 01. Existing Animated Hero (LOCKED) */}
       <ErrorBoundary fallback={null}>

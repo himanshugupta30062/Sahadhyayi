@@ -189,7 +189,7 @@ export default function AdminBookPdfManager() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <SEO title="Admin PDF Manager | Sahadhyayi" description="Review book PDF rights and upload verified files to the Sahadhyayi catalog." />
+      <SEO title="Admin PDF Manager | Sahadhyayi" description="Review book PDF rights and upload verified files to the Sahadhyayi catalog." noIndex={true} />
       <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
         <header className="space-y-3">
           <div className="flex items-center gap-2 text-sm font-medium text-primary"><ShieldCheck className="h-4 w-4" /> Administrator tools</div>

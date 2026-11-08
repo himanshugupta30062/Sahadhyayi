@@ -53,7 +53,7 @@ export default function MySavedResearch() {
 
   return (
     <main className="min-h-screen bg-[#F7F8F5] px-4 py-8 text-[#1C2820] dark:bg-[#101612] dark:text-[#E9EFEA] sm:px-6">
-      <SEO title="My Saved Research | Sahadhyayi" description="Your personal collection of saved research papers." />
+      <SEO title="My Saved Research | Sahadhyayi" description="Your personal collection of saved research papers." noIndex={true} />
       <div className="mx-auto max-w-5xl">
         <Link to="/research-papers" className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Back to Research Papers</Link>
         <header className="mb-8 flex flex-wrap items-center justify-between gap-4">

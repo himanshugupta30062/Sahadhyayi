@@ -350,6 +350,7 @@ export const AdminLibraryArchive: React.FC<AdminLibraryArchiveProps> = ({ defaul
       <SEO
         title="Library Archive & Recovery Vault"
         description="Admin dashboard to safely archive unwanted or duplicate books, hide them from public discovery, and restore them with 1-click."
+        noIndex={true}
       />
 
       <div className="max-w-7xl mx-auto space-y-8">

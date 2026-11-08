@@ -7,6 +7,7 @@ const DmcaPolicy = () => {
       <SEO
         title="DMCA Policy - Sahadhyayi"
         description="Learn about Sahadhyayi's Digital Millennium Copyright Act (DMCA) policy and how to report copyright infringement."
+        canonical="https://sahadhyayi.com/dmca"
       />
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 py-8">
         <div className="max-w-4xl mx-auto px-4">

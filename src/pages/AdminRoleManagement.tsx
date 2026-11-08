@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import SEO from '@/components/SEO';
 
 type UserRole = { user_id: string; email: string; role: string; created_at: string };
 const PERMISSIONS = [
@@ -97,6 +98,7 @@ export default function AdminRoleManagement() {
 
   return (
     <main className="min-h-screen bg-background px-4 py-8 md:px-8">
+      <SEO title="Role Management | Sahadhyayi Admin" description="Administrative role and permission control." noIndex={true} />
       <div className="mx-auto max-w-6xl space-y-6">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>

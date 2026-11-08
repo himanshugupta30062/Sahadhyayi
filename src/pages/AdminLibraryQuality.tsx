@@ -306,6 +306,7 @@ export const AdminLibraryQuality: React.FC = () => {
       <SEO
         title="Catalog Quality & Duplicate Review"
         description="Admin dashboard to identify duplicate editions, review recommendations, and safely merge or archive records."
+        noIndex={true}
       />
 
       <div className="max-w-7xl mx-auto space-y-8">

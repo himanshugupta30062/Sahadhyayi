@@ -65,7 +65,7 @@ export default function ResearchPaperSubmission(){
   }catch(err){if(filePath)await supabase.storage.from("research-paper-quarantine").remove([filePath]);toast({title:"Submission failed",description:err instanceof Error?err.message:"Please try again.",variant:"destructive"});}
   finally{setBusy(false);}
  }
- return <main className="min-h-screen bg-background"><SEO title={kind==="publish"?"Publish Research Paper | Sahadhyayi":"Add Research Paper | Sahadhyayi"} description="Contribute research to Sahadhyayi's scholarly catalogue."/><div className="mx-auto max-w-2xl px-4 py-8">
+ return <main className="min-h-screen bg-background"><SEO title={kind==="publish"?"Publish Research Paper | Sahadhyayi":"Add Research Paper | Sahadhyayi"} description="Contribute research to Sahadhyayi's scholarly catalogue." noIndex={true}/><div className="mx-auto max-w-2xl px-4 py-8">
  <Link to="/research-papers" className="mb-5 inline-flex items-center gap-2 text-sm text-muted-foreground"><ArrowLeft className="h-4 w-4"/>Back to Research Papers</Link>
  <h1 className="text-3xl font-semibold">{kind==="publish"?"Publish your research paper":"Add a research paper"}</h1><p className="mt-2 text-muted-foreground">{kind==="publish"?"Share your original work. Manuscripts remain private until reviewed.":"Recommend a paper from a journal or repository for inclusion."}</p>
  <form onSubmit={submit} className="mt-6 space-y-5 rounded-xl border bg-card p-5">
