@@ -115,7 +115,7 @@ const GroupReadingBoard = ({ groupId, canManage }: GroupReadingBoardProps) => {
     const isShared = shareDrafts[book.id] ?? book.my_is_shared;
     const pageValue = pageDrafts[book.id] ?? String(book.my_current_page);
     const canTrack = book.status !== 'archived';
-    const progress = book.pages && book.pages > 0
+    const progress = typeof book.pages === 'number' && book.pages > 0
       ? Math.min(100, Math.round((book.my_current_page / book.pages) * 100))
       : null;
 

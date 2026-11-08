@@ -86,17 +86,10 @@ export const BookSelectionModal = ({ isOpen, onClose, onSelect }: BookSelectionM
               filteredBooks.slice(0, 50).map((book) => {
                 const isSelected = selectedBookId === book.id;
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={book.id}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        handleBookSelect(book);
-                      }
-                    }}
-                    className={`flex items-start space-x-3 p-3 rounded-xl cursor-pointer transition-all ${
+                    className={`w-full text-left flex items-start space-x-3 p-3 rounded-xl cursor-pointer transition-all ${
                       isSelected
                         ? 'bg-[#EBF2EC] dark:bg-[#1C3024] border border-[#C8DBCB] dark:border-[#315C43] shadow-xs'
                         : 'bg-white dark:bg-[#0B0D0C]/60 hover:bg-[#FAF7F2] dark:hover:bg-[#16211A] border border-[#E8E2D9] dark:border-[#29332D]/70'
@@ -156,7 +149,7 @@ export const BookSelectionModal = ({ isOpen, onClose, onSelect }: BookSelectionM
                         </p>
                       )}
                     </div>
-                  </div>
+                  </button>
                 );
               })
             ) : (

@@ -354,7 +354,7 @@ export default function PublishBook() {
                     {form.genre && <span className="inline-block text-xs bg-primary/10 text-primary px-2 py-1 rounded">{form.genre}</span>}
                     {form.language && <span className="inline-block text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded">{form.language}</span>}
                   </div>
-                  {form.pages && <p className="text-sm text-muted-foreground">{form.pages} pages · ~{readingTime} min read</p>}
+                  {Boolean(form.pages) && <p className="text-sm text-muted-foreground">{form.pages} pages · ~{readingTime} min read</p>}
                   {pdfFile && <p className="text-sm text-muted-foreground">📄 {pdfFile.name} ({formatFileSize(pdfFile.size)})</p>}
                 </div>
               </div>

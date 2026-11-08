@@ -70,18 +70,11 @@ const FriendMatchesList: React.FC<{ myDna: ReadingDna }> = ({ myDna }) => {
             const hue = Math.min(130, Math.max(0, score * 1.3));
             const friendName = profile?.full_name ?? "Reader";
             return (
-              <div
+              <button
+                type="button"
                 key={dna.user_id}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    setSelectedFriend({ dna, name: friendName });
-                  }
-                }}
                 onClick={() => setSelectedFriend({ dna, name: friendName })}
-                className="flex items-center justify-between p-2.5 rounded-xl border border-border/60 hover:bg-muted/30 transition-all cursor-pointer group"
+                className="w-full text-left flex items-center justify-between p-2.5 rounded-xl border border-border/60 hover:bg-muted/30 transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <Avatar className="w-9 h-9 border border-border/80">
@@ -113,7 +106,7 @@ const FriendMatchesList: React.FC<{ myDna: ReadingDna }> = ({ myDna }) => {
                   </Badge>
                   <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
                 </div>
-              </div>
+              </button>
             );
           })}
         </CardContent>

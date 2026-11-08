@@ -79,7 +79,7 @@ const AdminFeedback = () => {
               </CardHeader>
               <CardContent className="space-y-1">
                 <p className="text-sm text-muted-foreground">From: {item.name} ({item.email})</p>
-                {item.rating && <p className="text-sm">Rating: {item.rating}</p>}
+                {Boolean(item.rating) && <p className="text-sm">Rating: {item.rating}</p>}
                 <p>{item.message}</p>
               </CardContent>
             </Card>

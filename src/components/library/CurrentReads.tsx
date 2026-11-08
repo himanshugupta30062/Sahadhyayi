@@ -108,18 +108,11 @@ const CurrentReads: React.FC = () => {
         const progressVal = typeof item.progress === 'number' ? Math.round(item.progress) : 0;
 
         return (
-          <div
+          <button
+            type="button"
             key={item.id || item.book_id || idx}
             onClick={() => { void handleOpen(item); }}
-            className="group relative flex gap-3.5 p-4 rounded-xl bg-white dark:bg-[#111614] hover:bg-[#F4EFEA] dark:hover:bg-[#161D19] border border-[#E8E2D9] dark:border-[#29332D] hover:border-[#1C442D]/40 dark:hover:border-[#315C43] transition-all duration-200 cursor-pointer shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"
-            tabIndex={0}
-            role="button"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                void handleOpen(item);
-              }
-            }}
+            className="w-full text-left group relative flex gap-3.5 p-4 rounded-xl bg-white dark:bg-[#111614] hover:bg-[#F4EFEA] dark:hover:bg-[#161D19] border border-[#E8E2D9] dark:border-[#29332D] hover:border-[#1C442D]/40 dark:hover:border-[#315C43] transition-all duration-200 cursor-pointer shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"
           >
             {/* Book Cover */}
             <div className="w-14 h-20 sm:w-16 sm:h-24 shrink-0 rounded-lg overflow-hidden bg-[#F4EFEA] dark:bg-[#161D19] border border-[#E8E2D9] dark:border-[#29332D] relative shadow-xs">
@@ -164,7 +157,7 @@ const CurrentReads: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </button>
         );
       })}
 

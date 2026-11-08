@@ -39,7 +39,7 @@ const LibgenBookCard: React.FC<LibgenBookCardProps> = ({ book }) => {
               {book.publisher}
             </span>
           )}
-          {book.year && (
+          {Boolean(book.year) && (
             <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
               {book.year}
             </span>
@@ -49,7 +49,7 @@ const LibgenBookCard: React.FC<LibgenBookCardProps> = ({ book }) => {
               {book.format}
             </span>
           )}
-          {book.size && (
+          {Boolean(book.size) && (
             <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded">
               {book.size}
             </span>

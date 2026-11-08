@@ -97,10 +97,11 @@ export const WhatsAppCallCenterFab: React.FC = () => {
       {/* Quick Call Center & WhatsApp Card */}
       {isOpen && (
         <>
-          <div
-            className="fixed inset-0 z-50 bg-black/30 backdrop-blur-[1px] sm:bg-transparent"
+          <button
+            type="button"
+            aria-label="Close support overlay"
+            className="fixed inset-0 z-50 bg-black/30 backdrop-blur-[1px] sm:bg-transparent border-0 cursor-default p-0 m-0 w-full h-full"
             onClick={() => setIsOpen(false)}
-            aria-hidden="true"
           />
           <div
             ref={panelRef}
