@@ -15,3 +15,4 @@ export const openSahadhyayiWhatsApp = (customMessage?: string) => {
   const url = `https://wa.me/${SAHADHYAYI_PHONE_RAW}?text=${encodeURIComponent(message)}`;
   window.open(url, '_blank', 'noopener,noreferrer');
 };
+
