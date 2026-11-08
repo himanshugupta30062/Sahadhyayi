@@ -32,9 +32,9 @@ export const useMarginNotes = (options?: { bookId?: string; filter?: "all" | "fr
   const bookId = options?.bookId;
   const filter = options?.filter ?? "all";
 
-  return useQuery({
+  return useQuery<MarginNote[]>({
     queryKey: ["margin-notes", bookId ?? "all", filter, user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<MarginNote[]> => {
       let friendIds: string[] = [];
       if (filter === "friends" && user) {
         const { data: friendships } = await supabase

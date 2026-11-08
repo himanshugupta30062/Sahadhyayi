@@ -28,10 +28,10 @@ export interface SpoilerComment {
 }
 
 export const useSpoilerThreads = (bookId?: string, options?: { enabled?: boolean }) => {
-  return useQuery({
+  return useQuery<SafeSpoilerThread[]>({
     queryKey: ["spoiler-threads", bookId ?? "all"],
     enabled: options?.enabled ?? true,
-    queryFn: async () => {
+    queryFn: async (): Promise<SafeSpoilerThread[]> => {
       let q = supabase
         .from("spoiler_threads_safe" as any)
         .select(

@@ -960,7 +960,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                     ) : (
                       <div className="space-y-2.5">
                         {groups.slice(0, 3).map((group) => {
-                          const memberCount = (group as any).group_members?.[0]?.count ?? group.member_count ?? null;
+                          const memberCount = (group as any).group_members?.[0]?.count ?? (group as any).member_count ?? null;
                           return (
                             <div
                               key={group.id}
@@ -1097,10 +1097,11 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                           replies: 15,
                         },
                       ].map((topic) => (
-                        <div
+                        <button
+                          type="button"
                           key={topic.title}
                           onClick={() => handleTabChange('threads')}
-                          className="group cursor-pointer rounded-xl border border-[#E8E8E3] dark:border-[#29332D]/70 bg-[#FAFAF8] dark:bg-[#111614] p-2.5 transition-colors hover:border-[#1C442D]/40 dark:hover:border-[#315C43] hover:bg-[#F4F3EF] dark:hover:bg-[#161D19]"
+                          className="w-full text-left group cursor-pointer rounded-xl border border-[#E8E8E3] dark:border-[#29332D]/70 bg-[#FAFAF8] dark:bg-[#111614] p-2.5 transition-colors hover:border-[#1C442D]/40 dark:hover:border-[#315C43] hover:bg-[#F4F3EF] dark:hover:bg-[#161D19]"
                         >
                           <p className="text-xs font-medium text-[#1C201D] dark:text-[#F3F0E7] group-hover:text-[#1C442D] dark:group-hover:text-[#D5B16D] line-clamp-1">
                             {topic.title}
@@ -1109,7 +1110,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                             <span className="truncate">📖 {topic.book}</span>
                             <span className="shrink-0 font-medium">{topic.replies} replies</span>
                           </div>
-                        </div>
+                        </button>
                       ))}
                     </div>
                   </SocialSurface>
