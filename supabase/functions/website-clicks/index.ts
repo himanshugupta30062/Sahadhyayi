@@ -14,7 +14,7 @@ serve(async (req) => {
   }
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json, Allow': 'POST, OPTIONS' }
+      status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Allow': 'POST, OPTIONS' }
     });
   }
 
@@ -85,7 +85,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ totalVisits: count }), {
       status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store }
+      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
     });
   } catch (error) {
     console.error('Error recording website visit:', error);
