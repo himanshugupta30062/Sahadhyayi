@@ -18,6 +18,8 @@ export interface Group {
   user_role?: 'admin' | 'member';
   group_members?: { count: number }[];
   is_encrypted?: boolean | null;
+  visibility?: 'public' | 'private' | 'unlisted' | null;
+  join_policy?: 'open' | 'approval' | 'invite_only' | null;
 }
 
 export interface GroupChat {
