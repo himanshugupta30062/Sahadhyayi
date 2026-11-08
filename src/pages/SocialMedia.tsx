@@ -48,7 +48,7 @@ const MarginNotesFeed = lazy(() => import('@/components/social/margins/MarginNot
 const EnhancedSocialFeed = lazy(() => import('@/components/social/EnhancedSocialFeed').then(({ EnhancedSocialFeed }) => ({ default: EnhancedSocialFeed })));
 const EnhancedReadingMap = lazy(() => import('@/components/social/EnhancedReadingMap').then(({ EnhancedReadingMap }) => ({ default: EnhancedReadingMap })));
 const FriendsLocationMap = lazy(() => import('@/components/social/FriendsLocationMap').then(({ FriendsLocationMap }) => ({ default: FriendsLocationMap })));
-const ReadingGroups = lazy(() => import('@/components/social/ReadingGroups').then(({ ReadingGroups }) => ({ default: ReadingGroups })));
+const ReadingGroups = lazy(() => import('@/components/social/ReadingGroups').then(({ ReadingGroups }) => ({ default: ReadingGroups })));\nconst MyUpcomingGroupEvents = lazy(() => import('@/components/groups/MyUpcomingGroupEvents'));
 const EnhancedFriendsManager = lazy(() => import('@/components/social/EnhancedFriendsManager').then(({ EnhancedFriendsManager }) => ({ default: EnhancedFriendsManager })));
 const SpoilerThreadsFeed = lazy(() => import('@/components/social/threads/SpoilerThreadsFeed'));
 const ReadingRoomsPanel = lazy(() => import('@/components/social/rooms/ReadingRoomsPanel'));
@@ -56,7 +56,7 @@ const ReadingDnaPanel = lazy(() => import('@/components/social/dna/ReadingDnaPan
 const BookReviewsFeed = lazy(() => import('@/components/social/BookReviewsFeed'));
 const StoriesFeed = lazy(() => import('@/components/stories/StoriesFeed'));
 
-const VALID_SOCIAL_TABS = ['feed', 'stories', 'reviews', 'rooms', 'threads', 'margins', 'dna', 'friends', 'map', 'groups'] as const;
+const VALID_SOCIAL_TABS = ['feed', 'stories', 'reviews', 'rooms', 'threads', 'margins', 'dna', 'friends', 'map', 'groups', 'events'] as const;
 const SOCIAL_TAB_LABELS: Record<string, string> = {
   feed: 'Community Feed',
   stories: 'Short Stories',
@@ -67,7 +67,7 @@ const SOCIAL_TAB_LABELS: Record<string, string> = {
   dna: 'Reading DNA',
   friends: 'Friends',
   map: 'Reader Map',
-  groups: 'Reading Groups',
+  groups: 'Reading Groups',\n  events: 'Upcoming Events',
 };
 
 // Reusable lazy-load fallback
@@ -475,7 +475,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                 >
                   <UsersIcon className="h-4 w-4" aria-hidden="true" />
                   Groups
-                </button>
+                </button>\n                <button type="button" aria-pressed={activeTab === 'events'} onClick={() => handleTabChange('events')} className={'inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-xs font-semibold ' + (activeTab === 'events' ? 'bg-[#1C442D] text-white dark:bg-[#D5B16D] dark:text-[#0B0D0C]' : 'text-[#636B65] hover:bg-[#F4F3EF] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E]')}><CalendarDays className="h-4 w-4"/>Events</button>
                 <button
                   type="button"
                   aria-pressed={activeTab === 'threads'}
@@ -842,7 +842,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                   <Suspense fallback={<TabLoader />}>
                     <ReadingGroups />
                   </Suspense>
-                </TabsContent>
+                </TabsContent>\n                <TabsContent value="events" className="mt-0"><Suspense fallback={<TabLoader />}><MyUpcomingGroupEvents /></Suspense></TabsContent>
               </section>
 
               {/* ── Right Column: Discovery Sidebar (Desktop) ── */}
