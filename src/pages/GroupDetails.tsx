@@ -85,7 +85,9 @@ const GroupDetails = () => {
   const isRequestPending = myMembership?.status === 'pending';
   const isBanned = myMembership?.status === 'banned';
   const actorRole = myMembership?.role;
-  const canManageGroup = isMember && ['owner', 'admin', 'moderator'].includes(actorRole ?? '');
+  const canManageGroup = isMember && (
+    actorRole === 'owner' || actorRole === 'admin' || actorRole === 'moderator'
+  );
   const activeMembers = members.filter((member) => member.status === 'active');
   const memberCount = membersLoading || !user?.id || !isMember
     ? Number(group?.member_count ?? group?.group_members?.[0]?.count ?? 0)
@@ -396,7 +398,7 @@ const GroupDetails = () => {
             </CardContent>
           </Card>
 
-          {canManageGroup && actorRole && (
+          {canManageGroup && (actorRole === 'owner' || actorRole === 'admin' || actorRole === 'moderator') && (
             <GroupModerationPanel
               groupId={group.id}
               currentUserId={user?.id || ''}
