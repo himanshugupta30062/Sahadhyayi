@@ -144,7 +144,7 @@ describe('Phase 8: Final QA, Design Consistency, Performance and Release Readine
         pdf_url: null,
         google_books_id: 'durga-gbooks-id',
         external_url: 'https://books.google.com/books?id=durga-gbooks-id&printsec=frontcover',
-        access_status: 'preview',
+        accessStatus: 'preview_only',
       };
 
       const queryClient = createTestQueryClient();

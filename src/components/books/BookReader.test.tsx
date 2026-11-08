@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import { MemoryRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const mocks = vi.hoisted(() => ({
   user: null as null | { id: string },
@@ -69,11 +70,19 @@ vi.mock('./ReaderMarginDrawer', () => ({
 
 import BookReader from './BookReader';
 
-const renderReader = (pdfUrl?: string, initialEntry = '/book/book-1') => render(
-  <MemoryRouter initialEntries={[initialEntry]}>
-    <BookReader bookId="book-1" bookTitle="The Dispossessed" pdfUrl={pdfUrl} />
-  </MemoryRouter>,
-);
+const renderReader = (pdfUrl?: string, initialEntry = '/book/book-1') => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={[initialEntry]}>
+        <BookReader bookId="book-1" bookTitle="The Dispossessed" pdfUrl={pdfUrl} />
+      </MemoryRouter>
+    </QueryClientProvider>,
+  );
+};
 
 describe('BookReader', () => {
   beforeEach(() => {

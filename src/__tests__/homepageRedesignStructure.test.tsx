@@ -261,7 +261,7 @@ describe('Homepage Redesign: Sections 03 to 11', () => {
       expect(challengesLink).toHaveAttribute('href', '/activity?tab=challenges');
 
       const groupsLink = screen.getByRole('link', { name: /^reading groups\b/i });
-      expect(groupsLink).toHaveAttribute('href', '/groups');
+      expect(groupsLink).toHaveAttribute('href', '/social?tab=groups');
 
       const eventsLink = screen.getByRole('link', { name: /events & festivals/i });
       expect(eventsLink).toHaveAttribute('href', '/events');

@@ -65,7 +65,6 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
 }));
 
 import {
-  DEFAULT_READING_GROUP_NAME,
   useGroups,
   useCreateGroup,
   useJoinGroup,
@@ -112,75 +111,101 @@ describe('useGroupManagement', () => {
     expect(mocks.order).toHaveBeenCalledWith('group_chats', 'created_at', { ascending: false });
   });
 
-  it('uses aggregate member counts for anonymous group discovery', async () => {
+  it('does not load group membership data for anonymous readers', async () => {
     mocks.user = null;
-    mocks.groupListResult = { data: [{ id: 'g1', name: 'Readers' }, { id: 'g2', name: 'Silent readers' }], error: null };
-    renderHook(() => useGroups({ enabled: false }));
-    await expect(mocks.queryOptions.queryFn()).resolves.toEqual([
-      { id: 'g1', name: 'Readers', member_count: 4, group_members: [{ count: 4 }] },
-      { id: 'g2', name: 'Silent readers', member_count: 0, group_members: [{ count: 0 }] },
-    ]);
-    expect(mocks.rpc).toHaveBeenCalledWith('get_public_group_member_counts');
+    renderHook(() => useGroups());
+    expect(mocks.queryOptions.enabled).toBe(false);
+    await expect(mocks.queryOptions.queryFn()).rejects.toThrow('Sign in to browse reading groups.');
+    expect(mocks.rpc).not.toHaveBeenCalled();
   });
 
-  it('creates a trimmed group and adds the creator as administrator', async () => {
-    mocks.resultByTable = {
-      group_chats: { data: null, error: null },
-      group_chat_members: { data: null, error: null },
-    };
+  it('creates a trimmed private group through the atomic lifecycle RPC', async () => {
+    mocks.rpc.mockResolvedValueOnce({ data: 'group-123', error: null });
     renderHook(() => useCreateGroup());
-    const result = await mocks.mutationOptions.mutationFn({ name: '  Book Club  ', description: '  Weekly reading  ', isPrivate: true });
-    expect(result).toMatchObject({ name: 'Book Club', description: 'Weekly reading', created_by: 'reader-1', is_encrypted: true });
-    expect(mocks.insert).toHaveBeenCalledWith('group_chats', [expect.objectContaining({
-      name: 'Book Club', description: 'Weekly reading', created_by: 'reader-1', is_encrypted: true,
-    })]);
-    expect(mocks.insert).toHaveBeenCalledWith('group_chat_members', [expect.objectContaining({ user_id: 'reader-1', role: 'admin' })]);
+    const result = await mocks.mutationOptions.mutationFn({
+      name: '  Book Club  ',
+      description: '  Weekly reading  ',
+      isPrivate: true,
+    });
+
+    expect(result).toBe('group-123');
+    expect(mocks.rpc).toHaveBeenCalledWith('create_reading_group', {
+      p_name: 'Book Club',
+      p_description: 'Weekly reading',
+      p_visibility: 'private',
+      p_join_policy: 'invite_only',
+      p_category: null,
+      p_language_code: null,
+      p_rules: null,
+    });
+    expect(mocks.from).not.toHaveBeenCalledWith('group_chats');
+    expect(mocks.from).not.toHaveBeenCalledWith('group_chat_members');
   });
 
-  it('validates group names and handles missing authentication', async () => {
+  it('validates group names and rejects server-side authorization errors', async () => {
     renderHook(() => useCreateGroup());
     await expect(mocks.mutationOptions.mutationFn({ name: '   ' })).rejects.toThrow('Group name is required');
-    mocks.authUserResult = { data: { user: null }, error: null };
-    await expect(mocks.mutationOptions.mutationFn({ name: 'Readers' })).rejects.toThrow('Please sign in to create a group');
-    mocks.authUserResult = { data: { user: null }, error: { message: 'session unavailable' } };
-    await expect(mocks.mutationOptions.mutationFn({ name: 'Readers' })).rejects.toThrow('Authentication error: session unavailable');
+    expect(mocks.rpc).not.toHaveBeenCalled();
+
+    mocks.user = null;
+    mocks.rpc.mockResolvedValueOnce({ data: null, error: { message: 'Not authenticated' } });
+    await expect(mocks.mutationOptions.mutationFn({ name: 'Readers' })).rejects.toThrow('Not authenticated');
+    expect(mocks.rpc).toHaveBeenCalledWith('create_reading_group', expect.objectContaining({
+      p_name: 'Readers',
+    }));
   });
 
-  it('rolls back a group when creator membership cannot be inserted', async () => {
-    mocks.resultByTable = {
-      group_chats: { data: null, error: null },
-      group_chat_members: { data: null, error: { message: 'membership insert failed' } },
-    };
+  it('surfaces atomic group-creation failures without partial client-side writes', async () => {
+    mocks.rpc.mockResolvedValueOnce({ data: null, error: { message: 'Creator membership could not be created' } });
     renderHook(() => useCreateGroup());
-    await expect(mocks.mutationOptions.mutationFn({ name: 'Readers' })).rejects.toThrow('Failed to add creator as admin');
-    expect(mocks.delete).toHaveBeenCalledWith('group_chats');
-    expect(mocks.eq).toHaveBeenCalledWith('group_chats', 'id', expect.any(String));
+
+    await expect(mocks.mutationOptions.mutationFn({ name: 'Readers' })).rejects.toThrow(
+      'Creator membership could not be created',
+    );
+    expect(mocks.rpc).toHaveBeenCalledWith('create_reading_group', expect.objectContaining({
+      p_name: 'Readers',
+    }));
+    expect(mocks.insert).not.toHaveBeenCalled();
+    expect(mocks.delete).not.toHaveBeenCalled();
   });
 
-  it('joins a group and invalidates all membership caches on success', async () => {
+  it('joins a group through the membership RPC and invalidates caches on success', async () => {
+    mocks.rpc.mockResolvedValueOnce({ data: 'active', error: null });
     renderHook(() => useJoinGroup());
-    await expect(mocks.mutationOptions.mutationFn('group-1')).resolves.toEqual({ id: 'member-1' });
-    mocks.mutationOptions.onSuccess();
-    expect(mocks.insert).toHaveBeenCalledWith('group_chat_members', [{ group_id: 'group-1', user_id: 'reader-1', role: 'member' }]);
+
+    await expect(mocks.mutationOptions.mutationFn('group-1')).resolves.toBe('active');
+    mocks.mutationOptions.onSuccess('active');
+
+    expect(mocks.rpc).toHaveBeenCalledWith('request_or_join_reading_group', { p_group_id: 'group-1' });
     expect(mocks.toastSuccess).toHaveBeenCalledWith('Successfully joined the group!');
     expect(mocks.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['all-groups'] });
+    expect(mocks.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['user-joined-groups'] });
   });
 
-  it('blocks unauthenticated joins and prevents leaving the default community', async () => {
+  it('surfaces unauthenticated joins and protected default-group leave errors from the database', async () => {
+    mocks.rpc.mockResolvedValueOnce({ data: null, error: { message: 'User not authenticated' } });
     renderHook(() => useJoinGroup());
-    mocks.authUserResult = { data: { user: null }, error: null };
     await expect(mocks.mutationOptions.mutationFn('group-1')).rejects.toThrow('User not authenticated');
+    expect(mocks.rpc).toHaveBeenNthCalledWith(1, 'request_or_join_reading_group', { p_group_id: 'group-1' });
 
+    mocks.rpc.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'You cannot leave the Sahadhyayi Community Reading Circle.' },
+    });
     renderHook(() => useLeaveGroup());
-    mocks.authUserResult = { data: { user: { id: 'reader-1' } }, error: null };
-    mocks.maybeSingle.mockReturnValue({ data: { name: DEFAULT_READING_GROUP_NAME }, error: null });
-    await expect(mocks.mutationOptions.mutationFn('default-group')).rejects.toThrow('You cannot leave the Sahadhyayi Community Reading Circle.');
+    await expect(mocks.mutationOptions.mutationFn('default-group')).rejects.toThrow(
+      'You cannot leave the Sahadhyayi Community Reading Circle.',
+    );
+    expect(mocks.rpc).toHaveBeenNthCalledWith(2, 'leave_reading_group', { p_group_id: 'default-group' });
   });
 
-  it('leaves ordinary groups and reports mutation errors', async () => {
+  it('leaves a group through the lifecycle RPC and reports mutation errors', async () => {
+    mocks.rpc.mockResolvedValueOnce({ data: null, error: null });
     renderHook(() => useLeaveGroup());
     await expect(mocks.mutationOptions.mutationFn('group-1')).resolves.toBeUndefined();
-    expect(mocks.delete).toHaveBeenCalledWith('group_chat_members');
+
+    expect(mocks.rpc).toHaveBeenCalledWith('leave_reading_group', { p_group_id: 'group-1' });
+    expect(mocks.delete).not.toHaveBeenCalled();
     mocks.mutationOptions.onSuccess();
     expect(mocks.toastSuccess).toHaveBeenCalledWith('Successfully left the group');
     mocks.mutationOptions.onError(new Error('network issue'));
