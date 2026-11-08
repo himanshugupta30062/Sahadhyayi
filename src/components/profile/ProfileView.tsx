@@ -36,6 +36,7 @@ import EditProfileDialog from "./EditProfileDialog";
 import DeleteProfileDialog from "./DeleteProfileDialog";
 import { useReadingDna } from "@/hooks/useReadingDna";
 import { ReadingDnaCard } from "@/components/social/dna/ReadingDnaCard";
+import { AppearanceSettingsCard } from "./AppearanceSettingsCard";
 
 type EditMode = "view" | "edit" | "delete";
 
@@ -263,6 +264,9 @@ export const ProfileView: React.FC = () => {
             </div>
           </div>
         </Card>
+
+        {/* Appearance & Themes Settings */}
+        <AppearanceSettingsCard />
 
         {/* Favorite Books */}
         <Card className="rounded-2xl border-border bg-card p-5 sm:p-6">

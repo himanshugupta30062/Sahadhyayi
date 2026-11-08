@@ -108,6 +108,297 @@
     --editorial-fade-edge: #FAFAF8;
   }
 
+  /* ══════════════════════════════════════════════════════════════════
+     7 DYNAMIC DAILY THEMES (Comfortable, WCAG AA, Literary Reading)
+     ══════════════════════════════════════════════════════════════════ */
+
+  /* Monday: Pure White (Clean, minimal, editorial) */
+  html[data-theme="pure-white"]:not(.dark),
+  .theme-pure-white:not(.dark) {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 215.4 16.3% 42%;
+    --accent: 210 25% 94%;
+    --accent-foreground: 145 42% 19%;
+    --border: 214.3 20% 90%;
+    --input: 214.3 20% 90%;
+    --ring: 145 42% 19%;
+    --brand-primary: 145 42% 19%;
+    --brand-secondary: 215 25% 27%;
+    --brand-accent: 220 14% 20%;
+    --brand-neutral: 210 20% 98%;
+    --editorial-bg: #FFFFFF;
+    --editorial-bg-alt: #F8FAFC;
+    --editorial-surface: #FFFFFF;
+    --editorial-surface-muted: #F1F5F9;
+    --editorial-surface-elevated: #FFFFFF;
+    --editorial-border: #E2E8F0;
+    --editorial-border-subtle: #EDF2F7;
+    --editorial-border-strong: #CBD5E1;
+    --editorial-ink: #0F172A;
+    --editorial-ink-secondary: #334155;
+    --editorial-muted: #64748B;
+    --editorial-gold: #8F681C;
+    --editorial-gold-hover: #7A5816;
+    --editorial-green: #1C442D;
+    --editorial-green-surface: #EBF2EC;
+    --editorial-green-border: #C8DBCB;
+    --editorial-fade-edge: #FFFFFF;
+  }
+
+  /* Tuesday: Soft Lavender (Calm, creative, literary) */
+  html[data-theme="lavender"]:not(.dark),
+  .theme-lavender:not(.dark) {
+    --background: 270 35% 98%;
+    --foreground: 270 25% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 270 25% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 270 25% 12%;
+    --secondary: 268 30% 95%;
+    --secondary-foreground: 270 25% 12%;
+    --muted: 268 30% 95%;
+    --muted-foreground: 268 18% 40%;
+    --accent: 268 35% 93%;
+    --accent-foreground: 272 44% 35%;
+    --border: 268 22% 89%;
+    --input: 268 22% 89%;
+    --ring: 272 44% 35%;
+    --brand-primary: 272 44% 35%;
+    --brand-secondary: 270 32% 48%;
+    --brand-accent: 272 25% 25%;
+    --brand-neutral: 268 30% 96%;
+    --editorial-bg: #FAF7FD;
+    --editorial-bg-alt: #F3EEF9;
+    --editorial-surface: #FFFFFF;
+    --editorial-surface-muted: #F2EDF8;
+    --editorial-surface-elevated: #FFFFFF;
+    --editorial-border: #E5DCF0;
+    --editorial-border-subtle: #EEE7F6;
+    --editorial-border-strong: #D2C4E4;
+    --editorial-ink: #1F1626;
+    --editorial-ink-secondary: #42354E;
+    --editorial-muted: #6C5E7A;
+    --editorial-gold: #7B3E96;
+    --editorial-gold-hover: #672F80;
+    --editorial-green: #5E338A;
+    --editorial-green-surface: #F3ECFA;
+    --editorial-green-border: #D8C6EE;
+    --editorial-fade-edge: #FAF7FD;
+  }
+
+  /* Wednesday: Mint Green (Fresh, natural, peaceful) */
+  html[data-theme="mint"]:not(.dark),
+  .theme-mint:not(.dark) {
+    --background: 140 25% 97%;
+    --foreground: 145 25% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 145 25% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 145 25% 11%;
+    --secondary: 140 25% 93%;
+    --secondary-foreground: 145 25% 11%;
+    --muted: 140 25% 93%;
+    --muted-foreground: 140 16% 38%;
+    --accent: 140 28% 90%;
+    --accent-foreground: 145 42% 19%;
+    --border: 140 20% 87%;
+    --input: 140 20% 87%;
+    --ring: 145 42% 19%;
+    --brand-primary: 145 42% 19%;
+    --brand-secondary: 145 36% 32%;
+    --brand-accent: 145 22% 20%;
+    --brand-neutral: 140 20% 95%;
+    --editorial-bg: #F4F9F6;
+    --editorial-bg-alt: #EBF4EE;
+    --editorial-surface: #FFFFFF;
+    --editorial-surface-muted: #EBF4EE;
+    --editorial-surface-elevated: #FFFFFF;
+    --editorial-border: #D4E7DB;
+    --editorial-border-subtle: #E1EFE6;
+    --editorial-border-strong: #BFDAC9;
+    --editorial-ink: #14221A;
+    --editorial-ink-secondary: #33483D;
+    --editorial-muted: #536D5E;
+    --editorial-gold: #2B7A4B;
+    --editorial-gold-hover: #22643D;
+    --editorial-green: #1C442D;
+    --editorial-green-surface: #E3F2E7;
+    --editorial-green-border: #BCDABA;
+    --editorial-fade-edge: #F4F9F6;
+  }
+
+  /* Thursday: Warm Yellow (Bright, optimistic, energetic) */
+  html[data-theme="warm-yellow"]:not(.dark),
+  .theme-warm-yellow:not(.dark) {
+    --background: 45 40% 97%;
+    --foreground: 40 30% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 40 30% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 40 30% 11%;
+    --secondary: 45 32% 93%;
+    --secondary-foreground: 40 30% 11%;
+    --muted: 45 32% 93%;
+    --muted-foreground: 40 20% 38%;
+    --accent: 45 38% 90%;
+    --accent-foreground: 38 68% 28%;
+    --border: 45 28% 86%;
+    --input: 45 28% 86%;
+    --ring: 38 68% 28%;
+    --brand-primary: 38 68% 28%;
+    --brand-secondary: 40 60% 40%;
+    --brand-accent: 38 35% 22%;
+    --brand-neutral: 45 30% 95%;
+    --editorial-bg: #FCF9F0;
+    --editorial-bg-alt: #F7F1DE;
+    --editorial-surface: #FFFFFF;
+    --editorial-surface-muted: #F6F0DF;
+    --editorial-surface-elevated: #FFFFFF;
+    --editorial-border: #ECE0BE;
+    --editorial-border-subtle: #F3EBD2;
+    --editorial-border-strong: #DECBA0;
+    --editorial-ink: #241D12;
+    --editorial-ink-secondary: #483B25;
+    --editorial-muted: #73634B;
+    --editorial-gold: #8F681C;
+    --editorial-gold-hover: #7A5816;
+    --editorial-green: #785311;
+    --editorial-green-surface: #F9F1D6;
+    --editorial-green-border: #E8D5A1;
+    --editorial-fade-edge: #FCF9F0;
+  }
+
+  /* Friday: Soft Pink (Warm, expressive, elegant) */
+  html[data-theme="soft-pink"]:not(.dark),
+  .theme-soft-pink:not(.dark) {
+    --background: 345 30% 97%;
+    --foreground: 345 30% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 345 30% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 345 30% 12%;
+    --secondary: 345 28% 93%;
+    --secondary-foreground: 345 30% 12%;
+    --muted: 345 28% 93%;
+    --muted-foreground: 345 18% 39%;
+    --accent: 345 32% 90%;
+    --accent-foreground: 342 50% 32%;
+    --border: 345 24% 87%;
+    --input: 345 24% 87%;
+    --ring: 342 50% 32%;
+    --brand-primary: 342 50% 32%;
+    --brand-secondary: 342 42% 44%;
+    --brand-accent: 342 26% 22%;
+    --brand-neutral: 345 25% 95%;
+    --editorial-bg: #FAF4F6;
+    --editorial-bg-alt: #F5E8EC;
+    --editorial-surface: #FFFFFF;
+    --editorial-surface-muted: #F6E9ED;
+    --editorial-surface-elevated: #FFFFFF;
+    --editorial-border: #ECD5DD;
+    --editorial-border-subtle: #F4E2E8;
+    --editorial-border-strong: #DEBDC9;
+    --editorial-ink: #26131A;
+    --editorial-ink-secondary: #4D2B38;
+    --editorial-muted: #754D5D;
+    --editorial-gold: #963553;
+    --editorial-gold-hover: #7F2B44;
+    --editorial-green: #7A2640;
+    --editorial-green-surface: #F9EAF0;
+    --editorial-green-border: #E8C4D2;
+    --editorial-fade-edge: #FAF4F6;
+  }
+
+  /* Saturday: Sky Blue (Relaxed, open, immersive) */
+  html[data-theme="sky-blue"]:not(.dark),
+  .theme-sky-blue:not(.dark) {
+    --background: 210 40% 97%;
+    --foreground: 215 35% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 35% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 35% 12%;
+    --secondary: 210 32% 93%;
+    --secondary-foreground: 215 35% 12%;
+    --muted: 210 32% 93%;
+    --muted-foreground: 212 20% 38%;
+    --accent: 210 38% 90%;
+    --accent-foreground: 210 60% 28%;
+    --border: 210 26% 87%;
+    --input: 210 26% 87%;
+    --ring: 210 60% 28%;
+    --brand-primary: 210 60% 28%;
+    --brand-secondary: 210 48% 40%;
+    --brand-accent: 210 30% 20%;
+    --brand-neutral: 210 30% 95%;
+    --editorial-bg: #F3F8FC;
+    --editorial-bg-alt: #E8F2FA;
+    --editorial-surface: #FFFFFF;
+    --editorial-surface-muted: #E6F0F8;
+    --editorial-surface-elevated: #FFFFFF;
+    --editorial-border: #CEE0EE;
+    --editorial-border-subtle: #DEEBF5;
+    --editorial-border-strong: #B5CCE0;
+    --editorial-ink: #131B26;
+    --editorial-ink-secondary: #2C3C50;
+    --editorial-muted: #4E647A;
+    --editorial-gold: #23588C;
+    --editorial-gold-hover: #1A4670;
+    --editorial-green: #1C4873;
+    --editorial-green-surface: #E3EFF8;
+    --editorial-green-border: #BFD8EC;
+    --editorial-fade-edge: #F3F8FC;
+  }
+
+  /* Sunday: Warm Ivory & Cream (Cozy, bookish, premium) */
+  html[data-theme="cream"]:not(.dark),
+  .theme-cream:not(.dark) {
+    --background: 40 33% 97%;
+    --foreground: 140 6% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 140 6% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 140 6% 12%;
+    --secondary: 40 25% 93%;
+    --secondary-foreground: 140 6% 12%;
+    --muted: 40 25% 93%;
+    --muted-foreground: 135 4% 40%;
+    --accent: 130 23% 94%;
+    --accent-foreground: 145 42% 19%;
+    --border: 40 20% 88%;
+    --input: 40 20% 88%;
+    --ring: 145 42% 19%;
+    --brand-primary: 145 42% 19%;
+    --brand-secondary: 32 52% 42%;
+    --brand-accent: 20 14% 23%;
+    --brand-neutral: 45 10% 95%;
+    --editorial-bg: #FAF7F2;
+    --editorial-bg-alt: #F4EFE6;
+    --editorial-surface: #FFFFFF;
+    --editorial-surface-muted: #F4EFE6;
+    --editorial-surface-elevated: #FFFFFF;
+    --editorial-border: #E8E0D2;
+    --editorial-border-subtle: #F1ECE2;
+    --editorial-border-strong: #D8CEBD;
+    --editorial-ink: #1C201D;
+    --editorial-ink-secondary: #3F4741;
+    --editorial-muted: #636B65;
+    --editorial-gold: #8F681C;
+    --editorial-gold-hover: #7A5816;
+    --editorial-green: #1C442D;
+    --editorial-green-surface: #EBF2EC;
+    --editorial-green-border: #C8DBCB;
+    --editorial-fade-edge: #FAF7F2;
+  }
+
   .dark {
     --background: 0 0% 0%;
     --foreground: 0 0% 100%;
