@@ -126,11 +126,36 @@ export function normalizeAuthor(rawAuthor?: string | null): NormalizedAuthor {
   const originalAuthor = rawAuthor.normalize('NFC').trim();
   let author = originalAuthor;
 
-  // Strip lifecycle dates like ", 1942-2018" or "(1942-2018)" or "b. 1942" without backtracking
-  author = author
-    .replace(/\s*\([^)]*\)/g, (match) => (/\d{4}/.test(match) ? '' : match))
-    .replace(/[,\s]+(?:b\.\s*)?\d{4}(?:-\d{1,4})?\b/gi, '')
-    .trim();
+  // Strip parenthetical content containing 4-digit years (e.g. "(1942-2018)") without regex backtracking
+  while (true) {
+    const openIdx = author.indexOf('(');
+    if (openIdx === -1) break;
+    const closeIdx = author.indexOf(')', openIdx);
+    if (closeIdx === -1) break;
+    const inside = author.slice(openIdx + 1, closeIdx);
+    if (/\d{4}/.test(inside)) {
+      author = (author.slice(0, openIdx) + author.slice(closeIdx + 1)).trim();
+    } else {
+      break;
+    }
+  }
+
+  // Strip trailing lifecycle dates like ", 1942-2018" or "b. 1942"
+  const lastCommaIdx = author.lastIndexOf(',');
+  if (lastCommaIdx !== -1) {
+    const tail = author.slice(lastCommaIdx + 1).trim();
+    if (/^(?:b\.\s*)?\d{4}(?:-\d{1,4})?$/.test(tail)) {
+      author = author.slice(0, lastCommaIdx).trim();
+    }
+  }
+  const lastSpaceIdx = author.lastIndexOf(' ');
+  if (lastSpaceIdx !== -1) {
+    const tail = author.slice(lastSpaceIdx + 1).trim();
+    if (/^(?:b\.\s*)?\d{4}(?:-\d{1,4})?$/.test(tail)) {
+      author = author.slice(0, lastSpaceIdx).trim();
+    }
+  }
+  author = author.trim();
 
   // If multiple co-authors separated by semicolon, slash, or "et al.", take primary author
   const etAlIdx = author.search(/\bet\s+al\.?/i);
