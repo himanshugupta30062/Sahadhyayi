@@ -44,6 +44,7 @@ const AuthCallback = lazy(() => import('./pages/AuthCallback'));
 const BookDetails = lazy(() => import('./pages/BookDetails'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const BookExpert = lazy(() => import('./components/book-expert/BookExpert'));
+const WhatsAppCallCenterFab = lazy(() => import('./components/support/WhatsAppCallCenterFab'));
 const StructuredFooter = lazy(() => import("./components/footer/StructuredFooter"));
 const WebsiteTour = lazy(() => import("./components/onboarding/WebsiteTour"));
 
@@ -863,8 +864,9 @@ const App = memo(() => {
                     </SidebarInset>
                   </SidebarProvider>
                   
-                  {/* Book Expert - load only after idle time so it does not compete with the initial route */}
+                  {/* Book Expert & WhatsApp Call Center - load only after idle time so it does not compete with the initial route */}
                   <DeferredSection idle fallback={null} minHeightClassName="min-h-0">
+                    <WhatsAppCallCenterFab />
                     <BookExpert />
                   </DeferredSection>
                   
