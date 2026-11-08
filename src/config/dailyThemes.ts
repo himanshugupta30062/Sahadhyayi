@@ -9,7 +9,7 @@ export type DailyThemeId =
 
 export type ThemeMode = 'daily' | 'light' | 'dark' | 'custom';
 
-export interface DailyThemeConfig {
+export type WeekdayThemeKey =\n  | 'monday'\n  | 'tuesday'\n  | 'wednesday'\n  | 'thursday'\n  | 'friday'\n  | 'saturday'\n  | 'sunday';\n\nexport interface DailyThemeConfig {
   id: DailyThemeId;
   dayIndex: number; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
   dayName: string;
@@ -26,7 +26,7 @@ export interface DailyThemeConfig {
   description: string;
 }
 
-export const DAILY_THEMES: Record<DailyThemeId, DailyThemeConfig> = {
+export const DAILY_THEMES: Record<WeekdayThemeKey, DailyThemeConfig> = {
   monday: {
     id: 'pure-white',
     dayIndex: 1,
