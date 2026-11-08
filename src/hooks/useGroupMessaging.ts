@@ -120,8 +120,9 @@ export const useGroupMembers = (groupId: string) => {
           *,
           user_profile:profiles!user_id(id, full_name, profile_photo_url, username)
         `)
-        .eq('group_id', groupId);
-      
+        .eq('group_id', groupId)
+        .eq('status', 'active');
+
       if (error) throw error;
       return data || [];
     },
