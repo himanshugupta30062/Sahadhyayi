@@ -300,7 +300,9 @@ describe('GroupReadingDiscussions', () => {
       },
       expect.objectContaining({ onSuccess: expect.any(Function), onError: expect.any(Function) }),
     );
-    mocks.createCommentMutate.mock.calls[0][1].onSuccess();
+    act(() => {
+      mocks.createCommentMutate.mock.calls[0][1].onSuccess();
+    });
     expect(mocks.toastSuccess).toHaveBeenCalledWith('Reply added.');
   });
 

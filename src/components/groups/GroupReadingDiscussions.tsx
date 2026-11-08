@@ -126,7 +126,11 @@ const DiscussionCard = ({
           </div>
           <h4 className="font-semibold text-foreground">{discussion.title}</h4>
           <p className="mt-1 text-xs text-muted-foreground">
-            {discussion.book_title} · {discussion.author_name} · {formatCreatedAt(discussion.created_at)}
+            <span>{discussion.book_title}</span>
+            <span aria-hidden="true"> · </span>
+            <span>{discussion.author_name}</span>
+            <span aria-hidden="true"> · </span>
+            <span>{formatCreatedAt(discussion.created_at)}</span>
           </p>
         </div>
         {canDeleteDiscussion && (
@@ -184,7 +188,9 @@ const DiscussionCard = ({
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <p className="text-xs font-medium text-foreground">
-                          {comment.author_name} · {formatCreatedAt(comment.created_at)}
+                          <span>{comment.author_name}</span>
+                          <span aria-hidden="true"> · </span>
+                          <span>{formatCreatedAt(comment.created_at)}</span>
                         </p>
                         {comment.spoiler_chapter > 0 && (
                           <p className="mt-1 text-[11px] text-amber-700 dark:text-amber-300">
