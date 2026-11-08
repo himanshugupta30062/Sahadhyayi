@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   tableCalls: {} as Record<string, number>,
   insertCalls: [] as Array<{ table: string; args: unknown[] }>,
   upsertCalls: [] as Array<{ table: string; args: unknown[] }>,
+  filterCalls: [] as Array<{ table: string; method: string; args: unknown[] }>,
   from: vi.fn(),
   channel: vi.fn(),
   removeChannel: vi.fn(),
@@ -70,6 +71,7 @@ const setResponses = (responses: Record<string, Array<{ data?: any; error?: any 
   mocks.tableCalls = {};
   mocks.insertCalls = [];
   mocks.upsertCalls = [];
+  mocks.filterCalls = [];
   mocks.from.mockImplementation((table: string) => {
     const index = mocks.tableCalls[table] || 0;
     mocks.tableCalls[table] = index + 1;
@@ -81,8 +83,9 @@ const setResponses = (responses: Record<string, Array<{ data?: any; error?: any 
       delete: () => builder,
       update: () => builder,
       maybeSingle: () => builder,
-      eq: () => builder,
-      in: () => builder,
+      eq: (...args: unknown[]) => { mocks.filterCalls.push({ table, method: 'eq', args }); return builder; },
+      in: (...args: unknown[]) => { mocks.filterCalls.push({ table, method: 'in', args }); return builder; },
+      or: (...args: unknown[]) => { mocks.filterCalls.push({ table, method: 'or', args }); return builder; },
       order: () => builder,
       limit: () => builder,
       not: () => builder,
@@ -164,6 +167,53 @@ describe('useSocialPosts', () => {
     });
     expect(mocks.from).toHaveBeenCalledWith('posts');
     expect(mocks.from).toHaveBeenCalledWith('post_likes');
+  });
+
+  it('builds For You from followed readers and books on the reader shelf', async () => {
+    mocks.user = { id: 'reader-1' };
+    setResponses({
+      user_follows: [{ data: [{ following_id: 'reader-2' }], error: null }],
+      user_bookshelf: [{ data: [{ book_id: 'book-1' }], error: null }],
+      posts: [{ data: [post({ book_id: 'book-1' })], error: null }],
+      post_likes: [{ data: [], error: null }],
+    });
+    renderHook(() => useSocialPosts('for_you'));
+
+    const result = await mocks.queryOptions?.queryFn();
+
+    expect(result).toHaveLength(1);
+    expect(mocks.from).toHaveBeenCalledWith('user_follows');
+    expect(mocks.from).toHaveBeenCalledWith('user_bookshelf');
+    expect(mocks.filterCalls).toContainEqual({
+      table: 'posts',
+      method: 'or',
+      args: ['user_id.in.(reader-2),book_id.in.(book-1)'],
+    });
+  });
+
+  it('returns an honest empty For You feed when there are no follow or shelf signals', async () => {
+    mocks.user = { id: 'reader-1' };
+    setResponses({
+      user_follows: [{ data: [], error: null }],
+      user_bookshelf: [{ data: [], error: null }],
+    });
+    renderHook(() => useSocialPosts('for_you'));
+
+    await expect(mocks.queryOptions?.queryFn()).resolves.toEqual([]);
+    expect(mocks.from).toHaveBeenCalledTimes(2);
+    expect(mocks.from).not.toHaveBeenCalledWith('posts');
+  });
+
+  it('keeps Latest chronological and does not query personalization signals', async () => {
+    mocks.user = { id: 'reader-1' };
+    setResponses({ posts: [{ data: [post()], error: null }] });
+    renderHook(() => useSocialPosts('latest'));
+
+    await mocks.queryOptions?.queryFn();
+
+    expect(mocks.from).toHaveBeenCalledWith('posts');
+    expect(mocks.from).not.toHaveBeenCalledWith('user_follows');
+    expect(mocks.from).not.toHaveBeenCalledWith('user_bookshelf');
   });
 
   it('returns an empty community feed without issuing enrichment queries', async () => {
