@@ -449,8 +449,8 @@ const ReadingGroupsDirectory = () => {
             const isBanned = membership?.status === 'banned';
             const isDefaultCommunity = group.name === DEFAULT_READING_GROUP_NAME;
             const canInvite = isJoined && ['owner', 'admin', 'moderator'].includes(membership?.role ?? '');
-            const requiresInvite = group.visibility === 'private' || group.join_policy === 'invite_only';
-            const canSharePage = !requiresInvite;
+            const requiresInvite = group.join_policy === 'invite_only';
+            const canSharePage = !requiresInvite && group.visibility !== 'private';
             const canEdit = !isDefaultCommunity && isJoined && (membership?.role === 'owner' || membership?.role === 'admin' || group.created_by === user?.id);
             const canDelete = !isDefaultCommunity && (membership?.role === 'owner' || group.created_by === user?.id);
             const membershipPending =
@@ -559,6 +559,12 @@ const ReadingGroupsDirectory = () => {
                       <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-amber-500/30 text-amber-600 dark:text-amber-400 gap-1">
                         <Lock className="w-2.5 h-2.5" /> Invite-Only
                       </Badge>
+                    ) : group.visibility === 'private' ? (
+                      <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-amber-500/30 text-amber-600 dark:text-amber-400 gap-1">
+                        <Lock className="w-2.5 h-2.5" /> Private
+                      </Badge>
+                    ) : group.visibility === 'unlisted' ? (
+                      <Badge variant="secondary" className="text-[10px] h-4 px-1.5 gap-1 bg-muted/60">Unlisted</Badge>
                     ) : (
                       <Badge variant="secondary" className="text-[10px] h-4 px-1.5 gap-1 bg-muted/60">
                         <Globe className="w-2.5 h-2.5 text-muted-foreground" /> Public
