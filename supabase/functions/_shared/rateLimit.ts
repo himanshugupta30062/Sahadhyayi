@@ -24,9 +24,8 @@ export interface RateLimitResult {
 
 /**
  * Validates rate limit against public.check_rate_limit RPC.
- * Falls open with a warning on database RPC errors so that transient DB issues
- * do not take down critical reader workflows, while strictly blocking when
- * the rate limit is exceeded.
+ * Fails closed when the rate-limit service is unavailable. This prevents
+ * infrastructure errors from silently disabling abuse controls.
  */
 export async function checkRateLimit(
   supabaseClient: any,
@@ -36,7 +35,8 @@ export async function checkRateLimit(
   windowMinutes: number
 ): Promise<RateLimitResult> {
   if (!identifier || !endpoint) {
-    return { allowed: true, status: 200 };
+    console.error('[rate-limit] Missing identifier or endpoint; denying request');
+    return { allowed: false, status: 503, message: 'Rate-limit service unavailable. Please retry shortly.' };
   }
 
   try {
@@ -49,7 +49,7 @@ export async function checkRateLimit(
 
     if (error || typeof allowed !== 'boolean') {
       console.warn(`[rate-limit] RPC error for endpoint ${endpoint}:`, error?.message || 'unknown error');
-      return { allowed: true, status: 200 };
+      return { allowed: false, status: 503, message: 'Rate-limit service unavailable. Please retry shortly.' };
     }
 
     if (!allowed) {
@@ -63,7 +63,7 @@ export async function checkRateLimit(
     return { allowed: true, status: 200 };
   } catch (err) {
     console.warn(`[rate-limit] Exception checking rate limit for ${endpoint}:`, err);
-    return { allowed: true, status: 200 };
+    return { allowed: false, status: 503, message: 'Rate-limit service unavailable. Please retry shortly.' };
   }
 }
 
@@ -90,7 +90,7 @@ export async function enforceRateLimit(
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY');
     if (!url || !serviceKey) {
       console.error('[rate-limit] Missing Supabase environment configuration');
-      return null;
+      return new Response(JSON.stringify({ success: false, error: 'Rate-limit service unavailable. Please retry shortly.', code: 'RATE_LIMIT_UNAVAILABLE' }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Retry-After': '30' } });
     }
     supabase = createClient(url, serviceKey);
   }
@@ -99,18 +99,19 @@ export async function enforceRateLimit(
   const result = await checkRateLimit(supabase, identifier, endpoint, maxRequests, windowMinutes);
 
   if (!result.allowed) {
+    const unavailable = result.status === 503;
     return new Response(
       JSON.stringify({
         success: false,
         error: customMessage || result.message || 'Rate limit exceeded. Please try again later.',
-        code: 'RATE_LIMIT_EXCEEDED',
+        code: unavailable ? 'RATE_LIMIT_UNAVAILABLE' : 'RATE_LIMIT_EXCEEDED',
       }),
       {
-        status: 429,
+        status: result.status,
         headers: {
           ...corsHeaders,
           'Content-Type': 'application/json',
-          'Retry-After': String(windowMinutes * 60),
+          'Retry-After': unavailable ? '30' : String(windowMinutes * 60),
         },
       }
     );
