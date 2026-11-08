@@ -40,6 +40,11 @@ const groupReadingBoard = readFileSync(
   'utf8',
 );
 
+const groupReadingDiscussions = readFileSync(
+  toPath('../../supabase/migrations/20261108170000_reading_groups_phase7_chapter_discussions.sql'),
+  'utf8',
+);
+
 describe('social feed and reading group RLS policies', () => {
   it('replaces the historical broad feed rule with audience-scoped post visibility', () => {
     // This historical migration introduced authenticated-wide visibility; the later
@@ -131,6 +136,27 @@ describe('social feed and reading group RLS policies', () => {
     expect(groupReadingBoard.match(/SET search_path = ''/g)?.length).toBe(6);
     expect(groupReadingBoard).toMatch(/REVOKE ALL ON FUNCTION public\\.save_reading_group_progress\\(uuid, integer, boolean\\) FROM PUBLIC, anon/i);
     expect(groupReadingBoard).toMatch(/GRANT EXECUTE ON FUNCTION public\\.list_reading_group_books\\(uuid\\) TO authenticated/i);
+  });
+
+
+  it('keeps group discussion bodies and replies behind active membership and chapter spoiler checks', () => {
+    expect(groupReadingDiscussions).toContain('ALTER TABLE public.group_reading_discussions ENABLE ROW LEVEL SECURITY');
+    expect(groupReadingDiscussions).toContain('ALTER TABLE public.group_reading_discussion_comments ENABLE ROW LEVEL SECURITY');
+    expect(groupReadingDiscussions).toContain('REVOKE ALL ON TABLE public.group_reading_discussions FROM PUBLIC, anon, authenticated');
+    expect(groupReadingDiscussions).toContain('REVOKE ALL ON TABLE public.group_reading_discussion_comments FROM PUBLIC, anon, authenticated');
+    expect(groupReadingDiscussions.match(/SET search_path = ''/g)?.length).toBe(6);
+    expect(groupReadingDiscussions).toContain("member_row.status = 'active'");
+    expect(groupReadingDiscussions).toContain('progress.completion_percentage >= 100');
+    expect(groupReadingDiscussions).toContain('discussion.spoiler_chapter = 0');
+    expect(groupReadingDiscussions).toContain('comment_row.spoiler_chapter = 0');
+    expect(groupReadingDiscussions).toContain('discussion.created_by = v_actor');
+    expect(groupReadingDiscussions).toContain('v_discussion_spoiler = 0');
+    expect(groupReadingDiscussions).toContain('comment_row.user_id = v_actor');
+    expect(groupReadingDiscussions).toContain('JOIN public.group_reading_discussions AS parent_discussion');
+    expect(groupReadingDiscussions).toContain('spoiler_chapter >= chapter_number');
+    expect(groupReadingDiscussions).toContain('GRANT EXECUTE ON FUNCTION public.list_group_reading_discussions(uuid, integer) TO authenticated');
+    expect(groupReadingDiscussions).toContain('GRANT EXECUTE ON FUNCTION public.list_group_reading_discussion_comments(uuid, integer) TO authenticated');
+    expect(groupReadingDiscussions).toContain('REVOKE ALL ON FUNCTION public.create_group_reading_discussion(uuid, uuid, integer, integer, text, text, text) FROM PUBLIC, anon');
   });
 
 });
