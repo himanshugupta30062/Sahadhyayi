@@ -31,7 +31,7 @@ vi.mock('@/hooks/use-toast', () => ({
 }));
 
 vi.mock('@/hooks/useSocialPosts', () => ({
-  useSocialPosts: () => mockUseSocialPosts(),
+  useSocialPosts: (...args: unknown[]) => mockUseSocialPosts(...args),
   useTogglePostLike: () => ({
     mutate: mockTogglePostLike,
     isPending: false,
@@ -213,6 +213,23 @@ describe('Phase 6: Social Media & Reading Community Experience', () => {
         data: [],
         isLoading: false,
       });
+    });
+
+    it('starts on For You and switches between For You, Following, and Latest', () => {
+      render(
+        <MemoryRouter>
+          <EnhancedSocialFeed />
+        </MemoryRouter>
+      );
+
+      expect(mockUseSocialPosts).toHaveBeenLastCalledWith('for_you');
+      expect(screen.getByRole('button', { name: /for you/i })).toHaveAttribute('aria-pressed', 'true');
+
+      fireEvent.click(screen.getByRole('button', { name: /^Following$/i }));
+      expect(mockUseSocialPosts).toHaveBeenLastCalledWith('following');
+
+      fireEvent.click(screen.getByRole('button', { name: /^Latest$/i }));
+      expect(mockUseSocialPosts).toHaveBeenLastCalledWith('latest');
     });
 
     it('renders post card with author, content, book reference card, and action buttons', () => {
