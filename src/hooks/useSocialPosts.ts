@@ -49,6 +49,7 @@ export interface SocialPost {
 export type SocialFeedMode = 'community' | 'for_you' | 'following' | 'latest';
 
 interface SocialFeedContext {
+  userId?: string;
   followedUserIds: string[];
   bookIds: string[];
 }
@@ -58,7 +59,10 @@ const resolveSocialFeedContext = async (
   feedMode: SocialFeedMode,
 ): Promise<SocialFeedContext> => {
   const mode = feedMode === 'community' ? 'latest' : feedMode;
-  if (!userId || mode === 'latest') {
+  if (mode === 'latest') {
+    return { userId, followedUserIds: [], bookIds: [] };
+  }
+  if (!userId) {
     return { followedUserIds: [], bookIds: [] };
   }
 
@@ -71,6 +75,7 @@ const resolveSocialFeedContext = async (
     if (error) throw error;
 
     return {
+      userId,
       followedUserIds: [...new Set((data || []).map((row) => row.following_id).filter(Boolean))],
       bookIds: [],
     };
@@ -95,6 +100,7 @@ const resolveSocialFeedContext = async (
   if (shelfResult.error) throw shelfResult.error;
 
   return {
+    userId,
     followedUserIds: [...new Set((followsResult.data || []).map((row) => row.following_id).filter(Boolean))],
     bookIds: [...new Set((shelfResult.data || []).map((row) => row.book_id).filter(Boolean))],
   };
@@ -116,6 +122,7 @@ const applySocialFeedFilters = (
 
   if (mode === 'for_you') {
     const signals = [
+      ...(context.userId ? [`user_id.eq.${context.userId}`] : []),
       ...(context.followedUserIds.length
         ? [`user_id.in.(${context.followedUserIds.join(',')})`]
         : []),
@@ -155,7 +162,7 @@ export const useSocialPosts = (feedMode: SocialFeedMode = 'latest') => {
         const feedContext = await resolveSocialFeedContext(user?.id, feedMode);
         const mode = feedMode === 'community' ? 'latest' : feedMode;
         if (mode === 'following' && feedContext.followedUserIds.length === 0) return [];
-        if (mode === 'for_you' && feedContext.followedUserIds.length === 0 && feedContext.bookIds.length === 0) return [];
+        if (mode === 'for_you' && !feedContext.userId) return [];
 
         const basePostsQuery = supabase
           .from('posts')
@@ -358,7 +365,7 @@ export const useSocialPosts = (feedMode: SocialFeedMode = 'latest') => {
       const mode = feedMode === 'community' ? 'latest' : feedMode;
       if (
         (mode === 'following' && feedContext.followedUserIds.length === 0) ||
-        (mode === 'for_you' && feedContext.followedUserIds.length === 0 && feedContext.bookIds.length === 0)
+        (mode === 'for_you' && !feedContext.userId)
       ) {
         setHasMore(false);
         return;
