@@ -180,8 +180,8 @@ const GroupDetails = () => {
                 <span className="p-2 rounded-xl bg-background shadow-xs text-[hsl(var(--brand-primary))]">
                   <Users className="w-6 h-6" />
                 </span>
-                <Badge variant={isMember ? 'default' : 'secondary'} className="text-xs">
-                  {isMember ? 'Joined Member' : 'Member Candidate'}
+                <Badge variant={isMember ? 'default' : isBanned ? 'destructive' : 'secondary'} className="text-xs">
+                  {isMember ? 'Joined Member' : isRequestPending ? 'Request Pending' : isBanned ? 'Blocked' : 'Not Joined'}
                 </Badge>
                 {group.visibility === 'private' || group.join_policy === 'invite_only' ? (
                   <Badge variant="outline" className="text-xs gap-1 border-amber-500/40 text-amber-600 dark:text-amber-400 bg-background/80">
