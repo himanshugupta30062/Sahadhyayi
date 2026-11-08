@@ -32,6 +32,7 @@ import SignInLink from '@/components/SignInLink';
 import SEO from '@/components/SEO';
 import { SocialSurface } from '@/components/social/SocialSurface';
 import { BookPulseBar } from '@/components/social/BookPulseBar';
+import { ReadingPassportCard } from '@/components/social/ReadingPassportCard';
 import { useReadingRooms } from '@/hooks/useReadingRoom';
 import { useGroups } from '@/hooks/useGroupManagement';
 import { useAllUsers } from '@/hooks/useUserSearch';
@@ -847,6 +848,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
               {/* ── Right Column: Discovery Sidebar (Desktop) ── */}
               <aside className="hidden space-y-5 xl:block">
                 <div className="sticky top-20 space-y-5">
+                  <ReadingPassportCard />
                   {/* Card 1: Live Reading Rooms */}
                   <SocialSurface className="p-4">
                     <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#E8E8E3] dark:border-[#29332D]">
