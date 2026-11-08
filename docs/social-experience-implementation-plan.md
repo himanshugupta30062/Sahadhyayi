@@ -86,7 +86,7 @@ Do not optimize vanity metrics or seed fake engagement.
 - Following filters to authors the reader follows; Latest is the chronological set of posts visible under RLS. The former client-side Trending sort was removed because it only reordered the loaded page and did not represent a reliable feed-wide ranking.
 - An empty For You feed now prompts the reader to add books or follow readers. Empty Latest is a genuine empty state; it no longer inserts sample reader cards into the authenticated feed.
 - Still to implement: saved posts/Reading Cabinet, robust reporting/block/mute flows, public follower/following counts, expanded profile discovery, messaging consolidation and production moderation tooling.
-- Deployment remains dependent on applying all existing social schema migrations (including post audiences and follow graph) through the normal Supabase migration process. Do not deploy UI that expects a schema addition before its migration is applied.
+- Deployment remains dependent on applying the existing social schema migrations (including post audiences and follow graph) and the new feed-query index migration `20261108080000_index_social_feed_discovery_queries.sql` through the normal Supabase migration process. Do not deploy UI that expects a schema addition before its migration is applied.
 - Validation: review CI build, lint, tests and authorization checks before merging; do not treat a feature as production-ready based only on a successful preview deployment.
 
 ## Product and UX evolution (2026-10)
