@@ -253,7 +253,7 @@ const GroupModerationPanel = ({ groupId, currentUserId, actorRole }: GroupModera
           <AlertDialogHeader>
             <AlertDialogTitle>Transfer group ownership?</AlertDialogTitle>
             <AlertDialogDescription>
-              {transferTarget?.full_name || 'This member'} will become the owner. Your role will change to admin, and the transfer cannot be undone by this action.
+              {transferTarget?.full_name || 'This member'} will become the owner and your role will change to admin. Only the new owner can transfer ownership again.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
