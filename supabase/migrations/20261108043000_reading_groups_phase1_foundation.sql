@@ -45,9 +45,7 @@ ALTER TABLE public.group_chat_members
   ADD CONSTRAINT group_chat_members_role_check
     CHECK (role IN ('owner', 'admin', 'moderator', 'member'));
 
--- Ensure uniqueness is present even if a previous schema variant omitted it.
-CREATE UNIQUE INDEX IF NOT EXISTS group_chat_members_group_user_unique
-  ON public.group_chat_members (group_id, user_id);
+-- The canonical schema already enforces UNIQUE(group_id, user_id); do not add a duplicate index.
 
 CREATE INDEX IF NOT EXISTS group_chat_members_user_status_idx
   ON public.group_chat_members (user_id, status);
