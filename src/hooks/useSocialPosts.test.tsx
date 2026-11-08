@@ -87,6 +87,7 @@ const setResponses = (responses: Record<string, Array<{ data?: any; error?: any 
       in: (...args: unknown[]) => { mocks.filterCalls.push({ table, method: 'in', args }); return builder; },
       or: (...args: unknown[]) => { mocks.filterCalls.push({ table, method: 'or', args }); return builder; },
       order: () => builder,
+      range: (...args: unknown[]) => { mocks.filterCalls.push({ table, method: 'range', args }); return builder; },
       limit: () => builder,
       not: () => builder,
       single: () => Promise.resolve(response),
@@ -188,6 +189,43 @@ describe('useSocialPosts', () => {
       method: 'or',
       args: ['user_id.eq.reader-1,user_id.in.(reader-2),book_id.in.(book-1)'],
     });
+  });
+
+  it('loads every follow page for For You instead of silently truncating at 500', async () => {
+    mocks.user = { id: 'reader-1' };
+    const firstFollowPage = Array.from({ length: 500 }, (_, index) => ({
+      following_id: `reader-${String(index + 2).padStart(4, '0')}`,
+    }));
+    const lastFollowPage = [
+      { following_id: 'reader-0502' },
+      { following_id: 'reader-0503' },
+    ];
+    setResponses({
+      user_follows: [
+        { data: firstFollowPage, error: null },
+        { data: lastFollowPage, error: null },
+      ],
+      user_bookshelf: [{ data: [], error: null }],
+      posts: [{ data: [], error: null }],
+    });
+    renderHook(() => useSocialPosts('for_you'));
+
+    await expect(mocks.queryOptions?.queryFn()).resolves.toEqual([]);
+
+    expect(mocks.filterCalls).toContainEqual({
+      table: 'user_follows',
+      method: 'range',
+      args: [0, 499],
+    });
+    expect(mocks.filterCalls).toContainEqual({
+      table: 'user_follows',
+      method: 'range',
+      args: [500, 999],
+    });
+    const postFilter = mocks.filterCalls.find(
+      (call) => call.table === 'posts' && call.method === 'or',
+    )?.args[0] as string;
+    expect(postFilter).toContain('user_id.in.(reader-0503)');
   });
 
   it('keeps a reader’s own posts eligible when they have no follow or shelf signals', async () => {
