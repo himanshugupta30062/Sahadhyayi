@@ -186,21 +186,26 @@ describe('useSocialPosts', () => {
     expect(mocks.filterCalls).toContainEqual({
       table: 'posts',
       method: 'or',
-      args: ['user_id.in.(reader-2),book_id.in.(book-1)'],
+      args: ['user_id.eq.reader-1,user_id.in.(reader-2),book_id.in.(book-1)'],
     });
   });
 
-  it('returns an honest empty For You feed when there are no follow or shelf signals', async () => {
+  it('keeps a reader’s own posts eligible when they have no follow or shelf signals', async () => {
     mocks.user = { id: 'reader-1' };
     setResponses({
       user_follows: [{ data: [], error: null }],
       user_bookshelf: [{ data: [], error: null }],
+      posts: [{ data: [], error: null }],
     });
     renderHook(() => useSocialPosts('for_you'));
 
     await expect(mocks.queryOptions?.queryFn()).resolves.toEqual([]);
-    expect(mocks.from).toHaveBeenCalledTimes(2);
-    expect(mocks.from).not.toHaveBeenCalledWith('posts');
+    expect(mocks.from).toHaveBeenCalledWith('posts');
+    expect(mocks.filterCalls).toContainEqual({
+      table: 'posts',
+      method: 'or',
+      args: ['user_id.eq.reader-1'],
+    });
   });
 
   it('keeps Latest chronological and does not query personalization signals', async () => {
