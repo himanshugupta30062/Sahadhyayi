@@ -312,6 +312,7 @@ export const useModerateGroupMember = () => {
       void queryClient.invalidateQueries({ queryKey: ['group-moderation-members', variables.groupId] });
       void queryClient.invalidateQueries({ queryKey: ['user-groups'] });
       void queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['all-groups'] });
     },
     onError: (error: Error) => toast.error(error.message),
   });
