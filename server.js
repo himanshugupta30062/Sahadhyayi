@@ -117,10 +117,21 @@ function setSessionCookie(res, userId) {
   });
 }
 
-// Require a valid session cookie (checks signed cookie first, falls back to legacy for smooth transitions)
+// Require a cryptographically signed session cookie only.
+// Never accept the legacy unsigned sessionId cookie: clients can forge it and
+// impersonate another user on routes that trust req.userId.
 function requireSession(req, res, next) {
-  const userId = req.signedCookies?.sessionId || req.cookies?.sessionId;
-  if (!userId) return res.status(401).json({ error: 'Authentication required' });
+  const userId = req.signedCookies?.sessionId;
+  if (typeof userId !== 'string' || !userId) {
+    // Clear any stale/unsigned/invalid cookie to prevent repeated fallback attempts.
+    res.clearCookie('sessionId', {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
+    });
+    return res.status(401).json({ error: 'Authentication required' });
+  }
   req.sessionUserId = userId;
   req.userId = userId;
   next();
