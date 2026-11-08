@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Heart, MessageCircle, Share2, Clock, Repeat2, MoreHorizontal, Trash2, Users, Copy, Check } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Clock, Repeat2, MoreHorizontal, Trash2, Users, Copy, Check, Bookmark } from 'lucide-react';
 import {
   useSocialPosts,
   useTogglePostLike,
@@ -110,8 +110,9 @@ export const EnhancedSocialFeed = () => {
   const [deepLinkedPost, setDeepLinkedPost] = useState<SocialPost | null>(null);
   const [highlightedPostId, setHighlightedPostId] = useState<string | null>(null);
   const [imageViewer, setImageViewer] = useState<{ src: string; alt: string } | null>(null);
-  const [streamMode, setStreamMode] = useState<'for_you' | 'following' | 'latest'>('for_you');
-  const { posts, isLoading, error, refetch, hasMore, isLoadingMore, loadMore, loadMoreError } = useSocialPosts(streamMode);
+  const [streamMode, setStreamMode] = useState<'for_you' | 'following' | 'latest' | 'cabinet'>('for_you');
+  const feedHookMode = streamMode === 'cabinet' ? 'latest' : streamMode;
+  const { posts, isLoading, error, refetch, hasMore, isLoadingMore, loadMore, loadMoreError } = useSocialPosts(feedHookMode);
   const postsRef = useRef(posts);
   postsRef.current = posts;
   const toggleLike = useTogglePostLike();
@@ -123,6 +124,30 @@ export const EnhancedSocialFeed = () => {
   const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({});
   const [copiedQuoteId, setCopiedQuoteId] = useState<string | null>(null);
   const [feedFilter, setFeedFilter] = useState<'all' | 'posts' | 'margins' | 'threads'>('all');
+
+  const savedStorageKey = user?.id ? `sahadhyayi_saved_posts_${user.id}` : 'sahadhyayi_saved_posts_guest';
+  const [savedPostIds, setSavedPostIds] = useState<string[]>(() => {
+    try {
+      const raw = typeof window !== 'undefined' ? localStorage.getItem(savedStorageKey) : null;
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const toggleSavePost = (postId: string) => {
+    setSavedPostIds((prev) => {
+      const isSaved = prev.includes(postId);
+      const next = isSaved ? prev.filter((id) => id !== postId) : [postId, ...prev];
+      try {
+        localStorage.setItem(savedStorageKey, JSON.stringify(next));
+      } catch {
+        // Ignore localStorage quota or private browsing exceptions
+      }
+      return next;
+    });
+  };
+
   const {
     data: marginNotes = [],
     isLoading: marginLoading,
@@ -142,8 +167,10 @@ export const EnhancedSocialFeed = () => {
     : posts;
 
   // All feed modes are chronological and use the same stable cursor.
-  // For You changes which RLS-visible posts qualify; it does not invent an engagement ranking.
-  const postsForDisplay = rawPostsForDisplay;
+  // For You changes which RLS-visible posts qualify; Cabinet filters to bookmarked posts.
+  const postsForDisplay = streamMode === 'cabinet'
+    ? rawPostsForDisplay.filter((post) => savedPostIds.includes(post.id))
+    : rawPostsForDisplay;
 
   // Shared URLs use /social?post=<id>. Resolve the requested post through the
   // audience-aware RLS boundary; do not depend on a QueryClient being present
@@ -291,6 +318,20 @@ export const EnhancedSocialFeed = () => {
         </Button>
         <Button
           size="sm"
+          variant={streamMode === 'cabinet' ? 'default' : 'outline'}
+          aria-pressed={streamMode === 'cabinet'}
+          onClick={() => setStreamMode('cabinet')}
+          className={
+            streamMode === 'cabinet'
+              ? 'bg-[#1C442D] text-white hover:bg-[#153522] dark:bg-[#1C3024] dark:text-[#F3F0E7]'
+              : 'border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7]'
+          }
+        >
+          <Bookmark className="w-3.5 h-3.5 mr-1.5 text-amber-500 dark:text-[#D5B16D]" />
+          Cabinet {savedPostIds.length > 0 && `(${savedPostIds.length})`}
+        </Button>
+        <Button
+          size="sm"
           variant="outline"
           onClick={() => {
             setSearchParams((prev) => {
@@ -405,7 +446,21 @@ export const EnhancedSocialFeed = () => {
               </CardContent>
             </Card>
           ) : postsForDisplay.length === 0 ? (
-            streamMode === 'following' ? (
+            streamMode === 'cabinet' ? (
+              <Card className="bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs">
+                <CardContent className="p-10 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#EBF2EC] dark:bg-[#1C3024] border border-[#C8DBCB] dark:border-[#315C43]/50 flex items-center justify-center text-amber-600 dark:text-[#D5B16D]">
+                    <Bookmark className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-lg font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-1">
+                    Your Reading Cabinet is empty
+                  </h3>
+                  <p className="text-sm text-[#636B65] dark:text-[#A5ADA6] max-w-md mx-auto">
+                    Save thoughtful passages, book discussions, and reflections to return to later by tapping the Save bookmark button on any post.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : streamMode === 'following' ? (
               <Card className="bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs">
                 <CardContent className="p-10 text-center">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#EBF2EC] dark:bg-[#1C3024] border border-[#C8DBCB] dark:border-[#315C43]/50 flex items-center justify-center text-[#1C442D] dark:text-[#D5B16D]">
@@ -517,8 +572,9 @@ export const EnhancedSocialFeed = () => {
                           <DnaMatchChip userId={post.user_id} userName={postProfile?.full_name || 'Reader'} />
                         )}
                         {post.feeling_emoji && post.feeling_label && (
-                          <span className="text-sm text-[#636B65] dark:text-[#A5ADA6]">
-                            is feeling {post.feeling_emoji} {post.feeling_label}
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#EBF2EC] text-[#1C442D] border border-[#C8DBCB] dark:bg-[#16211A] dark:text-[#D5B16D] dark:border-[#315C43]">
+                            <span>{post.feeling_emoji}</span>
+                            <span>{post.feeling_label}</span>
                           </span>
                         )}
                       </div>
@@ -725,6 +781,23 @@ export const EnhancedSocialFeed = () => {
                   >
                     <Share2 className="w-4 h-4" />
                     <span className="font-medium hidden sm:inline">Share</span>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-label={savedPostIds.includes(post.id) ? "Remove from Reading Cabinet" : "Save to Reading Cabinet"}
+                    aria-pressed={savedPostIds.includes(post.id)}
+                    className={`flex-1 rounded-lg gap-2 text-xs h-8 ${
+                      savedPostIds.includes(post.id)
+                        ? 'text-amber-600 dark:text-[#D5B16D] hover:text-amber-700 dark:hover:text-[#E2C487] hover:bg-amber-50 dark:hover:bg-amber-950/20'
+                        : 'text-[#636B65] hover:text-[#1C201D] hover:bg-[#FAF7F2] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] dark:hover:bg-[#1B241E]'
+                    }`}
+                    onClick={() => toggleSavePost(post.id)}
+                  >
+                    <Bookmark className={`w-4 h-4 ${savedPostIds.includes(post.id) ? 'fill-current' : ''}`} />
+                    <span className="font-medium hidden sm:inline">
+                      {savedPostIds.includes(post.id) ? 'Saved' : 'Save'}
+                    </span>
                   </Button>
                 </div>
 

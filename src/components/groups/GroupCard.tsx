@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, Calendar, MapPin, BookOpen, MessageCircle } from 'lucide-react';
+import { Users, Calendar, MapPin, BookOpen, MessageCircle, ShieldCheck } from 'lucide-react';
 import { Group } from '@/hooks/useGroupManagement';
 import { DEFAULT_READING_GROUP_NAME, useJoinGroup, useLeaveGroup } from '@/hooks/useGroupManagement';
 import { useAuth } from '@/contexts/authHelpers';
@@ -82,6 +82,15 @@ const GroupCard: React.FC<GroupCardProps> = ({
         <div className="flex items-center space-x-2 text-sm text-gray-600">
           <MapPin className="w-4 h-4" />
           <span>Online & Local Meetups</span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs">
+          <Badge variant="outline" className="text-[10px] border-emerald-300 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300 gap-1">
+            <BookOpen className="w-2.5 h-2.5" /> Book of the Month
+          </Badge>
+          <Badge variant="outline" className="text-[10px] border-amber-300 bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-300 gap-1">
+            <ShieldCheck className="w-2.5 h-2.5" /> Spoiler-Safe Discussions
+          </Badge>
         </div>
 
         <div className="flex gap-2">

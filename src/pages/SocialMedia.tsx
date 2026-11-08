@@ -41,6 +41,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { toast } from 'sonner';
 import { BookReelsStrip } from '@/components/social/BookReelsStrip';
 import { SampleReaderFeedCards } from '@/components/social/SampleReaderFeedCards';
+import { ReadingPassportCard } from '@/components/social/ReadingPassportCard';
 
 // Lazy-load social feature panels so the active tab determines what JavaScript is fetched
 const MarginNotesFeed = lazy(() => import('@/components/social/margins/MarginNotesFeed'));
@@ -847,6 +848,9 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
               {/* ── Right Column: Discovery Sidebar (Desktop) ── */}
               <aside className="hidden space-y-5 xl:block">
                 <div className="sticky top-20 space-y-5">
+                  {/* Card 0: Reader Identity Passport */}
+                  <ReadingPassportCard />
+
                   {/* Card 1: Live Reading Rooms */}
                   <SocialSurface className="p-4">
                     <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#E8E8E3] dark:border-[#29332D]">

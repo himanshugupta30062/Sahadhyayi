@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Image, BookOpen, Smile, Send, X, Quote } from 'lucide-react';
+import { Image, BookOpen, Smile, Send, X, Quote, Award } from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
 import { BookSelectionModal } from './BookSelectionModal';
 import { EmojiPicker } from './EmojiPicker';
@@ -263,6 +263,38 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
                 className="min-h-[80px] border border-[#E8E2D9] dark:border-[#29332D] bg-[#FAF7F2] dark:bg-[#0B0D0C]/70 text-[#1C201D] dark:text-[#F3F0E7] rounded-xl resize-none focus-visible:ring-1 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] transition-colors text-sm placeholder:text-[#636B65]/70 dark:placeholder:text-[#A5ADA6]/70"
               />
             </div>
+          </div>
+
+          {/* Reading Milestones Quick Tags */}
+          <div className="flex items-center gap-1.5 flex-wrap mb-3 text-xs" role="group" aria-label="Reading Milestones">
+            <span className="text-[11px] font-medium text-[#636B65] dark:text-[#A5ADA6] mr-1 flex items-center gap-1">
+              <Award className="w-3.5 h-3.5 text-[#1C442D] dark:text-[#D5B16D]" /> Milestone:
+            </span>
+            {[
+              { emoji: '🏆', label: 'Finished Book' },
+              { emoji: '📖', label: 'Chapter Reflection' },
+              { emoji: '⭐', label: '5-Star Review' },
+              { emoji: '💡', label: 'Deep Thought' },
+              { emoji: '🎯', label: 'Reading Goal' },
+            ].map((milestone) => {
+              const isSelected = selectedFeeling?.label === milestone.label;
+              return (
+                <button
+                  key={milestone.label}
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => setSelectedFeeling(isSelected ? null : milestone)}
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs transition-colors cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#1C442D] text-white dark:bg-[#D5B16D] dark:text-[#0B0D0C] font-semibold shadow-xs'
+                      : 'bg-[#F4EFEA] hover:bg-[#EAE4DC] text-[#4F5752] dark:bg-[#16211A] dark:hover:bg-[#1C3024] dark:text-[#D5B16D]/90 border border-[#E8E2D9] dark:border-[#29332D]'
+                  }`}
+                >
+                  <span>{milestone.emoji}</span>
+                  <span>{milestone.label}</span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Attachment Previews */}

@@ -16,6 +16,8 @@ import {
   UserPlus,
   Globe,
   Lock,
+  BookOpen,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
 import {
@@ -520,6 +522,21 @@ const ReadingGroupsDirectory = () => {
                     {membership?.role === 'admin' && (
                       <Badge variant="outline" className="text-[10px] h-4 px-1.5">Admin</Badge>
                     )}
+                  </div>
+
+                  {/* Next-gen Reading Features & Badges */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[11px]">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-medium bg-[#EBF2EC] text-[#1C442D] border border-[#C8DBCB] dark:bg-[#16211A] dark:text-[#D5B16D] dark:border-[#315C43]">
+                      <BookOpen className="w-3 h-3 text-[#1C442D] dark:text-[#D5B16D]" />
+                      <span>Book of the Month</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-medium bg-[#FAF7F2] text-[#636B65] border border-[#E8E2D9] dark:bg-[#111614] dark:text-[#A5ADA6] dark:border-[#29332D]">
+                      <span>Weekly Pace: 2 ch/wk</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-medium bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-800/40">
+                      <ShieldCheck className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                      <span>Spoiler-Safe Discussions</span>
+                    </span>
                   </div>
 
                   {/* Actions */}
