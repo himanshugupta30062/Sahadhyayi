@@ -29,7 +29,7 @@ const GroupCard: React.FC<GroupCardProps> = ({
 
   const memberCount = group.group_members?.[0]?.count || 0;
   // Keep compatibility with legacy encrypted groups while preferring explicit join policy.
-  const requiresInvitation = group.join_policy === 'invite_only' || requiresInvitation;
+  const requiresInvitation = group.join_policy === 'invite_only' || Boolean(group.is_encrypted);
 
   const handleJoinLeave = () => {
     if (!user) {
