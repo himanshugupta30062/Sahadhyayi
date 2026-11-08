@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import {
   AlertCircle,
@@ -104,7 +104,20 @@ const useGroupInvite = (createInvitation: ReturnType<typeof useCreateGroupInvita
       toast.error(error instanceof Error ? error.message : 'Could not create or copy invitation.');
     }
   };
-  return { copiedId, copyInviteLink, creatingInvite: createInvitation.isPending };
+
+  const copyGroupPageLink = async (group: Pick<Group, 'id' | 'name'>) => {
+    try {
+      const url = new URL(`/groups/${group.id}`, window.location.origin);
+      await navigator.clipboard.writeText(url.toString());
+      setCopiedId(group.id);
+      toast.success('Group page link copied.');
+      window.setTimeout(() => setCopiedId(null), 3000);
+    } catch {
+      toast.error('Could not copy the group page link.');
+    }
+  };
+
+  return { copiedId, copyInviteLink, copyGroupPageLink, creatingInvite: createInvitation.isPending };
 };
 
 const ReadingGroupsDirectory = () => {
@@ -119,21 +132,25 @@ const ReadingGroupsDirectory = () => {
   const deleteGroup = useDeleteGroup();
   const createInvitation = useCreateGroupInvitation();
   const redeemInvitation = useRedeemGroupInvitation();
-  const { copiedId, copyInviteLink, creatingInvite } = useGroupInvite(createInvitation);
+  const { copiedId, copyInviteLink, copyGroupPageLink, creatingInvite } = useGroupInvite(createInvitation);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const joinGroupId = searchParams.get('join');
   const inviteToken = searchParams.get('invite');
+  const inviteRedemptionAttemptRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!user || !inviteToken) return;
+    if (!user?.id || !inviteToken || inviteRedemptionAttemptRef.current === inviteToken) return;
+    inviteRedemptionAttemptRef.current = inviteToken;
     redeemInvitation.mutate(inviteToken, {
       onSuccess: () => toast.success('Invitation accepted. You joined the reading group!'),
       onError: (error) => toast.error(error instanceof Error ? error.message : 'Invitation could not be accepted.'),
+      onSettled: () => {
+        const next = new URLSearchParams(window.location.search);
+        next.delete('invite');
+        setSearchParams(next, { replace: true });
+      },
     });
-    const next = new URLSearchParams(searchParams);
-    next.delete('invite');
-    setSearchParams(next, { replace: true });
-  }, [user, inviteToken]);
+  }, [user?.id, inviteToken, redeemInvitation.mutate, setSearchParams]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'mine'>('all');
@@ -160,7 +177,10 @@ const ReadingGroupsDirectory = () => {
 
   const filteredGroups = useMemo(() => {
     const base = activeTab === 'mine'
-      ? allGroups.filter((g) => membershipByGroup.has(g.id))
+      ? allGroups.filter((g) => {
+          const status = membershipByGroup.get(g.id)?.status;
+          return status === 'active' || status === 'pending';
+        })
       : allGroups;
     if (!normalizedSearch) return base;
     return base.filter(
@@ -171,7 +191,10 @@ const ReadingGroupsDirectory = () => {
   }, [allGroups, activeTab, membershipByGroup, normalizedSearch]);
 
   const myGroupsCount = useMemo(
-    () => allGroups.filter((g) => membershipByGroup.has(g.id)).length,
+    () => allGroups.filter((g) => {
+      const status = membershipByGroup.get(g.id)?.status;
+      return status === 'active' || status === 'pending';
+    }).length,
     [allGroups, membershipByGroup],
   );
 
@@ -425,10 +448,15 @@ const ReadingGroupsDirectory = () => {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredGroups.map((group) => {
             const membership = membershipByGroup.get(group.id);
-            const isJoined = Boolean(membership);
+            const isJoined = membership?.status === 'active';
+            const isRequestPending = membership?.status === 'pending';
+            const isBanned = membership?.status === 'banned';
             const isDefaultCommunity = group.name === DEFAULT_READING_GROUP_NAME;
-            const canEdit = !isDefaultCommunity && (membership?.role === 'admin' || group.created_by === user?.id);
-            const canDelete = !isDefaultCommunity && group.created_by === user?.id;
+            const canInvite = isJoined && ['owner', 'admin', 'moderator'].includes(membership?.role ?? '');
+            const requiresInvite = group.join_policy === 'invite_only' || group.is_encrypted === true;
+            const canSharePage = !requiresInvite && group.visibility !== 'private';
+            const canEdit = !isDefaultCommunity && isJoined && (membership?.role === 'owner' || membership?.role === 'admin' || group.created_by === user?.id);
+            const canDelete = !isDefaultCommunity && isJoined && (membership?.role === 'owner' || group.created_by === user?.id);
             const membershipPending =
               (joinGroup.isPending && joinGroup.variables === group.id) ||
               (leaveGroup.isPending && leaveGroup.variables === group.id);
@@ -476,9 +504,15 @@ const ReadingGroupsDirectory = () => {
                                   <Users className="mr-2 h-4 w-4" /> View Details
                                 </Link>
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => void copyInviteLink(group)}>
-                                <Link2 className="mr-2 h-4 w-4" /> Copy Invite Link
-                              </DropdownMenuItem>
+                              {canInvite ? (
+                                <DropdownMenuItem onClick={() => void copyInviteLink(group)}>
+                                  <Link2 className="mr-2 h-4 w-4" /> Create secure invite link
+                                </DropdownMenuItem>
+                              ) : canSharePage ? (
+                                <DropdownMenuItem onClick={() => void copyGroupPageLink(group)}>
+                                  <Link2 className="mr-2 h-4 w-4" /> Copy group page link
+                                </DropdownMenuItem>
+                              ) : null}
                               {canEdit && (
                                 <>
                                   <DropdownMenuSeparator />
@@ -525,18 +559,28 @@ const ReadingGroupsDirectory = () => {
                       <Users className="h-3.5 w-3.5" />
                       <span>{memberCount} {memberCount === 1 ? 'member' : 'members'}</span>
                     </div>
-                    {group.is_encrypted ? (
+                    {requiresInvite ? (
                       <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-amber-500/30 text-amber-600 dark:text-amber-400 gap-1">
                         <Lock className="w-2.5 h-2.5" /> Invite-Only
                       </Badge>
+                    ) : group.visibility === 'private' ? (
+                      <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-amber-500/30 text-amber-600 dark:text-amber-400 gap-1">
+                        <Lock className="w-2.5 h-2.5" /> Private
+                      </Badge>
+                    ) : group.visibility === 'unlisted' ? (
+                      <Badge variant="secondary" className="text-[10px] h-4 px-1.5">Unlisted</Badge>
                     ) : (
                       <Badge variant="secondary" className="text-[10px] h-4 px-1.5 gap-1 bg-muted/60">
                         <Globe className="w-2.5 h-2.5 text-muted-foreground" /> Public
                       </Badge>
                     )}
-                    {membership?.role === 'admin' && (
-                      <Badge variant="outline" className="text-[10px] h-4 px-1.5">Admin</Badge>
+                    {membership?.role && isJoined && (
+                      <Badge variant="outline" className="text-[10px] h-4 px-1.5">
+                        {membership.role === 'owner' ? 'Owner' : membership.role === 'moderator' ? 'Moderator' : membership.role === 'admin' ? 'Admin' : 'Member'}
+                      </Badge>
                     )}
+                    {isRequestPending && <Badge variant="secondary" className="text-[10px] h-4 px-1.5">Request pending</Badge>}
+                    {isBanned && <Badge variant="destructive" className="text-[10px] h-4 px-1.5">Blocked</Badge>}
                   </div>
 
                   {/* Actions */}
@@ -552,20 +596,30 @@ const ReadingGroupsDirectory = () => {
                           <MessageCircle className="h-3.5 w-3.5" />
                           Open Chat
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-1.5 text-xs"
-                          onClick={() => copyInviteLink(group)}
-                          title="Create a secure invite link (expires in 7 days)"
-                        >
-                          {isCopied ? (
-                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                          ) : (
-                            <Share2 className="h-3.5 w-3.5" />
-                          )}
-                          {isCopied ? 'Copied!' : 'Invite'}
-                        </Button>
+                        {canInvite ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1.5 text-xs"
+                            onClick={() => void copyInviteLink(group)}
+                            disabled={creatingInvite}
+                            title="Create a secure invite link (expires in 7 days)"
+                          >
+                            {isCopied ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> : <Share2 className="h-3.5 w-3.5" />}
+                            {isCopied ? 'Copied!' : 'Invite'}
+                          </Button>
+                        ) : canSharePage ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1.5 text-xs"
+                            onClick={() => void copyGroupPageLink(group)}
+                            title="Copy public group page link"
+                          >
+                            {isCopied ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> : <Share2 className="h-3.5 w-3.5" />}
+                            {isCopied ? 'Copied!' : 'Share'}
+                          </Button>
+                        ) : null}
                         {group.name === DEFAULT_READING_GROUP_NAME ? (
                           <Badge variant="secondary" className="text-[10px]">Permanent Community Member</Badge>
                         ) : (
@@ -581,33 +635,26 @@ const ReadingGroupsDirectory = () => {
                           </Button>
                         )}
                       </>
+                    ) : isRequestPending ? (
+                      <Badge variant="secondary" className="h-8 px-3">Request pending</Badge>
+                    ) : isBanned ? (
+                      <Badge variant="destructive" className="h-8 px-3">Blocked</Badge>
                     ) : (
                       <>
-                        {user ? (
-                          group.is_encrypted ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled
-                              className="flex-1 opacity-80 gap-1.5 text-xs cursor-not-allowed bg-muted/30"
-                              title="This reading circle is invite-only. Request an invitation from a group admin to join."
-                            >
-                              <Lock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                              Invite-Only
-                            </Button>
-                          ) : (
-                            <Button
-                              size="sm"
-                              className="flex-1 bg-gradient-button text-primary-foreground gap-1.5"
-                              disabled={membershipPending}
-                              onClick={() => void handleMembership(group, false)}
-                            >
-                              {membershipPending
-                                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                : <UserPlus className="h-3.5 w-3.5" />}
-                              Join Group
-                            </Button>
-                          )
+                        {requiresInvite ? (
+                          <Badge variant="secondary" className="h-8 px-3">Invitation required</Badge>
+                        ) : user ? (
+                          <Button
+                            size="sm"
+                            className="flex-1 bg-gradient-button text-primary-foreground gap-1.5"
+                            disabled={membershipPending}
+                            onClick={() => void handleMembership(group, false)}
+                          >
+                            {membershipPending
+                              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              : <UserPlus className="h-3.5 w-3.5" />}
+                            Join Group
+                          </Button>
                         ) : (
                           <SignInLink>
                             <Button size="sm" className="flex-1 bg-gradient-button text-primary-foreground gap-1.5">
@@ -616,20 +663,18 @@ const ReadingGroupsDirectory = () => {
                             </Button>
                           </SignInLink>
                         )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-1.5 text-xs"
-                          onClick={() => copyInviteLink(group)}
-                          title="Create a secure invite link (expires in 7 days)"
-                        >
-                          {isCopied ? (
-                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                          ) : (
-                            <Share2 className="h-3.5 w-3.5" />
-                          )}
-                          Share
-                        </Button>
+                        {canSharePage && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1.5 text-xs"
+                            onClick={() => void copyGroupPageLink(group)}
+                            title="Copy public group page link"
+                          >
+                            {isCopied ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> : <Share2 className="h-3.5 w-3.5" />}
+                            {isCopied ? 'Copied!' : 'Share'}
+                          </Button>
+                        )}
                       </>
                     )}
                   </div>
