@@ -4059,6 +4059,66 @@ export type Database = {
         Args: { p_group_reading_book_id: string; p_current_page: number; p_is_shared: boolean }
         Returns: string
       }
+      list_group_reading_discussions: {
+        Args: { p_group_id: string; p_limit?: number }
+        Returns: {
+          id: string
+          group_id: string
+          group_reading_book_id: string
+          book_id: string
+          book_title: string
+          chapter_number: number
+          spoiler_chapter: number
+          topic_type: string
+          title: string
+          body: string | null
+          is_unlocked: boolean
+          created_by: string
+          author_name: string
+          author_photo_url: string | null
+          created_at: string
+          updated_at: string
+          reply_count: number
+        }[]
+      }
+      create_group_reading_discussion: {
+        Args: {
+          p_group_id: string
+          p_group_reading_book_id: string
+          p_chapter_number: number
+          p_spoiler_chapter: number
+          p_topic_type: string
+          p_title: string
+          p_body: string
+        }
+        Returns: string
+      }
+      list_group_reading_discussion_comments: {
+        Args: { p_discussion_id: string; p_limit?: number }
+        Returns: {
+          id: string
+          discussion_id: string
+          user_id: string
+          body: string | null
+          spoiler_chapter: number
+          is_unlocked: boolean
+          author_name: string
+          author_photo_url: string | null
+          created_at: string
+        }[]
+      }
+      create_group_reading_discussion_comment: {
+        Args: { p_discussion_id: string; p_body: string; p_spoiler_chapter?: number }
+        Returns: string
+      }
+      delete_group_reading_discussion: {
+        Args: { p_discussion_id: string }
+        Returns: undefined
+      }
+      delete_group_reading_discussion_comment: {
+        Args: { p_comment_id: string }
+        Returns: undefined
+      }
       get_profiles_for_social_context: {
         Args: { profile_ids: string[] }
         Returns: {

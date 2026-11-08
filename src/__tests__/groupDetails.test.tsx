@@ -12,6 +12,10 @@ vi.mock('@/components/groups/GroupReadingBoard', () => ({
   default: () => <div data-testid="group-reading-board">Shared reading board</div>,
 }));
 
+vi.mock('@/components/groups/GroupReadingDiscussions', () => ({
+  default: () => <div data-testid="group-reading-discussions">Chapter discussions</div>,
+}));
+
 vi.mock('@/components/groups/GroupModerationPanel', () => ({
   default: () => <div data-testid="group-moderation-panel">Group moderation</div>,
 }));
@@ -109,6 +113,7 @@ describe('GroupDetails Page Tests', () => {
       </QueryClientProvider>
     );
     expect(screen.getByTestId('group-reading-board')).toBeInTheDocument();
+    expect(screen.getByTestId('group-reading-discussions')).toBeInTheDocument();
   });
 
   it('renders group details with membership status and chat button', () => {
