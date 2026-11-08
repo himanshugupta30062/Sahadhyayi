@@ -121,6 +121,10 @@ BEGIN
         1
       ) AS average_progress
     FROM public.group_reading_progress AS progress
+    JOIN public.group_chat_members AS active_member
+      ON active_member.group_id = reading_book.group_id
+      AND active_member.user_id = progress.user_id
+      AND active_member.status = 'active'
     WHERE progress.group_reading_book_id = reading_book.id
   ) AS shared_progress ON true
   WHERE reading_book.group_id = p_group_id
@@ -317,6 +321,48 @@ BEGIN
   RETURN v_progress_id;
 END;
 $function$;
+
+
+-- A member's previous opt-in must not remain active after leaving or being
+-- moved to pending/banned. Preserve the page number privately for that reader.
+CREATE OR REPLACE FUNCTION public.clear_departed_group_reading_progress_sharing()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $function$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    UPDATE public.group_reading_progress AS progress
+    SET is_shared = false, updated_at = now()
+    FROM public.group_reading_books AS reading_book
+    WHERE reading_book.id = progress.group_reading_book_id
+      AND reading_book.group_id = OLD.group_id
+      AND progress.user_id = OLD.user_id;
+    RETURN OLD;
+  END IF;
+
+  IF NEW.status IS DISTINCT FROM 'active' THEN
+    UPDATE public.group_reading_progress AS progress
+    SET is_shared = false, updated_at = now()
+    FROM public.group_reading_books AS reading_book
+    WHERE reading_book.id = progress.group_reading_book_id
+      AND reading_book.group_id = OLD.group_id
+      AND progress.user_id = OLD.user_id;
+  END IF;
+
+  RETURN NEW;
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.clear_departed_group_reading_progress_sharing() FROM PUBLIC, anon, authenticated;
+
+DROP TRIGGER IF EXISTS trg_clear_departed_group_reading_progress_sharing
+  ON public.group_chat_members;
+CREATE TRIGGER trg_clear_departed_group_reading_progress_sharing
+  AFTER DELETE OR UPDATE OF status ON public.group_chat_members
+  FOR EACH ROW
+  EXECUTE FUNCTION public.clear_departed_group_reading_progress_sharing();
 
 REVOKE ALL ON FUNCTION public.list_reading_group_books(uuid) FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION public.add_reading_group_book(uuid, uuid, date) FROM PUBLIC, anon;

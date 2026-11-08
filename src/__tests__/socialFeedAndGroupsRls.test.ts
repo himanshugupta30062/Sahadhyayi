@@ -119,12 +119,15 @@ describe('social feed and reading group RLS policies', () => {
     expect(groupReadingBoard).toMatch(/member_row\\.status = 'active'/i);
     expect(groupReadingBoard).toMatch(/member_row\\.role IN \\('owner', 'admin', 'moderator'\\)/i);
     expect(groupReadingBoard).toMatch(/progress\\.is_shared/);
+    expect(groupReadingBoard).toContain('JOIN public.group_chat_members AS active_member');
+    expect(groupReadingBoard).toContain('CREATE TRIGGER trg_clear_departed_group_reading_progress_sharing');
+    expect(groupReadingBoard).toContain('SET is_shared = false, updated_at = now()');
     expect(groupReadingBoard).toMatch(/my_progress\\.user_id = v_actor/i);
     expect(groupReadingBoard).toContain('FOR UPDATE OF reading_book');
     expect(groupReadingBoard).toContain('Reading-list entry not found or permission denied');
     expect(groupReadingBoard).toContain('LEAST(100, (progress.current_page::numeric / NULLIF(book.pages, 0)) * 100)');
     expect(groupReadingBoard).toMatch(/ON CONFLICT \\(group_reading_book_id, user_id\\)/i);
-    expect(groupReadingBoard.match(/SET search_path = ''/g)?.length).toBe(5);
+    expect(groupReadingBoard.match(/SET search_path = ''/g)?.length).toBe(6);
     expect(groupReadingBoard).toMatch(/REVOKE ALL ON FUNCTION public\\.save_reading_group_progress\\(uuid, integer, boolean\\) FROM PUBLIC, anon/i);
     expect(groupReadingBoard).toMatch(/GRANT EXECUTE ON FUNCTION public\\.list_reading_group_books\\(uuid\\) TO authenticated/i);
   });
