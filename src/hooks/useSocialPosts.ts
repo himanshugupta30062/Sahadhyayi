@@ -46,9 +46,99 @@ export interface SocialPost {
   user_reposted?: boolean;
 }
 
-export type SocialFeedMode = 'community' | 'following';
+export type SocialFeedMode = 'community' | 'for_you' | 'following' | 'latest';
 
-export const useSocialPosts = (feedMode: SocialFeedMode = 'community') => {
+interface SocialFeedContext {
+  followedUserIds: string[];
+  bookIds: string[];
+}
+
+const resolveSocialFeedContext = async (
+  userId: string | undefined,
+  feedMode: SocialFeedMode,
+): Promise<SocialFeedContext> => {
+  const mode = feedMode === 'community' ? 'latest' : feedMode;
+  if (!userId || mode === 'latest') {
+    return { followedUserIds: [], bookIds: [] };
+  }
+
+  if (mode === 'following') {
+    const { data, error } = await supabase
+      .from('user_follows')
+      .select('following_id')
+      .eq('follower_id', userId)
+      .limit(100);
+    if (error) throw error;
+
+    return {
+      followedUserIds: [...new Set((data || []).map((row) => row.following_id).filter(Boolean))],
+      bookIds: [],
+    };
+  }
+
+  const [followsResult, shelfResult] = await Promise.all([
+    supabase
+      .from('user_follows')
+      .select('following_id')
+      .eq('follower_id', userId)
+      .limit(100),
+    supabase
+      .from('user_bookshelf')
+      .select('book_id')
+      .eq('user_id', userId)
+      .in('status', ['reading', 'completed', 'want_to_read'])
+      .order('added_at', { ascending: false })
+      .limit(40),
+  ]);
+
+  if (followsResult.error) throw followsResult.error;
+  if (shelfResult.error) throw shelfResult.error;
+
+  return {
+    followedUserIds: [...new Set((followsResult.data || []).map((row) => row.following_id).filter(Boolean))],
+    bookIds: [...new Set((shelfResult.data || []).map((row) => row.book_id).filter(Boolean))],
+  };
+};
+
+const applySocialFeedFilters = (
+  query: any,
+  feedMode: SocialFeedMode,
+  context: SocialFeedContext,
+  cursorFilter?: string,
+) => {
+  const mode = feedMode === 'community' ? 'latest' : feedMode;
+
+  if (mode === 'following') {
+    if (context.followedUserIds.length === 0) return null;
+    const followedQuery = query.in('user_id', context.followedUserIds);
+    return cursorFilter ? followedQuery.or(cursorFilter) : followedQuery;
+  }
+
+  if (mode === 'for_you') {
+    const signals = [
+      ...(context.followedUserIds.length
+        ? [`user_id.in.(${context.followedUserIds.join(',')})`]
+        : []),
+      ...(context.bookIds.length
+        ? [`book_id.in.(${context.bookIds.join(',')})`]
+        : []),
+    ];
+
+    if (signals.length === 0) return null;
+
+    // Keep the personalized match and stable cursor in a single PostgREST OR
+    // expression. The posts table's RLS policy remains the visibility boundary.
+    const signalFilter = signals.join(',');
+    const combinedFilter = cursorFilter
+      ? `and(or(${signalFilter}),or(${cursorFilter}))`
+      : signalFilter;
+    return query.or(combinedFilter);
+  }
+
+  return cursorFilter ? query.or(cursorFilter) : query;
+};
+
+export const useSocialPosts = (feedMode: SocialFeedMode = 'latest') => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -62,26 +152,20 @@ export const useSocialPosts = (feedMode: SocialFeedMode = 'community') => {
     queryFn: async () => {
       try {
         let data: any[] = [];
-        let followedUserIds: string[] = [];
-        if (feedMode === 'following') {
-          if (!user?.id) return [];
-          const { data: followRows, error: followsError } = await supabase
-            .from('user_follows')
-            .select('following_id')
-            .eq('follower_id', user.id);
-          if (followsError) throw followsError;
-          followedUserIds = (followRows || []).map((row) => row.following_id);
-          if (followedUserIds.length === 0) return [];
-        }
+        const feedContext = await resolveSocialFeedContext(user?.id, feedMode);
+        const mode = feedMode === 'community' ? 'latest' : feedMode;
+        if (mode === 'following' && feedContext.followedUserIds.length === 0) return [];
+        if (mode === 'for_you' && feedContext.followedUserIds.length === 0 && feedContext.bookIds.length === 0) return [];
 
-        let postsQuery = supabase
+        const basePostsQuery = supabase
           .from('posts')
           .select(`
             *,
             profiles!posts_user_id_profiles_fkey(id, full_name, username, profile_photo_url),
             books_library(id, title, author, cover_image_url)
           `);
-        if (feedMode === 'following') postsQuery = postsQuery.in('user_id', followedUserIds);
+        const postsQuery = applySocialFeedFilters(basePostsQuery, feedMode, feedContext);
+        if (!postsQuery) return [];
 
         const { data: fetchedPosts, error: postsError } = await postsQuery
           .order('created_at', { ascending: false })
@@ -90,8 +174,9 @@ export const useSocialPosts = (feedMode: SocialFeedMode = 'community') => {
 
         if (postsError) {
           console.warn('Posts fetch with relations failed, attempting plain fallback:', postsError);
-          let fallbackQuery = supabase.from('posts').select('*');
-          if (feedMode === 'following') fallbackQuery = fallbackQuery.in('user_id', followedUserIds);
+          const baseFallbackQuery = supabase.from('posts').select('*');
+          const fallbackQuery = applySocialFeedFilters(baseFallbackQuery, feedMode, feedContext);
+          if (!fallbackQuery) return [];
           const { data: fallbackPosts, error: fbError } = await fallbackQuery
             .order('created_at', { ascending: false })
             .order('id', { ascending: false })
@@ -269,41 +354,42 @@ export const useSocialPosts = (feedMode: SocialFeedMode = 'community') => {
     setLoadMoreError(null);
     try {
       const cursorFilter = `created_at.lt.${cursor.created_at},and(created_at.eq.${cursor.created_at},id.lt.${cursor.id})`;
-      let followedUserIds: string[] = [];
-      if (feedMode === 'following') {
-        if (!user?.id) return;
-        const { data: followRows, error: followsError } = await supabase
-          .from('user_follows')
-          .select('following_id')
-          .eq('follower_id', user.id);
-        if (followsError) throw followsError;
-        followedUserIds = (followRows || []).map((row) => row.following_id);
-        if (followedUserIds.length === 0) {
-          setHasMore(false);
-          return;
-        }
+      const feedContext = await resolveSocialFeedContext(user?.id, feedMode);
+      const mode = feedMode === 'community' ? 'latest' : feedMode;
+      if (
+        (mode === 'following' && feedContext.followedUserIds.length === 0) ||
+        (mode === 'for_you' && feedContext.followedUserIds.length === 0 && feedContext.bookIds.length === 0)
+      ) {
+        setHasMore(false);
+        return;
       }
 
-      let pageQuery = supabase
+      const basePageQuery = supabase
         .from('posts')
         .select(`
           *,
           profiles!posts_user_id_profiles_fkey(id, full_name, username, profile_photo_url),
           books_library(id, title, author, cover_image_url)
         `);
-      if (feedMode === 'following') pageQuery = pageQuery.in('user_id', followedUserIds);
+      const pageQuery = applySocialFeedFilters(basePageQuery, feedMode, feedContext, cursorFilter);
+      if (!pageQuery) {
+        setHasMore(false);
+        return;
+      }
       const { data: page, error: pageError } = await pageQuery
-        .or(cursorFilter)
         .order('created_at', { ascending: false })
         .order('id', { ascending: false })
         .limit(SOCIAL_POST_PAGE_SIZE);
 
       let olderPosts = page || [];
       if (pageError) {
-        let fallbackQuery = supabase.from('posts').select('*');
-        if (feedMode === 'following') fallbackQuery = fallbackQuery.in('user_id', followedUserIds);
+        const baseFallbackQuery = supabase.from('posts').select('*');
+        const fallbackQuery = applySocialFeedFilters(baseFallbackQuery, feedMode, feedContext, cursorFilter);
+        if (!fallbackQuery) {
+          setHasMore(false);
+          return;
+        }
         const fallback = await fallbackQuery
-          .or(cursorFilter)
           .order('created_at', { ascending: false })
           .order('id', { ascending: false })
           .limit(SOCIAL_POST_PAGE_SIZE);
