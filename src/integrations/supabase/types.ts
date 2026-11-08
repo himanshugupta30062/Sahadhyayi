@@ -4022,6 +4022,43 @@ export type Database = {
       }
     }
     Functions: {
+      list_reading_group_books: {
+        Args: { p_group_id: string }
+        Returns: {
+          id: string
+          group_id: string
+          book_id: string
+          status: string
+          target_date: string | null
+          started_at: string | null
+          completed_at: string | null
+          created_at: string
+          title: string
+          author: string | null
+          cover_image_url: string | null
+          pages: number | null
+          my_current_page: number
+          my_is_shared: boolean
+          shared_reader_count: number
+          average_progress: number | null
+        }[]
+      }
+      add_reading_group_book: {
+        Args: { p_group_id: string; p_book_id: string; p_target_date?: string | null }
+        Returns: string
+      }
+      set_reading_group_book_status: {
+        Args: { p_group_reading_book_id: string; p_status: string }
+        Returns: string
+      }
+      remove_reading_group_book: {
+        Args: { p_group_reading_book_id: string }
+        Returns: undefined
+      }
+      save_reading_group_progress: {
+        Args: { p_group_reading_book_id: string; p_current_page: number; p_is_shared: boolean }
+        Returns: string
+      }
       get_profiles_for_social_context: {
         Args: { profile_ids: string[] }
         Returns: {
