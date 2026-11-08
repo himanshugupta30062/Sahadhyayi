@@ -49,7 +49,11 @@ serve(async (req) => {
       return json({ error: 'rating must be an integer from 1 to 5' }, 400);
     }
 
-    const token = req.headers.get('Authorization')?.match(/^Bearer\s+(.+)$/i)?.[1];
+    const authHeader = req.headers.get('Authorization');
+    let token: string | undefined;
+    if (authHeader && authHeader.toLowerCase().startsWith('bearer ')) {
+      token = authHeader.slice(7).trim();
+    }
     if (!token) return json({ error: 'Unauthorized' }, 401);
     const caller = createClient(supabaseUrl, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
     const { data: authData, error: authError } = await caller.auth.getUser(token);
