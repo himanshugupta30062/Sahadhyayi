@@ -77,16 +77,17 @@ Do not optimize vanity metrics or seed fake engagement.
 5. Book-centric content and group/reading-room integration.
 6. Safety, accessibility, performance and product analytics.
 
-## Status in the follow-graph phase
-- Existing feed reliability work is in PR #664: surfaced feed errors, stable 25-post cursor pagination, retry states and regression coverage.
-- Implemented in this phase: a dedicated `public.user_follows` migration with a composite primary key, no-self-follow constraint, index for follower lookup, RLS enabled, participant-only relationship reads, and authenticated self-only follow/unfollow writes.
-- Implemented in this phase: `useUserFollows` and `useToggleUserFollow` hooks plus distinct Follow/Following controls on reader discovery cards. Mutual friendship requests remain separate from one-way follows.
-- Added a Following tab in Friends & Connections that resolves followed readers through the existing public-profile search RPC and supports unfollowing without directly querying private profile records.
-- Migration is a deploy prerequisite for the new UI; apply the migration through the normal Supabase migration process before deploying the frontend changes.
-- Post-audience work is in PR: `public.posts.audience` supports `public`, `followers`, `friends`, and `private`; legacy posts default to `friends` to preserve their current effective visibility. The composer exposes the choice, and the RLS policy gates each audience for authenticated readers.
-- Still not implemented: a Following feed tab, public follower/following counts, expanded profile discovery, messaging consolidation, and production moderation workflows. A feed-tab implementation should be built only after the audience migration is applied and authorization tests pass.
-- Before the audience migration is applied, production RLS currently allows authenticated readers to select only their own posts and posts by mutual friends. The new migration introduces explicit audience rules without granting anonymous post reads. Do not deploy the composer before the migration; otherwise inserts may fail because the audience column does not yet exist.
-- Validation: build, lint and Vitest results must be checked in CI; do not treat this phase as production-ready until checks pass.
+## Status in the follow-graph and feed phase
+- Existing feed reliability work from PR #664 provides surfaced query errors, stable 25-post cursor pagination, retry states and regression coverage.
+- The `public.user_follows` graph has a composite key, no-self-follow constraint, follower lookup index, RLS, participant-only relationship reads and authenticated self-only follow/unfollow writes.
+- `useUserFollows` and `useToggleUserFollow` provide one-way follows independently of mutual friendship requests. Friends & Connections includes a Following list.
+- Post audiences are defined by `20261020130000_add_post_audiences.sql`: `public`, `followers`, `friends` and `private`. Existing posts default to `friends`; the posts SELECT RLS policy remains the final visibility boundary for every feed.
+- The social feed now offers **For You / Following / Latest**. For You uses two explainable discovery signals: authors the reader follows and book IDs on the reader's own `user_bookshelf` (currently reading, completed or want-to-read). It combines those signals in one query, applies stable cursor pagination, and relies on posts RLS to remove anything the viewer is not allowed to see.
+- Following filters to authors the reader follows; Latest is the chronological set of posts visible under RLS. The former client-side Trending sort was removed because it only reordered the loaded page and did not represent a reliable feed-wide ranking.
+- An empty For You feed now prompts the reader to add books or follow readers. Empty Latest is a genuine empty state; it no longer inserts sample reader cards into the authenticated feed.
+- Still to implement: saved posts/Reading Cabinet, robust reporting/block/mute flows, public follower/following counts, expanded profile discovery, messaging consolidation and production moderation tooling.
+- Deployment remains dependent on applying all existing social schema migrations (including post audiences and follow graph) through the normal Supabase migration process. Do not deploy UI that expects a schema addition before its migration is applied.
+- Validation: review CI build, lint, tests and authorization checks before merging; do not treat a feature as production-ready based only on a successful preview deployment.
 
 ## Product and UX evolution (2026-10)
 
