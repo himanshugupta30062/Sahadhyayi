@@ -7,6 +7,11 @@ const toPath = (relPath: string) => fileURLToPath(new URL(relPath, import.meta.u
 const socialPage = readFileSync(toPath('../../src/pages/SocialMedia.tsx'), 'utf8');
 const appRoutes = readFileSync(toPath('../../src/App.tsx'), 'utf8');
 const groupsHook = readFileSync(toPath('../../src/hooks/useGroupManagement.ts'), 'utf8');
+const nearbyDiscovery = readFileSync(toPath('../../src/components/social/NearbyReaderDiscovery.tsx'), 'utf8');
+const nearbyDiscoveryMigration = readFileSync(
+  toPath('../../supabase/migrations/20261108070000_add_opt_in_nearby_reader_discovery.sql'),
+  'utf8',
+);
 const readersMap = readFileSync(toPath('../../src/components/social/ReadersNearMeMap.tsx'), 'utf8');
 const friendsMap = readFileSync(toPath('../../src/components/social/FriendsLocationMap.tsx'), 'utf8');
 const consentModal = readFileSync(toPath('../../src/components/social/LocationConsentModal.tsx'), 'utf8');
@@ -67,6 +72,27 @@ describe('Social discovery and location privacy regressions', () => {
     expect(readersMap).not.toMatch(/location_lat:\s*0/);
     expect(readersMap).not.toMatch(/location_lng:\s*0/);
     expect(readersMap).not.toMatch(/window\.handleConnectReader/);
+  });
+
+  it('keeps nearby-reader discovery separately consented and hides precise coordinates', () => {
+    expect(nearbyDiscovery).toMatch(/setShowConsentDialog\(true\)/);
+    expect(nearbyDiscovery).toMatch(/getCurrentLocation\(\)/);
+    expect(nearbyDiscovery).toMatch(/reader_discovery_locations/);
+    expect(nearbyDiscovery).toMatch(/distance_band/);
+    expect(nearbyDiscovery).toMatch(/never another reader’s exact coordinates/);
+    expect(nearbyDiscovery).toMatch(/delete\(\)[\s\S]*?reader_discovery_locations/);
+
+    const functionSignature = nearbyDiscoveryMigration.match(/RETURNS TABLE \(([\s\S]*?)\)\nLANGUAGE/)?.[1] ?? '';
+    expect(functionSignature).toContain('distance_band text');
+    expect(functionSignature).not.toMatch(/latitude|longitude|distance_km/);
+    expect(nearbyDiscoveryMigration).toMatch(/CREATE TABLE IF NOT EXISTS public\.reader_discovery_locations/);
+    expect(nearbyDiscoveryMigration).toMatch(/FOR ALL\s+TO authenticated/);
+    expect(nearbyDiscoveryMigration).toMatch(/USING \(user_id = \(SELECT auth\.uid\(\)\)\)/);
+    expect(nearbyDiscoveryMigration).toMatch(/WITH CHECK \(user_id = \(SELECT auth\.uid\(\)\)\)/);
+    expect(nearbyDiscoveryMigration).toMatch(/own_shelf\.status = 'reading'/);
+    expect(nearbyDiscoveryMigration).toMatch(/shelf\.status = 'reading'/);
+    expect(nearbyDiscoveryMigration).toMatch(/REVOKE ALL ON FUNCTION public\.get_nearby_reader_matches\(uuid, numeric\) FROM PUBLIC, anon/);
+    expect(nearbyDiscoveryMigration).toMatch(/GRANT EXECUTE ON FUNCTION public\.get_nearby_reader_matches\(uuid, numeric\) TO authenticated/);
   });
 
   it('disables profile location sharing and clears stored coordinates on opt-out', () => {
