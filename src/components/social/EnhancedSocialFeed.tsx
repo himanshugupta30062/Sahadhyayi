@@ -114,8 +114,6 @@ export const EnhancedSocialFeed = () => {
   const [streamMode, setStreamMode] = useState<'for_you' | 'following' | 'latest'>('for_you');
   const [showSavedPosts, setShowSavedPosts] = useState(false);
   const cabinet = useSocialPostBookmarks();
-  const [showSavedPosts, setShowSavedPosts] = useState(false);
-  const cabinet = useSocialPostBookmarks();
   const { posts, isLoading, error, refetch, hasMore, isLoadingMore, loadMore, loadMoreError } = useSocialPosts(streamMode);
   const postsRef = useRef(posts);
   postsRef.current = posts;
