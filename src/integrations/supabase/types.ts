@@ -20,6 +20,12 @@ export type Database = {
         Update: { id?: string; user_id?: string; openalex_id?: string; paper?: Json; created_at?: string }
         Relationships: []
       }
+      social_post_bookmarks: {
+        Row: { id: string; user_id: string; post_id: string; saved_at: string }
+        Insert: { id?: string; user_id: string; post_id: string; saved_at?: string }
+        Update: { id?: string; user_id?: string; post_id?: string; saved_at?: string }
+        Relationships: [{ foreignKeyName: "social_post_bookmarks_post_id_fkey"; columns: ["post_id"]; isOneToOne: false; referencedRelation: "posts"; referencedColumns: ["id"] }]
+      }
       scientists: {
         Row: { created_at: string; discipline: string; id: string; lifespan: string; name: string; profile_data: Json; region: string; slug: string; sort_order: number; status: string; summary: string; updated_at: string }
         Insert: { created_at?: string; discipline: string; id?: string; lifespan: string; name: string; profile_data?: Json; region: string; slug: string; sort_order?: number; status?: string; summary: string; updated_at?: string }
