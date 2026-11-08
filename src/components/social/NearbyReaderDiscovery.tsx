@@ -267,10 +267,15 @@ export const NearbyReaderDiscovery = ({ selectedBook }: NearbyReaderDiscoveryPro
                   </p>
                 </div>
               </div>
-              <Button type="button" variant="outline" size="sm" disabled={isSavingDiscovery} onClick={() => void disableDiscovery()}>
-                {isSavingDiscovery ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                Turn off
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" variant="outline" size="sm" disabled={isSavingDiscovery} onClick={() => void enableDiscovery()}>
+                  {isSavingDiscovery ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MapPin className="mr-2 h-4 w-4" />}
+                  Refresh location
+                </Button>
+                <Button type="button" variant="outline" size="sm" disabled={isSavingDiscovery} onClick={() => void disableDiscovery()}>
+                  Turn off
+                </Button>
+              </div>
             </div>
           )}
 
