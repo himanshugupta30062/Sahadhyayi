@@ -16,7 +16,8 @@ export interface GroupMember {
   id: string;
   group_id: string;
   user_id: string;
-  role: 'admin' | 'member';
+  role: 'owner' | 'admin' | 'moderator' | 'member';
+  status: 'pending' | 'active' | 'banned';
   joined_at: string;
   groups?: GroupChatSummary;
   user_profile?: {
@@ -46,6 +47,7 @@ export const useUserGroups = () => {
           group_id,
           user_id,
           role,
+          status,
           joined_at,
           groups:group_chats (
             id,
