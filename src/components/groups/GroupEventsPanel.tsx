@@ -12,7 +12,7 @@ import { useGroupEvents, useGroupEventParticipants, useCreateGroupEvent, useResp
 const labels: Record<GroupEventType,string> = { book_discussion:'Book discussion', co_reading:'Co-reading', reading_marathon:'Reading marathon', author_meetup:'Author meetup', weekly_session:'Weekly session', other:'Other' };
 const localDate = (value:string) => new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));
 
-export default function GroupEventsPanel({ groupId, userId, canManage }: { groupId:string; userId:string; canManage:boolean }) {
+export default function GroupEventsPanel({ groupId, userId, canCreate, canManage }: { groupId:string; userId:string; canCreate:boolean; canManage:boolean }) {
  const {data:events=[],isLoading,error}=useGroupEvents(groupId); const ids=events.map(e=>e.id);
  const {data:participants=[]}=useGroupEventParticipants(ids); const create=useCreateGroupEvent(groupId), respond=useRespondToGroupEvent(groupId), cancel=useCancelGroupEvent(groupId);
  const [open,setOpen]=useState(false),[title,setTitle]=useState(''),[description,setDescription]=useState(''),[type,setType]=useState<GroupEventType>('book_discussion'),[start,setStart]=useState(''),[end,setEnd]=useState(''),[location,setLocation]=useState(''),[capacity,setCapacity]=useState('');
@@ -30,7 +30,7 @@ export default function GroupEventsPanel({ groupId, userId, canManage }: { group
  <Input aria-label="Location" placeholder="Location / online room" value={location} onChange={e=>setLocation(e.target.value)} maxLength={240}/>
  <Input aria-label="Capacity" type="number" min="1" max="10000" placeholder="Capacity (optional)" value={capacity} onChange={e=>setCapacity(e.target.value)}/>
  <Textarea aria-label="Description" placeholder="Description (optional)" value={description} onChange={e=>setDescription(e.target.value)} maxLength={5000} className="sm:col-span-2"/>
- <div className="flex gap-2 sm:col-span-2"><Button disabled={create.isPending||title.trim().length<3||!start||!end} onClick={()=>void submit()}>{create.isPending&&<Loader2 className="mr-2 h-4 w-4 animate-spin"/>}Publish event</Button><Button variant="outline" onClick={()=>setOpen(false)}>Cancel</Button></div>
+ <div className="flex gap-2 sm:col-span-2"><Button disabled={create.isPending||title.trim().length<3||!start||!end||new Date(start)<=new Date()||new Date(end)<=new Date(start)} onClick={()=>void submit()}>{create.isPending&&<Loader2 className="mr-2 h-4 w-4 animate-spin"/>}Publish event</Button><Button variant="outline" onClick={()=>setOpen(false)}>Cancel</Button></div>
  </CardContent></Card>}
  {events.length===0?<Card><CardContent className="py-8 text-center text-muted-foreground">No events planned yet. Start a discussion or co-reading session.</CardContent></Card>:<div className="grid gap-3">{events.map(event=>{const people=participants.filter(p=>p.event_id===event.id),mine=people.find(p=>p.user_id===userId);return <Card key={event.id}><CardContent className="space-y-3 p-4">
  <div className="flex flex-wrap items-start justify-between gap-2"><div><h3 className="font-semibold">{event.title}</h3><Badge variant={event.status==='scheduled'?'secondary':'outline'}>{event.status==='scheduled'?labels[event.event_type]:event.status}</Badge></div>{canManage&&event.status==='scheduled'&&<Button size="sm" variant="ghost" onClick={()=>void cancel.mutateAsync(event.id).then(()=>toast.success('Event cancelled')).catch(e=>toast.error(e.message))}><XCircle className="mr-1 h-4 w-4"/>Cancel</Button>}</div>

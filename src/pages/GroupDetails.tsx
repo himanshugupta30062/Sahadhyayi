@@ -336,7 +336,7 @@ const GroupDetails = () => {
           </Card>
 
           {isMember && <GroupReadingBoard groupId={group.id} canManage={canManageGroup} />}
-          {isMember && <GroupReadingDiscussions groupId={group.id} canModerate={canManageGroup} />}\n          {isMember && user?.id && (\n            <GroupEventsPanel\n              groupId={group.id}\n              userId={user.id}\n              canManage={actorRole === 'owner' || actorRole === 'admin'}\n            />\n          )}
+          {isMember && <GroupReadingDiscussions groupId={group.id} canModerate={canManageGroup} />}\n          {isMember && user?.id && (\n            <GroupEventsPanel\n              groupId={group.id}\n              userId={user.id}\n              canCreate={isMember}\n              canManage={actorRole === 'owner' || actorRole === 'admin'}\n            />\n          )}
 
           {/* Members List */}
           <Card className="border-border bg-card">
