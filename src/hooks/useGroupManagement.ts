@@ -15,7 +15,7 @@ export interface Group {
   created_by: string | null;
   created_at: string | null;
   member_count?: number;
-  user_role?: 'admin' | 'member';
+  user_role?: 'owner' | 'admin' | 'moderator' | 'member';
   group_members?: { count: number }[];
   is_encrypted?: boolean | null;
   visibility?: 'public' | 'private' | 'unlisted' | null;
