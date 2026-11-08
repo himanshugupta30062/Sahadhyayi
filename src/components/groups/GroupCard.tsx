@@ -28,6 +28,8 @@ const GroupCard: React.FC<GroupCardProps> = ({
   const leaveGroup = useLeaveGroup();
 
   const memberCount = group.group_members?.[0]?.count || 0;
+  // Keep compatibility with legacy encrypted groups while preferring explicit join policy.
+  const requiresInvitation = group.join_policy === 'invite_only' || Boolean(group.is_encrypted);
 
   const handleJoinLeave = () => {
     if (!user) {
@@ -35,7 +37,7 @@ const GroupCard: React.FC<GroupCardProps> = ({
       return;
     }
 
-    if (!isJoined && group.is_encrypted) {
+    if (!isJoined && requiresInvitation) {
       toast.error('This reading group is invite-only. Request an invitation from an admin to join.');
       return;
     }
@@ -106,13 +108,13 @@ const GroupCard: React.FC<GroupCardProps> = ({
           )}
           <Button
             onClick={handleJoinLeave}
-            disabled={joinGroup.isPending || leaveGroup.isPending || (isJoined && group.name === DEFAULT_READING_GROUP_NAME) || (!isJoined && Boolean(group.is_encrypted))}
+            disabled={joinGroup.isPending || leaveGroup.isPending || (isJoined && group.name === DEFAULT_READING_GROUP_NAME) || (!isJoined && requiresInvitation)}
             className={`${isJoined && onChat ? 'flex-1' : 'w-full'} ${
               isJoined && group.name === DEFAULT_READING_GROUP_NAME
                 ? "bg-muted text-muted-foreground cursor-default"
                 : isJoined
                   ? "bg-red-600 hover:bg-red-700"
-                  : group.is_encrypted
+                  : requiresInvitation
                     ? "bg-muted text-muted-foreground border border-border cursor-not-allowed opacity-80"
                     : "bg-amber-600 hover:bg-amber-700"
             }`}
@@ -121,7 +123,7 @@ const GroupCard: React.FC<GroupCardProps> = ({
               ? 'Permanent Community Member'
               : isJoined
                 ? 'Leave Group'
-                : group.is_encrypted
+                : requiresInvitation
                   ? (
                     <span className="flex items-center justify-center gap-1.5">
                       <Lock className="w-3.5 h-3.5" /> Invite-Only

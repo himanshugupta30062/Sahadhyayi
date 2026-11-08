@@ -29,6 +29,11 @@ const groupMembershipHardening = readFileSync(
   'utf8',
 );
 
+const groupModerationDirectory = readFileSync(
+  toPath('../../supabase/migrations/20261108150000_reading_groups_phase5_moderation_directory.sql'),
+  'utf8',
+);
+
 describe('social feed and reading group RLS policies', () => {
   it('replaces the historical broad feed rule with audience-scoped post visibility', () => {
     // This historical migration introduced authenticated-wide visibility; the later
@@ -85,5 +90,17 @@ describe('social feed and reading group RLS policies', () => {
     expect(groupMembershipHardening).toMatch(
       /CREATE POLICY "Group admins can add members"[\s\S]*ON public\.group_chat_members[\s\S]*FOR INSERT[\s\S]*TO authenticated[\s\S]*admin_member\.role = 'admin'/i,
     );
+  });
+
+  it('exposes pending and blocked memberships only to active group moderators', () => {
+    expect(groupModerationDirectory).toContain('SECURITY DEFINER');
+    expect(groupModerationDirectory).toContain("SET search_path = ''");
+    expect(groupModerationDirectory).toContain('v_actor uuid := auth.uid();');
+    expect(groupModerationDirectory).toContain("actor_membership.status = 'active'");
+    expect(groupModerationDirectory).toContain("actor_membership.role IN ('owner', 'admin', 'moderator')");
+    expect(groupModerationDirectory).toContain('creator_membership.user_id = group_row.created_by');
+    expect(groupModerationDirectory).toContain("SET role = 'owner'");
+    expect(groupModerationDirectory).toContain('REVOKE ALL ON FUNCTION public.get_reading_group_moderation_members(uuid) FROM PUBLIC, anon');
+    expect(groupModerationDirectory).toContain('GRANT EXECUTE ON FUNCTION public.get_reading_group_moderation_members(uuid) TO authenticated');
   });
 });

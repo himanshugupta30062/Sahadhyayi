@@ -15,9 +15,11 @@ export interface Group {
   created_by: string | null;
   created_at: string | null;
   member_count?: number;
-  user_role?: 'admin' | 'member';
+  user_role?: 'owner' | 'admin' | 'moderator' | 'member';
   group_members?: { count: number }[];
   is_encrypted?: boolean | null;
+  visibility?: 'public' | 'private' | 'unlisted' | null;
+  join_policy?: 'open' | 'approval' | 'invite_only' | null;
 }
 
 export interface GroupChat {
@@ -307,7 +309,84 @@ export const useModerateGroupMember = () => {
     },
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: ['group-members', variables.groupId] });
+      void queryClient.invalidateQueries({ queryKey: ['group-moderation-members', variables.groupId] });
       void queryClient.invalidateQueries({ queryKey: ['user-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['all-groups'] });
     },
+    onError: (error: Error) => toast.error(error.message),
+  });
+};
+
+export interface GroupModerationMember {
+  membership_id: string;
+  user_id: string;
+  role: 'owner' | 'admin' | 'moderator' | 'member';
+  status: 'pending' | 'active' | 'banned';
+  joined_at: string | null;
+  full_name: string | null;
+  username: string | null;
+  profile_photo_url: string | null;
+}
+
+/** Loads membership details through the moderator-authorized database function. */
+export const useGroupModerationMembers = (groupId: string, enabled = false) => {
+  return useQuery({
+    queryKey: ['group-moderation-members', groupId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_reading_group_moderation_members', {
+        p_group_id: groupId,
+      });
+      if (error) throw new Error(error.message || 'Could not load group moderation details.');
+      return (data ?? []) as GroupModerationMember[];
+    },
+    enabled: Boolean(groupId && enabled),
+  });
+};
+
+export const useSetGroupMemberRole = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ groupId, userId, role }: {
+      groupId: string;
+      userId: string;
+      role: 'admin' | 'moderator' | 'member';
+    }) => {
+      const { data, error } = await supabase.rpc('set_reading_group_member_role', {
+        p_group_id: groupId,
+        p_user_id: userId,
+        p_role: role,
+      });
+      if (error) throw new Error(error.message || 'Could not update member role.');
+      return data as string;
+    },
+    onSuccess: (_, variables) => {
+      void queryClient.invalidateQueries({ queryKey: ['group-moderation-members', variables.groupId] });
+      void queryClient.invalidateQueries({ queryKey: ['group-members', variables.groupId] });
+      void queryClient.invalidateQueries({ queryKey: ['user-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+};
+
+export const useTransferGroupOwnership = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ groupId, newOwnerId }: { groupId: string; newOwnerId: string }) => {
+      const { error } = await supabase.rpc('transfer_reading_group_ownership', {
+        p_group_id: groupId,
+        p_new_owner_id: newOwnerId,
+      });
+      if (error) throw new Error(error.message || 'Could not transfer group ownership.');
+    },
+    onSuccess: (_, variables) => {
+      void queryClient.invalidateQueries({ queryKey: ['group-moderation-members', variables.groupId] });
+      void queryClient.invalidateQueries({ queryKey: ['group-members', variables.groupId] });
+      void queryClient.invalidateQueries({ queryKey: ['user-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
+      void queryClient.invalidateQueries({ queryKey: ['all-groups'] });
+    },
+    onError: (error: Error) => toast.error(error.message),
   });
 };
