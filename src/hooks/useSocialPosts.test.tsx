@@ -89,7 +89,6 @@ const setResponses = (responses: Record<string, Array<{ data?: any; error?: any 
       order: () => builder,
       limit: () => builder,
       not: () => builder,
-      or: () => builder,
       single: () => Promise.resolve(response),
       then: (resolve: (value: any) => unknown, reject?: (reason: unknown) => unknown) =>
         Promise.resolve(response).then(resolve, reject),
