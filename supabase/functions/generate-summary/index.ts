@@ -1,16 +1,26 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { authorizeRequest, corsHeaders } from '../_shared/auth.ts';
-
+import { getAuthenticatedUser, corsHeaders } from '../_shared/auth.ts';
+import { enforceRateLimit } from '../_shared/rateLimit.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const authorizationError = await authorizeRequest(req);
-  if (authorizationError) return authorizationError;
+  const { user, errorResponse } = await getAuthenticatedUser(req);
+  if (errorResponse) return errorResponse;
+
+  // Rate limit: max 20 summary requests per 10 minutes per user
+  const rateLimitErr = await enforceRateLimit(req, {
+    endpoint: 'generate-summary',
+    identifier: user.id,
+    maxRequests: 20,
+    windowMinutes: 10,
+    customMessage: 'Summary generation limit reached. Please wait a few moments before requesting more summaries.',
+  });
+  if (rateLimitErr) return rateLimitErr;
 
   try {
     const { content, type = 'chapter' } = await req.json();

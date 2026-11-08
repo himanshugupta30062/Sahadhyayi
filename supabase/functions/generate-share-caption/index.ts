@@ -1,4 +1,7 @@
 // Generate a platform-tailored share caption using Lovable AI Gateway (Gemini)
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { checkRateLimit, getClientIp } from '../_shared/rateLimit.ts';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers':
@@ -37,6 +40,21 @@ Deno.serve(async (req) => {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+
+    // Rate limiting: max 15 requests per 10 minutes per IP/client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY');
+    if (supabaseUrl && supabaseKey) {
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const clientIp = getClientIp(req);
+      const rateCheck = await checkRateLimit(supabase, clientIp, 'generate-share-caption', 15, 10);
+      if (!rateCheck.allowed) {
+        return new Response(
+          JSON.stringify({ error: 'Rate limit exceeded. Please wait a few moments before generating another caption.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     const excerpt = String(content || '').replace(/\s+/g, ' ').trim().slice(0, 1500);

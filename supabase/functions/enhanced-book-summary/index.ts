@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import { enforceRateLimit } from '../_shared/rateLimit.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,6 +25,16 @@ serve(async (req) => {
   if (authError || !user) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
+
+  // Rate limit: max 20 summary requests per 10 minutes per user
+  const rateLimitErr = await enforceRateLimit(req, {
+    endpoint: 'enhanced-book-summary',
+    identifier: user.id,
+    maxRequests: 20,
+    windowMinutes: 10,
+    customMessage: 'AI summary request limit reached. Please wait a few minutes before requesting more summaries.',
+  });
+  if (rateLimitErr) return rateLimitErr;
 
   try {
     const requestBody = await req.json()

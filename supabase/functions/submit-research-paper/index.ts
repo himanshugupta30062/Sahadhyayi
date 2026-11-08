@@ -10,6 +10,13 @@ Deno.serve(async req=>{
  const auth=req.headers.get("Authorization"); if(!auth) return respond({error:"Sign in required"},401);
  const db=createClient(url,key,{global:{headers:{Authorization:auth}}});
  const {data:{user},error:userError}=await db.auth.getUser(); if(userError||!user) return respond({error:"Invalid session"},401);
+ const { data: allowedRate } = await db.rpc('check_rate_limit', {
+   p_identifier: user.id,
+   p_endpoint: 'submit-research-paper',
+   p_max_requests: 10,
+   p_window_minutes: 60,
+ });
+ if (allowedRate === false) return respond({ error: 'Paper submission rate limit reached. Please wait before submitting another paper.' }, 429);
  try{
   const body=await req.json(); if(!body||typeof body!=="object") return respond({error:"Invalid body"},400);
   const title=String(body.title??"").trim(),authors=String(body.authors??"").trim(),abstract=String(body.abstract??"").trim();

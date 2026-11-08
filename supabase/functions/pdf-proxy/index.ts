@@ -1,4 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import { checkRateLimit, getClientIp } from '../_shared/rateLimit.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -60,6 +62,20 @@ serve(async (req) => {
   }
 
   try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY');
+    if (supabaseUrl && supabaseKey) {
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const clientIp = getClientIp(req);
+      const rateCheck = await checkRateLimit(supabase, clientIp, 'pdf-proxy', 60, 10);
+      if (!rateCheck.allowed) {
+        return new Response('Rate limit exceeded. Please wait a few moments before fetching more PDFs.', {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'text/plain' },
+        });
+      }
+    }
+
     const url = new URL(req.url)
     const pdfUrl = url.searchParams.get('url')
 

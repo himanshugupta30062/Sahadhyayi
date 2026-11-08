@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import { checkRateLimit, getClientIp } from '../_shared/rateLimit.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -81,6 +82,20 @@ serve(async (req) => {
       console.log(`🔐 Authenticated user ${authenticatedUser.id} triggered catalog save.`);
     } else {
       console.log('📖 Guest reader triggered catalog save without requiring sign-in.');
+    }
+
+    // Rate limiting: max 30 catalog save batches per hour per user/IP
+    if (supabaseUrl && supabaseServiceKey) {
+      const rateLimitClient = createClient(supabaseUrl, supabaseServiceKey);
+      const clientIp = getClientIp(req);
+      const rateLimitIdentifier = authenticatedUser?.id ? `user:${authenticatedUser.id}` : `guest:${clientIp}`;
+      const rateCheck = await checkRateLimit(rateLimitClient, rateLimitIdentifier, 'save-selected-books', 30, 60);
+      if (!rateCheck.allowed) {
+        return new Response(
+          JSON.stringify({ error: 'Catalog addition rate limit reached. Please wait before saving more books.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     // 3. Parse and Validate Request Payload

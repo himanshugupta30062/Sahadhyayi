@@ -1,4 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { checkRateLimit, getClientIp } from "../_shared/rateLimit.ts";
+import { verifyRecaptcha } from "../_shared/recaptcha.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -48,7 +51,7 @@ serve(async (req) => {
       );
     }
 
-    const { name, email, message, subject: customSubject } = payload || {};
+    const { name, email, message, subject: customSubject, recaptchaToken } = payload || {};
 
     if (!name || typeof name !== 'string' || !name.trim()) {
       return new Response(
@@ -84,6 +87,50 @@ serve(async (req) => {
         JSON.stringify({ success: false, error: 'Invalid email address', code: 'INVALID_EMAIL' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Bot detection via reCAPTCHA if token is provided or enterprise secrets are present
+    if (recaptchaToken && typeof recaptchaToken === 'string') {
+      const verification = await verifyRecaptcha(recaptchaToken, 'contact', { minScore: 0.5 });
+      if (!verification.valid) {
+        console.warn(`[send-contact-email] Bot detected or invalid captcha: ${verification.error}`);
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'Security verification failed. Please try again.',
+            code: 'BOT_DETECTED',
+          }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Rate limiting: Maximum 5 contact submissions per 15 minutes per IP + Email
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SUPABASE_ANON_KEY');
+    if (supabaseUrl && supabaseKey) {
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const clientIp = getClientIp(req);
+      const rateLimitKey = `${clientIp}:${trimmedEmail.toLowerCase()}`;
+
+      const rateCheck = await checkRateLimit(supabase, rateLimitKey, 'send-contact-email', 5, 15);
+      if (!rateCheck.allowed) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'Too many messages sent from this address. Please wait 15 minutes before sending another message.',
+            code: 'RATE_LIMIT_EXCEEDED',
+          }),
+          {
+            status: 429,
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'application/json',
+              'Retry-After': '900',
+            },
+          }
+        );
+      }
     }
 
     if (name.trim().length > 100) {
