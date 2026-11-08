@@ -1,5 +1,22 @@
 -- Reading Groups Phase 5: moderator-only membership directory for the management UI.
 -- Pending and banned membership details are never exposed through a public list query.
+-- Older groups predate the explicit owner role; their active creator/admin becomes owner
+-- when no active owner is already assigned, preserving the original group steward.
+
+UPDATE public.group_chat_members AS creator_membership
+SET role = 'owner'
+FROM public.group_chats AS group_row
+WHERE creator_membership.group_id = group_row.id
+  AND creator_membership.user_id = group_row.created_by
+  AND creator_membership.role = 'admin'
+  AND creator_membership.status = 'active'
+  AND NOT EXISTS (
+    SELECT 1
+    FROM public.group_chat_members AS existing_owner
+    WHERE existing_owner.group_id = creator_membership.group_id
+      AND existing_owner.role = 'owner'
+      AND existing_owner.status = 'active'
+  );
 
 CREATE OR REPLACE FUNCTION public.get_reading_group_moderation_members(p_group_id uuid)
 RETURNS TABLE (
