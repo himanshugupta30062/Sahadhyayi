@@ -80,7 +80,7 @@ describe('Social discovery and location privacy regressions', () => {
     expect(nearbyDiscovery).toMatch(/reader_discovery_locations/);
     expect(nearbyDiscovery).toMatch(/distance_band/);
     expect(nearbyDiscovery).toMatch(/never another reader’s exact coordinates/);
-    expect(nearbyDiscovery).toMatch(/delete\(\)[\s\S]*?reader_discovery_locations/);
+    expect(nearbyDiscovery).toMatch(/from\('reader_discovery_locations'\)[\s\S]*?delete\(\)/);
 
     const functionSignature = nearbyDiscoveryMigration.match(/RETURNS TABLE \(([\s\S]*?)\)\nLANGUAGE/)?.[1] ?? '';
     expect(functionSignature).toContain('distance_band text');
