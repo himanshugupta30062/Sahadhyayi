@@ -5,6 +5,13 @@ import { describe, expect, it } from 'vitest';
 const toPath = (relPath: string) => fileURLToPath(new URL(relPath, import.meta.url));
 
 const socialPage = readFileSync(toPath('../../src/pages/SocialMedia.tsx'), 'utf8');
+const appRoutes = readFileSync(toPath('../../src/App.tsx'), 'utf8');
+const groupsHook = readFileSync(toPath('../../src/hooks/useGroupManagement.ts'), 'utf8');
+const nearbyDiscovery = readFileSync(toPath('../../src/components/social/NearbyReaderDiscovery.tsx'), 'utf8');
+const nearbyDiscoveryMigration = readFileSync(
+  toPath('../../supabase/migrations/20261108070000_add_opt_in_nearby_reader_discovery.sql'),
+  'utf8',
+);
 const readersMap = readFileSync(toPath('../../src/components/social/ReadersNearMeMap.tsx'), 'utf8');
 const friendsMap = readFileSync(toPath('../../src/components/social/FriendsLocationMap.tsx'), 'utf8');
 const consentModal = readFileSync(toPath('../../src/components/social/LocationConsentModal.tsx'), 'utf8');
@@ -19,6 +26,30 @@ describe('Social discovery and location privacy regressions', () => {
     expect(socialPage).toMatch(/const AuthenticatedSocialMedia: React\.FC/);
     expect(socialPage).toMatch(/useReadingRooms\(undefined, \{ enabled: isDesktopSidebarVisible \}\)/);
     expect(socialPage).toMatch(/useAllUsers\(\{ enabled: isDesktopSidebarVisible \}\)/);
+  });
+
+  it('protects direct entry to groups and reader maps while keeping the social preview public', () => {
+    const getRouteBlock = (path: string) => {
+      const routeStart = appRoutes.indexOf(`path="${path}"`);
+      if (routeStart < 0) return '';
+      const nextRoute = appRoutes.indexOf('<Route', routeStart + 6);
+      return appRoutes.slice(routeStart, nextRoute < 0 ? appRoutes.length : nextRoute);
+    };
+
+    ['/groups', '/groups/:id', '/map', '/reader-map/:bookId?'].forEach((path) => {
+      expect(getRouteBlock(path), `${path} should require authentication`).toContain('<ProtectedRoute>');
+    });
+
+    expect(getRouteBlock('/social')).not.toContain('<ProtectedRoute>');
+    expect(socialPage).toMatch(/if \(!user\) return <GuestLanding \/>;/);
+  });
+
+  it('does not substitute fake curated groups when the groups query is empty or fails', () => {
+    expect(groupsHook).not.toContain('CURATED_READING_GROUPS');
+    expect(groupsHook).toMatch(/const queryEnabled = enabled && Boolean\(user\?\.id\)/);
+    expect(groupsHook).toMatch(/enabled: queryEnabled/);
+    expect(groupsHook).toMatch(/if \(error\) \{[\s\S]*?throw error;/);
+    expect(groupsHook).toMatch(/return data \?\? \[\]/);
   });
 
   it('never requests or persists GPS automatically when the readers map mounts', () => {
@@ -41,6 +72,27 @@ describe('Social discovery and location privacy regressions', () => {
     expect(readersMap).not.toMatch(/location_lat:\s*0/);
     expect(readersMap).not.toMatch(/location_lng:\s*0/);
     expect(readersMap).not.toMatch(/window\.handleConnectReader/);
+  });
+
+  it('keeps nearby-reader discovery separately consented and hides precise coordinates', () => {
+    expect(nearbyDiscovery).toMatch(/setShowConsentDialog\(true\)/);
+    expect(nearbyDiscovery).toMatch(/getCurrentLocation\(\)/);
+    expect(nearbyDiscovery).toMatch(/reader_discovery_locations/);
+    expect(nearbyDiscovery).toMatch(/distance_band/);
+    expect(nearbyDiscovery).toMatch(/never another reader’s exact coordinates/);
+    expect(nearbyDiscovery).toMatch(/from\('reader_discovery_locations'\)[\s\S]*?delete\(\)/);
+
+    const functionSignature = nearbyDiscoveryMigration.match(/RETURNS TABLE \(([\s\S]*?)\)\nLANGUAGE/)?.[1] ?? '';
+    expect(functionSignature).toContain('distance_band text');
+    expect(functionSignature).not.toMatch(/latitude|longitude|distance_km/);
+    expect(nearbyDiscoveryMigration).toMatch(/CREATE TABLE IF NOT EXISTS public\.reader_discovery_locations/);
+    expect(nearbyDiscoveryMigration).toMatch(/FOR ALL\s+TO authenticated/);
+    expect(nearbyDiscoveryMigration).toMatch(/USING \(user_id = \(SELECT auth\.uid\(\)\)\)/);
+    expect(nearbyDiscoveryMigration).toMatch(/WITH CHECK \(user_id = \(SELECT auth\.uid\(\)\)\)/);
+    expect(nearbyDiscoveryMigration).toMatch(/own_shelf\.status = 'reading'/);
+    expect(nearbyDiscoveryMigration).toMatch(/shelf\.status = 'reading'/);
+    expect(nearbyDiscoveryMigration).toMatch(/REVOKE ALL ON FUNCTION public\.get_nearby_reader_matches\(uuid, numeric\) FROM PUBLIC, anon/);
+    expect(nearbyDiscoveryMigration).toMatch(/GRANT EXECUTE ON FUNCTION public\.get_nearby_reader_matches\(uuid, numeric\) TO authenticated/);
   });
 
   it('disables profile location sharing and clears stored coordinates on opt-out', () => {

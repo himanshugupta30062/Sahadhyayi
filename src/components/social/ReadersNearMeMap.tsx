@@ -11,6 +11,7 @@ import { BookFilterDropdown } from './BookFilterDropdown';
 import { getCurrentLocation, type LocationCoords } from '@/lib/locationService';
 import { ChatWindow } from './ChatWindow';
 import { MapplsMap, type MapplsPoint } from '@/components/maps/MapplsMap';
+import { NearbyReaderDiscovery } from './NearbyReaderDiscovery';
 import { MAPPLS_API_KEY } from '@/config/mappls';
 
 interface NearbyReader {
@@ -492,6 +493,8 @@ export const ReadersNearMeMap: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      <NearbyReaderDiscovery selectedBook={selectedBook} />
 
       <LocationConsentModal
         isOpen={showConsentModal}
