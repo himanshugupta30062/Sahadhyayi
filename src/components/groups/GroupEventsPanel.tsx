@@ -21,7 +21,7 @@ export default function GroupEventsPanel({ groupId, userId, canCreate, canManage
  if(isLoading)return <div className="py-8 text-center"><Loader2 className="mx-auto animate-spin"/>Loading events…</div>;
  if(error)return <p role="alert" className="text-sm text-destructive">Could not load group events. Please retry.</p>;
  return <section className="space-y-4" aria-label="Reading group events">
- <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-xl font-semibold">Events & sessions</h2>{canManage&&<Button onClick={()=>setOpen(v=>!v)}><Plus className="mr-2 h-4 w-4"/>Create event</Button>}</div>
+ <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-xl font-semibold">Events & sessions</h2>{canCreate&&<Button onClick={()=>setOpen(v=>!v)}><Plus className="mr-2 h-4 w-4"/>Create event</Button>}</div>
  {open&&<Card><CardHeader><CardTitle>Plan a reading session</CardTitle></CardHeader><CardContent className="grid gap-3 sm:grid-cols-2">
  <Input aria-label="Event title" placeholder="Event title" value={title} onChange={e=>setTitle(e.target.value)} maxLength={120}/>
  <Select value={type} onValueChange={v=>setType(v as GroupEventType)}><SelectTrigger aria-label="Event type"><SelectValue/></SelectTrigger><SelectContent>{Object.entries(labels).map(([v,l])=><SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent></Select>
