@@ -82,6 +82,8 @@ const GroupDetails = () => {
   const group = cachedGroup || directGroup;
   const myMembership = group ? joinedGroups.find((membership) => membership.group_id === group.id) : undefined;
   const isMember = myMembership?.status === 'active';
+  const isRequestPending = myMembership?.status === 'pending';
+  const isBanned = myMembership?.status === 'banned';
   const actorRole = myMembership?.role;
   const canManageGroup = isMember && ['owner', 'admin', 'moderator'].includes(actorRole ?? '');
   const activeMembers = members.filter((member) => member.status === 'active');
@@ -181,7 +183,7 @@ const GroupDetails = () => {
                 <Badge variant={isMember ? 'default' : 'secondary'} className="text-xs">
                   {isMember ? 'Joined Member' : 'Member Candidate'}
                 </Badge>
-                {group.is_encrypted ? (
+                {group.visibility === 'private' || group.join_policy === 'invite_only' ? (
                   <Badge variant="outline" className="text-xs gap-1 border-amber-500/40 text-amber-600 dark:text-amber-400 bg-background/80">
                     <Lock className="w-3 h-3" /> Invite-Only Group
                   </Badge>
@@ -251,7 +253,11 @@ const GroupDetails = () => {
                     </>
                   ) : (
                     <>
-                      {group.visibility === 'private' || group.join_policy === 'invite_only' ? (
+                      {isRequestPending ? (
+                        <Badge variant="secondary" className="text-xs">Join request pending</Badge>
+                      ) : isBanned ? (
+                        <Badge variant="destructive" className="text-xs">You cannot join this group</Badge>
+                      ) : group.visibility === 'private' || group.join_policy === 'invite_only' ? (
                         <Badge variant="secondary" className="text-xs">An invitation is required to join</Badge>
                       ) : (
                         <Button
