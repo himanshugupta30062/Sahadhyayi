@@ -183,10 +183,16 @@ const GroupDetails = () => {
                 <Badge variant={isMember ? 'default' : isBanned ? 'destructive' : 'secondary'} className="text-xs">
                   {isMember ? 'Joined Member' : isRequestPending ? 'Request Pending' : isBanned ? 'Blocked' : 'Not Joined'}
                 </Badge>
-                {group.visibility === 'private' || group.join_policy === 'invite_only' ? (
+                {group.join_policy === 'invite_only' ? (
                   <Badge variant="outline" className="text-xs gap-1 border-amber-500/40 text-amber-600 dark:text-amber-400 bg-background/80">
                     <Lock className="w-3 h-3" /> Invite-Only Group
                   </Badge>
+                ) : group.visibility === 'private' ? (
+                  <Badge variant="outline" className="text-xs gap-1 border-amber-500/40 text-amber-600 dark:text-amber-400 bg-background/80">
+                    <Lock className="w-3 h-3" /> Private Group
+                  </Badge>
+                ) : group.visibility === 'unlisted' ? (
+                  <Badge variant="secondary" className="text-xs gap-1 bg-background/80">Unlisted Group</Badge>
                 ) : (
                   <Badge variant="secondary" className="text-xs gap-1 bg-background/80">
                     <Globe className="w-3 h-3 text-muted-foreground" /> Public Group
@@ -257,7 +263,7 @@ const GroupDetails = () => {
                         <Badge variant="secondary" className="text-xs">Join request pending</Badge>
                       ) : isBanned ? (
                         <Badge variant="destructive" className="text-xs">You cannot join this group</Badge>
-                      ) : group.visibility === 'private' || group.join_policy === 'invite_only' ? (
+                      ) : group.join_policy === 'invite_only' ? (
                         <Badge variant="secondary" className="text-xs">An invitation is required to join</Badge>
                       ) : (
                         <Button
