@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 const toPath = (relPath: string) => fileURLToPath(new URL(relPath, import.meta.url));
 
 const socialPage = readFileSync(toPath('../../src/pages/SocialMedia.tsx'), 'utf8');
+const appRoutes = readFileSync(toPath('../../src/App.tsx'), 'utf8');
+const groupsHook = readFileSync(toPath('../../src/hooks/useGroupManagement.ts'), 'utf8');
 const readersMap = readFileSync(toPath('../../src/components/social/ReadersNearMeMap.tsx'), 'utf8');
 const friendsMap = readFileSync(toPath('../../src/components/social/FriendsLocationMap.tsx'), 'utf8');
 const consentModal = readFileSync(toPath('../../src/components/social/LocationConsentModal.tsx'), 'utf8');
@@ -19,6 +21,30 @@ describe('Social discovery and location privacy regressions', () => {
     expect(socialPage).toMatch(/const AuthenticatedSocialMedia: React\.FC/);
     expect(socialPage).toMatch(/useReadingRooms\(undefined, \{ enabled: isDesktopSidebarVisible \}\)/);
     expect(socialPage).toMatch(/useAllUsers\(\{ enabled: isDesktopSidebarVisible \}\)/);
+  });
+
+  it('protects direct entry to groups and reader maps while keeping the social preview public', () => {
+    const getRouteBlock = (path: string) => {
+      const routeStart = appRoutes.indexOf(`path="${path}"`);
+      if (routeStart < 0) return '';
+      const nextRoute = appRoutes.indexOf('<Route', routeStart + 6);
+      return appRoutes.slice(routeStart, nextRoute < 0 ? appRoutes.length : nextRoute);
+    };
+
+    ['/groups', '/groups/:id', '/map', '/reader-map/:bookId?'].forEach((path) => {
+      expect(getRouteBlock(path), `${path} should require authentication`).toContain('<ProtectedRoute>');
+    });
+
+    expect(getRouteBlock('/social')).not.toContain('<ProtectedRoute>');
+    expect(socialPage).toMatch(/if \(!user\) return <GuestLanding \/>;/);
+  });
+
+  it('does not substitute fake curated groups when the groups query is empty or fails', () => {
+    expect(groupsHook).not.toContain('CURATED_READING_GROUPS');
+    expect(groupsHook).toMatch(/const queryEnabled = enabled && Boolean\(user\?\.id\)/);
+    expect(groupsHook).toMatch(/enabled: queryEnabled/);
+    expect(groupsHook).toMatch(/if \(error\) \{[\s\S]*?throw error;/);
+    expect(groupsHook).toMatch(/return data \?\? \[\]/);
   });
 
   it('never requests or persists GPS automatically when the readers map mounts', () => {
