@@ -19,6 +19,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { EnhancedLazyImage } from "@/components/ui/EnhancedLazyImage";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -132,6 +133,7 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
       { name: "Reading Challenges", href: "/activity?tab=challenges" },
       { name: "Book Games", href: "/games" },
       { name: "Reader Meetups", href: "/activity?tab=meetups" },
+      { name: "Reading Groups", href: "/groups" },
     ],
   },
 ];
@@ -713,41 +715,47 @@ const Navigation = () => {
                           { title: "Challenges & Games", description: "Milestones and book trivia", names: ["Reading Challenges", "Book Games"] },
                           { title: "Reading Groups", description: "Read together in active clubs", names: ["Reading Groups"] },
                         ];
+                        const validGroups = groups
+                          .map((group) => ({
+                            ...group,
+                            items: activityItems.filter((item) => group.names.includes(item.name)),
+                          }))
+                          .filter((group) => group.items.length > 0);
+
                         return (
-                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                            {groups.map((group) => {
-                              const items = activityItems.filter((item) => group.names.includes(item.name));
-                              if (!items.length) return null;
-                              return (
-                                <section key={group.title} className="min-w-0 rounded-lg border border-border/70 bg-card/70 p-2.5 shadow-sm transition-colors hover:border-[hsl(var(--brand-primary)/0.28)]">
-                                  <h3 className="px-1 pb-1 text-xs font-bold uppercase tracking-wider text-[hsl(var(--brand-primary))]">{group.title}</h3>
-                                  <p className="px-1 pb-2 text-xs leading-relaxed text-muted-foreground/80">{group.description}</p>
-                                  <div className="space-y-0.5">
-                                    {items.map((item) => {
-                                      const active = isCurrentRoute(item.href);
-                                      return (
-                                        <DropdownMenuItem key={item.name} asChild>
-                                          <Link
-                                            to={item.href}
-                                            onClick={() => handleDesktopNavigationClick(item.href)}
-                                            data-tour-target={item.tourTarget}
-                                            aria-current={active ? "page" : undefined}
-                                            className={
-                                              "flex min-h-10 cursor-pointer items-center rounded-lg px-2 py-2 text-sm transition-colors " +
-                                              (active
-                                                ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]"
-                                                : "text-foreground hover:bg-muted")
-                                            }
-                                          >
-                                            {item.name}
-                                          </Link>
-                                        </DropdownMenuItem>
-                                      );
-                                    })}
-                                  </div>
-                                </section>
-                              );
-                            })}
+                          <div className={cn(
+                            "grid grid-cols-1 gap-3 sm:grid-cols-2",
+                            validGroups.length <= 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"
+                          )}>
+                            {validGroups.map((group) => (
+                              <section key={group.title} className="min-w-0 rounded-lg border border-border/70 bg-card/70 p-2.5 shadow-sm transition-colors hover:border-[hsl(var(--brand-primary)/0.28)]">
+                                <h3 className="px-1 pb-1 text-xs font-bold uppercase tracking-wider text-[hsl(var(--brand-primary))]">{group.title}</h3>
+                                <p className="px-1 pb-2 text-xs leading-relaxed text-muted-foreground/80">{group.description}</p>
+                                <div className="space-y-0.5">
+                                  {group.items.map((item) => {
+                                    const active = isCurrentRoute(item.href);
+                                    return (
+                                      <DropdownMenuItem key={item.name} asChild>
+                                        <Link
+                                          to={item.href}
+                                          onClick={() => handleDesktopNavigationClick(item.href)}
+                                          data-tour-target={item.tourTarget}
+                                          aria-current={active ? "page" : undefined}
+                                          className={
+                                            "flex min-h-10 cursor-pointer items-center rounded-lg px-2 py-2 text-sm transition-colors " +
+                                            (active
+                                              ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]"
+                                              : "text-foreground hover:bg-muted")
+                                          }
+                                        >
+                                          {item.name}
+                                        </Link>
+                                      </DropdownMenuItem>
+                                    );
+                                  })}
+                                </div>
+                              </section>
+                            ))}
                           </div>
                         );
                       })() : (

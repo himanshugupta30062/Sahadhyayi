@@ -104,7 +104,7 @@ export const HomeActivityHubSection: React.FC = () => {
 
           {/* 3. Reading Groups */}
           <Link
-            to="/groups"
+            to="/social?tab=groups"
             className="group flex flex-col justify-between rounded-2xl bg-white dark:bg-[#111413] border border-[#E8E8E3] hover:border-[#BDA56B]/60 dark:border-[#222824] dark:hover:border-[#D5B16D]/50 p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
           >
             <div>

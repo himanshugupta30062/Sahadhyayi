@@ -157,7 +157,7 @@ export default function Activity() {
                   Book Games
                 </Button>
               </Link>
-              <Link to="/groups">
+              <Link to="/social?tab=groups">
                 <Button variant="outline" className="gap-2 rounded-xl bg-white dark:bg-[#111614] text-xs h-10 border-[#E8E2D9] dark:border-[#29332D]">
                   <Users className="h-4 w-4 text-[#1C442D] dark:text-[#D5B16D]" />
                   Reading Groups
@@ -525,12 +525,29 @@ export default function Activity() {
                       Reading Groups & Book Circles
                     </h2>
                     <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">
-                      Join genre-specific circles, co-read books together, and hold chapter discussions.
+                      Join genre-specific circles, co-read books together, and hold chapter discussions in Sahadhyayi Social.
                     </p>
                   </div>
-                  <Link to="/groups">
+                  <Link to="/social?tab=groups">
                     <Button variant="ghost" size="sm" className="text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">
-                      Explore All Groups →
+                      Explore All Groups in Social →
+                    </Button>
+                  </Link>
+                </div>
+
+                {/* Information Banner regarding Social Integration */}
+                <div className="rounded-xl border border-emerald-600/20 bg-emerald-500/10 p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white">
+                      <Users className="h-4 w-4" />
+                    </div>
+                    <p className="text-[#1C201D] dark:text-[#F3F0E7] leading-relaxed">
+                      <strong className="font-semibold text-emerald-800 dark:text-emerald-300">Reading Groups are integrated with Social Media!</strong> Browse circles, participate in chapter discussions, and share live updates with group members.
+                    </p>
+                  </div>
+                  <Link to="/social?tab=groups" className="shrink-0">
+                    <Button size="sm" className="rounded-xl text-xs h-8 px-3.5 bg-emerald-700 hover:bg-emerald-800 text-white">
+                      Open Social Groups →
                     </Button>
                   </Link>
                 </div>
