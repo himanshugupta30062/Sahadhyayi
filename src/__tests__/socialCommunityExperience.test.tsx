@@ -90,6 +90,19 @@ vi.mock('@/hooks/useSocialPostBookmarks', () => ({
   }),
 }));
 
+vi.mock('@/hooks/useSocialPostReactions', () => ({
+  useBatchPostReactions: () => ({ data: {}, isLoading: false }),
+  useTogglePostReaction: () => ({ mutate: vi.fn(), isPending: false }),
+  LITERARY_REACTIONS: {
+    loved: { type: 'loved', label: 'Loved', emoji: '❤️', description: 'Adored', activeColor: 'text-rose-600' },
+    insightful: { type: 'insightful', label: 'Insightful', emoji: '💡', description: 'Profound', activeColor: 'text-amber-500' },
+    devastating: { type: 'devastating', label: 'Devastating', emoji: '💔', description: 'Tragic', activeColor: 'text-indigo-600' },
+    cozy: { type: 'cozy', label: 'Cozy Read', emoji: '☕', description: 'Comforting', activeColor: 'text-amber-700' },
+    unputdownable: { type: 'unputdownable', label: 'Page Turner', emoji: '🔥', description: 'Gripping', activeColor: 'text-orange-500' },
+    thought_provoking: { type: 'thought_provoking', label: 'Thought-Provoking', emoji: '🤔', description: 'Challenged ideas', activeColor: 'text-emerald-600' },
+  },
+}));
+
 vi.mock('@/components/social/BookPulseBar', () => ({
   BookPulseBar: () => <div data-testid="book-pulse-bar">Book Pulse</div>,
 }));
