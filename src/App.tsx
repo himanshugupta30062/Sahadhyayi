@@ -526,25 +526,31 @@ const App = memo(() => {
                         <Route
                           path="/groups"
                           element={
-                            <Suspense fallback={<LoadingFallback />}>
-                              <ReadingGroups />
-                            </Suspense>
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback />}>
+                                <ReadingGroups />
+                              </Suspense>
+                            </ProtectedRoute>
                           }
                         />
                         <Route
                           path="/groups/:id"
                           element={
-                            <Suspense fallback={<LoadingFallback />}>
-                              <GroupDetails />
-                            </Suspense>
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback />}>
+                                <GroupDetails />
+                              </Suspense>
+                            </ProtectedRoute>
                           }
                         />
                         <Route
                           path="/map"
                           element={
-                            <Suspense fallback={<LoadingFallback />}>
-                              <MapPage />
-                            </Suspense>
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback />}>
+                                <MapPage />
+                              </Suspense>
+                            </ProtectedRoute>
                           }
                         />
                         <Route
@@ -838,7 +844,16 @@ const App = memo(() => {
 
                         <Route path="/author-connect" element={<Suspense fallback={<LoadingFallback />}><AuthorConnect /></Suspense>} />
                         <Route path="/author-profile/:authorName" element={<Suspense fallback={<LoadingFallback />}><AuthorProfilePage /></Suspense>} />
-                        <Route path="/reader-map/:bookId?" element={<Suspense fallback={<LoadingFallback />}><ReaderMap /></Suspense>} />
+                        <Route
+                          path="/reader-map/:bookId?"
+                          element={
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback />}>
+                                <ReaderMap />
+                              </Suspense>
+                            </ProtectedRoute>
+                          }
+                        />
                         <Route path="/investors" element={<Suspense fallback={<LoadingFallback />}><Investors /></Suspense>} />
                         <Route path="/quotes" element={<Suspense fallback={<LoadingFallback />}><QuotesPage /></Suspense>} />
                         <Route path="/journal" element={<Suspense fallback={<LoadingFallback message="Loading your reading journal..." />}><QuotesPage /></Suspense>} />
