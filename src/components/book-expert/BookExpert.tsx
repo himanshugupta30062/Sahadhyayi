@@ -4,10 +4,14 @@ import {
   BookOpen,
   BookMarked,
   Check,
+  ChevronDown,
   Copy,
   ExternalLink,
+  Headset,
   LoaderCircle,
+  Maximize2,
   MessageCircle,
+  Minimize2,
   RotateCcw,
   Send,
   Sparkles,
@@ -20,6 +24,7 @@ import {
 import { useBookExpert } from "@/contexts/book-expert.utils";
 import type { BookExpertBook, BookExpertCitation } from "@/contexts/book-expert.utils";
 import { cn } from "@/lib/utils";
+import { openSahadhyayiWhatsApp } from "@/components/support/whatsappSupport";
 
 const bookIcon = new URL("./Sahadhyayi_Book_optimized.generated.webp", import.meta.url).href;
 
@@ -235,6 +240,20 @@ const BookExpert = () => {
   const [feedback, setFeedback] = useState<Record<string, -1 | 1>>({});
   const [copiedMessageIndex, setCopiedMessageIndex] = useState<number | null>(null);
   const [speakingMessageIndex, setSpeakingMessageIndex] = useState<number | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [showLabel, setShowLabel] = useState(true);
+
+  useEffect(() => {
+    let hide = setTimeout(() => setShowLabel(false), 5000);
+    const tick = setInterval(() => {
+      setShowLabel(true);
+      hide = setTimeout(() => setShowLabel(false), 4000);
+    }, 30000);
+    return () => {
+      clearTimeout(hide);
+      clearInterval(tick);
+    };
+  }, []);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const launcherRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -423,17 +442,26 @@ const BookExpert = () => {
         aria-label="Open the Sahadhyayi Reading Room"
         aria-expanded={false}
         aria-controls="book-expert-panel"
-        className="fixed bottom-4 right-3 z-50 flex items-center gap-2 rounded-full border border-border/80 bg-background/95 p-1.5 text-foreground shadow-xl shadow-black/10 backdrop-blur transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:bottom-6 sm:right-6 sm:gap-3 sm:p-2 sm:pr-4"
+        data-testid="reading-room-launcher"
+        className="group fixed bottom-4 right-3 z-50 flex items-center gap-2 rounded-full border border-[#D5B16D]/40 bg-background/95 p-1.5 text-foreground shadow-xl shadow-black/15 backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl hover:border-[#D5B16D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:bottom-6 sm:right-6 sm:gap-2.5 sm:p-2 sm:pr-4"
       >
-        <span className="reader-room-launcher-icon relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 sm:h-12 sm:w-12">
-          <img src={bookIcon} alt="" loading="eager" decoding="async" className="h-full w-full object-cover" draggable={false} />
-          <span className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-emerald-500" aria-hidden="true" />
+        <span className="reader-room-launcher-icon relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#1C442D]/10 dark:bg-[#D5B16D]/15 sm:h-11 sm:w-11">
+          <img src={bookIcon} alt="" loading="eager" decoding="async" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110" draggable={false} />
+          <span className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-emerald-500 animate-pulse" aria-hidden="true" />
         </span>
-        <span className="text-left">
-          <span className="block text-sm font-semibold leading-tight">Reading Room</span>
-          <span className="mt-0.5 block text-[11px] text-muted-foreground">Talk books with us</span>
+        <span className="text-left flex flex-col justify-center">
+          <span className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold leading-tight text-foreground">
+            <Sparkles className="h-3.5 w-3.5 text-[#D5B16D] shrink-0" />
+            <span className="truncate">Reading Room AI</span>
+          </span>
+          <span className={cn(
+            "hidden sm:inline-block overflow-hidden whitespace-nowrap text-[11px] text-muted-foreground transition-[max-width,opacity] duration-500 group-hover:max-w-[140px] group-hover:opacity-100",
+            showLabel ? "max-w-[140px] opacity-100" : "max-w-0 opacity-0"
+          )}>
+            Ask our Book AI
+          </span>
         </span>
-        <MessageCircle className="hidden h-4 w-4 text-primary sm:ml-1 sm:block" aria-hidden="true" />
+        <MessageCircle className="hidden h-4 w-4 text-[#D5B16D] sm:ml-1 sm:block transition-transform group-hover:scale-110" aria-hidden="true" />
       </button>
     );
   }
@@ -455,7 +483,12 @@ const BookExpert = () => {
       aria-describedby="book-expert-description"
       aria-labelledby="book-expert-title"
       tabIndex={-1}
-      className="reader-room-panel-enter fixed inset-x-2 bottom-[calc(env(safe-area-inset-bottom,0px)_+_0.5rem)] z-50 flex h-[min(70dvh,600px)] min-h-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-background text-foreground shadow-2xl shadow-black/25 sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[min(680px,calc(100dvh-3rem))] sm:w-[min(420px,calc(100vw-3rem))] sm:rounded-2xl"
+      className={cn(
+        "reader-room-panel-enter fixed inset-x-2 bottom-[calc(env(safe-area-inset-bottom,0px)_+_0.5rem)] z-50 flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-background text-foreground shadow-2xl shadow-black/25 transition-[width,height] duration-300",
+        isExpanded
+          ? "h-[min(85dvh,750px)] sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[min(820px,calc(100dvh-2.5rem))] sm:w-[min(720px,calc(100vw-3rem))] sm:rounded-2xl"
+          : "h-[min(70dvh,600px)] sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[min(680px,calc(100dvh-3rem))] sm:w-[min(420px,calc(100vw-3rem))] sm:rounded-2xl"
+      )}
     >
       <header className="relative shrink-0 overflow-hidden border-b border-border/70 bg-card">
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-500 via-primary to-emerald-500" aria-hidden="true" />
@@ -476,6 +509,45 @@ const BookExpert = () => {
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">
+            {/* WhatsApp / Call Center Handoff Button (like Estate Mitr's Headset button) */}
+            <button
+              type="button"
+              onClick={() => openSahadhyayiWhatsApp('Namaste! I was chatting with the Reading Room AI and would like to speak with a human advisor.')}
+              aria-label="Connect with Call Center on WhatsApp"
+              title="Connect with WhatsApp Support"
+              className="inline-flex items-center gap-1 rounded-xl px-2 py-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+            >
+              <Headset className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="hidden sm:inline">WhatsApp Help</span>
+            </button>
+
+            {/* Expand / Collapse Widescreen Button */}
+            <button
+              type="button"
+              onClick={() => setIsExpanded((prev) => !prev)}
+              aria-label={isExpanded ? "Collapse to compact view" : "Expand to wide view"}
+              title={isExpanded ? "Collapse view" : "Expand view"}
+              className="hidden rounded-xl p-2 text-muted-foreground transition-colors hover:bg-background hover:text-foreground sm:inline-flex"
+            >
+              {isExpanded ? (
+                <Minimize2 className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <Maximize2 className="h-4 w-4" aria-hidden="true" />
+              )}
+            </button>
+
+            {/* Minimize / Collapse panel to launcher */}
+            <button
+              type="button"
+              onClick={handleClose}
+              aria-label="Minimize Reading Room"
+              title="Minimize to button"
+              className="hidden rounded-xl p-2 text-muted-foreground transition-colors hover:bg-background hover:text-foreground sm:inline-flex"
+            >
+              <ChevronDown className="h-4 w-4" aria-hidden="true" />
+            </button>
+
+            {/* New conversation */}
             <button
               type="button"
               onClick={() => { stopSpeech(); clearConversation(); }}
@@ -486,6 +558,8 @@ const BookExpert = () => {
             >
               <RotateCcw className="h-4 w-4" aria-hidden="true" />
             </button>
+
+            {/* Close button */}
             <button
               type="button"
               ref={closeButtonRef}
