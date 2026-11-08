@@ -152,18 +152,20 @@ describe('Homepage Redesign: Sections 03 to 11', () => {
       );
 
       expect(screen.getByText('Meet Your Book Expert AI')).toBeInTheDocument();
-      expect(screen.getByText(/Not a generic chatbot/i)).toBeInTheDocument();
+      expect(screen.getByText(/Your personal AI companion for everything books/i)).toBeInTheDocument();
+      expect(screen.getByText(/Discover books, understand complex ideas/i)).toBeInTheDocument();
 
       // Click inquiry prompt
-      const compareText = screen.getByText('Thematic Comparison');
-      fireEvent.click(compareText);
+      const critiquePill = screen.getByText('Literary Critique');
+      fireEvent.click(critiquePill);
 
       // Verify prompt text update
-      const matchedPrompts = screen.getAllByText(/Compare the critique of technology and bureaucracy in 1984 vs Brave New World/i);
+      const matchedPrompts = screen.getAllByText(/Compare the critique of state control in 1984 vs Brave New World/i);
       expect(matchedPrompts.length).toBeGreaterThanOrEqual(1);
 
-      // Launch CTA button
-      expect(screen.getByRole('button', { name: /ask book expert now/i })).toBeInTheDocument();
+      // Launch CTA buttons
+      expect(screen.getByRole('button', { name: /ask book expert ai/i })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /explore books/i })).toHaveAttribute('href', '/library');
     });
   });
 
