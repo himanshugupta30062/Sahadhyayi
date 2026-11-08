@@ -93,11 +93,12 @@ describe('social feed and reading group RLS policies', () => {
   });
 
   it('exposes pending and blocked memberships only to active group moderators', () => {
-    expect(groupModerationDirectory).toMatch(/SECURITY DEFINER[\\s\\S]*SET search_path = ''/i);
-    expect(groupModerationDirectory).toMatch(/v_actor uuid := auth\\.uid\\(\\)/i);
-    expect(groupModerationDirectory).toMatch(/actor_membership\\.status = 'active'/i);
-    expect(groupModerationDirectory).toMatch(/actor_membership\\.role IN \\('owner', 'admin', 'moderator'\\)/i);
-    expect(groupModerationDirectory).toMatch(/REVOKE ALL ON FUNCTION public\\.get_reading_group_moderation_members\\(uuid\\) FROM PUBLIC, anon/i);
-    expect(groupModerationDirectory).toMatch(/GRANT EXECUTE ON FUNCTION public\\.get_reading_group_moderation_members\\(uuid\\) TO authenticated/i);
+    expect(groupModerationDirectory).toContain('SECURITY DEFINER');
+    expect(groupModerationDirectory).toContain("SET search_path = ''");
+    expect(groupModerationDirectory).toContain('v_actor uuid := auth.uid();');
+    expect(groupModerationDirectory).toContain("actor_membership.status = 'active'");
+    expect(groupModerationDirectory).toContain("actor_membership.role IN ('owner', 'admin', 'moderator')");
+    expect(groupModerationDirectory).toContain('REVOKE ALL ON FUNCTION public.get_reading_group_moderation_members(uuid) FROM PUBLIC, anon');
+    expect(groupModerationDirectory).toContain('GRANT EXECUTE ON FUNCTION public.get_reading_group_moderation_members(uuid) TO authenticated');
   });
 });
