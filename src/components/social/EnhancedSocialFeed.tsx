@@ -114,6 +114,8 @@ export const EnhancedSocialFeed = () => {
   const [streamMode, setStreamMode] = useState<'for_you' | 'following' | 'latest'>('for_you');
   const [showSavedPosts, setShowSavedPosts] = useState(false);
   const cabinet = useSocialPostBookmarks();
+  const [showSavedPosts, setShowSavedPosts] = useState(false);
+  const cabinet = useSocialPostBookmarks();
   const { posts, isLoading, error, refetch, hasMore, isLoadingMore, loadMore, loadMoreError } = useSocialPosts(streamMode);
   const postsRef = useRef(posts);
   postsRef.current = posts;
@@ -284,13 +286,16 @@ export const EnhancedSocialFeed = () => {
         </Button>
         <Button
           size="sm"
-          variant={streamMode === 'latest' ? 'default' : 'outline'}
+          variant={!showSavedPosts && streamMode === 'latest' ? 'default' : 'outline'}
           aria-pressed={streamMode === 'latest'}
           onClick={() => { setShowSavedPosts(false); setStreamMode('latest'); }}
           className={streamMode === 'latest' ? 'bg-[#1C442D] text-white hover:bg-[#153522] dark:bg-[#1C3024] dark:text-[#F3F0E7]' : 'border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7]'}
         >
           <Clock className="w-3.5 h-3.5 mr-1.5" />
           Latest
+        </Button>
+        <Button size="sm" variant={showSavedPosts ? 'default' : 'outline'} aria-pressed={showSavedPosts} onClick={() => setShowSavedPosts(true)} className={showSavedPosts ? 'bg-[#1C442D] text-white dark:bg-[#1C3024] dark:text-[#F3F0E7]' : 'border-[#E8E2D9] bg-white text-[#1C201D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#F3F0E7]'}>
+          <Bookmark className="w-3.5 h-3.5 mr-1.5" /> Saved
         </Button>
         <Button
           size="sm"
@@ -393,8 +398,8 @@ export const EnhancedSocialFeed = () => {
         )
       ) : (
         <>
-          <BookReelsStrip className="mb-6" />
-          <FeedComposer />
+          {!showSavedPosts && <><BookReelsStrip className="mb-6" />
+          <FeedComposer /></>}
 
           {showSavedPosts && cabinet.isLoading ? (\n            <div className="flex justify-center py-8" role="status"><LoadingSpinner /></div>\n          ) : showSavedPosts && cabinet.error ? (\n            <Card role="alert" className="p-8 text-center"><p className="text-sm text-destructive mb-3">Your Reading Cabinet could not be loaded.</p><Button variant="outline" size="sm" onClick={() => void cabinet.refetch()}>Retry</Button></Card>\n          ) : error && !showSavedPosts ? (
             <Card className="bg-white dark:bg-[#111614] border-destructive/40 text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs">
@@ -408,7 +413,9 @@ export const EnhancedSocialFeed = () => {
               </CardContent>
             </Card>
           ) : postsForDisplay.length === 0 ? (
-            streamMode === 'following' ? (
+            showSavedPosts ? (
+              <Card className="bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] rounded-2xl p-10 text-center"><Bookmark className="w-8 h-8 mx-auto mb-3 text-[#1C442D] dark:text-[#D5B16D]"/><h3 className="font-serif text-lg font-bold mb-1">Your Reading Cabinet is empty</h3><p className="text-sm text-[#636B65] dark:text-[#A5ADA6]">Save posts and literary quotes from the feed to keep them here for later.</p><Button variant="outline" size="sm" className="mt-4" onClick={() => setShowSavedPosts(false)}>Explore the feed</Button></Card>
+            ) : streamMode === 'following' ? (
               <Card className="bg-white dark:bg-[#111614] border-[#E8E2D9] dark:border-[#29332D] text-[#1C201D] dark:text-[#F3F0E7] rounded-2xl shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs">
                 <CardContent className="p-10 text-center">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#EBF2EC] dark:bg-[#1C3024] border border-[#C8DBCB] dark:border-[#315C43]/50 flex items-center justify-center text-[#1C442D] dark:text-[#D5B16D]">
@@ -550,6 +557,9 @@ export const EnhancedSocialFeed = () => {
                       <DropdownMenuItem onClick={() => handleShare(post)} className="cursor-pointer">
                         <Share2 className="w-4 h-4 mr-2" /> Share
                       </DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer" disabled={cabinet.isSaving || cabinet.isRemoving} onClick={() => cabinet.savedPostIds.includes(post.id) ? cabinet.removePost(post.id) : cabinet.savePost(post.id)}>
+                        <Bookmark className="w-4 h-4 mr-2" /> {cabinet.savedPostIds.includes(post.id) ? 'Remove from Reading Cabinet' : 'Save to Reading Cabinet'}
+                      </DropdownMenuItem>
                       {isOwn && (
                         <DropdownMenuItem
                           className="text-destructive focus:text-destructive cursor-pointer"
@@ -685,6 +695,7 @@ export const EnhancedSocialFeed = () => {
                   )}
                 </div>
 
+                {showSavedPosts && <div className="mb-2 flex justify-end"><Button variant="ghost" size="sm" className="text-xs text-[#636B65] dark:text-[#A5ADA6]" onClick={() => cabinet.removePost(post.id)}><Bookmark className="w-3.5 h-3.5 mr-1 fill-current"/>Remove saved item</Button></div>}
                 {/* Post Actions */}
                 <div className="flex items-center justify-around gap-1 pt-3 border-t border-[#E8E2D9] dark:border-[#29332D]">
                   <Button
