@@ -260,6 +260,8 @@ export const EnhancedSocialFeed = () => {
       {/* Live Book Pulse Bar */}
       <BookPulseBar />
 
+      <div className="flex justify-end"><Button asChild size="sm" variant="outline" className="border-[#E8E2D9] dark:border-[#29332D]"><Link to="/reading-cabinet"><Bookmark className="mr-1.5 h-3.5 w-3.5"/>Reading Cabinet</Link></Button></div>
+
       {/* Feed Navigation: personalized, followed readers, and chronological */}
       <div className="flex items-center gap-2 flex-wrap" role="group" aria-label="Choose feed">
         <Button
