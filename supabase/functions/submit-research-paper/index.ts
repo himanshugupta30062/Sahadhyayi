@@ -10,13 +10,24 @@ Deno.serve(async req=>{
  const auth=req.headers.get("Authorization"); if(!auth) return respond({error:"Sign in required"},401);
  const db=createClient(url,key,{global:{headers:{Authorization:auth}}});
  const {data:{user},error:userError}=await db.auth.getUser(); if(userError||!user) return respond({error:"Invalid session"},401);
- const { data: allowedRate } = await db.rpc('check_rate_limit', {
+ let allowedRate: boolean | null = null;
+ try {
+  const { data, error } = await db.rpc('check_rate_limit', {
    p_identifier: user.id,
    p_endpoint: 'submit-research-paper',
    p_max_requests: 10,
    p_window_minutes: 60,
- });
- if (allowedRate === false) return respond({ error: 'Paper submission rate limit reached. Please wait before submitting another paper.' }, 429);
+  });
+  if (error || typeof data !== 'boolean') {
+   console.error('[submit-research-paper] Rate-limit check unavailable:', error?.message ?? 'invalid response');
+  } else {
+   allowedRate = data;
+  }
+ } catch (rateLimitError) {
+  console.error('[submit-research-paper] Rate-limit check failed:', rateLimitError);
+ }
+ if (allowedRate === null) return respond({ error: 'Submission temporarily unavailable while usage limits are checked.', code: 'RATE_LIMIT_UNAVAILABLE' }, 503);
+ if (!allowedRate) return respond({ error: 'Paper submission rate limit reached. Please wait before submitting another paper.', code: 'RATE_LIMIT_EXCEEDED' }, 429);
  try{
   const body=await req.json(); if(!body||typeof body!=="object") return respond({error:"Invalid body"},400);
   const title=String(body.title??"").trim(),authors=String(body.authors??"").trim(),abstract=String(body.abstract??"").trim();
