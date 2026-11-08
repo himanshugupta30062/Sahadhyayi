@@ -33,3 +33,28 @@ export async function authorizeRequest(req: Request): Promise<Response | null> {
   if (error || !user) return jsonResponse({ error: 'Unauthorized' }, 401);
   return null;
 }
+
+/** Retrieve the authenticated user or an error response if unauthenticated. */
+export async function getAuthenticatedUser(req: Request): Promise<{ user: any; errorResponse: Response | null }> {
+  const authorization = req.headers.get('Authorization');
+  if (!authorization?.startsWith('Bearer ')) {
+    return { user: null, errorResponse: jsonResponse({ error: 'Unauthorized' }, 401) };
+  }
+
+  const url = Deno.env.get('SUPABASE_URL');
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
+  if (!url || !anonKey) {
+    console.error('Supabase environment is not configured for function auth');
+    return { user: null, errorResponse: jsonResponse({ error: 'Server configuration error' }, 500) };
+  }
+
+  const supabase = createClient(url, anonKey, {
+    global: { headers: { Authorization: authorization } },
+  });
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) {
+    return { user: null, errorResponse: jsonResponse({ error: 'Unauthorized' }, 401) };
+  }
+
+  return { user, errorResponse: null };
+}

@@ -40,7 +40,8 @@ const GroupDetails = () => {
   const { data: members = [], isLoading: membersLoading } = useGroupMembers(id || '');
 
   const joinGroup = useJoinGroup();
-  const leaveGroup = useLeaveGroup();\n  const createInvitation = useCreateGroupInvitation();
+  const leaveGroup = useLeaveGroup();
+  const createInvitation = useCreateGroupInvitation();
 
   // Try finding group in cache first, fallback to direct query for deep links
   const cachedGroup = groups.find(g => g.id === id);
