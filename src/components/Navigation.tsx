@@ -81,6 +81,7 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
     href: "/social",
     items: [
       { name: "Friends Feed", href: "/social", tourTarget: "community" },
+      { name: "Reading Groups", href: "/social?tab=groups" },
       { name: "Short Stories", href: "/social?tab=stories" },
       { name: "Community Stories", href: "/community-stories" },
       { name: "Life Stories", href: "/life-stories" },
@@ -130,7 +131,6 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
       { name: "Events & Festivals", href: "/events" },
       { name: "Reading Challenges", href: "/activity?tab=challenges" },
       { name: "Book Games", href: "/games" },
-      { name: "Reading Groups", href: "/groups" },
       { name: "Reader Meetups", href: "/activity?tab=meetups" },
     ],
   },
@@ -207,13 +207,14 @@ function pathMatches(pathname: string, href: string) {
       pathname.startsWith("/books/") ||
       pathname.startsWith("/reader/");
   }
-  if (path === "/social") return pathname === path || pathname.startsWith("/stories");
+  if (path === "/social") {
+    return pathname === path || pathname.startsWith("/stories") || pathname.startsWith("/groups");
+  }
   if (path === "/activity") {
     return (
       pathname === path ||
       pathname.startsWith("/events") ||
-      pathname.startsWith("/games") ||
-      pathname.startsWith("/groups")
+      pathname.startsWith("/games")
     );
   }
   return pathname === path || pathname.startsWith(path + "/");

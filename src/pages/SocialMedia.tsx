@@ -21,6 +21,10 @@ import {
   ArrowLeft,
   ChevronRight,
   UserRound,
+  MessageSquare,
+  CheckCircle2,
+  Clock,
+  Compass,
 } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Star } from 'lucide-react';
@@ -440,78 +444,145 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
         {/* ── Main Viewport Content ── */}
         <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <nav aria-label="Social navigation" className="mb-6 flex flex-wrap items-center gap-2 rounded-2xl border border-[#E8E8E3] bg-white p-2 shadow-[0_2px_8px_rgba(28,32,29,0.03)] dark:border-[#29332D] dark:bg-[#111614]">
-              <button
-                type="button"
-                aria-pressed={activeTab === 'feed'}
-                onClick={() => handleTabChange('feed')}
-                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'feed' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAFAF8] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
-              >
-                <BookOpen className="h-4 w-4" aria-hidden="true" />
-                Home
-              </button>
-              <button
-                type="button"
-                aria-pressed={activeTab === 'stories'}
-                onClick={() => handleTabChange('stories')}
-                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'stories' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAFAF8] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
-              >
-                <Sparkles className="h-4 w-4" aria-hidden="true" />
-                Short Stories
-              </button>
-              <button
-                type="button"
-                aria-pressed={activeTab === 'reviews'}
-                onClick={() => handleTabChange('reviews')}
-                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'reviews' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAFAF8] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
-              >
-                <Star className="h-4 w-4" aria-hidden="true" />
-                Book Reviews
-              </button>
-              <button
-                type="button"
-                aria-pressed={activeTab === 'friends'}
-                onClick={() => handleTabChange('friends')}
-                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'friends' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAFAF8] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
-              >
-                <Users className="h-4 w-4" aria-hidden="true" />
-                Discover
-              </button>
-              <button
-                type="button"
-                aria-pressed={activeTab === 'groups'}
-                onClick={() => handleTabChange('groups')}
-                className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${activeTab === 'groups' ? 'bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]' : 'text-[#636B65] hover:bg-[#FAFAF8] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'}`}
-              >
-                <UsersIcon className="h-4 w-4" aria-hidden="true" />
-                Groups
-              </button>
-              <details className="group relative">
-                <summary className="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-xl px-3 text-sm font-medium text-[#636B65] transition-colors hover:bg-[#FAFAF8] hover:text-[#1C201D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7] dark:focus-visible:ring-[#D5B16D]">
+            <nav
+              aria-label="Social navigation"
+              className="sticky top-16 z-20 mb-6 flex items-center justify-between gap-3 rounded-2xl border border-[#E8E8E3] bg-white/95 p-2 shadow-[0_2px_12px_rgba(28,32,29,0.04)] backdrop-blur-md dark:border-[#29332D] dark:bg-[#111614]/95 transition-all"
+            >
+              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5 scroll-smooth max-w-full">
+                <button
+                  type="button"
+                  aria-pressed={activeTab === 'feed'}
+                  onClick={() => handleTabChange('feed')}
+                  className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${
+                    activeTab === 'feed'
+                      ? 'bg-[#1C442D] text-white shadow-xs dark:bg-[#D5B16D] dark:text-[#0B0D0C]'
+                      : 'text-[#636B65] hover:bg-[#F4F3EF] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'
+                  }`}
+                >
                   <BookOpen className="h-4 w-4" aria-hidden="true" />
-                  Reading spaces
-                  <ChevronRight className="h-3.5 w-3.5 transition-transform group-open:rotate-90" aria-hidden="true" />
-                </summary>
-                <div className="mt-2 flex flex-wrap gap-2 rounded-xl border border-[#E8E8E3] bg-[#FAFAF8] p-2 dark:border-[#29332D] dark:bg-[#0B0D0C] sm:absolute sm:left-0 sm:z-30 sm:min-w-64 sm:shadow-lg">
-                  {[
-                    { value: 'rooms', label: 'Live reading rooms' },
-                    { value: 'threads', label: 'Chapter discussions' },
-                    { value: 'margins', label: 'Shared margin notes' },
-                    { value: 'dna', label: 'Reading DNA' },
-                    { value: 'map', label: 'Reader map' },
-                  ].map((item) => (
-                    <button
-                      key={item.value}
-                      type="button"
-                      onClick={() => handleTabChange(item.value)}
-                      className="min-h-9 rounded-lg border border-[#E8E8E3] bg-white px-3 py-2 text-left text-xs font-medium text-[#1C442D] hover:border-[#C8DBCB] hover:bg-[#EBF2EC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:border-[#29332D] dark:bg-[#111614] dark:text-[#D5B16D] dark:hover:border-[#315C43] dark:hover:bg-[#1C3024] dark:focus-visible:ring-[#D5B16D]"
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </details>
-              <div className="ml-auto flex items-center gap-2">
+                  Home
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={activeTab === 'groups'}
+                  onClick={() => handleTabChange('groups')}
+                  className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${
+                    activeTab === 'groups'
+                      ? 'bg-[#1C442D] text-white shadow-xs dark:bg-[#D5B16D] dark:text-[#0B0D0C]'
+                      : 'text-[#636B65] hover:bg-[#F4F3EF] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'
+                  }`}
+                >
+                  <UsersIcon className="h-4 w-4" aria-hidden="true" />
+                  Groups
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={activeTab === 'threads'}
+                  onClick={() => handleTabChange('threads')}
+                  className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${
+                    activeTab === 'threads'
+                      ? 'bg-[#1C442D] text-white shadow-xs dark:bg-[#D5B16D] dark:text-[#0B0D0C]'
+                      : 'text-[#636B65] hover:bg-[#F4F3EF] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'
+                  }`}
+                >
+                  <MessageSquare className="h-4 w-4" aria-hidden="true" />
+                  Discussions
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={activeTab === 'rooms'}
+                  onClick={() => handleTabChange('rooms')}
+                  className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${
+                    activeTab === 'rooms'
+                      ? 'bg-[#1C442D] text-white shadow-xs dark:bg-[#D5B16D] dark:text-[#0B0D0C]'
+                      : 'text-[#636B65] hover:bg-[#F4F3EF] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'
+                  }`}
+                >
+                  <Radio className="h-4 w-4" aria-hidden="true" />
+                  Reading Rooms
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={activeTab === 'reviews'}
+                  onClick={() => handleTabChange('reviews')}
+                  className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${
+                    activeTab === 'reviews'
+                      ? 'bg-[#1C442D] text-white shadow-xs dark:bg-[#D5B16D] dark:text-[#0B0D0C]'
+                      : 'text-[#636B65] hover:bg-[#F4F3EF] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'
+                  }`}
+                >
+                  <Star className="h-4 w-4" aria-hidden="true" />
+                  Book Reviews
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={activeTab === 'stories'}
+                  onClick={() => handleTabChange('stories')}
+                  className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${
+                    activeTab === 'stories'
+                      ? 'bg-[#1C442D] text-white shadow-xs dark:bg-[#D5B16D] dark:text-[#0B0D0C]'
+                      : 'text-[#636B65] hover:bg-[#F4F3EF] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'
+                  }`}
+                >
+                  <Sparkles className="h-4 w-4" aria-hidden="true" />
+                  Short Stories
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={activeTab === 'friends'}
+                  onClick={() => handleTabChange('friends')}
+                  className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${
+                    activeTab === 'friends'
+                      ? 'bg-[#1C442D] text-white shadow-xs dark:bg-[#D5B16D] dark:text-[#0B0D0C]'
+                      : 'text-[#636B65] hover:bg-[#F4F3EF] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'
+                  }`}
+                >
+                  <Users className="h-4 w-4" aria-hidden="true" />
+                  Discover
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={activeTab === 'margins'}
+                  onClick={() => handleTabChange('margins')}
+                  className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${
+                    activeTab === 'margins'
+                      ? 'bg-[#1C442D] text-white shadow-xs dark:bg-[#D5B16D] dark:text-[#0B0D0C]'
+                      : 'text-[#636B65] hover:bg-[#F4F3EF] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'
+                  }`}
+                >
+                  <Quote className="h-4 w-4" aria-hidden="true" />
+                  Margin Notes
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={activeTab === 'map'}
+                  onClick={() => handleTabChange('map')}
+                  className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${
+                    activeTab === 'map'
+                      ? 'bg-[#1C442D] text-white shadow-xs dark:bg-[#D5B16D] dark:text-[#0B0D0C]'
+                      : 'text-[#636B65] hover:bg-[#F4F3EF] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'
+                  }`}
+                >
+                  <MapPin className="h-4 w-4" aria-hidden="true" />
+                  Reader Map
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={activeTab === 'dna'}
+                  onClick={() => handleTabChange('dna')}
+                  className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${
+                    activeTab === 'dna'
+                      ? 'bg-[#1C442D] text-white shadow-xs dark:bg-[#D5B16D] dark:text-[#0B0D0C]'
+                      : 'text-[#636B65] hover:bg-[#F4F3EF] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'
+                  }`}
+                >
+                  <Dna className="h-4 w-4" aria-hidden="true" />
+                  Reading DNA
+                </button>
+              </div>
+
+              <div className="ml-auto flex items-center gap-2 shrink-0">
+                <div className="hidden sm:block h-6 w-px bg-[#E8E8E3] dark:bg-[#29332D]" />
                 <Button
                   type="button"
                   onClick={() => {
@@ -519,7 +590,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     window.setTimeout(() => document.getElementById('feed-composer-textarea')?.focus(), 100);
                   }}
-                  className="min-h-10 gap-2 rounded-xl bg-[#1C442D] px-3 text-sm font-semibold text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:hover:bg-[#c49f5c]"
+                  className="min-h-10 gap-2 rounded-xl bg-[#1C442D] px-3.5 text-xs font-semibold text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:hover:bg-[#c49f5c] shadow-xs"
                 >
                   <Plus className="h-4 w-4" aria-hidden="true" />
                   Create
@@ -527,7 +598,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                 <Link
                   to="/profile"
                   aria-label="Your profile"
-                  className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium text-[#636B65] transition-colors hover:bg-[#FAFAF8] hover:text-[#1C201D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7] dark:focus-visible:ring-[#D5B16D]"
+                  className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3 text-xs font-semibold text-[#636B65] transition-colors hover:bg-[#FAFAF8] hover:text-[#1C201D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7] dark:focus-visible:ring-[#D5B16D]"
                 >
                   <UserRound className="h-4 w-4" aria-hidden="true" />
                   <span className="hidden sm:inline">Profile</span>
@@ -535,7 +606,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
               </div>
             </nav>
             {/* Content-first community layout: feed plus contextual discovery */}
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1fr)_360px] 2xl:grid-cols-[minmax(0,1fr)_384px]">
               {/* ── Community Stream & Feature Content ── */}
               <section className="min-w-0 space-y-6">
                 {activeTab !== 'feed' && (
@@ -991,7 +1062,57 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                     )}
                   </SocialSurface>
 
-                  {/* Card 4: Your Reading Progress (if active) */}
+                  {/* Card 4: Active Chapter Discussions */}
+                  <SocialSurface className="p-4">
+                    <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#E8E8E3] dark:border-[#29332D]">
+                      <div className="flex items-center gap-2">
+                        <MessageSquare className="h-4 w-4 text-[#1C442D] dark:text-[#D5B16D]" />
+                        <span className="font-semibold text-xs text-[#1C201D] dark:text-[#F3F0E7]">Active Discussions</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleTabChange('threads')}
+                        className="text-[11px] font-semibold text-[#1C442D] dark:text-[#D5B16D] hover:underline flex items-center gap-0.5"
+                      >
+                        See all <ChevronRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                    <div className="space-y-2.5">
+                      {[
+                        {
+                          title: 'The Grand Inquisitor: Free will vs certainty',
+                          book: 'The Brothers Karamazov',
+                          replies: 28,
+                        },
+                        {
+                          title: 'Where the mind is without fear: Poetic cadence',
+                          book: 'Gitanjali',
+                          replies: 19,
+                        },
+                        {
+                          title: 'Ancient dynasties and statecraft in Chanakya',
+                          book: 'Arthashastra',
+                          replies: 15,
+                        },
+                      ].map((topic) => (
+                        <div
+                          key={topic.title}
+                          onClick={() => handleTabChange('threads')}
+                          className="group cursor-pointer rounded-xl border border-[#E8E8E3] dark:border-[#29332D]/70 bg-[#FAFAF8] dark:bg-[#111614] p-2.5 transition-colors hover:border-[#1C442D]/40 dark:hover:border-[#315C43] hover:bg-[#F4F3EF] dark:hover:bg-[#161D19]"
+                        >
+                          <p className="text-xs font-medium text-[#1C201D] dark:text-[#F3F0E7] group-hover:text-[#1C442D] dark:group-hover:text-[#D5B16D] line-clamp-1">
+                            {topic.title}
+                          </p>
+                          <div className="mt-1 flex items-center justify-between text-[11px] text-[#636B65] dark:text-[#A5ADA6]">
+                            <span className="truncate">📖 {topic.book}</span>
+                            <span className="shrink-0 font-medium">{topic.replies} replies</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </SocialSurface>
+
+                  {/* Card 5: Your Reading Progress (if active) */}
                   {currentProgress && (
                     <SocialSurface className="p-4">
                       <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#E8E8E3] dark:border-[#29332D]">
@@ -1052,7 +1173,40 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                     </SocialSurface>
                   )}
 
-                  {/* Card 5: Literary Quote Widget (from design mockup) */}
+                  {/* Card 6: Daily Reading Rhythm & Habit */}
+                  <SocialSurface className="p-4 bg-gradient-to-br from-emerald-50/60 via-white to-amber-50/40 dark:from-emerald-950/20 dark:via-[#111614] dark:to-amber-950/20 border-[#E8E8E3] dark:border-[#29332D]">
+                    <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-[#E8E8E3] dark:border-[#29332D]">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5 text-[#1C442D] dark:text-[#D5B16D]" />
+                        <span className="font-semibold text-xs text-[#1C201D] dark:text-[#F3F0E7]">Daily Reading Habit</span>
+                      </div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full">
+                        Streak Active
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">Today&apos;s Target</span>
+                        <span className="font-bold text-[#1C442D] dark:text-[#D5B16D]">30 Mins</span>
+                      </div>
+                      <div className="h-1.5 w-full bg-[#E8E2D9] dark:bg-[#1C3024] rounded-full overflow-hidden">
+                        <div className="h-full bg-[#1C442D] dark:bg-[#D5B16D] rounded-full w-3/4 transition-all" />
+                      </div>
+                      <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6] pt-0.5">
+                        Co-read with others in a live room to log focused reading minutes automatically.
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleTabChange('rooms')}
+                        className="w-full h-7 text-xs border-[#1C442D]/20 dark:border-[#D5B16D]/30 text-[#1C442D] dark:text-[#D5B16D] hover:bg-[#1C442D]/5 mt-1"
+                      >
+                        Open Live Room
+                      </Button>
+                    </div>
+                  </SocialSurface>
+
+                  {/* Card 7: Literary Quote Widget (from design mockup) */}
                   <SocialSurface className="p-4 bg-gradient-to-br from-[#F4EFEA] via-[#FAF7F2] to-[#EBF2EC] dark:from-[#111614] dark:via-[#141A16] dark:to-[#0E1210] border-[#E8E8E3] dark:border-[#29332D]">
                     <Quote className="w-5 h-5 text-[#1C442D]/60 dark:text-[#D5B16D]/60 mb-2" />
                     <p className="text-xs italic text-[#1C201D] dark:text-[#F3F0E7] font-serif leading-relaxed">
@@ -1062,6 +1216,24 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                       — Unknown
                     </p>
                   </SocialSurface>
+
+                  {/* Standard Grounded Community Desktop Footer */}
+                  <div className="px-2 pt-2 pb-6 text-[11px] text-[#636B65] dark:text-[#A5ADA6] space-y-2">
+                    <div className="flex flex-wrap gap-x-2.5 gap-y-1">
+                      <Link to="/community-guidelines" className="hover:underline hover:text-foreground">Guidelines</Link>
+                      <span>·</span>
+                      <Link to="/privacy-policy" className="hover:underline hover:text-foreground">Privacy</Link>
+                      <span>·</span>
+                      <Link to="/terms-of-service" className="hover:underline hover:text-foreground">Terms</Link>
+                      <span>·</span>
+                      <Link to="/help-center" className="hover:underline hover:text-foreground">Help</Link>
+                      <span>·</span>
+                      <Link to="/feedback" className="hover:underline hover:text-foreground">Feedback</Link>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground/80">
+                      © Sahadhyayi · The home for readers, stories, and ideas.
+                    </p>
+                  </div>
                 </div>
               </aside>
             </div>

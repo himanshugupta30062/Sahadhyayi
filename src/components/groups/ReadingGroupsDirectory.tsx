@@ -254,7 +254,7 @@ const ReadingGroupsDirectory = () => {
             Create Group
           </Button>
         ) : (
-          <SignInLink>
+          <SignInLink redirectPath="/social?tab=groups">
             <Button className="bg-gradient-button text-primary-foreground sm:w-auto gap-2">
               <UserPlus className="h-4 w-4" />
               Sign In to Join
@@ -262,6 +262,38 @@ const ReadingGroupsDirectory = () => {
           </SignInLink>
         )}
       </div>
+
+      {/* ── Guest Members-Only Authentication Banner ── */}
+      {!user && (
+        <div className="rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50/70 via-white to-emerald-50/50 p-6 sm:p-8 dark:border-amber-900/40 dark:from-amber-950/20 dark:via-[#111614] dark:to-emerald-950/20 shadow-xs">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+            <div className="max-w-xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 dark:border-amber-700 bg-white/90 dark:bg-[#1A231E] px-3 py-1 text-xs font-semibold text-amber-800 dark:text-amber-300 mb-3 shadow-2xs">
+                <Lock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                Members-Only Reading Circles
+              </div>
+              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-foreground">
+                Join Sahadhyayi Reading Groups
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                Reading groups are an integral part of Sahadhyayi Social. Sign in or create an account to join active circles, participate in chapter discussions, track collective progress, and connect with fellow readers.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full sm:w-auto">
+              <Link to="/signup?redirect=/social?tab=groups">
+                <Button className="w-full sm:w-auto bg-[#1C442D] hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:hover:bg-[#c49f5c] text-white text-xs font-semibold h-10 px-5 rounded-xl shadow-xs">
+                  Create an Account
+                </Button>
+              </Link>
+              <SignInLink redirectPath="/social?tab=groups">
+                <Button variant="outline" className="w-full sm:w-auto text-xs font-semibold h-10 px-5 rounded-xl border-border">
+                  Sign In
+                </Button>
+              </SignInLink>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Group Invitation Callout (when arrived via ?join=<id>) ── */}
       {invitedGroup && !membershipByGroup.has(invitedGroup.id) && (
