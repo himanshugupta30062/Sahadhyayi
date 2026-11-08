@@ -88,72 +88,47 @@ export const useGroups = (options: { enabled?: boolean } = {}) => {
 
 export const useCreateGroup = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async ({ name, description, isPrivate }: { name: string; description?: string; isPrivate?: boolean }) => {
+    mutationFn: async ({
+      name,
+      description,
+      isPrivate,
+      visibility,
+      joinPolicy,
+      category,
+      languageCode,
+      rules,
+    }: {
+      name: string;
+      description?: string;
+      isPrivate?: boolean;
+      visibility?: 'public' | 'private' | 'unlisted';
+      joinPolicy?: 'open' | 'approval' | 'invite_only';
+      category?: string;
+      languageCode?: string;
+      rules?: string;
+    }) => {
       const sanitizedName = name.trim();
-      const sanitizedDescription = description?.trim() || null;
+      if (!sanitizedName) throw new Error('Group name is required');
 
-      if (!sanitizedName) {
-        throw new Error('Group name is required');
-      }
-
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) {
-        throw new Error('Authentication error: ' + authError.message);
-      }
-      
-      if (!user?.id) {
-        throw new Error('Please sign in to create a group');
+      const resolvedVisibility = visibility ?? (isPrivate ? 'private' : 'public');
+      const resolvedJoinPolicy = joinPolicy ?? (resolvedVisibility === 'private' ? 'invite_only' : 'open');
+      if (resolvedVisibility === 'private' && resolvedJoinPolicy === 'open') {
+        throw new Error('Private groups cannot allow open joining.');
       }
 
-      const groupId = crypto.randomUUID();
-      
-      // Create group first without selecting immediately.
-      // Group visibility policy is membership-based, so selecting here can fail
-      // before the creator membership row is inserted.
-      const { error: groupError } = await supabase
-        .from('group_chats')
-        .insert([{
-          id: groupId,
-          name: sanitizedName,
-          description: sanitizedDescription,
-          created_by: user.id,
-          is_encrypted: Boolean(isPrivate),
-        }]);
-      
-      if (groupError) {
-        console.error('Group creation error:', groupError);
-        throw new Error('Failed to create group: ' + groupError.message);
-      }
-      
-      // Add creator as admin
-      const { error: memberError } = await supabase
-        .from('group_chat_members')
-        .insert([{
-          group_id: groupId,
-          user_id: user.id,
-          role: 'admin'
-        }]);
-      
-      if (memberError) {
-        const { error: rollbackError } = await supabase
-          .from('group_chats')
-          .delete()
-          .eq('id', groupId)
-          .eq('created_by', user.id);
-        if (rollbackError) {
-          throw new Error(`Failed to finish group setup: ${memberError.message}. The incomplete group could not be removed.`);
-        }
-        throw new Error('Failed to add creator as admin: ' + memberError.message);
-      }
-      return {
-        id: groupId,
-        name: sanitizedName,
-        description: sanitizedDescription,
-        created_by: user.id,
-        is_encrypted: Boolean(isPrivate),
-      };
+      const { data, error } = await supabase.rpc('create_reading_group', {
+        p_name: sanitizedName,
+        p_description: description?.trim() || null,
+        p_visibility: resolvedVisibility,
+        p_join_policy: resolvedJoinPolicy,
+        p_category: category?.trim() || null,
+        p_language_code: languageCode?.trim() || null,
+        p_rules: rules?.trim() || null,
+      });
+      if (error) throw new Error(error.message || 'Failed to create reading group.');
+      return data;
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['user-groups'] });
@@ -165,27 +140,18 @@ export const useCreateGroup = () => {
 
 export const useJoinGroup = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (groupId: string) => {
-      const userId = (await supabase.auth.getUser()).data.user?.id;
-      if (!userId) throw new Error('User not authenticated');
-      
-      const { data, error } = await supabase
-        .from('group_chat_members')
-        .insert([{
-          group_id: groupId,
-          user_id: userId,
-          role: 'member'
-        }])
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
+      if (!groupId) throw new Error('Group ID is required');
+      const { data, error } = await supabase.rpc('request_or_join_reading_group', {
+        p_group_id: groupId,
+      });
+      if (error) throw new Error(error.message || 'Unable to join/request access to this group.');
+      return data as 'active' | 'pending';
     },
-    onSuccess: () => {
-      toast.success('Successfully joined the group!');
+    onSuccess: (status) => {
+      toast.success(status === 'pending' ? 'Join request sent for approval.' : 'Successfully joined the group!');
       void queryClient.invalidateQueries({ queryKey: ['user-groups'] });
       void queryClient.invalidateQueries({ queryKey: ['all-groups'] });
       void queryClient.invalidateQueries({ queryKey: ['user-joined-groups'] });
@@ -198,30 +164,12 @@ export const useJoinGroup = () => {
 
 export const useLeaveGroup = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (groupId: string) => {
-      const userId = (await supabase.auth.getUser()).data.user?.id;
-      if (!userId) throw new Error('User not authenticated');
-      
-      const { data: group, error: groupLookupError } = await supabase
-        .from('group_chats')
-        .select('name')
-        .eq('id', groupId)
-        .maybeSingle();
-
-      if (groupLookupError) throw groupLookupError;
-      if (group?.name === DEFAULT_READING_GROUP_NAME) {
-        throw new Error('You cannot leave the Sahadhyayi Community Reading Circle.');
-      }
-
-      const { error } = await supabase
-        .from('group_chat_members')
-        .delete()
-        .eq('group_id', groupId)
-        .eq('user_id', userId);
-
-      if (error) throw error;
+      if (!groupId) throw new Error('Group ID is required');
+      const { error } = await supabase.rpc('leave_reading_group', { p_group_id: groupId });
+      if (error) throw new Error(error.message || 'Unable to leave this group.');
     },
     onSuccess: () => {
       toast.success('Successfully left the group');
