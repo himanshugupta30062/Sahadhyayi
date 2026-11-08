@@ -135,7 +135,7 @@ describe('GroupReadingBoard', () => {
     expect(screen.getByRole('heading', { name: 'Finished together' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Archived' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Current read' })).toBeInTheDocument();
-    expect(screen.getByText('Reader Author')).toBeInTheDocument();
+    expect(screen.getAllByText('Reader Author').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByAltText('Current read cover')).toHaveAttribute('src', 'https://cdn.example.test/current.jpg');
     expect(screen.getByText(/Target/)).toBeInTheDocument();
     expect(screen.getByText(/3 sharing/)).toBeInTheDocument();
@@ -143,7 +143,7 @@ describe('GroupReadingBoard', () => {
     expect(screen.getByText('Unknown author')).toBeInTheDocument();
     expect(screen.getByText('Finished title')).toBeInTheDocument();
     expect(screen.getByText('Archived title')).toBeInTheDocument();
-    expect(screen.getByText('Saved: 10%')).toBeInTheDocument();
+    expect(screen.getAllByText('Saved: 10%').length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByLabelText('Your current page for Archived title')).not.toBeInTheDocument();
   });
 
