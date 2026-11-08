@@ -106,7 +106,7 @@ export const StoryCard: React.FC<StoryCardProps> = ({ story, showContinueReading
         </div>
 
         {/* Continue reading banner if applicable */}
-        {showContinueReading && story.last_read_part_number && (
+        {showContinueReading && Boolean(story.last_read_part_number) && (
           <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2.5 text-white flex items-center justify-between text-xs">
             <span className="font-medium text-[#D5B16D]">Resume Part {story.last_read_part_number}</span>
             <span className="text-[10px] text-white/80">Continue reading →</span>

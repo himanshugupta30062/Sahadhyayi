@@ -26,10 +26,11 @@ serve(async (req) => {
   let userId: string | null = null;
   const authHeader = req.headers.get('Authorization');
   if (authHeader) {
-    const match = authHeader.match(/^Bearer\s+(.+)$/i);
-    if (!match?.[1]) return json({ error: 'Invalid authorization header' }, 401);
+    if (!authHeader.toLowerCase().startsWith('bearer ')) return json({ error: 'Invalid authorization header' }, 401);
+    const token = authHeader.slice(7).trim();
+    if (!token) return json({ error: 'Invalid authorization header' }, 401);
     const caller = createClient(supabaseUrl, anonKey, { auth: { persistSession: false }, global: { headers: { Authorization: authHeader } } });
-    const { data, error } = await caller.auth.getUser(match[1]);
+    const { data, error } = await caller.auth.getUser(token);
     if (error || !data.user) return json({ error: 'Invalid or expired session' }, 401);
     userId = data.user.id;
   }

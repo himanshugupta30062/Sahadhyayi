@@ -128,8 +128,8 @@ export function normalizeAuthor(rawAuthor?: string | null): NormalizedAuthor {
 
   // Strip lifecycle dates like ", 1942-2018" or "(1942-2018)" or "b. 1942" without backtracking
   author = author
-    .replace(/\s*\([^\r\n)\d]{0,32}\d{4}[^)\r\n]{0,32}\)/g, '')
-    .replace(/(?:,\s*|\s+)(?:b\.\s*)?\d{4}(?:\s*-\s*\d{1,4})?\b/gi, '')
+    .replace(/\s*\([^)]*\)/g, (match) => (/\d{4}/.test(match) ? '' : match))
+    .replace(/[,\s]+(?:b\.\s*)?\d{4}(?:-\d{1,4})?\b/gi, '')
     .trim();
 
   // If multiple co-authors separated by semicolon, slash, or "et al.", take primary author

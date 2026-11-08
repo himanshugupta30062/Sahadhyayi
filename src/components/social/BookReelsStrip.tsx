@@ -107,7 +107,7 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
       {/* Horizontal Carousel */}
       <div
         ref={scrollRef}
-        tabIndex={0}
+        role="region"
         aria-label="Horizontal list of book reels"
         className="flex gap-3.5 overflow-x-auto pb-3 pt-1 outline-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden focus-visible:ring-1 focus-visible:ring-primary/40 rounded-xl"
       >

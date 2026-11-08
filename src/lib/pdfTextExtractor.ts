@@ -91,17 +91,17 @@ export function extractPagesFromText(rawText: string, defaultStartingPage = 1): 
         }
         currentLines = [];
       }
-      const explicitNum = parseInt(pageMatch[1] || pageMatch[2] || '', 10);
-      currentPageNumber = !isNaN(explicitNum) ? explicitNum : currentPageNumber + 1;
+      const explicitNum = Number.parseInt(pageMatch[1] || pageMatch[2] || '', 10);
+      currentPageNumber = !Number.isNaN(explicitNum) ? explicitNum : currentPageNumber + 1;
       continue;
     }
 
     const chapterMatch = line.match(CHAPTER_REGEX);
     if (chapterMatch) {
       const numStr = chapterMatch[1];
-      const parsedNum = numStr ? parseInt(numStr, 10) : undefined;
+      const parsedNum = numStr ? Number.parseInt(numStr, 10) : undefined;
       currentChapter = {
-        number: !isNaN(parsedNum ?? NaN) ? parsedNum : undefined,
+        number: parsedNum !== undefined && !Number.isNaN(parsedNum) ? parsedNum : undefined,
         title: (chapterMatch[2] || chapterMatch[3] || line).trim(),
       };
     }
@@ -237,9 +237,9 @@ function detectChapter(text: string): { title?: string; number?: number } | unde
   const match = text.match(CHAPTER_REGEX);
   if (!match) return undefined;
   const numStr = match[1];
-  const parsedNum = numStr ? parseInt(numStr, 10) : undefined;
+  const parsedNum = numStr ? Number.parseInt(numStr, 10) : undefined;
   return {
-    number: !isNaN(parsedNum ?? NaN) ? parsedNum : undefined,
+    number: parsedNum !== undefined && !Number.isNaN(parsedNum) ? parsedNum : undefined,
     title: (match[2] || match[3] || match[0]).trim(),
   };
 }

@@ -122,7 +122,7 @@ export const HomeReadAndWriteSection: React.FC = () => {
                       <div className="flex items-center gap-2 mb-2 text-[11px] font-semibold text-[#8F681C] dark:text-[#D5B16D]">
                         <FileText className="w-3.5 h-3.5" />
                         <span>{article.tags?.[0] || 'Literary Essay'}</span>
-                        {article.reading_time_minutes && (
+                        {Boolean(article.reading_time_minutes) && (
                           <span className="text-[#636B65] dark:text-[#A5ADA6]">
                             · {article.reading_time_minutes} min read
                           </span>

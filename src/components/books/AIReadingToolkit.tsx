@@ -288,7 +288,7 @@ export default function AIReadingToolkit({ book }: Props) {
                     >
                       <span className="font-bold">[{citation.id}]</span>
                       <span>{citation.title}</span>
-                      {citation.pageNumber && (
+                      {Boolean(citation.pageNumber) && (
                         <Link
                           to={`/reader/${book.id}?page=${citation.pageNumber}`}
                           className="inline-flex items-center gap-0.5 rounded font-semibold text-indigo-600 underline hover:text-indigo-800 dark:text-indigo-400"
