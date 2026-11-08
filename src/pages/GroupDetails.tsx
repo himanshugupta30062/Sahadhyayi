@@ -87,7 +87,9 @@ const GroupDetails = () => {
   const actorRole = myMembership?.role;
   const canManageGroup = isMember && ['owner', 'admin', 'moderator'].includes(actorRole ?? '');
   const activeMembers = members.filter((member) => member.status === 'active');
-  const memberCount = membersLoading ? Number(group?.group_members?.[0]?.count ?? 0) : activeMembers.length;
+  const memberCount = membersLoading || !user?.id
+    ? Number(group?.member_count ?? group?.group_members?.[0]?.count ?? 0)
+    : activeMembers.length;
   const isDefaultReadingGroup = group?.name === DEFAULT_READING_GROUP_NAME;
 
   const copyInviteLink = async () => {
@@ -343,7 +345,11 @@ const GroupDetails = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4">
-              {membersLoading ? (
+              {!user?.id ? (
+                <p className="text-sm text-muted-foreground py-4 text-center">
+                  Sign in to view member profiles.
+                </p>
+              ) : membersLoading ? (
                 <div className="space-y-3 animate-pulse">
                   {[1, 2, 3].map(i => (
                     <div key={i} className="flex items-center gap-3">
