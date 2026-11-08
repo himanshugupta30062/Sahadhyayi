@@ -241,6 +241,7 @@ const BookExpert = () => {
   const [copiedMessageIndex, setCopiedMessageIndex] = useState<number | null>(null);
   const [speakingMessageIndex, setSpeakingMessageIndex] = useState<number | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [showLabel, setShowLabel] = useState(true);
 
   useEffect(() => {
@@ -433,36 +434,52 @@ const BookExpert = () => {
   };
 
 
-  if (!isOpen) {
+  const renderLauncher = (minimized = false) => (
+    <button
+      ref={launcherRef}
+      type="button"
+      onClick={() => {
+        if (minimized) setIsMinimized(false);
+        else toggleChat();
+      }}
+      aria-label={minimized ? "Restore Reading Room AI" : "Open the Sahadhyayi Reading Room"}
+      aria-expanded={minimized ? false : isOpen}
+      aria-controls="book-expert-panel"
+      data-testid={minimized ? "reading-room-mini-launcher" : "reading-room-launcher"}
+      title={minimized ? "Restore Reading Room AI" : undefined}
+      className={cn(
+        "group fixed bottom-4 right-3 z-50 flex items-center gap-2 rounded-full border border-[#D5B16D]/40 bg-background/95 p-1.5 text-foreground shadow-xl shadow-black/15 backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl hover:border-[#D5B16D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:bottom-6 sm:right-6 sm:gap-2.5 sm:p-2",
+        minimized ? "h-12 w-12 justify-center sm:h-13 sm:w-13 sm:p-2" : "sm:pr-4"
+      )}
+    >
+      <span className="reader-room-launcher-icon relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#1C442D]/10 dark:bg-[#D5B16D]/15 sm:h-11 sm:w-11">
+        <img src={bookIcon} alt="" loading="eager" decoding="async" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110" draggable={false} />
+        <span className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-emerald-500 animate-pulse" aria-hidden="true" />
+      </span>
+      <span className={cn("min-w-0 text-left flex-col justify-center", minimized ? "hidden" : "flex")}>
+        <span className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold leading-tight text-foreground">
+          <Sparkles className="h-3.5 w-3.5 text-[#D5B16D] shrink-0" />
+          <span className="truncate">Reading Room AI</span>
+        </span>
+        <span className={cn(
+          "hidden sm:inline-block overflow-hidden whitespace-nowrap text-[11px] text-muted-foreground transition-[max-width,opacity] duration-500 group-hover:max-w-[140px] group-hover:opacity-100",
+          showLabel ? "max-w-[140px] opacity-100" : "max-w-0 opacity-0"
+        )}>
+          {minimized ? "Continue your conversation" : "Ask our Book AI"}
+        </span>
+      </span>
+      {!minimized && <MessageCircle className="hidden h-4 w-4 text-[#D5B16D] sm:ml-1 sm:block transition-transform group-hover:scale-110" aria-hidden="true" />}
+    </button>
+  );
+
+  if (!isOpen) return renderLauncher();
+
+  if (isMinimized) {
     return (
-      <button
-        ref={launcherRef}
-        type="button"
-        onClick={toggleChat}
-        aria-label="Open the Sahadhyayi Reading Room"
-        aria-expanded={false}
-        aria-controls="book-expert-panel"
-        data-testid="reading-room-launcher"
-        className="group fixed bottom-4 right-3 z-50 flex items-center gap-2 rounded-full border border-[#D5B16D]/40 bg-background/95 p-1.5 text-foreground shadow-xl shadow-black/15 backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl hover:border-[#D5B16D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:bottom-6 sm:right-6 sm:gap-2.5 sm:p-2 sm:pr-4"
-      >
-        <span className="reader-room-launcher-icon relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#1C442D]/10 dark:bg-[#D5B16D]/15 sm:h-11 sm:w-11">
-          <img src={bookIcon} alt="" loading="eager" decoding="async" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110" draggable={false} />
-          <span className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-emerald-500 animate-pulse" aria-hidden="true" />
-        </span>
-        <span className="text-left flex flex-col justify-center">
-          <span className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold leading-tight text-foreground">
-            <Sparkles className="h-3.5 w-3.5 text-[#D5B16D] shrink-0" />
-            <span className="truncate">Reading Room AI</span>
-          </span>
-          <span className={cn(
-            "hidden sm:inline-block overflow-hidden whitespace-nowrap text-[11px] text-muted-foreground transition-[max-width,opacity] duration-500 group-hover:max-w-[140px] group-hover:opacity-100",
-            showLabel ? "max-w-[140px] opacity-100" : "max-w-0 opacity-0"
-          )}>
-            Ask our Book AI
-          </span>
-        </span>
-        <MessageCircle className="hidden h-4 w-4 text-[#D5B16D] sm:ml-1 sm:block transition-transform group-hover:scale-110" aria-hidden="true" />
-      </button>
+      <>
+        {renderLauncher(true)}
+        <span className="sr-only" role="status">Reading Room AI minimized. Your conversation is still open.</span>
+      </>
     );
   }
 
@@ -536,13 +553,14 @@ const BookExpert = () => {
               )}
             </button>
 
-            {/* Minimize / Collapse panel to launcher */}
+            {/* Minimize / Collapse to the persistent floating launcher without ending the conversation */}
             <button
               type="button"
-              onClick={handleClose}
-              aria-label="Minimize Reading Room"
-              title="Minimize to button"
-              className="hidden rounded-xl p-2 text-muted-foreground transition-colors hover:bg-background hover:text-foreground sm:inline-flex"
+              onClick={() => setIsMinimized(true)}
+              aria-label="Minimize Reading Room to floating icon"
+              title="Minimize to floating icon"
+              data-testid="reading-room-minimize"
+              className="inline-flex min-h-10 items-center justify-center rounded-xl p-2 text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <ChevronDown className="h-4 w-4" aria-hidden="true" />
             </button>
