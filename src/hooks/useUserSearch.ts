@@ -88,26 +88,45 @@ export const useAllUsers = (options: { enabled?: boolean } = {}) => {
         // Never show existing friends or pending connections as new suggestions.
         const friendIds = new Set<string>();
         friendsResponse.data?.forEach(friend => {
-          if (friend.user1_id !== user?.id) friendIds.add(friend.user1_id);
-          if (friend.user2_id !== user?.id) friendIds.add(friend.user2_id);
+          if (friend.user1_id && friend.user1_id !== user?.id) friendIds.add(friend.user1_id);
+          if (friend.user2_id && friend.user2_id !== user?.id) friendIds.add(friend.user2_id);
         });
 
         const pendingIds = new Set<string>();
         requestsResponse.data?.forEach(request => {
-          if (request.requester_id !== user?.id) pendingIds.add(request.requester_id);
-          if (request.addressee_id !== user?.id) pendingIds.add(request.addressee_id);
+          if (request.requester_id && request.requester_id !== user?.id) pendingIds.add(request.requester_id);
+          if (request.addressee_id && request.addressee_id !== user?.id) pendingIds.add(request.addressee_id);
         });
 
-        // Combine all IDs to exclude (friends + pending requests + current user)
-        const excludeIds = [...friendIds, ...pendingIds, user?.id || ''];
+        // Combine all valid IDs to exclude (friends + pending requests + current user)
+        const excludeIds = [...new Set([...friendIds, ...pendingIds, user?.id].filter((id): id is string => Boolean(id && id.trim())))];
 
-        const { data, error } = await supabase
-          .rpc('get_public_profiles_for_search', { search_term: '' })
-          .not('id', 'in', `(${excludeIds.map(id => `"${id}"`).join(',')})`)
-          .limit(50);
+        let query = supabase
+          .rpc('get_public_profiles_for_search', { search_term: '' });
+
+        if (excludeIds.length > 0) {
+          // PostgREST syntax for UUID in-lists must not contain double quotes: in.(uuid1,uuid2)
+          query = query.not('id', 'in', `(${excludeIds.join(',')})`);
+        }
+
+        const { data, error } = await query.limit(50);
         
-        if (error) throw error;
-        return data as SearchUser[];
+        if (error) {
+          console.warn('RPC suggestions failed, attempting fallback query', error);
+          // Fallback to public_profiles or direct profiles
+          const { data: fallbackData } = await supabase
+            .from('public_profiles')
+            .select('id, full_name, username, profile_photo_url, bio')
+            .limit(50);
+          
+          if (fallbackData && fallbackData.length > 0) {
+            return fallbackData.filter((u: any) => !excludeIds.includes(u.id)) as SearchUser[];
+          }
+          throw error;
+        }
+
+        // Additional client-side guard ensuring excluded IDs never leak through
+        return ((data || []) as SearchUser[]).filter((u) => !excludeIds.includes(u.id));
       } catch (err) {
         console.error('Loading user suggestions failed', { errorName: err instanceof Error ? err.name : 'UnknownError' });
         throw err;

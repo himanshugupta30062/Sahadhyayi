@@ -66,3 +66,4 @@ WHERE genre = 'Hindu philosophy';
 UPDATE public.books_library
 SET genre = 'Reference'
 WHERE genre ILIKE 'Subject headings%';
+
