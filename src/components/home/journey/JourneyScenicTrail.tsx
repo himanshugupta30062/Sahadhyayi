@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { MapPin, Route, ArrowDown } from 'lucide-react';
 import { JourneyLandmarkArt } from './JourneyLandmarkArt';
+import { JourneyScenery } from './JourneyScenery';
 import { StudentCyclist } from './StudentCyclist';
 import { JOURNEY_DESTINATIONS } from './journeyData';
 import './journey-scenic-trail.css';
@@ -32,7 +33,7 @@ const DESKTOP_TRAIL_PATH =
   'M 500 130 C 620 110 780 120 900 290 C 1160 430 760 470 500 450 C 250 430 480 600 900 610 C 1160 620 760 790 500 770 C 250 750 480 920 900 930 C 1160 940 760 1110 500 1090 C 250 1070 480 1240 900 1250';
 
 const MOBILE_TRAIL_PATH =
-  'M 700 130 C 770 110 790 170 720 290 C 650 410 610 410 680 450 C 750 490 790 540 720 610 C 650 680 610 700 680 770 C 750 840 790 860 720 930 C 650 1000 610 1020 680 1090 C 750 1160 790 1190 720 1250';
+  'M 125 130 C 195 110 205 170 145 290 C 85 410 70 410 125 450 C 180 490 195 540 145 610 C 95 680 75 700 125 770 C 175 840 195 860 145 930 C 95 1000 75 1020 125 1090 C 175 1160 195 1190 145 1250';
 
 export const JourneyScenicTrail: React.FC<JourneyScenicTrailProps> = ({
   activeStopIndex,
@@ -63,6 +64,7 @@ export const JourneyScenicTrail: React.FC<JourneyScenicTrailProps> = ({
     let animationFrame = 0;
     let startTime = 0;
     let pathLength = 0;
+    let lastFacingDirection: 'left' | 'right' = 'right';
     const startProgress = progressRef.current;
 
     const getPathLength = (activePath: SVGPathElement) => {
@@ -80,8 +82,8 @@ export const JourneyScenicTrail: React.FC<JourneyScenicTrailProps> = ({
       const isMobilePath = activePath === mobilePathRef.current;
       const stopPoints = isMobilePath
         ? [
-            { x: 700, y: 130 }, { x: 720, y: 290 }, { x: 680, y: 450 }, { x: 720, y: 610 },
-            { x: 680, y: 770 }, { x: 720, y: 930 }, { x: 680, y: 1090 }, { x: 720, y: 1250 },
+            { x: 125, y: 130 }, { x: 145, y: 290 }, { x: 125, y: 450 }, { x: 145, y: 610 },
+            { x: 125, y: 770 }, { x: 145, y: 930 }, { x: 125, y: 1090 }, { x: 145, y: 1250 },
           ]
         : [
             { x: 500, y: 130 }, { x: 900, y: 290 }, { x: 500, y: 450 }, { x: 900, y: 610 },
@@ -120,9 +122,14 @@ export const JourneyScenicTrail: React.FC<JourneyScenicTrailProps> = ({
       screenPoint.y = point.y;
       const screen = screenPoint.matrixTransform(matrix);
       const bounds = map.getBoundingClientRect();
-      const angle = Math.atan2(after.y - before.y, after.x - before.x) * (180 / Math.PI);
+      const tangentX = after.x - before.x;
+      if (Math.abs(tangentX) > 0.35) {
+        lastFacingDirection = tangentX < 0 ? 'left' : 'right';
+      }
+      const angle = Math.atan2(after.y - before.y, tangentX) * (180 / Math.PI);
       const bankAngle = Math.max(-12, Math.min(12, angle * 0.16));
 
+      cyclist.dataset.direction = lastFacingDirection;
       cyclist.style.left = (screen.x - bounds.left) + 'px';
       cyclist.style.top = (screen.y - bounds.top) + 'px';
       cyclist.style.transform = 'translate(-50%, -56%) rotate(' + bankAngle + 'deg)';
@@ -185,6 +192,7 @@ export const JourneyScenicTrail: React.FC<JourneyScenicTrailProps> = ({
       </div>
 
       <div ref={mapRef} className="journey-scenic-trail" data-testid="journey-scenic-trail">
+        <JourneyScenery />
         <div className="journey-scenic-trail__sun" aria-hidden="true" />
         <div className="journey-scenic-trail__hill journey-scenic-trail__hill--one" aria-hidden="true" />
         <div className="journey-scenic-trail__hill journey-scenic-trail__hill--two" aria-hidden="true" />
@@ -244,7 +252,10 @@ export const JourneyScenicTrail: React.FC<JourneyScenicTrailProps> = ({
                 'journey-scenic-stop journey-scenic-stop--' + position.side +
                 (isActive ? ' is-active' : '')
               }
-              style={{ top: position.top + '%' }}
+              style={{
+                top: position.top + '%',
+                '--journey-accent': destination.accentColor,
+              } as React.CSSProperties}
               data-testid={'journey-landmark-' + destination.index}
             >
               <button
