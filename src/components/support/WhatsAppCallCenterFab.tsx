@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { PhoneCall, Headset, X, ExternalLink, Clock } from 'lucide-react';
+import { PhoneCall, LifeBuoy, X, ExternalLink, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
-  SAHADHYAYI_PHONE,
   SAHADHYAYI_PHONE_RAW,
   SAHADHYAYI_EMAIL,
   SUPPORT_TOPICS,
@@ -87,8 +86,8 @@ export const WhatsAppCallCenterFab: React.FC = () => {
           className="pointer-events-none absolute inset-0 rounded-full bg-[#D5B16D]/25 opacity-40 animate-ping [animation-duration:2.8s]"
           aria-hidden="true"
         />
-        {/* Call Center / Help Icon */}
-        <Headset className="relative h-5 w-5 sm:h-5.5 sm:w-5.5 transition-transform group-hover:scale-110" aria-hidden="true" />
+        {/* Support / Help Icon */}
+        <LifeBuoy className="relative h-5 w-5 sm:h-5.5 sm:w-5.5 transition-transform group-hover:scale-110" aria-hidden="true" />
 
         {/* Desktop Tooltip */}
         <span
@@ -121,8 +120,8 @@ export const WhatsAppCallCenterFab: React.FC = () => {
             <div className="relative border-b border-border/70 bg-[#111614] p-4 text-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25D366] text-white shadow-sm">
-                    <Headset className="h-5 w-5" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1C442D] text-[#D5B16D] border border-[#D5B16D]/30 shadow-sm">
+                    <LifeBuoy className="h-5 w-5" />
                   </div>
                   <div>
                     <h3 className="font-serif text-base font-semibold leading-tight text-white">
@@ -195,7 +194,7 @@ export const WhatsAppCallCenterFab: React.FC = () => {
                   className="w-full flex items-center justify-center gap-2 rounded-xl border border-border bg-card hover:bg-muted py-2.5 px-4 text-sm font-medium text-foreground transition-colors"
                 >
                   <PhoneCall className="h-4 w-4 text-[#D5B16D]" />
-                  <span>Call Us ({SAHADHYAYI_PHONE})</span>
+                  <span>Call Support Helpline</span>
                 </a>
               </div>
 

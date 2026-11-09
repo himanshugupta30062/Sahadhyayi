@@ -297,7 +297,7 @@ const About = () => {
         name: "Himanshu Gupta",
         jobTitle: "Founder",
         email: "gyan@sahadhyayi.com",
-        telephone: "8264135459",
+        telephone: "8920785645",
       },
     },
   };
@@ -500,9 +500,9 @@ const About = () => {
                         </div>
                         <div className="flex items-center gap-2 justify-center sm:justify-start">
                           <Phone className="w-3.5 h-3.5 text-brand-primary shrink-0" />
-                          <span>Phone / WhatsApp:</span>
-                          <a href="tel:8264135459" className="text-foreground hover:text-brand-primary font-medium underline decoration-dotted">
-                            +91 8264135459
+                          <span>Helpline & WhatsApp:</span>
+                          <a href="tel:8920785645" className="text-foreground hover:text-brand-primary font-medium underline decoration-dotted">
+                            Contact Support Desk
                           </a>
                         </div>
                         <div className="flex items-center gap-2 justify-center sm:justify-start">

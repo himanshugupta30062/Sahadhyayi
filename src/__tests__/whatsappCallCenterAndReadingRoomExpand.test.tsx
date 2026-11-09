@@ -46,17 +46,21 @@ describe("WhatsAppCallCenterFab & Reading Room Expand/Collapse UI", () => {
     expect(button).toHaveAttribute("data-testid", "whatsapp-callcenter-fab");
   });
 
-  it("opens the Helpline modal on click with phone number and WhatsApp option", () => {
+  it("opens the Helpline modal on click with call action and WhatsApp option without displaying raw phone number", () => {
     render(<WhatsAppCallCenterFab />);
     const button = screen.getByRole("button", { name: /call center and whatsapp support/i });
     fireEvent.click(button);
 
     expect(screen.getByRole("dialog", { name: /sahadhyayi support & call center/i })).toBeInTheDocument();
     expect(screen.getByText(/sahadhyayi helpline/i)).toBeInTheDocument();
-    expect(screen.getByText(new RegExp(SAHADHYAYI_PHONE.replace('+', '\\+')))).toBeInTheDocument();
 
-    const callLink = screen.getByRole("link", { name: new RegExp(`call us \\(${SAHADHYAYI_PHONE.replace('+', '\\+')}\\)`, "i") });
+    // Verify phone number is NOT visible to the user in text
+    expect(screen.queryByText(/8920785645/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/\+91/)).not.toBeInTheDocument();
+
+    const callLink = screen.getByRole("link", { name: /call support helpline/i });
     expect(callLink).toHaveAttribute("href", `tel:${SAHADHYAYI_PHONE_RAW}`);
+    expect(SAHADHYAYI_PHONE_RAW).toBe("918920785645");
   });
 
   it("triggers window.open with the correct WhatsApp URL on Chat on WhatsApp click", () => {
