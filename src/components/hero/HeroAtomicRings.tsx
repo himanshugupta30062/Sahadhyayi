@@ -1,8 +1,10 @@
-// HeroAtomicRings.tsx — five animated orbits for the Sahadhyayi reading ecosystem.
+// HeroAtomicRings.tsx — eight animated rings for the Sahadhyayi reading ecosystem.
+// Each orbit contains individually discoverable and navigable product features.
 
-import React, { useEffect, useId, useRef } from "react";
+import React, { useContext, useEffect, useId, useRef } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
+import { BookExpertContext } from "@/contexts/book-expert.utils";
 
 const toRadTop = (deg: number) => (deg - 90) * (Math.PI / 180);
 const norm = (angle: number) => ((angle % 360) + 360) % 360;
@@ -19,115 +21,181 @@ function arcPath(radius: number, startDeg: number, endDeg: number) {
   const y0 = radius * Math.sin(a0);
   const x1 = radius * Math.cos(a1);
   const y1 = radius * Math.sin(a1);
-  return `M ${x0} ${y0} A ${radius} ${radius} 0 ${largeArc} 1 ${x1} ${y1}`;
+  return "M " + x0 + " " + y0 + " A " + radius + " " + radius + " 0 " + largeArc + " 1 " + x1 + " " + y1;
 }
 
-type OrbitIcon = "book" | "quill" | "people" | "article" | "games";
+type OrbitIcon = "book" | "journal" | "map" | "people" | "discussion" | "story" | "quill" | "activity" | "ai";
 
-interface OrbitConfig {
+interface OrbitFeature {
   id: string;
   label: string;
-  href: string;
-  icon: OrbitIcon;
+  href?: string;
+  action?: "open-book-expert";
+}
+
+interface OrbitBand {
+  id: string;
+  title: string;
   radius: number;
-  strokeWidth: number;
-  atomRadius: number;
-  labelWidth: number;
-  atomColor: string;
+  color: string;
   gradientColors: [string, string, string, string];
+  icon: OrbitIcon;
   start: number;
   duration: number;
   direction: 1 | -1;
-  initialProgress: number;
+  features: OrbitFeature[];
 }
 
-const ORBITS: OrbitConfig[] = [
+// These eight rings mirror the eight destinations in the homepage journey.
+// Feature links are taken from the current public navigation and journey menus.
+const ORBIT_BANDS: OrbitBand[] = [
   {
-    id: "library",
-    label: "Library",
-    href: "/library",
+    id: "library-discovery",
+    title: "Library & Discovery",
+    radius: 158,
+    color: "#1C442D",
+    gradientColors: ["#A7F3D0", "#4ADE80", "#1C7C45", "#14532D"],
     icon: "book",
-    radius: 285,
-    strokeWidth: 20,
-    atomRadius: 17,
-    labelWidth: 92,
-    atomColor: "#ef4444",
-    gradientColors: ["#ff9ecf", "#ff4d8d", "#ff1f5a", "#be123c"],
-    start: -18,
-    duration: 42,
+    start: -76,
+    duration: 68,
     direction: 1,
-    initialProgress: 48,
+    features: [
+      { id: "digital-library", label: "Digital Library", href: "/library" },
+      { id: "discover-books", label: "Discover Books", href: "/discovery" },
+      { id: "research-papers", label: "Research Papers", href: "/research-papers" },
+      { id: "book-archive", label: "Book Archive", href: "/book-library" },
+      { id: "publish-book", label: "Publish Book", href: "/publish" },
+      { id: "my-publications", label: "My Publications", href: "/my-publications" },
+    ],
   },
   {
-    id: "authors",
-    label: "Authors",
-    href: "/authors",
-    icon: "quill",
-    radius: 255,
-    strokeWidth: 14,
-    atomRadius: 16,
-    labelWidth: 88,
-    atomColor: "#22c55e",
-    gradientColors: ["#86efac", "#4ade80", "#22c55e", "#166534"],
-    start: 12,
-    duration: 37,
+    id: "reading-life",
+    title: "Personal Reading",
+    radius: 180,
+    color: "#39734A",
+    gradientColors: ["#BBF7D0", "#86EFAC", "#3D9B59", "#166534"],
+    icon: "journal",
+    start: -51,
+    duration: 64,
     direction: -1,
-    initialProgress: 112,
+    features: [
+      { id: "my-bookshelf", label: "My Bookshelf", href: "/bookshelf" },
+      { id: "reading-dashboard", label: "Reading Dashboard", href: "/dashboard" },
+      { id: "reading-journal", label: "Reading Journal", href: "/journal" },
+      { id: "quotes-highlights", label: "Quotes & Highlights", href: "/quotes" },
+    ],
   },
   {
-    id: "social",
-    label: "Social Media",
-    href: "/social",
+    id: "reader-village",
+    title: "Reader Discovery",
+    radius: 202,
+    color: "#98701F",
+    gradientColors: ["#FDE68A", "#FBBF24", "#B7791F", "#854D0E"],
+    icon: "map",
+    start: -28,
+    duration: 60,
+    direction: 1,
+    features: [
+      { id: "friends-feed", label: "Friends Feed", href: "/social" },
+      { id: "discover-friends", label: "Discover Friends", href: "/social?tab=friends" },
+      { id: "readers-map", label: "Readers Map", href: "/map" },
+      { id: "readers-around-book", label: "Readers Around a Book", href: "/reader-map" },
+    ],
+  },
+  {
+    id: "reading-together",
+    title: "Read Together",
+    radius: 224,
+    color: "#326A9A",
+    gradientColors: ["#BFDBFE", "#60A5FA", "#2563EB", "#1E3A8A"],
     icon: "people",
-    radius: 225,
-    strokeWidth: 10,
-    atomRadius: 16,
-    labelWidth: 128,
-    atomColor: "#3b82f6",
-    gradientColors: ["#93c5fd", "#60a5fa", "#3b82f6", "#1e3a8a"],
-    start: -36,
-    duration: 32,
-    direction: 1,
-    initialProgress: 190,
-  },
-  {
-    id: "articles",
-    label: "Articles",
-    href: "/articles",
-    icon: "article",
-    radius: 210,
-    strokeWidth: 8,
-    atomRadius: 15,
-    labelWidth: 92,
-    atomColor: "#d99a24",
-    gradientColors: ["#f8d887", "#eab545", "#d99a24", "#986515"],
-    start: 24,
-    duration: 28,
+    start: -6,
+    duration: 56,
     direction: -1,
-    initialProgress: 84,
+    features: [
+      { id: "reading-groups", label: "Reading Groups", href: "/groups" },
+      { id: "reading-rooms", label: "Reading Rooms", href: "/social?tab=rooms" },
+      { id: "book-discussions", label: "Book Discussions", href: "/social?tab=threads" },
+      { id: "book-reviews", label: "Book Reviews", href: "/social?tab=reviews" },
+      { id: "shared-marginalia", label: "Shared Marginalia", href: "/social?tab=margins" },
+      { id: "reading-dna", label: "Reading DNA", href: "/social?tab=dna" },
+    ],
   },
   {
-    id: "games",
-    label: "Games",
-    href: "/games",
-    icon: "games",
-    radius: 198,
-    strokeWidth: 6,
-    atomRadius: 15,
-    labelWidth: 78,
-    atomColor: "#8b5cf6",
-    gradientColors: ["#c4b5fd", "#a78bfa", "#8b5cf6", "#5b21b6"],
-    start: -8,
-    duration: 24,
+    id: "stories-writing",
+    title: "Stories & Writing",
+    radius: 246,
+    color: "#80539A",
+    gradientColors: ["#E9D5FF", "#C084FC", "#9333EA", "#581C87"],
+    icon: "story",
+    start: 18,
+    duration: 52,
     direction: 1,
-    initialProgress: 150,
+    features: [
+      { id: "short-stories", label: "Short Stories", href: "/stories" },
+      { id: "life-stories", label: "Life Stories", href: "/life-stories" },
+      { id: "articles", label: "Articles", href: "/articles" },
+      { id: "blogs", label: "Blogs", href: "/blog" },
+      { id: "my-articles", label: "My Articles", href: "/articles/my" },
+      { id: "write-article", label: "Write Article", href: "/articles/write" },
+    ],
+  },
+  {
+    id: "authors-voices",
+    title: "Authors & Voices",
+    radius: 268,
+    color: "#A25232",
+    gradientColors: ["#FED7AA", "#FB923C", "#C15A32", "#7C2D12"],
+    icon: "quill",
+    start: 39,
+    duration: 48,
+    direction: -1,
+    features: [
+      { id: "authors", label: "Authors", href: "/authors" },
+      { id: "author-connect", label: "Author Connect", href: "/author-connect" },
+      { id: "reviewers-critics", label: "Reviewers & Critics", href: "/reviewers-critics" },
+      { id: "scientists", label: "Scientists", href: "/scientists" },
+      { id: "social-activists", label: "Social Activists", href: "/social-activists" },
+      { id: "freedom-fighters", label: "Freedom Fighters", href: "/freedom-fighters" },
+      { id: "publishers", label: "Publishers", href: "/publishers" },
+    ],
+  },
+  {
+    id: "events-activity",
+    title: "Events & Activity",
+    radius: 290,
+    color: "#B36B1F",
+    gradientColors: ["#FDE68A", "#F59E0B", "#D97706", "#92400E"],
+    icon: "activity",
+    start: 62,
+    duration: 44,
+    direction: 1,
+    features: [
+      { id: "events-festivals", label: "Events & Festivals", href: "/events" },
+      { id: "newsroom", label: "Newsroom", href: "/news" },
+      { id: "activity-hub", label: "Activity Hub", href: "/activity" },
+      { id: "reading-challenges", label: "Reading Challenges", href: "/activity?tab=challenges" },
+      { id: "literary-games", label: "Literary Games", href: "/games" },
+      { id: "reader-meetups", label: "Reader Meetups", href: "/activity?tab=meetups" },
+    ],
+  },
+  {
+    id: "ai-knowledge",
+    title: "AI Knowledge Station",
+    radius: 312,
+    color: "#277B91",
+    gradientColors: ["#A5F3FC", "#22D3EE", "#0891B2", "#164E63"],
+    icon: "ai",
+    start: 86,
+    duration: 40,
+    direction: -1,
+    features: [
+      { id: "book-expert-ai", label: "Book Expert AI", action: "open-book-expert" },
+    ],
   },
 ];
 
-const COVERAGE = 0.65;
-const SWEEP_DEG = 360 * COVERAGE;
-const ATOM_SPEED = 30;
-const ATOM_FADE_ANGLE = 18;
+const FEATURE_COUNT = ORBIT_BANDS.reduce((count, band) => count + band.features.length, 0);
 
 interface HeroAtomicRingsProps {
   size?: number | string;
@@ -135,19 +203,26 @@ interface HeroAtomicRingsProps {
   children?: ReactNode;
 }
 
-export default function HeroAtomicRings({ size = 720, className = "", children }: HeroAtomicRingsProps) {
+export default function HeroAtomicRings({ size = 760, className = "", children }: HeroAtomicRingsProps) {
   const navigate = useNavigate();
+  const bookExpert = useContext(BookExpertContext);
   const generatedId = useId().replace(/:/g, "");
-  const gradientId = (orbitId: string) => `g-${orbitId}-${generatedId}`;
+  const gradientId = (bandId: string) => "hero-orbit-" + bandId + "-" + generatedId;
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const ringRefs = useRef<(SVGGElement | null)[]>([]);
-  const atomRefs = useRef<(SVGGElement | null)[]>([]);
-  const labelRefs = useRef<(SVGGElement | null)[]>([]);
-  const ringAngles = useRef(ORBITS.map(() => 0));
-  // Each atom moves only along its own coloured arc and fades near the gap.
-  const atomProgress = useRef(ORBITS.map((orbit) => orbit.initialProgress));
+  const featureRefs = useRef<(SVGGElement | null)[][]>([]);
+  const featureLabelRefs = useRef<(SVGGElement | null)[][]>([]);
+  const ringAngles = useRef(ORBIT_BANDS.map(() => 0));
   const pausedForKeyboard = useRef(false);
+
+  const openFeature = (feature: OrbitFeature) => {
+    if (feature.action === "open-book-expert") {
+      if (bookExpert && !bookExpert.isOpen) bookExpert.toggleChat();
+      return;
+    }
+    if (feature.href) navigate(feature.href);
+  };
 
   useEffect(() => {
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -157,28 +232,28 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
     let lastFrameTime = performance.now();
 
     const renderScene = () => {
-      ringRefs.current.forEach((ring, index) => {
-        ring?.setAttribute("transform", `rotate(${ringAngles.current[index] || 0} 0 0)`);
-      });
-
-      atomRefs.current.forEach((atom, index) => {
-        if (!atom) return;
-        const orbit = ORBITS[index];
-        const progress = atomProgress.current[index] ?? 0;
-        const angle = norm(orbit.start + (ringAngles.current[index] || 0) + progress);
-        const point = pos(orbit.radius, angle);
-        atom.setAttribute("transform", `translate(${point.x}, ${point.y})`);
-
-        // Keep each feature name just outside its own orbit so it remains readable
-        // as the icon moves, while keeping the text horizontal.
-        const labelOffset = pos(orbit.atomRadius + 7, angle);
-        labelRefs.current[index]?.setAttribute(
+      ORBIT_BANDS.forEach((band, bandIndex) => {
+        ringRefs.current[bandIndex]?.setAttribute(
           "transform",
-          `translate(${labelOffset.x}, ${labelOffset.y})`,
+          "rotate(" + (ringAngles.current[bandIndex] || 0) + " 0 0)",
         );
 
-        const distanceFromEdge = Math.min(progress, SWEEP_DEG - progress);
-        atom.setAttribute("opacity", String(Math.max(0, Math.min(1, distanceFromEdge / ATOM_FADE_ANGLE))));
+        band.features.forEach((feature, featureIndex) => {
+          const baseAngle = band.start + (360 / band.features.length) * featureIndex;
+          const angle = norm(baseAngle + (ringAngles.current[bandIndex] || 0));
+          const point = pos(band.radius, angle);
+          const node = featureRefs.current[bandIndex]?.[featureIndex];
+          node?.setAttribute("transform", "translate(" + point.x + ", " + point.y + ")");
+
+          // Place each horizontal label tangentially beside its moving feature node.
+          // Flipping the label on the right half keeps long names inside the SVG bounds.
+          const labelWidth = Math.min(190, Math.max(92, feature.label.length * 7.8 + 22));
+          const label = featureLabelRefs.current[bandIndex]?.[featureIndex];
+          label?.setAttribute(
+            "transform",
+            point.x > 0 ? "translate(" + (-labelWidth - 17) + ", 0)" : "translate(17, 0)",
+          );
+        });
       });
     };
 
@@ -188,10 +263,7 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
 
       if (!pausedForKeyboard.current && !document.hidden && !prefersReducedMotion) {
         ringAngles.current = ringAngles.current.map((angle, index) =>
-          norm(angle + (360 / ORBITS[index].duration) * ORBITS[index].direction * elapsed),
-        );
-        atomProgress.current = atomProgress.current.map(
-          (progress) => (progress + ATOM_SPEED * elapsed) % SWEEP_DEG,
+          norm(angle + (360 / ORBIT_BANDS[index].duration) * ORBIT_BANDS[index].direction * elapsed),
         );
       }
 
@@ -233,7 +305,7 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
           isInViewport = entry.isIntersecting;
           if (isInViewport) startAnimation();
           else stopAnimation();
-        }, { rootMargin: "100px" })
+        }, { rootMargin: "120px" })
       : null;
     if (containerRef.current) observer?.observe(containerRef.current);
 
@@ -258,59 +330,73 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
     };
   }, []);
 
-  const setKeyboardPause = (paused: boolean) => {
-    pausedForKeyboard.current = paused;
-  };
-
-  const handleNodeKeyDown = (event: ReactKeyboardEvent<SVGGElement>, href: string) => {
+  const handleFeatureKeyDown = (event: ReactKeyboardEvent<SVGGElement>, feature: OrbitFeature) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      navigate(href);
+      openFeature(feature);
     }
   };
 
-  const coverSweep = (radius: number, start: number) => arcPath(radius, start, start + SWEEP_DEG);
+  const setKeyboardPause = (paused: boolean) => {
+    pausedForKeyboard.current = paused;
+  };
 
   const renderOrbitIcon = (icon: OrbitIcon) => {
     switch (icon) {
       case "book":
         return (
-          <path
-            d="M -6 -3.5 C -3 -4.5 -1 -4.5 0 -2.5 C 1 -4.5 3 -4.5 6 -3.5 L 6 3.5 C 3 2.5 1 2.5 0 4.5 C -1 2.5 -3 2.5 -6 3.5 Z M 0 -2.5 L 0 4.5"
-            fill="none" stroke="#ffffff" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"
-          />
+          <path d="M -6 -3.5 C -3 -4.5 -1 -4.5 0 -2.5 C 1 -4.5 3 -4.5 6 -3.5 L 6 3.5 C 3 2.5 1 2.5 0 4.5 C -1 2.5 -3 2.5 -6 3.5 Z M 0 -2.5 L 0 4.5" fill="none" stroke="#ffffff" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
         );
-      case "quill":
+      case "journal":
         return (
-          <path
-            d="M 3.5 -5 L 4.5 -4 L -2.2 2.7 C -3.5 4.2 -4.7 4.4 -4.7 4.4 C -4.7 4.4 -4.5 3 -3.1 1.8 Z M -1.5 2 L 1.6 3.1"
-            fill="none" stroke="#ffffff" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"
-          />
+          <>
+            <path d="M -4.5 -6 H 3 L 5.5 -3.5 V 6 H -4.5 Z M 3 -6 V -3.5 H 5.5" fill="none" stroke="#ffffff" strokeWidth="1.25" strokeLinejoin="round" />
+            <path d="M -2 0 H 2.8 M -2 3 H 2.8" fill="none" stroke="#ffffff" strokeWidth="1.1" strokeLinecap="round" />
+          </>
+        );
+      case "map":
+        return (
+          <>
+            <path d="M 0 7 C -1.5 4 -6 -0.5 -6 -4 A 6 6 0 1 1 6 -4 C 6 -0.5 1.5 4 0 7 Z" fill="none" stroke="#ffffff" strokeWidth="1.3" />
+            <circle cx="0" cy="-4" r="2" fill="#ffffff" />
+          </>
         );
       case "people":
         return (
           <>
-            <circle cx="-2" cy="-2.5" r="2.2" fill="#ffffff" />
-            <path d="M -5.5 3.5 C -5.5 1.5 -3 1.5 -2 1.5 C -1 1.5 1.5 1.5 1.5 3.5" fill="none" stroke="#ffffff" strokeWidth="1.2" strokeLinecap="round" />
-            <circle cx="2.5" cy="-2" r="1.8" fill="#ffffff" />
-            <path d="M 2 1.8 C 2.5 1.8 4.5 2 4.5 3.5" fill="none" stroke="#ffffff" strokeWidth="1.1" strokeLinecap="round" />
+            <circle cx="-2.5" cy="-2.5" r="2.2" fill="#ffffff" />
+            <path d="M -6 4 C -6 1.5 -3.8 0.8 -2.5 0.8 C -1 0.8 1 1.5 1 4" fill="none" stroke="#ffffff" strokeWidth="1.2" strokeLinecap="round" />
+            <circle cx="3" cy="-1.5" r="1.8" fill="#ffffff" />
+            <path d="M 2 2 C 3.5 1.7 5.8 2.3 5.8 4" fill="none" stroke="#ffffff" strokeWidth="1.1" strokeLinecap="round" />
           </>
         );
-      case "article":
-        return (
-          <path
-            d="M -4.5 -5.5 H 1.8 L 5 -2.3 V 5.5 H -4.5 Z M 1.8 -5.5 V -2.3 H 5 M -2 0.2 H 2.5 M -2 2.7 H 2"
-            fill="none" stroke="#ffffff" strokeWidth="1.15" strokeLinecap="round" strokeLinejoin="round"
-          />
-        );
-      case "games":
+      case "discussion":
         return (
           <>
-            <rect x="-4.5" y="-4.5" width="9" height="9" rx="1.8" fill="none" stroke="#ffffff" strokeWidth="1.2" />
-            <circle cx="-2" cy="-2" r="0.9" fill="#ffffff" />
-            <circle cx="2" cy="2" r="0.9" fill="#ffffff" />
-            <circle cx="2" cy="-2" r="0.9" fill="#ffffff" />
-            <circle cx="-2" cy="2" r="0.9" fill="#ffffff" />
+            <path d="M -6 -4.5 H 4.5 V 2 H -1.5 L -5 5 V 2 H -6 Z" fill="none" stroke="#ffffff" strokeWidth="1.2" strokeLinejoin="round" />
+            <path d="M 0 -1 H 6 V 4 H 3 L 1 6" fill="none" stroke="#ffffff" strokeWidth="1.1" strokeLinejoin="round" />
+          </>
+        );
+      case "story":
+        return (
+          <path d="M 4.5 -6 C 5 0 -0.5 4.5 -5 6 C -4 1 -1 -4.5 4.5 -6 Z M -5 6 L 2 -2 M -1 2 L 2.5 2.5" fill="none" stroke="#ffffff" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+        );
+      case "quill":
+        return (
+          <path d="M 4.5 -6 C 5 0 -0.5 4.5 -5 6 C -4 1 -1 -4.5 4.5 -6 Z M -5 6 L 2 -2 M -1 2 L 2.5 2.5" fill="none" stroke="#ffffff" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+        );
+      case "activity":
+        return (
+          <>
+            <path d="M 0 -7 L 1.8 -1.8 L 7 0 L 1.8 1.8 L 0 7 L -1.8 1.8 L -7 0 L -1.8 -1.8 Z" fill="none" stroke="#ffffff" strokeWidth="1.1" strokeLinejoin="round" />
+            <circle cx="0" cy="0" r="1.2" fill="#ffffff" />
+          </>
+        );
+      case "ai":
+        return (
+          <>
+            <path d="M 0 -7 L 1.8 -1.8 L 7 0 L 1.8 1.8 L 0 7 L -1.8 1.8 L -7 0 L -1.8 -1.8 Z" fill="none" stroke="#ffffff" strokeWidth="1.15" strokeLinejoin="round" />
+            <path d="M -7 -6 V -3 M -8.5 -4.5 H -5.5 M 7 5 V 8 M 5.5 6.5 H 8.5" stroke="#ffffff" strokeWidth="1.1" strokeLinecap="round" />
           </>
         );
     }
@@ -329,113 +415,130 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
       }
     >
       <svg
-        className="block w-full h-full max-w-full max-h-full"
+        className="block w-full h-full max-w-full max-h-full overflow-visible"
         viewBox="-360 -360 720 720"
         role="group"
-        aria-label="Explore Sahadhyayi through the Library, Authors, Social Media, Articles, and Games orbits"
+        aria-label={"Explore " + FEATURE_COUNT + " Sahadhyayi features across eight animated rings"}
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>
           <style>{`
             .hero-orbit-node:focus-visible .hero-orbit-focus-ring { opacity: 1; }
             .hero-orbit-node:focus-visible .hero-orbit-label rect { stroke-width: 3; }
+            .dark .hero-orbit-label rect { fill: #111614; }
+            .dark .hero-orbit-label text { fill: #F3F0E7; }
           `}</style>
-          {ORBITS.map((orbit) => (
+          {ORBIT_BANDS.map((band) => (
             <linearGradient
-              key={orbit.id}
-              id={gradientId(orbit.id)}
+              key={band.id}
+              id={gradientId(band.id)}
               gradientUnits="userSpaceOnUse"
-              x1={-orbit.radius}
-              y1={-orbit.radius}
-              x2={orbit.radius}
-              y2={orbit.radius}
+              x1={-band.radius}
+              y1={-band.radius}
+              x2={band.radius}
+              y2={band.radius}
             >
-              {orbit.gradientColors.map((color, index) => (
-                <stop key={color} offset={`${(index / (orbit.gradientColors.length - 1)) * 100}%`} stopColor={color} />
+              {band.gradientColors.map((color, index) => (
+                <stop key={color} offset={((index / (band.gradientColors.length - 1)) * 100) + "%"} stopColor={color} />
               ))}
             </linearGradient>
           ))}
         </defs>
 
-        {ORBITS.map((orbit, index) => (
-          <g key={orbit.id}>
+        {ORBIT_BANDS.map((band, bandIndex) => (
+          <g key={band.id}>
             <circle
-              r={orbit.radius}
+              r={band.radius}
               cx={0}
               cy={0}
               fill="none"
-              stroke="rgba(0,0,0,0.06)"
-              className="dark:stroke-[rgba(255,255,255,0.09)]"
-              strokeWidth={orbit.strokeWidth}
+              stroke="currentColor"
+              strokeOpacity="0.10"
+              strokeWidth="2"
+              strokeDasharray="2 9"
             />
-            <g ref={(element) => { ringRefs.current[index] = element; }}>
+            <g ref={(element) => { ringRefs.current[bandIndex] = element; }}>
               <path
-                d={coverSweep(orbit.radius, orbit.start)}
+                d={arcPath(band.radius, band.start, band.start + 248)}
                 fill="none"
-                stroke={`url(#${gradientId(orbit.id)})`}
-                strokeWidth={orbit.strokeWidth}
+                stroke={"url(#" + gradientId(band.id) + ")"}
+                strokeWidth="5"
                 strokeLinecap="round"
+                opacity="0.9"
               />
             </g>
           </g>
         ))}
 
-        {ORBITS.map((orbit, index) => (
-          <g
-            key={`${orbit.id}-atom`}
-            ref={(element) => { atomRefs.current[index] = element; }}
-            role="link"
-            tabIndex={0}
-            aria-label={`Explore ${orbit.label}`}
-            onClick={() => navigate(orbit.href)}
-            onKeyDown={(event) => handleNodeKeyDown(event, orbit.href)}
-            onFocus={() => setKeyboardPause(true)}
-            onBlur={() => setKeyboardPause(false)}
-            className="hero-orbit-node pointer-events-auto cursor-pointer outline-none focus-visible:drop-shadow-[0_0_8px_rgba(213,177,109,0.8)]"
-          >
-            <title>Explore {orbit.label}</title>
-            <circle
-              className="hero-orbit-focus-ring"
-              r={orbit.atomRadius + 6}
-              fill="none"
-              stroke={orbit.atomColor}
-              strokeWidth="2.5"
-              opacity="0"
-            />
-            <circle r={orbit.atomRadius} fill={orbit.atomColor} />
-            {renderOrbitIcon(orbit.icon)}
-            <g
-              ref={(element) => { labelRefs.current[index] = element; }}
-              className="hero-orbit-label"
-            >
-              <rect
-                x={-orbit.labelWidth / 2}
-                y={-13}
-                width={orbit.labelWidth}
-                height={26}
-                rx={13}
-                fill="#FAFAF8"
-                fillOpacity="0.97"
-                stroke={orbit.atomColor}
-                strokeOpacity="0.75"
-                strokeWidth="1.5"
-                className="dark:fill-[#111614]"
-              />
-              <text
-                textAnchor="middle"
-                y="5"
-                fontSize="15"
-                fontWeight="700"
-                letterSpacing="0.15"
-                fill="currentColor"
-                className="fill-[#1C201D] dark:fill-[#F3F0E7]"
+        {ORBIT_BANDS.map((band, bandIndex) =>
+          band.features.map((feature, featureIndex) => {
+            const labelWidth = Math.min(190, Math.max(92, feature.label.length * 7.8 + 22));
+            const isAction = feature.action === "open-book-expert";
+            return (
+              <g
+                key={feature.id}
+                ref={(element) => {
+                  if (!featureRefs.current[bandIndex]) featureRefs.current[bandIndex] = [];
+                  featureRefs.current[bandIndex][featureIndex] = element;
+                }}
+                role={isAction ? "button" : "link"}
+                tabIndex={0}
+                aria-label={isAction ? "Open Book Expert AI" : "Explore " + feature.label}
+                data-feature-id={feature.id}
+                onClick={() => openFeature(feature)}
+                onKeyDown={(event) => handleFeatureKeyDown(event, feature)}
+                onFocus={() => setKeyboardPause(true)}
+                onBlur={() => setKeyboardPause(false)}
+                className="hero-orbit-node pointer-events-auto cursor-pointer outline-none"
               >
-                {orbit.label}
-              </text>
-            </g>
-          </g>
-        ))}
+                <title>{isAction ? "Open Book Expert AI" : "Explore " + feature.label}</title>
+                <circle
+                  className="hero-orbit-focus-ring"
+                  r="16"
+                  fill="none"
+                  stroke={band.color}
+                  strokeWidth="2.5"
+                  opacity="0"
+                />
+                <circle r="11" fill={band.color} stroke="#ffffff" strokeOpacity="0.8" strokeWidth="1.2" />
+                {renderOrbitIcon(band.icon)}
+                <g
+                  ref={(element) => {
+                    if (!featureLabelRefs.current[bandIndex]) featureLabelRefs.current[bandIndex] = [];
+                    featureLabelRefs.current[bandIndex][featureIndex] = element;
+                  }}
+                  className="hero-orbit-label"
+                >
+                  <rect
+                    x="0"
+                    y="-13"
+                    width={labelWidth}
+                    height="26"
+                    rx="13"
+                    fill="#FAFAF8"
+                    fillOpacity="0.98"
+                    stroke={band.color}
+                    strokeOpacity="0.9"
+                    strokeWidth="1.35"
+                  />
+                  <text
+                    x={labelWidth / 2}
+                    y="5"
+                    textAnchor="middle"
+                    fontSize="15"
+                    fontWeight="700"
+                    letterSpacing="0.05"
+                    fill="#1C201D"
+                  >
+                    {feature.label}
+                  </text>
+                </g>
+              </g>
+            );
+          }),
+        )}
       </svg>
+
       {children && (
         <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
           <div className="w-full max-w-[92%] sm:max-w-[88%] pointer-events-auto flex items-center justify-center">
