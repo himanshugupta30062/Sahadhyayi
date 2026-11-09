@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { ArrowUpRight, MapPin, Route } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useRef } from 'react';
+import { MapPin, Route, ArrowDown } from 'lucide-react';
 import { JourneyLandmarkArt } from './JourneyLandmarkArt';
 import { StudentCyclist } from './StudentCyclist';
 import { JOURNEY_DESTINATIONS } from './journeyData';
@@ -19,14 +18,14 @@ interface LandmarkPosition {
 }
 
 const LANDMARK_POSITIONS: LandmarkPosition[] = [
-  { index: 1, side: 'left', top: 9.4, shortDescription: 'Explore books' },
+  { index: 1, side: 'left', top: 9.4, shortDescription: 'Explore books and research' },
   { index: 2, side: 'right', top: 21, shortDescription: 'Build your reading life' },
   { index: 3, side: 'left', top: 32.6, shortDescription: 'Meet fellow readers' },
-  { index: 4, side: 'right', top: 44.2, shortDescription: 'Read together' },
+  { index: 4, side: 'right', top: 44.2, shortDescription: 'Read and discuss together' },
   { index: 5, side: 'left', top: 55.8, shortDescription: 'Read and write stories' },
-  { index: 6, side: 'right', top: 67.4, shortDescription: 'Meet the authors' },
+  { index: 6, side: 'right', top: 67.4, shortDescription: 'Meet authors and critics' },
   { index: 7, side: 'left', top: 79, shortDescription: 'Play, learn and join events' },
-  { index: 8, side: 'right', top: 90.6, shortDescription: 'Explore books with AI' },
+  { index: 8, side: 'right', top: 90.6, shortDescription: 'Ask your Book Expert AI' },
 ];
 
 const DESKTOP_TRAIL_PATH =
@@ -39,7 +38,6 @@ export const JourneyScenicTrail: React.FC<JourneyScenicTrailProps> = ({
   activeStopIndex,
   onSelect,
 }) => {
-  const [hoveredStopIndex, setHoveredStopIndex] = useState<number | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const desktopPathRef = useRef<SVGPathElement>(null);
@@ -123,10 +121,11 @@ export const JourneyScenicTrail: React.FC<JourneyScenicTrailProps> = ({
       const screen = screenPoint.matrixTransform(matrix);
       const bounds = map.getBoundingClientRect();
       const angle = Math.atan2(after.y - before.y, after.x - before.x) * (180 / Math.PI);
+      const bankAngle = Math.max(-12, Math.min(12, angle * 0.16));
 
       cyclist.style.left = (screen.x - bounds.left) + 'px';
       cyclist.style.top = (screen.y - bounds.top) + 'px';
-      cyclist.style.transform = 'translate(-50%, -56%) rotate(' + angle + 'deg)';
+      cyclist.style.transform = 'translate(-50%, -56%) rotate(' + bankAngle + 'deg)';
       progressRef.current = progress;
     };
 
@@ -178,18 +177,11 @@ export const JourneyScenicTrail: React.FC<JourneyScenicTrailProps> = ({
     };
   }, [activeStopIndex]);
 
-  const handleBlur = (event: React.FocusEvent<HTMLDivElement>, index: number) => {
-    const nextTarget = event.relatedTarget as Node | null;
-    if (!nextTarget || !event.currentTarget.contains(nextTarget)) {
-      setHoveredStopIndex((current) => (current === index ? null : current));
-    }
-  };
-
   return (
     <div className="journey-scenic-world" aria-label="Interactive scenic cycling route">
       <div className="journey-scenic-world__legend">
         <span><Route className="h-3.5 w-3.5" /> 8 places to discover</span>
-        <span><MapPin className="h-3.5 w-3.5" /> Select a landmark to explore</span>
+        <span><MapPin className="h-3.5 w-3.5" /> Choose a place to see its menu</span>
       </div>
 
       <div ref={mapRef} className="journey-scenic-trail" data-testid="journey-scenic-trail">
@@ -206,7 +198,7 @@ export const JourneyScenicTrail: React.FC<JourneyScenicTrailProps> = ({
           viewBox="0 0 1400 1380"
           preserveAspectRatio="none"
           role="img"
-          aria-label="A winding zigzag road connects eight illustrated Sahadhyayi destinations"
+          aria-label="A winding road connects eight Sahadhyayi destinations"
         >
           <defs>
             <linearGradient id="sahadhyayi-trail-road" x1="0" y1="0" x2="1" y2="0">
@@ -242,7 +234,7 @@ export const JourneyScenicTrail: React.FC<JourneyScenicTrailProps> = ({
           if (!destination) return null;
 
           const isActive = activeStopIndex === destination.index;
-          const isOpen = isActive || hoveredStopIndex === destination.index;
+          const menuTarget = 'journey-detail-' + destination.index;
 
           return (
             <div
@@ -250,14 +242,9 @@ export const JourneyScenicTrail: React.FC<JourneyScenicTrailProps> = ({
               id={'journey-node-' + destination.index}
               className={
                 'journey-scenic-stop journey-scenic-stop--' + position.side +
-                (isActive ? ' is-active' : '') +
-                (isOpen ? ' is-open' : '')
+                (isActive ? ' is-active' : '')
               }
               style={{ top: position.top + '%' }}
-              onMouseEnter={() => setHoveredStopIndex(destination.index)}
-              onMouseLeave={() => setHoveredStopIndex((current) => (current === destination.index ? null : current))}
-              onFocus={() => setHoveredStopIndex(destination.index)}
-              onBlur={(event) => handleBlur(event, destination.index)}
               data-testid={'journey-landmark-' + destination.index}
             >
               <button
@@ -265,8 +252,9 @@ export const JourneyScenicTrail: React.FC<JourneyScenicTrailProps> = ({
                 className="journey-scenic-stop__trigger"
                 onClick={() => onSelect(destination.index)}
                 aria-label={'Explore ' + destination.title + ' — ' + position.shortDescription}
-                aria-expanded={isOpen}
-                aria-controls={'journey-stop-details-' + destination.index}
+                aria-pressed={isActive}
+                aria-expanded={isActive}
+                aria-controls={isActive ? menuTarget : undefined}
               >
                 <span className="journey-scenic-stop__art">
                   <JourneyLandmarkArt id={destination.id} isCurrent={isActive} />
@@ -275,56 +263,12 @@ export const JourneyScenicTrail: React.FC<JourneyScenicTrailProps> = ({
                   <span className="journey-scenic-stop__number">{String(destination.index).padStart(2, '0')}</span>
                   <span className="journey-scenic-stop__title">{destination.title}</span>
                   <span className="journey-scenic-stop__hint">{position.shortDescription}</span>
+                  <span className="journey-scenic-stop__menu-preview">{destination.menuPreview}</span>
+                  <span className="journey-scenic-stop__menu-cue">
+                    View {destination.menuItems.length} {destination.menuItems.length === 1 ? 'option' : 'options'} <ArrowDown className="h-3 w-3" />
+                  </span>
                 </span>
               </button>
-
-              <div
-                id={'journey-stop-details-' + destination.index}
-                className="journey-scenic-stop__popover"
-                role="region"
-                aria-label={destination.title + ' features'}
-                aria-hidden={!isOpen}
-              >
-                <div className="journey-scenic-stop__popover-heading">
-                  <div>
-                    <span className="journey-scenic-stop__eyebrow">STOP {destination.index} · {destination.distanceKm.toFixed(1)} KM</span>
-                    <h3>{destination.title}</h3>
-                    <p>{position.shortDescription}</p>
-                  </div>
-                  <span className="journey-scenic-stop__pin"><MapPin className="h-4 w-4" /></span>
-                </div>
-
-                <p className="journey-scenic-stop__summary">{destination.description}</p>
-
-                <div className="journey-scenic-stop__stats" aria-label="Destination highlights">
-                  {destination.stats.map((stat) => (
-                    <span key={stat.label}><strong>{stat.value}</strong><small>{stat.label}</small></span>
-                  ))}
-                </div>
-
-                <div className="journey-scenic-stop__features">
-                  {destination.features.map((feature) => (
-                    <div key={feature.label} className="journey-scenic-stop__feature">
-                      <span aria-hidden="true">✦</span>
-                      <div>
-                        <strong>{feature.label}</strong>
-                        <small>{feature.description}</small>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="journey-scenic-stop__links">
-                  <Link to={destination.route} className="journey-scenic-stop__link">
-                    {destination.ctaText}<ArrowUpRight className="h-3.5 w-3.5" />
-                  </Link>
-                  {destination.secondaryRoute && destination.secondaryCtaText && (
-                    <Link to={destination.secondaryRoute} className="journey-scenic-stop__secondary-link">
-                      {destination.secondaryCtaText}
-                    </Link>
-                  )}
-                </div>
-              </div>
             </div>
           );
         })}

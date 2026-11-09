@@ -68,6 +68,7 @@ vi.mock('@/hooks/useStories', () => ({
   useUpdateStory: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useCreateStoryPart: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useUpdateStoryPart: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useDeleteStory: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
 describe('StoriesFeed Component', () => {
