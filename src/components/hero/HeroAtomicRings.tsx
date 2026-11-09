@@ -31,6 +31,7 @@ interface OrbitFeature {
   label: string;
   href?: string;
   action?: "open-book-expert";
+  angleOffset?: number;
 }
 
 interface OrbitBand {
@@ -52,11 +53,11 @@ const ORBIT_BANDS: OrbitBand[] = [
   {
     id: "library-discovery",
     title: "Library & Discovery",
-    radius: 158,
+    radius: 145,
     color: "#1C442D",
     gradientColors: ["#A7F3D0", "#4ADE80", "#1C7C45", "#14532D"],
     icon: "book",
-    start: -76,
+    start: 223.01,
     duration: 68,
     direction: 1,
     features: [
@@ -71,11 +72,11 @@ const ORBIT_BANDS: OrbitBand[] = [
   {
     id: "reading-life",
     title: "Personal Reading",
-    radius: 180,
+    radius: 170,
     color: "#39734A",
     gradientColors: ["#BBF7D0", "#86EFAC", "#3D9B59", "#166534"],
     icon: "journal",
-    start: -51,
+    start: 31.62,
     duration: 64,
     direction: -1,
     features: [
@@ -88,11 +89,11 @@ const ORBIT_BANDS: OrbitBand[] = [
   {
     id: "reader-village",
     title: "Reader Discovery",
-    radius: 202,
+    radius: 195,
     color: "#98701F",
     gradientColors: ["#FDE68A", "#FBBF24", "#B7791F", "#854D0E"],
     icon: "map",
-    start: -28,
+    start: 350.43,
     duration: 60,
     direction: 1,
     features: [
@@ -105,11 +106,11 @@ const ORBIT_BANDS: OrbitBand[] = [
   {
     id: "reading-together",
     title: "Read Together",
-    radius: 224,
+    radius: 220,
     color: "#326A9A",
     gradientColors: ["#BFDBFE", "#60A5FA", "#2563EB", "#1E3A8A"],
-    icon: "people",
-    start: -6,
+    icon: "discussion",
+    start: 131.15,
     duration: 56,
     direction: -1,
     features: [
@@ -124,11 +125,11 @@ const ORBIT_BANDS: OrbitBand[] = [
   {
     id: "stories-writing",
     title: "Stories & Writing",
-    radius: 246,
+    radius: 245,
     color: "#80539A",
     gradientColors: ["#E9D5FF", "#C084FC", "#9333EA", "#581C87"],
     icon: "story",
-    start: 18,
+    start: 222.72,
     duration: 52,
     direction: 1,
     features: [
@@ -143,11 +144,11 @@ const ORBIT_BANDS: OrbitBand[] = [
   {
     id: "authors-voices",
     title: "Authors & Voices",
-    radius: 268,
+    radius: 270,
     color: "#A25232",
     gradientColors: ["#FED7AA", "#FB923C", "#C15A32", "#7C2D12"],
     icon: "quill",
-    start: 39,
+    start: 220.36,
     duration: 48,
     direction: -1,
     features: [
@@ -163,15 +164,15 @@ const ORBIT_BANDS: OrbitBand[] = [
   {
     id: "events-activity",
     title: "Events & Activity",
-    radius: 290,
+    radius: 295,
     color: "#B36B1F",
     gradientColors: ["#FDE68A", "#F59E0B", "#D97706", "#92400E"],
     icon: "activity",
-    start: 62,
+    start: 155.76,
     duration: 44,
     direction: 1,
     features: [
-      { id: "events-festivals", label: "Events & Festivals", href: "/events" },
+      { id: "events-festivals", label: "Events & Festivals", href: "/events", angleOffset: 12 },
       { id: "newsroom", label: "Newsroom", href: "/news" },
       { id: "activity-hub", label: "Activity Hub", href: "/activity" },
       { id: "reading-challenges", label: "Reading Challenges", href: "/activity?tab=challenges" },
@@ -182,11 +183,11 @@ const ORBIT_BANDS: OrbitBand[] = [
   {
     id: "ai-knowledge",
     title: "AI Knowledge Station",
-    radius: 312,
+    radius: 320,
     color: "#277B91",
     gradientColors: ["#A5F3FC", "#22D3EE", "#0891B2", "#164E63"],
     icon: "ai",
-    start: 86,
+    start: 193.47,
     duration: 40,
     direction: -1,
     features: [
@@ -239,19 +240,21 @@ export default function HeroAtomicRings({ size = 760, className = "", children }
         );
 
         band.features.forEach((feature, featureIndex) => {
-          const baseAngle = band.start + (360 / band.features.length) * featureIndex;
-          const angle = norm(baseAngle + (ringAngles.current[bandIndex] || 0));
+          // Feature markers stay in stable positions so every destination remains
+          // readable. The coloured arc rotates underneath them to preserve motion.
+          const baseAngle = band.start + (360 / band.features.length) * featureIndex + (feature.angleOffset || 0);
+          const angle = norm(baseAngle);
           const point = pos(band.radius, angle);
           const node = featureRefs.current[bandIndex]?.[featureIndex];
           node?.setAttribute("transform", "translate(" + point.x + ", " + point.y + ")");
 
-          // Place each horizontal label tangentially beside its moving feature node.
-          // Flipping the label on the right half keeps long names inside the SVG bounds.
-          const labelWidth = Math.min(190, Math.max(92, feature.label.length * 7.8 + 22));
+          // Place a horizontal label just beyond the orbit path, away from its node.
+          const labelOffset = pos(24, angle);
+          const labelWidth = Math.min(180, Math.max(84, feature.label.length * 7.3 + 18));
           const label = featureLabelRefs.current[bandIndex]?.[featureIndex];
           label?.setAttribute(
             "transform",
-            point.x > 0 ? "translate(" + (-labelWidth - 17) + ", 0)" : "translate(17, 0)",
+            "translate(" + labelOffset.x + ", " + labelOffset.y + ")",
           );
         });
       });
@@ -416,7 +419,7 @@ export default function HeroAtomicRings({ size = 760, className = "", children }
     >
       <svg
         className="block w-full h-full max-w-full max-h-full overflow-visible"
-        viewBox="-360 -360 720 720"
+        viewBox="-440 -440 880 880"
         role="group"
         aria-label={"Explore " + FEATURE_COUNT + " Sahadhyayi features across eight animated rings"}
         preserveAspectRatio="xMidYMid meet"
@@ -511,9 +514,9 @@ export default function HeroAtomicRings({ size = 760, className = "", children }
                 >
                   <rect
                     x="0"
-                    y="-13"
+                    y="-10"
                     width={labelWidth}
-                    height="26"
+                    height="20"
                     rx="13"
                     fill="#FAFAF8"
                     fillOpacity="0.98"
@@ -525,7 +528,7 @@ export default function HeroAtomicRings({ size = 760, className = "", children }
                     x={labelWidth / 2}
                     y="5"
                     textAnchor="middle"
-                    fontSize="15"
+                    fontSize="14"
                     fontWeight="700"
                     letterSpacing="0.05"
                     fill="#1C201D"
