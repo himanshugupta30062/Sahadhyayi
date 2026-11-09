@@ -61,7 +61,7 @@ export const WhatsAppCallCenterFab: React.FC = () => {
 
   return (
     <>
-      {/* Floating Action Button - Positioned right above the bottom Reading Room AI pill */}
+      {/* Floating Action Button - Positioned right above Book Expert AI */}
       <button
         ref={triggerRef}
         type="button"
@@ -73,15 +73,22 @@ export const WhatsAppCallCenterFab: React.FC = () => {
         aria-haspopup="dialog"
         data-testid="whatsapp-callcenter-fab"
         className={cn(
-          'group fixed bottom-[72px] right-3.5 z-40 flex h-11 w-11 sm:h-12 sm:w-12 sm:bottom-[82px] sm:right-6 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-emerald-950/20 transition-all duration-200 hover:scale-105 hover:bg-[#20ba59] hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2'
+          'group fixed z-40 flex items-center justify-center rounded-full shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+          // Mobile: Exactly 12px above Book Expert (bottom: 16px, height: 48px -> top is 64px + 12px = 76px)
+          'bottom-[76px] right-4 h-11 w-11 bg-[#1C442D] text-[#D5B16D] border border-[#D5B16D]/50 hover:bg-[#153422] hover:border-[#D5B16D] focus-visible:ring-[#D5B16D]',
+          // Desktop sm: Exactly 14px above Book Expert (bottom: 20px, height: 56px -> top is 76px + 14px = 90px)
+          'sm:bottom-[90px] sm:right-5 sm:h-12 sm:w-12',
+          // Desktop lg: 16px above Book Expert (bottom: 24px, height: 56px -> top is 80px + 16px = 96px)
+          'lg:bottom-[96px] lg:right-6'
         )}
       >
         {/* Radar ping ring */}
         <span
-          className="pointer-events-none absolute inset-0 rounded-full bg-[#25D366] opacity-35 animate-ping [animation-duration:2.8s]"
+          className="pointer-events-none absolute inset-0 rounded-full bg-[#D5B16D]/25 opacity-40 animate-ping [animation-duration:2.8s]"
           aria-hidden="true"
         />
-        <WhatsAppIcon className="relative h-6 w-6 transition-transform group-hover:scale-110" />
+        {/* Call Center / Help Icon */}
+        <Headset className="relative h-5 w-5 sm:h-5.5 sm:w-5.5 transition-transform group-hover:scale-110" aria-hidden="true" />
 
         {/* Desktop Tooltip */}
         <span
@@ -108,7 +115,7 @@ export const WhatsAppCallCenterFab: React.FC = () => {
             role="dialog"
             aria-modal="true"
             aria-label="Sahadhyayi Support & Call Center"
-            className="fixed bottom-[130px] right-3 sm:right-6 z-50 w-[min(380px,calc(100vw-1.5rem))] overflow-hidden rounded-2xl border border-[#D5B16D]/30 bg-background/98 p-0 text-foreground shadow-2xl shadow-black/25 backdrop-blur-md transition-all animate-in fade-in-0 zoom-in-95 duration-200"
+            className="fixed bottom-[130px] right-4 left-4 sm:left-auto sm:right-5 sm:bottom-[150px] lg:right-6 lg:bottom-[160px] z-50 w-auto sm:w-[380px] overflow-hidden rounded-2xl border border-[#D5B16D]/30 bg-background/98 p-0 text-foreground shadow-2xl shadow-black/25 backdrop-blur-md transition-all animate-in fade-in-0 zoom-in-95 duration-200"
           >
             {/* Header */}
             <div className="relative border-b border-border/70 bg-[#111614] p-4 text-white">
