@@ -12,6 +12,7 @@ import { EmojiPicker } from './EmojiPicker';
 import { useCreatePost } from '@/hooks/useSocialPosts';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client-universal';
+import { normalizePostCreationError } from '@/lib/socialPosts';
 
 interface SelectedBook {
   id: string;
@@ -100,6 +101,8 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
   };
 
   const handlePost = async () => {
+    if (isPosting || createPost.isPending) return;
+
     const hasPostContent = postKind === 'quote'
       ? Boolean(quoteText.trim())
       : Boolean(postText.trim() || selectedImage || selectedBook || selectedFeeling);
@@ -194,9 +197,10 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
         }
       }
       console.error('Error creating post:', error);
+      const normalized = normalizePostCreationError(error);
       toast({
         title: 'Unable to create post',
-        description: error instanceof Error ? error.message : 'Please try again.',
+        description: normalized.message,
         variant: 'destructive',
       });
     } finally {

@@ -494,4 +494,101 @@ describe('useSocialPosts', () => {
     expect(mocks.from).toHaveBeenCalledWith('posts');
   });
 
+  it('attaches a book when book_id is a valid UUID and supports public visibility', async () => {
+    mocks.user = { id: 'reader-1' };
+    const validBookUuid = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+    const created = post({ id: 'created-2', content: 'Reading this masterpiece', book_id: validBookUuid, audience: 'public' });
+    setResponses({
+      profiles: [{ data: { id: 'reader-1' }, error: null }],
+      posts: [{ data: created, error: null }],
+    });
+    const { result } = renderHook(() => useCreatePost());
+
+    const createdPost = await (result.current as any).mutationFn({
+      content: 'Reading this masterpiece',
+      book_id: validBookUuid,
+      audience: 'public',
+    });
+
+    expect(createdPost.id).toBe('created-2');
+    const insert = mocks.insertCalls.find((call) => call.table === 'posts');
+    expect(insert?.args[0]).toMatchObject({
+      content: 'Reading this masterpiece',
+      user_id: 'reader-1',
+      book_id: validBookUuid,
+      audience: 'public',
+    });
+  });
+
+  it('omits non-UUID book IDs to protect against PostgreSQL UUID syntax errors', async () => {
+    mocks.user = { id: 'reader-1' };
+    const nonUuidGoogleBooksId = 'zyTCAlFPjgYC';
+    const created = post({ id: 'created-3', content: 'External search book', book_id: null });
+    setResponses({
+      profiles: [{ data: { id: 'reader-1' }, error: null }],
+      posts: [{ data: created, error: null }],
+    });
+    const { result } = renderHook(() => useCreatePost());
+
+    const createdPost = await (result.current as any).mutationFn({
+      content: 'External search book',
+      book_id: nonUuidGoogleBooksId,
+      audience: 'friends',
+    });
+
+    expect(createdPost.id).toBe('created-3');
+    const insert = mocks.insertCalls.find((call) => call.table === 'posts');
+    expect(insert?.args[0]).toMatchObject({
+      content: 'External search book',
+      book_id: null,
+      audience: 'friends',
+    });
+  });
+
+  it('retries with baseline columns and formats quote text when DB lacks extended columns (42703)', async () => {
+    mocks.user = { id: 'reader-1' };
+    const createdFallback = post({
+      id: 'created-fallback',
+      content: '“Never forget what you are.” — Tyrion Lannister\n\nDeeply moving passage',
+    });
+
+    setResponses({
+      profiles: [{ data: { id: 'reader-1' }, error: null }],
+      posts: [
+        { data: null, error: { code: '42703', message: 'column posts.post_kind does not exist' } },
+        { data: createdFallback, error: null },
+      ],
+    });
+    const { result } = renderHook(() => useCreatePost());
+
+    const createdPost = await (result.current as any).mutationFn({
+      content: 'Deeply moving passage',
+      post_kind: 'quote',
+      quote_text: 'Never forget what you are.',
+      quote_author: 'Tyrion Lannister',
+    });
+
+    expect(createdPost.id).toBe('created-fallback');
+    expect(mocks.insertCalls.filter((c) => c.table === 'posts')).toHaveLength(2);
+    const retryInsert = mocks.insertCalls.filter((c) => c.table === 'posts')[1];
+    expect(retryInsert.args[0]).toMatchObject({
+      content: '“Never forget what you are.” — Tyrion Lannister\n\nDeeply moving passage',
+      user_id: 'reader-1',
+    });
+    expect((retryInsert.args[0] as any).post_kind).toBeUndefined();
+  });
+
+  it('normalizes foreign key violation error into a helpful user message', async () => {
+    mocks.user = { id: 'reader-1' };
+    setResponses({
+      profiles: [{ data: { id: 'reader-1' }, error: null }],
+      posts: [{ data: null, error: { code: '23503', message: 'violates foreign key constraint' } }],
+    });
+    const { result } = renderHook(() => useCreatePost());
+
+    await expect((result.current as any).mutationFn({
+      content: 'Post with missing reference',
+    })).rejects.toThrow('The referenced book or profile could not be found. Please try again.');
+  });
+
 });

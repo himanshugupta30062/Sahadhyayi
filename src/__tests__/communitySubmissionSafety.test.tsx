@@ -43,6 +43,32 @@ describe('community submission safety', () => {
     expect((input as HTMLInputElement).files?.[0]?.name).toBe('photo.png');
   });
 
+  it('preserves user draft when post creation mutation fails and displays normalized error toast', async () => {
+    mocks.user = { id: 'reader', user_metadata: {} };
+    mocks.post.mockRejectedValue({
+      code: '42703',
+      message: 'column posts.post_kind does not exist',
+    });
+    render(<FeedComposer />);
+    const textarea = screen.getByRole('textbox', { name: /what are you reading or thinking about/i }) as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: 'Draft that must be preserved' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /^Post$/ }));
+
+    await waitFor(() => {
+      expect(mocks.toast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Unable to create post',
+          variant: 'destructive',
+        })
+      );
+    });
+
+    expect(mocks.post).toHaveBeenCalledTimes(1);
+    // Draft text must be preserved
+    expect(textarea.value).toBe('Draft that must be preserved');
+  });
+
   it('offers sign-in before guests can enter or submit a margin note, preserving the return path', () => {
     render(<MemoryRouter initialEntries={['/book/test?tab=notes']}><AddMarginNoteDialog open initialBookId="test" /></MemoryRouter>);
     const link = screen.getByRole('link', { name: 'Sign in to add a margin note' });

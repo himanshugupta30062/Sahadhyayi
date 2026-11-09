@@ -5,6 +5,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useCallback, useEffect, useState } from 'react';
 import { uniqueChannelName } from '@/lib/realtime';
 import { getPrivateSocialPostMediaPath, resolveSocialPostImages } from '@/lib/socialPostMedia';
+import { detectPostSchemaCapabilities, getCachedPostCapabilities, setCachedPostCapabilities, isValidUuid } from '@/utils/postSchemaCapabilities';
+import { normalizePostCreationError, requirePersistedSocialPost, PostCreationError } from '@/lib/socialPosts';
 
 const SOCIAL_POST_PAGE_SIZE = 25;
 
@@ -579,7 +581,11 @@ export const useCreatePost = () => {
       feeling_label?: string;
       audience?: 'public' | 'followers' | 'friends' | 'private';
     }) => {
-      if (!user?.id) throw new Error('Not authenticated');
+      if (!user?.id) {
+        throw new PostCreationError('Not authenticated: You must be signed in to create a post.', {
+          code: '42501',
+        });
+      }
 
       // 1. Ensure user has a profile record to satisfy posts_user_id_profiles_fkey
       try {
@@ -613,71 +619,128 @@ export const useCreatePost = () => {
         console.warn('Profile pre-check failed (continuing post creation):', err);
       }
 
-      // Ensure empty string is converted to null to prevent invalid UUID syntax error
-      const validBookId =
-        postData.book_id && postData.book_id.trim() !== ''
-          ? postData.book_id.trim()
-          : null;
+      // 2. Validate book_id: verify it is a valid UUID, otherwise nullify so PostgreSQL doesn't reject with 22P02
+      const rawBookId = postData.book_id?.trim();
+      const validBookId = rawBookId && isValidUuid(rawBookId) ? rawBookId : null;
+      if (rawBookId && !validBookId) {
+        console.warn('Non-UUID book_id omitted to prevent database type error:', rawBookId);
+      }
 
+      // 3. Validate quote if post_kind is 'quote'
       const normalizedQuote = postData.post_kind === 'quote' ? postData.quote_text?.trim() || '' : '';
       if (postData.post_kind === 'quote' && (!normalizedQuote || normalizedQuote.length > 500)) {
-        throw new Error('A quote card needs a quotation between 1 and 500 characters.');
+        throw new PostCreationError('A quote card needs a quotation between 1 and 500 characters.');
       }
 
-      const payload = {
-        content: postData.content.trim(),
-        user_id: user.id,
-        post_kind: postData.post_kind || 'post',
-        quote_text: normalizedQuote || null,
-        quote_author: postData.post_kind === 'quote' ? postData.quote_author?.trim() || null : null,
-        quote_source: postData.post_kind === 'quote' ? postData.quote_source?.trim() || null : null,
-        quote_context: postData.post_kind === 'quote' ? postData.quote_context?.trim() || null : null,
-        book_id: validBookId,
-        feeling_emoji: postData.feeling_emoji?.trim() || null,
-        feeling_label: postData.feeling_label?.trim() || null,
-        image_url: postData.image_url?.trim() || null,
-        image_alt: postData.image_alt?.trim().slice(0, 250) || null,
-        audience: postData.audience || 'friends',
+      // 4. Determine schema capability without blocking on pre-flight query
+      const cachedCaps = getCachedPostCapabilities();
+      const useExtended = cachedCaps.checked ? cachedCaps.hasExtendedColumns : true;
+
+      const buildPayload = (includeExtended: boolean) => {
+        if (includeExtended) {
+          return {
+            content: postData.content.trim(),
+            user_id: user.id,
+            post_kind: postData.post_kind || 'post',
+            quote_text: postData.post_kind === 'quote' ? normalizedQuote || null : null,
+            quote_author: postData.post_kind === 'quote' ? postData.quote_author?.trim() || null : null,
+            quote_source: postData.post_kind === 'quote' ? postData.quote_source?.trim() || null : null,
+            quote_context: postData.post_kind === 'quote' ? postData.quote_context?.trim() || null : null,
+            book_id: validBookId,
+            feeling_emoji: postData.feeling_emoji?.trim() || null,
+            feeling_label: postData.feeling_label?.trim() || null,
+            image_url: postData.image_url?.trim() || null,
+            image_alt: postData.image_alt?.trim().slice(0, 250) || null,
+            audience: postData.audience || 'friends',
+          };
+        }
+
+        // Baseline schema (without extended quote columns or image_alt)
+        let formattedContent = postData.content.trim();
+        if (postData.post_kind === 'quote' && normalizedQuote) {
+          const authorSuffix = postData.quote_author?.trim() ? ` — ${postData.quote_author.trim()}` : '';
+          const quoteBlock = `“${normalizedQuote}”${authorSuffix}`;
+          formattedContent = formattedContent ? `${quoteBlock}\n\n${formattedContent}` : quoteBlock;
+        }
+
+        return {
+          content: formattedContent,
+          user_id: user.id,
+          book_id: validBookId,
+          feeling_emoji: postData.feeling_emoji?.trim() || null,
+          feeling_label: postData.feeling_label?.trim() || null,
+          image_url: postData.image_url?.trim() || null,
+          audience: postData.audience || 'friends',
+        };
       };
 
-      let createdPost: any = null;
+      const payload = buildPayload(useExtended);
 
-      // Try insert with relations for immediate rich display
-      const { data, error } = await supabase
+      // Single-table insert to minimize query complexity and prevent schema-select failure
+      let insertResult = await supabase
         .from('posts')
         .insert(payload)
-        .select(`
-          *,
-          profiles!posts_user_id_profiles_fkey(id, full_name, username, profile_photo_url),
-          books_library(id, title, author, cover_image_url)
-        `)
-        .maybeSingle();
+        .select('*')
+        .single();
 
-      if (error) {
-        console.warn('Rich insert select failed, falling back to standard insert:', error);
-        const fallback = await supabase
+      // If the insert failed with 42703 (undefined_column), fallback to baseline payload
+      if (
+        insertResult.error &&
+        (insertResult.error.code === '42703' ||
+          (typeof insertResult.error.message === 'string' &&
+            insertResult.error.message.toLowerCase().includes('does not exist')))
+      ) {
+        console.warn('Extended columns not available in database, falling back to baseline schema:', insertResult.error);
+        setCachedPostCapabilities({ hasExtendedColumns: false, checked: true });
+        const baselinePayload = buildPayload(false);
+        insertResult = await supabase
           .from('posts')
-          .insert(payload)
-          .select()
+          .insert(baselinePayload)
+          .select('*')
           .single();
-
-        if (fallback.error) throw fallback.error;
-        createdPost = fallback.data;
-      } else {
-        createdPost = data;
+      } else if (!insertResult.error && !cachedCaps.checked && useExtended) {
+        setCachedPostCapabilities({ hasExtendedColumns: true, checked: true });
       }
 
-      const result = createdPost || {
-        ...payload,
-        id: crypto.randomUUID(),
-        created_at: new Date().toISOString(),
-        likes_count: 0,
-        comments_count: 0,
-        reposts_count: 0,
-        user_liked: false,
-        user_reposted: false,
-      };
-      return (await resolveSocialPostImages([result]))[0];
+      if (insertResult.error) {
+        throw normalizePostCreationError(insertResult.error);
+      }
+
+      const persistedPost = requirePersistedSocialPost(insertResult.data);
+
+      // 5. Enrich with profile and book data for immediate rich feed rendering
+      let enrichedPost: any = persistedPost;
+      try {
+        const [profileRes, bookRes] = await Promise.all([
+          supabase
+            .from('profiles')
+            .select('id, full_name, username, profile_photo_url')
+            .eq('id', user.id)
+            .maybeSingle(),
+          validBookId
+            ? supabase
+                .from('books_library')
+                .select('id, title, author, cover_image_url')
+                .eq('id', validBookId)
+                .maybeSingle()
+            : Promise.resolve({ data: null, error: null }),
+        ]);
+
+        enrichedPost = {
+          ...persistedPost,
+          profiles: profileRes.data || null,
+          books_library: bookRes.data || null,
+          likes_count: 0,
+          comments_count: 0,
+          reposts_count: 0,
+          user_liked: false,
+          user_reposted: false,
+        };
+      } catch (enrichErr) {
+        console.warn('Post enrichment lookup failed (continuing with persisted post):', enrichErr);
+      }
+
+      return (await resolveSocialPostImages([enrichedPost]))[0];
     },
     onSuccess: (newPost) => {
       if (newPost) {
@@ -692,11 +755,11 @@ export const useCreatePost = () => {
         description: 'Your post has been shared!',
       });
     },
-    onError: (error: Error) => {
-      console.error('Error creating post:', error);
+    onError: (error: unknown) => {
+      const normalized = normalizePostCreationError(error);
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to create post. Please try again.',
+        title: 'Unable to create post',
+        description: normalized.message,
         variant: 'destructive',
       });
     },
