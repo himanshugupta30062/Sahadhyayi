@@ -444,6 +444,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
       <div className="social-experience min-h-screen bg-[#FAFAF8] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-200">
         {/* ── Main Viewport Content ── */}
         <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
+          <ErrorBoundary fallback={<SocialSurface className="mx-auto max-w-2xl p-8 text-center"><h2 className="text-lg font-semibold">Social page could not be displayed</h2><p className="mt-2 text-sm text-muted-foreground">A component failed while rendering this section. Your account and reading data are unchanged.</p><Button className="mt-4" variant="outline" onClick={() => window.location.reload()}>Reload social page</Button></SocialSurface>}>
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <nav
               aria-label="Social navigation"
@@ -1241,6 +1242,7 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
               </aside>
             </div>
           </Tabs>
+          </ErrorBoundary>
         </div>
       </div>
     </>
