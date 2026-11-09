@@ -1,0 +1,621 @@
+.journey-scenic-world {
+  position: relative;
+  isolation: isolate;
+  margin: 0 auto;
+  max-width: 1240px;
+}
+
+.journey-scenic-world__legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 14px;
+  padding: 0 4px;
+  color: hsl(var(--muted-foreground));
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+}
+
+.journey-scenic-world__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.journey-scenic-trail {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  min-height: 1180px;
+  height: clamp(1180px, 101vw, 1400px);
+  overflow: visible;
+  border: 1px solid hsl(var(--border));
+  border-radius: 34px;
+  background:
+    radial-gradient(ellipse at 14% 14%, rgba(244, 220, 154, .33), transparent 24%),
+    radial-gradient(ellipse at 88% 43%, rgba(137, 184, 134, .25), transparent 27%),
+    radial-gradient(ellipse at 16% 75%, rgba(147, 188, 141, .24), transparent 24%),
+    linear-gradient(160deg, #F3F3DF 0%, #E7F0D9 46%, #E9EEDC 100%);
+  box-shadow: 0 18px 54px rgba(39, 70, 44, .10);
+}
+
+.dark .journey-scenic-trail {
+  background:
+    radial-gradient(ellipse at 14% 14%, rgba(182, 137, 66, .16), transparent 24%),
+    radial-gradient(ellipse at 88% 43%, rgba(74, 122, 83, .19), transparent 27%),
+    radial-gradient(ellipse at 16% 75%, rgba(74, 122, 83, .17), transparent 24%),
+    linear-gradient(160deg, #18251D 0%, #1A2A20 48%, #202B22 100%);
+  box-shadow: 0 18px 54px rgba(0, 0, 0, .25);
+}
+
+.journey-scenic-trail__desktop-route { display: block; }
+.journey-scenic-trail__mobile-route { display: none; }
+
+.journey-scenic-trail__svg {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.journey-scenic-trail__road-shadow {
+  fill: none;
+  stroke: rgba(72, 76, 49, .17);
+  stroke-width: 94;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform: translateY(9px);
+}
+
+.journey-scenic-trail__road-edge {
+  fill: none;
+  stroke: #9D805C;
+  stroke-width: 82;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.journey-scenic-trail__road-markings {
+  fill: none;
+  stroke: rgba(255, 249, 224, .88);
+  stroke-width: 3;
+  stroke-dasharray: 15 20;
+  stroke-linecap: round;
+}
+
+.dark .journey-scenic-trail__road-edge { stroke: #725D43; }
+.dark .journey-scenic-trail__road-markings { stroke: rgba(245, 226, 185, .6); }
+
+.journey-scenic-trail__path-measure {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+.journey-scenic-trail__scenery path {
+  fill: none;
+  stroke: rgba(83, 132, 82, .25);
+  stroke-width: 20;
+  stroke-linecap: round;
+}
+
+.journey-scenic-trail__sun {
+  position: absolute;
+  top: 3.2%;
+  right: 8%;
+  width: 84px;
+  height: 84px;
+  border-radius: 999px;
+  background: radial-gradient(circle, #FFF1B6 0%, rgba(255, 220, 130, .55) 58%, transparent 72%);
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+.journey-scenic-trail__hill {
+  position: absolute;
+  z-index: 0;
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgba(117, 165, 111, .20), rgba(150, 187, 130, .08));
+  pointer-events: none;
+}
+
+.journey-scenic-trail__hill--one { width: 38%; height: 12%; left: -9%; top: 25%; transform: rotate(-12deg); }
+.journey-scenic-trail__hill--two { width: 39%; height: 13%; right: -10%; top: 57%; transform: rotate(11deg); }
+.journey-scenic-trail__hill--three { width: 38%; height: 12%; left: -8%; bottom: 2%; transform: rotate(10deg); }
+
+.dark .journey-scenic-trail__hill {
+  background: linear-gradient(145deg, rgba(105, 151, 100, .17), rgba(105, 151, 100, .04));
+}
+
+.journey-scenic-trail__cloud {
+  position: absolute;
+  width: 74px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .58);
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+.journey-scenic-trail__cloud::before,
+.journey-scenic-trail__cloud::after {
+  position: absolute;
+  content: "";
+  border-radius: 50%;
+  background: inherit;
+}
+
+.journey-scenic-trail__cloud::before { width: 31px; height: 31px; left: 12px; top: -13px; }
+.journey-scenic-trail__cloud::after { width: 25px; height: 25px; right: 12px; top: -8px; }
+.journey-scenic-trail__cloud--one { top: 15%; left: 48%; transform: scale(.8); }
+.journey-scenic-trail__cloud--two { top: 72%; right: 32%; transform: scale(.62); opacity: .72; }
+
+.journey-scenic-stop {
+  position: absolute;
+  z-index: 5;
+  width: 31%;
+  max-width: 380px;
+  min-width: 250px;
+  transform: translateY(-50%);
+}
+
+.journey-scenic-stop--left { left: 1.2%; }
+.journey-scenic-stop--right { right: 1.2%; }
+
+.journey-scenic-stop__trigger {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 118px;
+  padding: 12px;
+  border: 1px solid rgba(91, 113, 78, .24);
+  border-radius: 22px;
+  background: rgba(255, 255, 249, .88);
+  color: #263A2A;
+  text-align: left;
+  box-shadow: 0 10px 28px rgba(53, 78, 43, .10);
+  backdrop-filter: blur(12px);
+  transition: transform .24s ease, box-shadow .24s ease, border-color .24s ease, background .24s ease;
+  cursor: pointer;
+}
+
+.dark .journey-scenic-stop__trigger {
+  background: rgba(18, 31, 23, .92);
+  border-color: rgba(161, 190, 145, .25);
+  color: #F3F0E7;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .28);
+}
+
+.journey-scenic-stop__trigger:hover,
+.journey-scenic-stop__trigger:focus-visible,
+.journey-scenic-stop.is-active .journey-scenic-stop__trigger {
+  transform: translateY(-3px) scale(1.025);
+  border-color: rgba(55, 105, 63, .65);
+  background: rgba(255, 255, 250, .98);
+  box-shadow: 0 16px 36px rgba(53, 78, 43, .18);
+}
+
+.dark .journey-scenic-stop__trigger:hover,
+.dark .journey-scenic-stop__trigger:focus-visible,
+.dark .journey-scenic-stop.is-active .journey-scenic-stop__trigger {
+  background: rgba(27, 46, 33, .98);
+  border-color: rgba(190, 207, 153, .62);
+}
+
+.journey-scenic-stop__art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 42%;
+  max-width: 142px;
+  min-width: 92px;
+  padding: 3px;
+}
+
+.journey-scenic-stop__label {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.journey-scenic-stop__number {
+  color: #7A8F65;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .15em;
+}
+
+.journey-scenic-stop__title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(13px, 1.25vw, 17px);
+  font-weight: 750;
+  line-height: 1.16;
+}
+
+.journey-scenic-stop__hint {
+  color: #66795F;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.dark .journey-scenic-stop__hint { color: #B2C1A8; }
+.dark .journey-scenic-stop__number { color: #D2BD83; }
+
+.journey-scenic-stop__popover {
+  position: absolute;
+  top: 50%;
+  z-index: 20;
+  width: min(370px, 39vw);
+  max-height: min(520px, 70vh);
+  overflow-y: auto;
+  padding: 17px;
+  border: 1px solid rgba(82, 111, 72, .28);
+  border-radius: 20px;
+  background: rgba(255, 255, 250, .98);
+  color: #243629;
+  box-shadow: 0 22px 55px rgba(27, 48, 28, .22);
+  backdrop-filter: blur(18px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease, visibility .18s ease;
+}
+
+.dark .journey-scenic-stop__popover {
+  background: rgba(17, 28, 21, .98);
+  color: #F3F0E7;
+  border-color: rgba(161, 190, 145, .3);
+  box-shadow: 0 22px 55px rgba(0, 0, 0, .45);
+}
+
+.journey-scenic-stop--left .journey-scenic-stop__popover {
+  left: calc(100% + 12px);
+  transform: translateY(-50%) translateX(-8px);
+}
+
+.journey-scenic-stop--right .journey-scenic-stop__popover {
+  right: calc(100% + 12px);
+  transform: translateY(-50%) translateX(8px);
+}
+
+.journey-scenic-stop.is-open { z-index: 25; }
+.journey-scenic-stop.is-open .journey-scenic-stop__popover {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(-50%) translateX(0);
+}
+
+.journey-scenic-stop__popover-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(95, 117, 82, .16);
+}
+
+.journey-scenic-stop__eyebrow {
+  color: #718661;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .15em;
+}
+
+.dark .journey-scenic-stop__eyebrow { color: #D1B979; }
+
+.journey-scenic-stop__popover-heading h3 {
+  margin: 4px 0 2px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.journey-scenic-stop__popover-heading p {
+  margin: 0;
+  color: #72806A;
+  font-size: 11px;
+}
+
+.dark .journey-scenic-stop__popover-heading p { color: #B4C0AA; }
+
+.journey-scenic-stop__pin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  border-radius: 11px;
+  background: rgba(80, 122, 73, .12);
+  color: #426C43;
+}
+
+.dark .journey-scenic-stop__pin {
+  background: rgba(157, 191, 127, .16);
+  color: #D8C28A;
+}
+
+.journey-scenic-stop__summary {
+  margin: 11px 0;
+  color: #596B58;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.dark .journey-scenic-stop__summary { color: #C0C9BC; }
+
+.journey-scenic-stop__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  margin: 10px 0 11px;
+}
+.journey-scenic-stop__stats span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  border-radius: 9px;
+  background: rgba(85, 125, 76, .09);
+}
+.journey-scenic-stop__stats strong {
+  color: #345A37;
+  font-size: 11px;
+  line-height: 1.15;
+}
+.journey-scenic-stop__stats small {
+  color: #74816D;
+  font-size: 8px;
+  line-height: 1.2;
+}
+.dark .journey-scenic-stop__stats { background: transparent; }
+.dark .journey-scenic-stop__stats span { background: rgba(159, 190, 135, .12); }
+.dark .journey-scenic-stop__stats strong { color: #E4EBD9; }
+.dark .journey-scenic-stop__stats small { color: #B4C0AA; }
+
+.journey-scenic-stop__features {
+  display: grid;
+  gap: 9px;
+}
+
+.journey-scenic-stop__feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: #6C885B;
+}
+
+.journey-scenic-stop__feature > span {
+  flex: 0 0 13px;
+  padding-top: 1px;
+  font-size: 11px;
+}
+
+.journey-scenic-stop__feature strong {
+  display: block;
+  color: #2F4631;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.journey-scenic-stop__feature small {
+  display: block;
+  margin-top: 2px;
+  color: #70806B;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.dark .journey-scenic-stop__feature strong { color: #EBF0E7; }
+.dark .journey-scenic-stop__feature small { color: #B3C0AE; }
+
+.journey-scenic-stop__links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(95, 117, 82, .16);
+}
+
+.journey-scenic-stop__link,
+.journey-scenic-stop__secondary-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.journey-scenic-stop__link { color: #376A42; }
+.journey-scenic-stop__secondary-link { color: #77836F; }
+.dark .journey-scenic-stop__link { color: #D4BD7D; }
+.dark .journey-scenic-stop__secondary-link { color: #C0C9BC; }
+.journey-scenic-stop__link:hover,
+.journey-scenic-stop__secondary-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+.journey-scenic-trail__cyclist {
+  position: absolute;
+  z-index: 30;
+  left: 0;
+  top: 0;
+  width: 116px;
+  height: 94px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transform-origin: 50% 55%;
+  filter: drop-shadow(0 8px 10px rgba(29, 47, 30, .22));
+  will-change: left, top, transform;
+}
+
+.journey-scenic-trail__cyclist-glow {
+  position: absolute;
+  inset: 18% 8% 0;
+  border-radius: 50%;
+  background: rgba(238, 203, 105, .35);
+  filter: blur(14px);
+}
+
+.journey-scenic-trail__cyclist > div {
+  position: relative;
+  z-index: 1;
+}
+
+.journey-scenic-trail__start-label,
+.journey-scenic-trail__finish-label {
+  position: absolute;
+  z-index: 2;
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: #486348;
+  background: rgba(255, 255, 245, .76);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .16em;
+  pointer-events: none;
+}
+
+.journey-scenic-trail__start-label { top: 2.1%; left: 1.5%; }
+.journey-scenic-trail__finish-label { right: 1.5%; bottom: 1.4%; }
+
+.dark .journey-scenic-trail__start-label,
+.dark .journey-scenic-trail__finish-label {
+  color: #D7DDBF;
+  background: rgba(16, 28, 20, .8);
+}
+
+@media (max-width: 760px) {
+  .journey-scenic-world__legend {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 10px;
+  }
+
+  .journey-scenic-trail {
+    min-height: 1180px;
+    height: 1240px;
+    border-radius: 24px;
+  }
+
+  .journey-scenic-trail__desktop-route { display: none; }
+  .journey-scenic-trail__mobile-route { display: block; }
+
+  .journey-scenic-stop {
+    width: 43%;
+    min-width: 0;
+  }
+
+  .journey-scenic-stop--left { left: 1.5%; }
+  .journey-scenic-stop--right { right: 1.5%; }
+
+  .journey-scenic-stop__trigger {
+    min-height: 98px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: 7px 6px;
+    border-radius: 16px;
+  }
+
+  .journey-scenic-stop__art {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 110px;
+    min-width: 0;
+    max-height: 58px;
+    overflow: hidden;
+  }
+
+  .journey-scenic-stop__art svg {
+    width: 100%;
+    max-height: 62px;
+  }
+
+  .journey-scenic-stop__label {
+    align-items: center;
+    text-align: center;
+    gap: 1px;
+  }
+
+  .journey-scenic-stop__number { font-size: 8px; }
+  .journey-scenic-stop__title { font-size: 11px; line-height: 1.15; }
+  .journey-scenic-stop__hint { display: none; }
+
+  .journey-scenic-stop__popover {
+    top: calc(100% + 8px);
+    width: calc(100vw - 34px);
+    max-height: min(420px, 58vh);
+    padding: 13px;
+    border-radius: 16px;
+    transform: translateY(5px);
+  }
+
+  .journey-scenic-stop--left .journey-scenic-stop__popover {
+    left: 0;
+    right: auto;
+  }
+
+  .journey-scenic-stop--right .journey-scenic-stop__popover {
+    right: 0;
+    left: auto;
+  }
+
+  .journey-scenic-stop.is-open .journey-scenic-stop__popover {
+    transform: translateY(0);
+  }
+
+  .journey-scenic-stop__popover-heading h3 { font-size: 16px; }
+  .journey-scenic-stop__summary { font-size: 10px; }
+  .journey-scenic-stop__stats strong { font-size: 10px; }
+  .journey-scenic-stop__stats small { font-size: 8px; }
+  .journey-scenic-stop__feature strong { font-size: 10px; }
+  .journey-scenic-stop__feature small { font-size: 9px; }
+
+  .journey-scenic-trail__cyclist {
+    width: 88px;
+    height: 72px;
+  }
+
+  .journey-scenic-trail__cyclist > div {
+    width: 88px !important;
+    height: 66px !important;
+  }
+
+  .journey-scenic-trail__start-label,
+  .journey-scenic-trail__finish-label {
+    font-size: 7px;
+    padding: 4px 7px;
+  }
+
+  .journey-scenic-trail__sun { width: 54px; height: 54px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journey-scenic-stop__trigger,
+  .journey-scenic-stop__popover {
+    transition: none !important;
+  }
+
+  .journey-scenic-trail__cyclist {
+    will-change: auto;
+  }
+}
