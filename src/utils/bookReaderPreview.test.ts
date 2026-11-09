@@ -156,3 +156,4 @@ describe('bookReaderPreview utility', () => {
     });
   });
 });
+
