@@ -250,7 +250,6 @@ export default function HeroAtomicRings({ size = 760, className = "", children }
 
           // Place a horizontal label just beyond the orbit path, away from its node.
           const labelOffset = pos(24, angle);
-          const labelWidth = Math.min(180, Math.max(84, feature.label.length * 7.3 + 18));
           const label = featureLabelRefs.current[bandIndex]?.[featureIndex];
           label?.setAttribute(
             "transform",
@@ -475,7 +474,7 @@ export default function HeroAtomicRings({ size = 760, className = "", children }
 
         {ORBIT_BANDS.map((band, bandIndex) =>
           band.features.map((feature, featureIndex) => {
-            const labelWidth = Math.min(190, Math.max(92, feature.label.length * 7.8 + 22));
+            const labelWidth = Math.min(180, Math.max(84, feature.label.length * 7.3 + 18));
             const isAction = feature.action === "open-book-expert";
             return (
               <g
@@ -513,7 +512,7 @@ export default function HeroAtomicRings({ size = 760, className = "", children }
                   className="hero-orbit-label"
                 >
                   <rect
-                    x="0"
+                    x={-labelWidth / 2}
                     y="-10"
                     width={labelWidth}
                     height="20"
@@ -525,7 +524,7 @@ export default function HeroAtomicRings({ size = 760, className = "", children }
                     strokeWidth="1.35"
                   />
                   <text
-                    x={labelWidth / 2}
+                    x="0"
                     y="5"
                     textAnchor="middle"
                     fontSize="14"
