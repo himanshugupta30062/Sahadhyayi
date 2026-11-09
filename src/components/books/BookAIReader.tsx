@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   BookOpen,
@@ -7,6 +7,7 @@ import {
   ExternalLink,
   LoaderCircle,
   Pause,
+  RotateCcw,
   Send,
   Sparkles,
   Volume2,
@@ -46,20 +47,75 @@ const PROMPTS = [
   'Who will enjoy reading this book most?',
 ];
 
+async function parseEdgeFunctionError(invokeError: unknown): Promise<string> {
+  const err = invokeError as Record<string, unknown> | null;
+  if (!err) return 'Book AI is temporarily unavailable. Please try again.';
+
+  if (err.name === 'AbortError') {
+    return '';
+  }
+
+  // Handle Supabase FunctionsHttpError with context response
+  const context = err.context as { status?: number; json?: () => Promise<any> } | undefined;
+  if (context?.json && typeof context.json === 'function') {
+    try {
+      const body = await context.json();
+      if (typeof body?.error === 'string' && body.error.trim()) {
+        return body.error;
+      }
+    } catch {
+      // Fall through to status check
+    }
+  }
+
+  const status = typeof context?.status === 'number' ? context.status : 0;
+  if (status === 504 || (typeof err.message === 'string' && err.message.includes('504'))) {
+    return 'Book Expert is taking longer than expected. Please try again.';
+  }
+  if (status === 429 || (typeof err.message === 'string' && err.message.includes('429'))) {
+    return 'Book Expert is temporarily busy with high traffic. Please wait a minute and try again.';
+  }
+  if (status === 503) {
+    return 'Book AI service is temporarily busy. Please try again shortly.';
+  }
+
+  if (typeof err.message === 'string' && err.message && !err.message.includes('object') && !err.message.includes('Failed to send')) {
+    return err.message;
+  }
+
+  return 'Book AI is temporarily unavailable. Please try again.';
+}
+
 export default function BookAIReader({ book }: Props) {
   const [question, setQuestion] = useState('');
+  const [lastQuestion, setLastQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [citations, setCitations] = useState<Citation[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
 
+  const abortControllerRef = useRef<AbortController | null>(null);
   const { isSupported: isAudioSupported, isPlaying, isPaused, toggle, stop } = useVoiceReading();
+
+  // Cancel any active request on component unmount
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   async function ask(value = question) {
     const q = value.trim();
     if (!q || busy) return;
+
+    // Abort previous in-flight request if any
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setQuestion(q);
+    setLastQuestion(q);
     setBusy(true);
     setError('');
     setAnswer('');
@@ -79,16 +135,25 @@ export default function BookAIReader({ book }: Props) {
           },
         },
       });
+
+      if (controller.signal.aborted) return;
       if (invokeError) throw invokeError;
       if (!data || typeof data.reply !== 'string') throw new Error('No answer received');
+
       setAnswer(data.reply);
       if (Array.isArray(data.citations)) {
         setCitations(data.citations);
       }
-    } catch {
-      setError('Book AI is temporarily unavailable. Please try again.');
+    } catch (err) {
+      if (controller.signal.aborted) return;
+      const parsedMessage = await parseEdgeFunctionError(err);
+      if (parsedMessage) {
+        setError(parsedMessage);
+      }
     } finally {
-      setBusy(false);
+      if (!controller.signal.aborted) {
+        setBusy(false);
+      }
     }
   }
 
@@ -99,7 +164,7 @@ export default function BookAIReader({ book }: Props) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Ignore
+      // Ignore clipboard write failures
     }
   };
 
@@ -136,27 +201,55 @@ export default function BookAIReader({ book }: Props) {
         <Textarea
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
+          onKeyDown={(e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+              e.preventDefault();
+              if (!busy && question.trim()) {
+                void ask();
+              }
+            }
+          }}
           placeholder={`Ask anything about "${book.title}"…`}
           rows={3}
           maxLength={2000}
+          disabled={busy}
           className="border-border/80 bg-white/90 dark:bg-card/90"
         />
 
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-muted-foreground">
+            {question.length > 0 && `${question.length}/2000`}
+          </span>
           <Button
             onClick={() => ask()}
             disabled={!question.trim() || busy}
             className="bg-violet-600 text-white hover:bg-violet-700 dark:bg-violet-500 dark:hover:bg-violet-600"
           >
             {busy ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-            Ask Book AI
+            {busy ? 'Consulting Book Expert…' : 'Ask Book AI'}
           </Button>
         </div>
 
         {error && (
-          <p role="alert" className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
-            {error}
-          </p>
+          <div
+            role="alert"
+            className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive"
+          >
+            <span className="flex-1 leading-relaxed">{error}</span>
+            {lastQuestion && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={busy}
+                onClick={() => ask(lastQuestion)}
+                className="h-8 gap-1.5 border-destructive/30 bg-background text-xs font-medium text-destructive hover:bg-destructive/10 shrink-0"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                Retry
+              </Button>
+            )}
+          </div>
         )}
 
         {answer && (
