@@ -442,33 +442,69 @@ const BookExpert = () => {
         if (minimized) setIsMinimized(false);
         else toggleChat();
       }}
-      aria-label={minimized ? "Restore Reading Room AI" : "Open the Sahadhyayi Reading Room"}
+      aria-label={minimized ? "Restore Reading Room AI" : "Open the Sahadhyayi Reading Room & Book Expert AI"}
       aria-expanded={minimized ? false : isOpen}
       aria-controls="book-expert-panel"
       data-testid={minimized ? "reading-room-mini-launcher" : "reading-room-launcher"}
-      title={minimized ? "Restore Reading Room AI" : undefined}
+      title={minimized ? "Restore Reading Room AI" : "Ask Book Expert AI"}
       className={cn(
-        "group fixed bottom-4 right-3 z-50 flex items-center gap-2 rounded-full border border-[#D5B16D]/40 bg-background/95 p-1.5 text-foreground shadow-xl shadow-black/15 backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl hover:border-[#D5B16D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:bottom-6 sm:right-6 sm:gap-2.5 sm:p-2",
-        minimized ? "h-12 w-12 justify-center sm:h-13 sm:w-13 sm:p-2" : "sm:pr-4"
+        "group fixed z-50 flex items-center rounded-full border border-[#D5B16D]/50 bg-background/95 text-foreground shadow-xl shadow-black/15 backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl hover:border-[#D5B16D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        // Spacing aligned with CallCenterFab
+        "bottom-4 right-4 sm:bottom-5 sm:right-5 lg:bottom-6 lg:right-6",
+        // Height: 48px on mobile, 56px on sm+
+        "h-12 sm:h-14",
+        minimized
+          ? "w-12 sm:w-14 justify-center p-1.5 sm:p-2"
+          : cn(
+              "p-1.5 sm:p-2 transition-[max-width,padding] duration-500",
+              showLabel
+                ? "pr-3.5 sm:pr-4"
+                : "pr-1.5 sm:pr-2 group-hover:pr-3.5 sm:group-hover:pr-4"
+            )
       )}
     >
-      <span className="reader-room-launcher-icon relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#1C442D]/10 dark:bg-[#D5B16D]/15 sm:h-11 sm:w-11">
+      <span className="reader-room-launcher-icon relative flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#1C442D]/10 dark:bg-[#D5B16D]/15">
         <img src={bookIcon} alt="" loading="eager" decoding="async" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110" draggable={false} />
         <span className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-emerald-500 animate-pulse" aria-hidden="true" />
       </span>
-      <span className={cn("min-w-0 text-left flex-col justify-center", minimized ? "hidden" : "flex")}>
-        <span className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold leading-tight text-foreground">
-          <Sparkles className="h-3.5 w-3.5 text-[#D5B16D] shrink-0" />
-          <span className="truncate">Reading Room AI</span>
+
+      {/* Folding / Unfolding Text Label container like Estate Mitra in Faridabad_Estate */}
+      {!minimized && (
+        <span
+          data-testid="reading-room-launcher-label"
+          className={cn(
+            "overflow-hidden whitespace-nowrap text-left transition-[max-width,opacity,margin] duration-500 ease-in-out flex flex-col justify-center",
+            "group-hover:max-w-[170px] group-hover:opacity-100 group-hover:ml-2.5",
+            showLabel
+              ? "max-w-[170px] opacity-100 ml-2.5"
+              : "max-w-0 opacity-0 ml-0"
+          )}
+        >
+          <span className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold leading-tight text-foreground">
+            <Sparkles className="h-3.5 w-3.5 text-[#D5B16D] shrink-0" />
+            <span className="truncate">Book Expert AI</span>
+          </span>
+          <span className="text-[10px] sm:text-[11px] text-muted-foreground leading-tight">
+            Ask about any book
+          </span>
         </span>
-        <span className={cn(
-          "hidden sm:inline-block overflow-hidden whitespace-nowrap text-[11px] text-muted-foreground transition-[max-width,opacity] duration-500 group-hover:max-w-[140px] group-hover:opacity-100",
-          showLabel ? "max-w-[140px] opacity-100" : "max-w-0 opacity-0"
-        )}>
-          {minimized ? "Continue your conversation" : "Ask our Book AI"}
+      )}
+
+      {/* Message icon indicator shown when unfolded */}
+      {!minimized && (
+        <span
+          className={cn(
+            "overflow-hidden transition-[max-width,opacity,margin] duration-500",
+            "group-hover:max-w-[20px] group-hover:opacity-100 group-hover:ml-1",
+            showLabel
+              ? "max-w-[20px] opacity-100 ml-1"
+              : "max-w-0 opacity-0 ml-0"
+          )}
+          aria-hidden="true"
+        >
+          <MessageCircle className="h-4 w-4 text-[#D5B16D]" />
         </span>
-      </span>
-      {!minimized && <MessageCircle className="hidden h-4 w-4 text-[#D5B16D] sm:ml-1 sm:block transition-transform group-hover:scale-110" aria-hidden="true" />}
+      )}
     </button>
   );
 
@@ -503,8 +539,8 @@ const BookExpert = () => {
       className={cn(
         "reader-room-panel-enter fixed inset-x-2 bottom-[calc(env(safe-area-inset-bottom,0px)_+_0.5rem)] z-50 flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-background text-foreground shadow-2xl shadow-black/25 transition-[width,height] duration-300",
         isExpanded
-          ? "h-[min(85dvh,750px)] sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[min(820px,calc(100dvh-2.5rem))] sm:w-[min(720px,calc(100vw-3rem))] sm:rounded-2xl"
-          : "h-[min(70dvh,600px)] sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[min(680px,calc(100dvh-3rem))] sm:w-[min(420px,calc(100vw-3rem))] sm:rounded-2xl"
+          ? "h-[min(85dvh,750px)] sm:inset-x-auto sm:bottom-5 sm:right-5 lg:bottom-6 lg:right-6 sm:h-[min(820px,calc(100dvh-2.5rem))] sm:w-[min(720px,calc(100vw-3rem))] sm:rounded-2xl"
+          : "h-[min(70dvh,600px)] sm:inset-x-auto sm:bottom-5 sm:right-5 lg:bottom-6 lg:right-6 sm:h-[min(680px,calc(100dvh-3rem))] sm:w-[min(420px,calc(100vw-3rem))] sm:rounded-2xl"
       )}
     >
       <header className="relative shrink-0 overflow-hidden border-b border-border/70 bg-card">

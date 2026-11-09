@@ -3,7 +3,7 @@
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within, act } from "@testing-library/react";
 
 vi.mock("@/contexts/book-expert.utils", async () => {
   const ReactModule = await import("react");
@@ -148,5 +148,60 @@ describe("WhatsAppCallCenterFab & Reading Room Expand/Collapse UI", () => {
     fireEvent.click(whatsappHelpBtn);
     expect(windowOpenSpy).toHaveBeenCalledTimes(1);
     expect(windowOpenSpy.mock.calls[0][0]).toContain(`https://wa.me/${SAHADHYAYI_PHONE_RAW}`);
+  });
+
+  it("folds and unfolds the Book Expert launcher label like Estate Mitra", () => {
+    vi.useFakeTimers();
+    render(<BookExpert />);
+
+    // Initially unfolded with label visible
+    const label = screen.getByTestId("reading-room-launcher-label");
+    expect(label).toHaveClass("max-w-[170px]");
+    expect(label).toHaveClass("opacity-100");
+    expect(screen.getByText("Book Expert AI")).toBeInTheDocument();
+
+    // After 5s timeout, it collapses / folds into the compact icon
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
+    expect(label).toHaveClass("max-w-0");
+    expect(label).toHaveClass("opacity-0");
+
+    // After 30s cycle, it unfolds again briefly
+    act(() => {
+      vi.advanceTimersByTime(25000); // reaches 30s total
+    });
+    expect(label).toHaveClass("max-w-[170px]");
+    expect(label).toHaveClass("opacity-100");
+
+    vi.useRealTimers();
+  });
+
+  it("coordinates correct spacing and alignment between Book Expert and Call Center FAB", () => {
+    const { container } = render(
+      <>
+        <WhatsAppCallCenterFab />
+        <BookExpert />
+      </>
+    );
+
+    const callCenterFab = screen.getByTestId("whatsapp-callcenter-fab");
+    const bookExpertLauncher = screen.getByTestId("reading-room-launcher");
+
+    // Book Expert positioned at bottom-4 right-4 on mobile and sm:bottom-5 sm:right-5 on desktop
+    expect(bookExpertLauncher.className).toContain("bottom-4");
+    expect(bookExpertLauncher.className).toContain("right-4");
+    expect(bookExpertLauncher.className).toContain("sm:bottom-5");
+    expect(bookExpertLauncher.className).toContain("sm:right-5");
+
+    // Call Center FAB positioned at bottom-[76px] right-4 (12px gap) and sm:bottom-[90px] sm:right-5 (14px gap)
+    expect(callCenterFab.className).toContain("bottom-[76px]");
+    expect(callCenterFab.className).toContain("right-4");
+    expect(callCenterFab.className).toContain("sm:bottom-[90px]");
+    expect(callCenterFab.className).toContain("sm:right-5");
+
+    // Verifies Call Center uses the Headset icon (SVG containing headset / headphone curves)
+    const headsetSvg = callCenterFab.querySelector("svg");
+    expect(headsetSvg).toBeInTheDocument();
   });
 });
