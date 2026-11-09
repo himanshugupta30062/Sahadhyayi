@@ -35,14 +35,36 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 import SignInLink from '@/components/SignInLink';
 
-type ActivityCategory = 'all' | 'events' | 'challenges' | 'games' | 'groups' | 'meetups';
+type ActivityCategory = 'all' | 'events' | 'challenges' | 'games' | 'meetups';
 
 export default function Activity() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = (searchParams.get('tab') as ActivityCategory) || 'all';
-  const [activeCategory, setActiveCategory] = useState<ActivityCategory>(tabParam);
+  const [activeCategory, setActiveCategory] = useState<ActivityCategory>(
+    tabParam === ('groups' as any) ? 'all' : tabParam
+  );
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Sync tab state when URL changes (e.g. from nav clicks)
+  useEffect(() => {
+    const rawTab = searchParams.get('tab') as ActivityCategory | null;
+    if (rawTab && rawTab !== activeCategory) {
+      setActiveCategory(rawTab === ('groups' as any) ? 'all' : rawTab);
+    }
+  }, [searchParams, activeCategory]);
+
+  useEffect(() => {
+    if (searchParams.get('tab') === 'meetups') {
+      const timer = setTimeout(() => {
+        const el = document.getElementById('activity-meetups-section');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
 
   // 1. Reading Challenges
   const { data: challenges = [], isLoading: isLoadingChallenges } = useChallenges();
@@ -170,7 +192,7 @@ export default function Activity() {
         {/* ── Main Activity Workspace ── */}
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 space-y-10">
           {/* ── Category Quick Jump Cards ── */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
                 id: 'events',
@@ -192,13 +214,6 @@ export default function Activity() {
                 desc: 'Quizzes & trivia',
                 icon: Gamepad2,
                 count: '4 Games',
-              },
-              {
-                id: 'groups',
-                title: 'Reading Groups',
-                desc: 'Community book clubs',
-                icon: Users,
-                count: groups.length || '15+',
               },
               {
                 id: 'meetups',
@@ -611,7 +626,7 @@ export default function Activity() {
 
             {/* 4. EVENTS & MEETUPS SECTION */}
             {(activeCategory === 'all' || activeCategory === 'events' || activeCategory === 'meetups') && (
-              <section className="space-y-4">
+              <section id="activity-meetups-section" className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="flex items-center gap-2 font-serif text-xl font-bold text-[#1C201D] dark:text-[#F3F0E7]">

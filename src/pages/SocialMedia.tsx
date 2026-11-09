@@ -26,7 +26,7 @@ import {
   Clock,
   Compass,
 } from 'lucide-react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Star } from 'lucide-react';
 import SignInLink from '@/components/SignInLink';
 import SEO from '@/components/SEO';
@@ -56,10 +56,9 @@ const ReadingDnaPanel = lazy(() => import('@/components/social/dna/ReadingDnaPan
 const BookReviewsFeed = lazy(() => import('@/components/social/BookReviewsFeed'));
 const StoriesFeed = lazy(() => import('@/components/stories/StoriesFeed'));
 
-const VALID_SOCIAL_TABS = ['feed', 'stories', 'reviews', 'rooms', 'threads', 'margins', 'dna', 'friends', 'map', 'groups'] as const;
+const VALID_SOCIAL_TABS = ['feed', 'reviews', 'rooms', 'threads', 'margins', 'dna', 'friends', 'map', 'groups'] as const;
 const SOCIAL_TAB_LABELS: Record<string, string> = {
   feed: 'Community Feed',
-  stories: 'Short Stories',
   reviews: 'Book Reviews',
   rooms: 'Reading Rooms',
   threads: 'Book Discussions',
@@ -371,8 +370,16 @@ const GuestLanding: React.FC = () => {
 
 // ─── Authenticated View ───────────────────────────────────────────────────────
 const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof useAuth>['user']> }> = ({ user }) => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
+
+  useEffect(() => {
+    if (tabParam === 'stories') {
+      navigate('/stories', { replace: true });
+    }
+  }, [tabParam, navigate]);
+
   const activeTab = VALID_SOCIAL_TABS.includes(tabParam as (typeof VALID_SOCIAL_TABS)[number])
     ? (tabParam as string)
     : 'feed';
@@ -515,19 +522,6 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                 >
                   <Star className="h-4 w-4" aria-hidden="true" />
                   Book Reviews
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={activeTab === 'stories'}
-                  onClick={() => handleTabChange('stories')}
-                  className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${
-                    activeTab === 'stories'
-                      ? 'bg-[#1C442D] text-white shadow-xs dark:bg-[#D5B16D] dark:text-[#0B0D0C]'
-                      : 'text-[#636B65] hover:bg-[#F4F3EF] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'
-                  }`}
-                >
-                  <Sparkles className="h-4 w-4" aria-hidden="true" />
-                  Short Stories
                 </button>
                 <button
                   type="button"

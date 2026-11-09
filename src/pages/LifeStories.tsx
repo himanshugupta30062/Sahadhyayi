@@ -16,12 +16,15 @@ import {
   Share2,
   ShieldCheck,
   Sparkles,
+  Users,
   Volume2,
 } from 'lucide-react';
 import SEO from '@/components/SEO';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SuggestLifeStoryDialog } from '@/components/stories/SuggestLifeStoryDialog';
+import { WriteLifeStoryDialog } from '@/components/stories/WriteLifeStoryDialog';
+import { useStories } from '@/hooks/useStories';
 import { toast } from 'sonner';
 
 type LifeStory = {
@@ -295,12 +298,19 @@ const categories = [
 
 const LifeStories = () => {
   const { slug } = useParams<{ slug?: string }>();
+  const [storyScope, setStoryScope] = useState<'legends' | 'community'>('legends');
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All stories');
   const [isSuggestOpen, setIsSuggestOpen] = useState(false);
+  const [isWriteOpen, setIsWriteOpen] = useState(false);
   const [savedSlugs, setSavedSlugs] = useState<string[]>([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+
+  // Fetch community life stories & memoirs
+  const { data: communityStories = [], refetch: refetchCommunityStories } = useStories({
+    genre: 'Biography & Memoir',
+  });
 
   // Restore saved bookmarks from localStorage
   useEffect(() => {
@@ -414,6 +424,16 @@ const LifeStories = () => {
       return matchesCategory && matchesSearch;
     });
   }, [search, activeCategory, savedSlugs]);
+
+  const filteredCommunityStories = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return communityStories;
+    return communityStories.filter((s) =>
+      [s.title, s.author_name, s.description].some((v) =>
+        v?.toLowerCase().includes(term)
+      )
+    );
+  }, [communityStories, search]);
 
   if (slug) {
     if (!selectedStory) {
@@ -729,6 +749,53 @@ const LifeStories = () => {
         </section>
 
         <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+          {/* ── Scope Switcher: Legends vs Community Memoirs ── */}
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#E5DED2] dark:border-[#29332D] pb-6">
+            <div className="inline-flex p-1 rounded-2xl bg-[#EFECE6] dark:bg-[#161D19] border border-[#DCD5C9] dark:border-[#29332D]">
+              <button
+                type="button"
+                onClick={() => setStoryScope('legends')}
+                className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  storyScope === 'legends'
+                    ? 'bg-white dark:bg-[#1C442D] text-[#1C442D] dark:text-[#F3F0E7] shadow-sm'
+                    : 'text-[#687067] dark:text-[#A5ADA6] hover:text-[#202820] dark:hover:text-[#F3F0E7]'
+                }`}
+              >
+                <Sparkles className="w-4 h-4 text-amber-500" />
+                Historical Icons & Legends ({stories.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setStoryScope('community')}
+                className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  storyScope === 'community'
+                    ? 'bg-white dark:bg-[#1C442D] text-[#1C442D] dark:text-[#F3F0E7] shadow-sm'
+                    : 'text-[#687067] dark:text-[#A5ADA6] hover:text-[#202820] dark:hover:text-[#F3F0E7]'
+                }`}
+              >
+                <Users className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                Everyday People Memoirs ({communityStories.length})
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => setIsWriteOpen(true)}
+                className="rounded-xl gap-2 font-semibold bg-[#1C442D] text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#101711] text-xs h-10 shadow-sm"
+              >
+                <Plus className="h-4 w-4" />
+                Write Your Life Story
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setIsSuggestOpen(true)}
+                className="rounded-xl gap-2 font-semibold text-xs h-10 border-[#DCD5C9] dark:border-[#29332D]"
+              >
+                Nominate a Legend
+              </Button>
+            </div>
+          </div>
+
           <section
             aria-label="Search and filter life stories"
             className="mb-9 rounded-2xl border border-[#E5DED2] bg-white p-4 shadow-sm dark:border-[#29332D] dark:bg-[#111614] sm:p-5"
@@ -739,143 +806,236 @@ const LifeStories = () => {
                 <input
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search people, journeys, or themes…"
+                  placeholder={storyScope === 'legends' ? "Search historical legends, journeys, or themes…" : "Search everyday memoirs and life lessons…"}
                   aria-label="Search life stories"
                   className="h-12 w-full rounded-xl border border-[#DCD5C9] bg-[#FAF7F2] pl-11 pr-4 text-sm text-[#202820] outline-none transition focus:border-[#1C442D] focus:ring-2 focus:ring-[#1C442D]/15 dark:border-[#34443A] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]"
                 />
               </div>
 
-              <div
-                className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                aria-label="Story categories"
-              >
-                {categories.map((category) => {
-                  const isSavedTab = category === 'Saved';
-                  const countLabel = isSavedTab && savedSlugs.length > 0 ? ` (${savedSlugs.length})` : '';
-                  return (
-                    <button
-                      key={category}
-                      type="button"
-                      onClick={() => setActiveCategory(category)}
-                      aria-pressed={activeCategory === category}
-                      className={`shrink-0 rounded-full border px-3.5 py-2 text-xs font-semibold transition ${
-                        activeCategory === category
-                          ? 'border-[#1C442D] bg-[#1C442D] text-white dark:border-[#D5B16D] dark:bg-[#D5B16D] dark:text-[#101711]'
-                          : 'border-[#DCD5C9] text-[#687067] hover:border-[#1C442D] dark:border-[#34443A] dark:text-[#A5ADA6]'
-                      }`}
-                    >
-                      {category}
-                      {countLabel}
-                    </button>
-                  );
-                })}
-              </div>
+              {storyScope === 'legends' && (
+                <div
+                  className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                  aria-label="Story categories"
+                >
+                  {categories.map((category) => {
+                    const isSavedTab = category === 'Saved';
+                    const countLabel = isSavedTab && savedSlugs.length > 0 ? ` (${savedSlugs.length})` : '';
+                    return (
+                      <button
+                        key={category}
+                        type="button"
+                        onClick={() => setActiveCategory(category)}
+                        aria-pressed={activeCategory === category}
+                        className={`shrink-0 rounded-full border px-3.5 py-2 text-xs font-semibold transition ${
+                          activeCategory === category
+                            ? 'border-[#1C442D] bg-[#1C442D] text-white dark:border-[#D5B16D] dark:bg-[#D5B16D] dark:text-[#101711]'
+                            : 'border-[#DCD5C9] text-[#687067] hover:border-[#1C442D] dark:border-[#34443A] dark:text-[#A5ADA6]'
+                        }`}
+                      >
+                        {category}
+                        {countLabel}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </section>
 
-          <div className="mb-5 flex items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#98733A] dark:text-[#D5B16D]">
-                The collection
-              </p>
-              <h2 className="mt-1 font-serif text-2xl font-bold sm:text-3xl">People worth knowing</h2>
-            </div>
-            <span className="text-xs text-[#788076] dark:text-[#A5ADA6]">
-              {filteredStories.length} {filteredStories.length === 1 ? 'story' : 'stories'}
-            </span>
-          </div>
+          {storyScope === 'legends' ? (
+            <>
+              <div className="mb-5 flex items-end justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#98733A] dark:text-[#D5B16D]">
+                    Historical Legends
+                  </p>
+                  <h2 className="mt-1 font-serif text-2xl font-bold sm:text-3xl">Pioneers, Thinkers & Trailblazers</h2>
+                </div>
+                <span className="text-xs text-[#788076] dark:text-[#A5ADA6]">
+                  {filteredStories.length} {filteredStories.length === 1 ? 'story' : 'stories'}
+                </span>
+              </div>
 
-          {filteredStories.length ? (
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {filteredStories.map((story) => {
-                const isSaved = savedSlugs.includes(story.slug);
-                return (
-                  <article
-                    key={story.slug}
-                    className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#E5DED2] bg-white shadow-[0_6px_24px_rgba(28,32,29,0.035)] transition duration-300 hover:-translate-y-1 hover:border-[#B68A35]/50 hover:shadow-[0_18px_45px_rgba(28,32,29,0.09)] dark:border-[#29332D] dark:bg-[#111614] dark:shadow-none"
+              {filteredStories.length ? (
+                <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                  {filteredStories.map((story) => {
+                    const isSaved = savedSlugs.includes(story.slug);
+                    return (
+                      <article
+                        key={story.slug}
+                        className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#E5DED2] bg-white shadow-[0_6px_24px_rgba(28,32,29,0.035)] transition duration-300 hover:-translate-y-1 hover:border-[#B68A35]/50 hover:shadow-[0_18px_45px_rgba(28,32,29,0.09)] dark:border-[#29332D] dark:bg-[#111614] dark:shadow-none"
+                      >
+                        <div
+                          className={`relative flex h-44 items-end overflow-hidden bg-gradient-to-br ${story.accent} p-5 text-white`}
+                        >
+                          <div className="absolute -right-8 -top-12 h-40 w-40 rounded-full border border-white/15" />
+                          <div className="absolute -right-1 -top-5 h-28 w-28 rounded-full border border-white/15" />
+
+                          <span className="relative rounded-xl border border-white/20 bg-black/20 px-3 py-2 text-2xl font-serif font-bold backdrop-blur-sm">
+                            {story.initials}
+                          </span>
+
+                          <div className="relative ml-auto flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={(e) => toggleBookmark(story.slug, e)}
+                              className={`rounded-full p-1.5 border transition ${
+                                isSaved
+                                  ? 'border-amber-400 bg-amber-400 text-stone-950'
+                                  : 'border-white/20 bg-black/20 text-white hover:bg-black/40'
+                              }`}
+                              title={isSaved ? 'Saved' : 'Save story'}
+                              aria-label="Save story"
+                            >
+                              <Bookmark className={`h-3.5 w-3.5 ${isSaved ? 'fill-current' : ''}`} />
+                            </button>
+                            <span className="rounded-full border border-white/25 bg-black/20 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide backdrop-blur-sm">
+                              {story.years}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-1 flex-col p-5">
+                          <div className="flex items-center justify-between">
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#98733A] dark:text-[#D5B16D]">
+                              {story.category}
+                            </p>
+                            <span className="text-[10px] text-muted-foreground">{story.readingMinutes} min read</span>
+                          </div>
+
+                          <h3 className="mt-2 font-serif text-xl font-bold">{story.name}</h3>
+                          <p className="mt-1 text-xs text-[#788076] dark:text-[#A5ADA6]">{story.role}</p>
+                          <p className="mt-4 flex-1 text-sm leading-6 text-[#59635B] dark:text-[#B8C1B9]">
+                            {story.summary}
+                          </p>
+
+                          <div className="mt-5 flex items-center justify-between border-t border-[#EDE7DE] pt-4 dark:border-[#29332D]">
+                            <span className="inline-flex items-center gap-1.5 text-[11px] text-[#788076] dark:text-[#A5ADA6]">
+                              <Compass className="h-3.5 w-3.5" /> {story.location.split(',')[0]}
+                            </span>
+                            <Link
+                              to={`/life-stories/${story.slug}`}
+                              className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#1C442D] transition group-hover:gap-2.5 dark:text-[#D5B16D]"
+                            >
+                              Read story <ArrowRight className="h-4 w-4" />
+                            </Link>
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-[#DCD5C9] px-5 py-16 text-center dark:border-[#34443A]">
+                  <Search className="mx-auto h-8 w-8 text-[#98733A]" />
+                  <h3 className="mt-4 font-serif text-xl font-bold">
+                    {activeCategory === 'Saved' ? 'No saved stories yet' : 'No stories found'}
+                  </h3>
+                  <p className="mt-2 text-sm text-[#788076] dark:text-[#A5ADA6]">
+                    {activeCategory === 'Saved'
+                      ? 'Click the bookmark icon on any biography to save it for offline and quick reading.'
+                      : 'Try another name or choose a different category.'}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearch('');
+                      setActiveCategory('All stories');
+                    }}
+                    className="mt-4 text-sm font-semibold text-[#1C442D] underline dark:text-[#D5B16D]"
                   >
-                    <div
-                      className={`relative flex h-44 items-end overflow-hidden bg-gradient-to-br ${story.accent} p-5 text-white`}
-                    >
-                      <div className="absolute -right-8 -top-12 h-40 w-40 rounded-full border border-white/15" />
-                      <div className="absolute -right-1 -top-5 h-28 w-28 rounded-full border border-white/15" />
-
-                      <span className="relative rounded-xl border border-white/20 bg-black/20 px-3 py-2 text-2xl font-serif font-bold backdrop-blur-sm">
-                        {story.initials}
-                      </span>
-
-                      <div className="relative ml-auto flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={(e) => toggleBookmark(story.slug, e)}
-                          className={`rounded-full p-1.5 border transition ${
-                            isSaved
-                              ? 'border-amber-400 bg-amber-400 text-stone-950'
-                              : 'border-white/20 bg-black/20 text-white hover:bg-black/40'
-                          }`}
-                          title={isSaved ? 'Saved' : 'Save story'}
-                          aria-label="Save story"
-                        >
-                          <Bookmark className={`h-3.5 w-3.5 ${isSaved ? 'fill-current' : ''}`} />
-                        </button>
-                        <span className="rounded-full border border-white/25 bg-black/20 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide backdrop-blur-sm">
-                          {story.years}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-1 flex-col p-5">
-                      <div className="flex items-center justify-between">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#98733A] dark:text-[#D5B16D]">
-                          {story.category}
-                        </p>
-                        <span className="text-[10px] text-muted-foreground">{story.readingMinutes} min read</span>
-                      </div>
-
-                      <h3 className="mt-2 font-serif text-xl font-bold">{story.name}</h3>
-                      <p className="mt-1 text-xs text-[#788076] dark:text-[#A5ADA6]">{story.role}</p>
-                      <p className="mt-4 flex-1 text-sm leading-6 text-[#59635B] dark:text-[#B8C1B9]">
-                        {story.summary}
-                      </p>
-
-                      <div className="mt-5 flex items-center justify-between border-t border-[#EDE7DE] pt-4 dark:border-[#29332D]">
-                        <span className="inline-flex items-center gap-1.5 text-[11px] text-[#788076] dark:text-[#A5ADA6]">
-                          <Compass className="h-3.5 w-3.5" /> {story.location.split(',')[0]}
-                        </span>
-                        <Link
-                          to={`/life-stories/${story.slug}`}
-                          className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#1C442D] transition group-hover:gap-2.5 dark:text-[#D5B16D]"
-                        >
-                          Read story <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
+                    Clear filters
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
-            <div className="rounded-2xl border border-dashed border-[#DCD5C9] px-5 py-16 text-center dark:border-[#34443A]">
-              <Search className="mx-auto h-8 w-8 text-[#98733A]" />
-              <h3 className="mt-4 font-serif text-xl font-bold">
-                {activeCategory === 'Saved' ? 'No saved stories yet' : 'No stories found'}
-              </h3>
-              <p className="mt-2 text-sm text-[#788076] dark:text-[#A5ADA6]">
-                {activeCategory === 'Saved'
-                  ? 'Click the bookmark icon on any biography to save it for offline and quick reading.'
-                  : 'Try another name or choose a different category.'}
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setSearch('');
-                  setActiveCategory('All stories');
-                }}
-                className="mt-4 text-sm font-semibold text-[#1C442D] underline dark:text-[#D5B16D]"
-              >
-                Clear filters
-              </button>
-            </div>
+            /* ── COMMUNITY & EVERYDAY PEOPLE MEMOIRS ── */
+            <>
+              <div className="mb-5 flex items-end justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#98733A] dark:text-[#D5B16D]">
+                    Community Voices
+                  </p>
+                  <h2 className="mt-1 font-serif text-2xl font-bold sm:text-3xl">Everyday Lives, Extraordinary Journeys</h2>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => setIsWriteOpen(true)}
+                  className="rounded-xl gap-1.5 text-xs font-semibold bg-[#1C442D] text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#101711]"
+                >
+                  <Plus className="h-3.5 w-3.5" /> Share Your Story
+                </Button>
+              </div>
+
+              {filteredCommunityStories.length ? (
+                <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                  {filteredCommunityStories.map((story) => {
+                    const initials = (story.author_name || 'Member')
+                      .split(' ')
+                      .map((p) => p[0])
+                      .join('')
+                      .toUpperCase()
+                      .slice(0, 2);
+                    return (
+                      <article
+                        key={story.id}
+                        className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#E5DED2] bg-white shadow-[0_6px_24px_rgba(28,32,29,0.035)] transition duration-300 hover:-translate-y-1 hover:border-[#1C442D]/40 hover:shadow-lg dark:border-[#29332D] dark:bg-[#111614]"
+                      >
+                        <div className="relative flex h-36 items-end overflow-hidden bg-gradient-to-br from-[#1C442D] via-[#2A5C3F] to-[#162B1F] p-5 text-white">
+                          <span className="relative rounded-xl border border-white/20 bg-black/20 px-3 py-1.5 text-xl font-serif font-bold backdrop-blur-sm">
+                            {initials}
+                          </span>
+                          <span className="relative ml-auto rounded-full border border-white/20 bg-black/20 px-2.5 py-0.5 text-[10px] font-semibold uppercase backdrop-blur-sm">
+                            Community Memoir
+                          </span>
+                        </div>
+
+                        <div className="flex flex-1 flex-col p-5">
+                          <h3 className="font-serif text-lg font-bold leading-snug text-[#1C201D] dark:text-[#F3F0E7]">
+                            {story.title}
+                          </h3>
+                          <p className="mt-1 text-xs font-medium text-[#98733A] dark:text-[#D5B16D]">
+                            By {story.author_name || 'Community Member'}
+                          </p>
+                          <p className="mt-3 flex-1 text-sm leading-6 text-[#59635B] dark:text-[#B8C1B9] line-clamp-3">
+                            {story.description || 'A personal memoir shared on Sahadhyayi.'}
+                          </p>
+
+                          <div className="mt-5 flex items-center justify-between border-t border-[#EDE7DE] pt-4 dark:border-[#29332D]">
+                            <span className="text-[11px] text-[#788076] dark:text-[#A5ADA6]">
+                              {story.reading_time_minutes || 3} min read
+                            </span>
+                            <Link
+                              to={`/story/${story.id}`}
+                              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1C442D] hover:underline dark:text-[#D5B16D]"
+                            >
+                              Read memoir <ArrowRight className="h-3.5 w-3.5" />
+                            </Link>
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-[#DCD5C9] p-10 text-center dark:border-[#34443A] space-y-3">
+                  <Feather className="mx-auto h-10 w-10 text-[#98733A] opacity-80" />
+                  <h3 className="font-serif text-xl font-bold">Be the First to Share Your Life Story</h3>
+                  <p className="text-sm text-[#788076] dark:text-[#A5ADA6] max-w-md mx-auto">
+                    Every journey holds wisdom worth passing on. Write about your defining moments, lessons learned, and the values that guide you.
+                  </p>
+                  <div className="pt-2">
+                    <Button
+                      onClick={() => setIsWriteOpen(true)}
+                      className="rounded-xl font-semibold bg-[#1C442D] text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#101711]"
+                    >
+                      <Plus className="h-4 w-4 mr-1.5" /> Write Your Story Now
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           <section className="mt-12 rounded-2xl border border-[#DCD5C9] bg-[#F3EFE7] p-6 dark:border-[#29332D] dark:bg-[#111614] sm:p-8">
@@ -906,6 +1066,16 @@ const LifeStories = () => {
       <SuggestLifeStoryDialog
         open={isSuggestOpen}
         onOpenChange={setIsSuggestOpen}
+      />
+
+      {/* Write Personal Life Story / Memoir Dialog */}
+      <WriteLifeStoryDialog
+        open={isWriteOpen}
+        onOpenChange={setIsWriteOpen}
+        onSuccess={() => {
+          void refetchCommunityStories();
+          setStoryScope('community');
+        }}
       />
     </>
   );
