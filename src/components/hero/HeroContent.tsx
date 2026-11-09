@@ -26,14 +26,14 @@ export const HeroContent: React.FC = () => {
 
       {/* Main Headline */}
       <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] tracking-tight leading-[1.14] mb-5">
-        Read <span className="text-[#8F681C] dark:text-[#D5B16D]">deeper.</span>
+        Capture your <span className="text-[#8F681C] dark:text-[#D5B16D]">reading journey.</span>
         <br />
-        Connect meaningfully.
+        Share it with friends.
       </h1>
 
       {/* Supporting Description */}
       <p className="text-sm sm:text-base md:text-lg text-[#636B65] dark:text-[#A5ADA6] leading-relaxed mb-8 max-w-lg">
-        Discover books, exchange ideas, join reading groups, and find fellow readers who make every reading journey richer.
+        Keep your books, reviews, and reading moments together. Share ideas, join reading groups, and discover new reads with fellow readers.
       </p>
 
       {/* CTAs */}
