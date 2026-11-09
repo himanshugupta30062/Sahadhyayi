@@ -32,6 +32,7 @@ interface OrbitConfig {
   radius: number;
   strokeWidth: number;
   atomRadius: number;
+  labelWidth: number;
   atomColor: string;
   gradientColors: [string, string, string, string];
   start: number;
@@ -48,7 +49,8 @@ const ORBITS: OrbitConfig[] = [
     icon: "book",
     radius: 285,
     strokeWidth: 20,
-    atomRadius: 15,
+    atomRadius: 17,
+    labelWidth: 92,
     atomColor: "#ef4444",
     gradientColors: ["#ff9ecf", "#ff4d8d", "#ff1f5a", "#be123c"],
     start: -18,
@@ -63,7 +65,8 @@ const ORBITS: OrbitConfig[] = [
     icon: "quill",
     radius: 255,
     strokeWidth: 14,
-    atomRadius: 14,
+    atomRadius: 16,
+    labelWidth: 88,
     atomColor: "#22c55e",
     gradientColors: ["#86efac", "#4ade80", "#22c55e", "#166534"],
     start: 12,
@@ -78,7 +81,8 @@ const ORBITS: OrbitConfig[] = [
     icon: "people",
     radius: 225,
     strokeWidth: 10,
-    atomRadius: 14,
+    atomRadius: 16,
+    labelWidth: 128,
     atomColor: "#3b82f6",
     gradientColors: ["#93c5fd", "#60a5fa", "#3b82f6", "#1e3a8a"],
     start: -36,
@@ -93,7 +97,8 @@ const ORBITS: OrbitConfig[] = [
     icon: "article",
     radius: 210,
     strokeWidth: 8,
-    atomRadius: 13,
+    atomRadius: 15,
+    labelWidth: 92,
     atomColor: "#d99a24",
     gradientColors: ["#f8d887", "#eab545", "#d99a24", "#986515"],
     start: 24,
@@ -108,7 +113,8 @@ const ORBITS: OrbitConfig[] = [
     icon: "games",
     radius: 198,
     strokeWidth: 6,
-    atomRadius: 13,
+    atomRadius: 15,
+    labelWidth: 78,
     atomColor: "#8b5cf6",
     gradientColors: ["#c4b5fd", "#a78bfa", "#8b5cf6", "#5b21b6"],
     start: -8,
@@ -137,6 +143,7 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
   const containerRef = useRef<HTMLDivElement | null>(null);
   const ringRefs = useRef<(SVGGElement | null)[]>([]);
   const atomRefs = useRef<(SVGGElement | null)[]>([]);
+  const labelRefs = useRef<(SVGGElement | null)[]>([]);
   const ringAngles = useRef(ORBITS.map(() => 0));
   // Each atom moves only along its own coloured arc and fades near the gap.
   const atomProgress = useRef(ORBITS.map((orbit) => orbit.initialProgress));
@@ -161,6 +168,15 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
         const angle = norm(orbit.start + (ringAngles.current[index] || 0) + progress);
         const point = pos(orbit.radius, angle);
         atom.setAttribute("transform", `translate(${point.x}, ${point.y})`);
+
+        // Keep each feature name just outside its own orbit so it remains readable
+        // as the icon moves, while keeping the text horizontal.
+        const labelOffset = pos(orbit.atomRadius + 7, angle);
+        labelRefs.current[index]?.setAttribute(
+          "transform",
+          `translate(${labelOffset.x}, ${labelOffset.y})`,
+        );
+
         const distanceFromEdge = Math.min(progress, SWEEP_DEG - progress);
         atom.setAttribute("opacity", String(Math.max(0, Math.min(1, distanceFromEdge / ATOM_FADE_ANGLE))));
       });
@@ -320,6 +336,10 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>
+          <style>{`
+            .hero-orbit-node:focus-visible .hero-orbit-focus-ring { opacity: 1; }
+            .hero-orbit-node:focus-visible .hero-orbit-label rect { stroke-width: 3; }
+          `}</style>
           {ORBITS.map((orbit) => (
             <linearGradient
               key={orbit.id}
@@ -371,20 +391,48 @@ export default function HeroAtomicRings({ size = 720, className = "", children }
             onKeyDown={(event) => handleNodeKeyDown(event, orbit.href)}
             onFocus={() => setKeyboardPause(true)}
             onBlur={() => setKeyboardPause(false)}
-            className="pointer-events-auto cursor-pointer outline-none"
+            className="hero-orbit-node pointer-events-auto cursor-pointer outline-none focus-visible:drop-shadow-[0_0_8px_rgba(213,177,109,0.8)]"
           >
+            <title>Explore {orbit.label}</title>
+            <circle
+              className="hero-orbit-focus-ring"
+              r={orbit.atomRadius + 6}
+              fill="none"
+              stroke={orbit.atomColor}
+              strokeWidth="2.5"
+              opacity="0"
+            />
             <circle r={orbit.atomRadius} fill={orbit.atomColor} />
             {renderOrbitIcon(orbit.icon)}
-            <text
-              y={orbit.label === "Social Media" ? 27 : 26}
-              textAnchor="middle"
-              fontSize={orbit.label === "Social Media" ? 8 : 9}
-              fontWeight={600}
-              fill="currentColor"
-              className="text-[#1C201D] dark:text-[#f8fafc]"
+            <g
+              ref={(element) => { labelRefs.current[index] = element; }}
+              className="hero-orbit-label"
             >
-              {orbit.label}
-            </text>
+              <rect
+                x={-orbit.labelWidth / 2}
+                y={-13}
+                width={orbit.labelWidth}
+                height={26}
+                rx={13}
+                fill="#FAFAF8"
+                fillOpacity="0.97"
+                stroke={orbit.atomColor}
+                strokeOpacity="0.75"
+                strokeWidth="1.5"
+                className="dark:fill-[#111614]"
+              />
+              <text
+                textAnchor="middle"
+                y="5"
+                fontSize="15"
+                fontWeight="700"
+                letterSpacing="0.15"
+                fill="currentColor"
+                className="fill-[#1C201D] dark:fill-[#F3F0E7]"
+              >
+                {orbit.label}
+              </text>
+            </g>
           </g>
         ))}
       </svg>
