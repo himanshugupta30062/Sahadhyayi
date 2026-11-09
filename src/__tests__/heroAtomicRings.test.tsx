@@ -6,6 +6,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import HeroAtomicRings from "@/components/hero/HeroAtomicRings";
 import { BookExpertContext } from "@/contexts/book-expert.utils";
+import type { BookExpertContextType } from "@/contexts/book-expert.utils";
 
 const orbitFeatures = [
   "Digital Library",
@@ -49,15 +50,15 @@ const orbitFeatures = [
   "Reader Meetups"
 ];
 
-const mockBookExpert = {
+const mockBookExpert: BookExpertContextType = {
   isOpen: false,
   loading: false,
   messages: [],
   toggleChat: vi.fn(),
   closeChat: vi.fn(),
   clearConversation: vi.fn(),
-  sendMessage: vi.fn(),
-  sendFeedback: vi.fn(),
+  sendMessage: vi.fn().mockResolvedValue(undefined),
+  sendFeedback: vi.fn().mockResolvedValue(undefined),
 };
 
 beforeEach(() => {
