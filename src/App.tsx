@@ -879,11 +879,11 @@ const App = memo(() => {
                     </SidebarInset>
                   </SidebarProvider>
                   
-                  {/* Book Expert & WhatsApp Call Center - load only after idle time so it does not compete with the initial route */}
-                  <DeferredSection idle fallback={null} minHeightClassName="min-h-0">
+                  {/* Book Expert & Call Center FAB - immediately mounted and always visible */}
+                  <Suspense fallback={null}>
                     <WhatsAppCallCenterFab />
                     <BookExpert />
-                  </DeferredSection>
+                  </Suspense>
                   
                   <Toaster />
                 </BookExpertProvider>
