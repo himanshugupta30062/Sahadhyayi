@@ -539,10 +539,10 @@ const BookExpert = () => {
       aria-labelledby="book-expert-title"
       tabIndex={-1}
       className={cn(
-        "reader-room-panel-enter fixed inset-x-2 bottom-[calc(env(safe-area-inset-bottom,0px)_+_0.5rem)] z-50 flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-background text-foreground shadow-2xl shadow-black/25 transition-[width,height] duration-300",
+        "reader-room-panel-enter fixed inset-x-2 bottom-[calc(env(safe-area-inset-bottom,0px)_+_0.5rem)] z-50 flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border/70 bg-background text-foreground shadow-2xl shadow-black/25 transition-[width,height] duration-300 sm:left-1/2 sm:top-1/2 sm:bottom-auto sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl",
         isExpanded
-          ? "h-[min(85dvh,750px)] sm:inset-x-auto sm:bottom-5 sm:right-5 lg:bottom-6 lg:right-6 sm:h-[min(820px,calc(100dvh-2.5rem))] sm:w-[min(720px,calc(100vw-3rem))] sm:rounded-2xl"
-          : "h-[min(70dvh,600px)] sm:inset-x-auto sm:bottom-5 sm:right-5 lg:bottom-6 lg:right-6 sm:h-[min(680px,calc(100dvh-3rem))] sm:w-[min(420px,calc(100vw-3rem))] sm:rounded-2xl"
+          ? "h-[min(92dvh,900px)] sm:w-[min(1040px,calc(100vw-4rem))]"
+          : "h-[min(82dvh,780px)] sm:w-[min(900px,calc(100vw-4rem))]"
       )}
     >
       <header className="relative shrink-0 overflow-hidden border-b border-border/70 bg-card">
@@ -632,7 +632,7 @@ const BookExpert = () => {
       </header>
 
       <div
-        className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain bg-gradient-to-b from-amber-500/[0.045] via-background to-background px-4 py-4 sm:px-5 sm:py-5"
+        className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain bg-background px-4 py-5 sm:px-8 sm:py-8"
         aria-live="polite"
         aria-relevant="additions text"
       >
@@ -648,10 +648,10 @@ const BookExpert = () => {
                 <div className="min-w-0">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Welcome, reader</p>
                   <h3 className="mt-2 max-w-xs text-2xl font-semibold leading-tight tracking-tight sm:text-[1.75rem]">
-                    Every great conversation starts with a page.
+                    What would you like to explore?
                   </h3>
                   <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
-                    Meet a book, find your next read, or follow a question wherever it leads. Let's see what the shelves have for you.
+                    Ask anything about books, ideas, authors, or the world. I’ll help you think it through.
                   </p>
                 </div>
               </div>
@@ -718,16 +718,16 @@ const BookExpert = () => {
                   )}
                   <div className={cn("min-w-0 space-y-2", isUser ? "max-w-[88%]" : "w-full max-w-[calc(100%-2.5rem)]")}>
                     <div className={cn(
-                      "rounded-2xl px-4 py-3.5 text-sm leading-relaxed",
+                      "rounded-2xl px-4 py-3.5 text-sm leading-relaxed sm:px-5",
                       isUser
-                        ? "rounded-br-md bg-primary text-primary-foreground shadow-sm"
-                        : "rounded-tl-md border border-border/80 bg-card shadow-sm",
+                        ? "rounded-br-md bg-muted text-foreground"
+                        : "border-0 bg-transparent shadow-none",
                       message.error && "border-destructive/50"
                     )}>
                       {!isUser && (
-                        <div className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-primary">
+                        <div className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold tracking-wide text-muted-foreground">
                           <Sparkles className="h-3 w-3" aria-hidden="true" />
-                          From the reading room
+                          Book Expert
                         </div>
                       )}
                       {isUser ? (
