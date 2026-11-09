@@ -3,6 +3,7 @@ import { ArrowUpRight, MapPin, Route } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { JourneyLandmarkArt } from './JourneyLandmarkArt';
 import { StudentCyclist } from './StudentCyclist';
+import { JOURNEY_DESTINATIONS } from './journeyData';
 import './journey-scenic-trail.css';
 
 interface JourneyScenicTrailProps {
