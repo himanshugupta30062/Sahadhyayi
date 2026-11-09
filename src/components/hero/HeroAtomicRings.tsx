@@ -431,7 +431,7 @@ export default function HeroAtomicRings({ size = 760, className = "", children }
             .hero-orbit-node:focus-visible .hero-orbit-label rect { stroke-width: 3; }
             .dark .hero-orbit-label rect { fill: #111614; }
             .dark .hero-orbit-label text { fill: #F3F0E7; }
-            @media (max-width: 1023px) {
+            @media (max-width: 1279px) {
               .hero-orbit-node { display: none; }
             }
           `}</style>
@@ -558,7 +558,7 @@ export default function HeroAtomicRings({ size = 760, className = "", children }
       {/* The radial labels become a clear, thumb-friendly feature directory on tablets and phones. */}
       <nav
         aria-label="Explore Sahadhyayi features"
-        className="mt-3 grid w-full max-w-4xl grid-cols-1 gap-2 px-1 pb-2 lg:hidden sm:grid-cols-2"
+        className="mt-3 grid w-full max-w-4xl grid-cols-1 gap-2 px-1 pb-2 xl:hidden sm:grid-cols-2"
       >
         <p className="col-span-full mb-1 text-center text-xs font-medium tracking-wide text-[#636B65] dark:text-[#A5ADA6]">
           Explore every part of Sahadhyayi
