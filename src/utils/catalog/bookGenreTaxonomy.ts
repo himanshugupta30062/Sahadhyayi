@@ -6,11 +6,14 @@ export const BOOK_GENRE_TAXONOMY = [
   'Fiction', 'Literary Fiction', 'Fantasy', 'Science Fiction', 'Mystery & Thriller',
   'Romance', 'Horror', 'Historical Fiction', 'Poetry', 'Drama', 'Non-Fiction',
   'Biography & Memoir', 'History', 'Philosophy', 'Psychology', 'Self-Help',
-  'Religion & Spirituality', 'Politics & Society', 'Economics & Business', 'Science',
+  'Religion & Spirituality', 'Spiritual', 'Politics & Society', 'Economics & Business', 'Science',
   'Technology & Engineering', 'Education', 'Health & Medicine', 'Travel',
   'Art & Photography', 'Comics & Graphic Novels', 'Children & Young Adult',
   'Reference', 'Academic & Research', 'Other',
 ] as const;
+
+export const RELIGIOUS_TITLE_PATTERN =
+  /\b(durga\s*saptashati|chandi|bhagavad\s*g[ie]ta|shrimad\s*bhagwat|ashtavakra\s*g[ie]ta|ramayan[a]?|ramcharitmanas|upanishad[s]?|vedas?|rigveda|samaveda|yajurveda|atharvaveda|shiv[a]?\s*puran|shiva?\s*sutra|gayatri\s*mantra|gayathri\s*mantra|hanuman\s*chalisa|dhammapada|holy\s*bible|quran|koran)\b/i;
 
 const aliases: Record<string, string> = {
   novel: 'Fiction', novels: 'Fiction', fiction: 'Fiction', 'general fiction': 'Fiction',
@@ -26,7 +29,17 @@ const aliases: Record<string, string> = {
   biography: 'Biography & Memoir', biographies: 'Biography & Memoir', memoir: 'Biography & Memoir',
   autobiography: 'Biography & Memoir', history: 'History', philosophy: 'Philosophy',
   psychology: 'Psychology', 'self help': 'Self-Help', 'self-help': 'Self-Help',
-  religion: 'Religion & Spirituality', spirituality: 'Religion & Spirituality',
+  religion: 'Spiritual', spirituality: 'Spiritual', spiritual: 'Spiritual', religious: 'Spiritual',
+  'religion & spirituality': 'Spiritual',
+  hinduism: 'Spiritual', hindu: 'Spiritual', 'hindu spirituality': 'Spiritual', 'hindu philosophy': 'Philosophy',
+  vedas: 'Spiritual', veda: 'Spiritual', upanishad: 'Spiritual', upanishads: 'Spiritual',
+  purana: 'Spiritual', puranas: 'Spiritual', bhagavadgītā: 'Spiritual', bhagavadgita: 'Spiritual',
+  gita: 'Spiritual', geeta: 'Spiritual', saptashati: 'Spiritual', chandi: 'Spiritual',
+  stotra: 'Spiritual', suktam: 'Spiritual', mantra: 'Spiritual', chalisa: 'Spiritual',
+  'sandhyā (hindu rite)': 'Spiritual', vaishnavism: 'Spiritual', shaivism: 'Spiritual',
+  buddhism: 'Spiritual', jainism: 'Spiritual', sikhism: 'Spiritual',
+  bible: 'Spiritual', quran: 'Spiritual', koran: 'Spiritual', theology: 'Spiritual',
+  scripture: 'Spiritual', 'sacred text': 'Spiritual', 'sacred texts': 'Spiritual',
   politics: 'Politics & Society', sociology: 'Politics & Society', society: 'Politics & Society',
   economics: 'Economics & Business', business: 'Economics & Business', finance: 'Economics & Business',
   science: 'Science', mathematics: 'Science', biology: 'Science', physics: 'Science',
@@ -42,7 +55,12 @@ const aliases: Record<string, string> = {
 
 const key = (value: string) => value.trim().toLowerCase().replace(/[_]+/g, ' ').replace(/\s+/g, ' ');
 
-export function normalizeBookGenre(value?: string | null): string {
+export function normalizeBookGenre(value?: string | null, title?: string | null): string {
+  // If title is a known sacred/spiritual scripture, correct any provider misclassification (such as Fiction)
+  if (title && RELIGIOUS_TITLE_PATTERN.test(title)) {
+    return 'Spiritual';
+  }
+
   if (!value?.trim()) return 'Other';
   const hierarchy = value.split('/').map(key).filter(Boolean);
   for (const part of hierarchy.reverse()) if (aliases[part]) return aliases[part];
@@ -55,7 +73,7 @@ export function normalizeBookGenre(value?: string | null): string {
   return 'Other';
 }
 
-export function normalizeBookGenres(values?: string[] | string | null): string[] {
+export function normalizeBookGenres(values?: string[] | string | null, title?: string | null): string[] {
   const list = Array.isArray(values) ? values : values ? values.split(/[;,|]/) : [];
-  return [...new Set(list.map(normalizeBookGenre).filter((genre) => genre !== 'Other'))];
+  return [...new Set(list.map((v) => normalizeBookGenre(v, title)).filter((genre) => genre !== 'Other'))];
 }

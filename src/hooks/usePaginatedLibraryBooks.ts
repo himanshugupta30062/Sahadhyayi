@@ -17,6 +17,7 @@ import {
   applyPublicBookFilter,
   filterPublicBooks,
 } from '@/utils/catalog/bookVisibility';
+import { normalizeBookGenre } from '@/utils/catalog/bookGenreTaxonomy';
 
 interface UsePaginatedLibraryBooksParams {
   searchQuery?: string;
@@ -36,6 +37,38 @@ interface PaginatedBooksResponse {
   pageSize: number;
   hasNextPage: boolean;
   hasPrevPage: boolean;
+}
+
+function applyGenreQueryFilter(q: any, genre: string) {
+  if (genre === 'Hindi') {
+    return q.eq('language', 'Hindi');
+  }
+  if (genre === 'Spiritual' || genre === 'Religion & Spirituality' || genre === 'Religion') {
+    return q.or(
+      'genre.eq.Spiritual,genre.eq.Religion,genre.ilike.%Hindu%,genre.ilike.%Veda%,genre.ilike.%Gita%,genre.ilike.%Geeta%,title.ilike.%Durga Saptashati%,title.ilike.%Chandi%,title.ilike.%Bhagavad%,title.ilike.%Bhagwat%,title.ilike.%Ramayan%,title.ilike.%Upanishad%,title.ilike.%Shiv Sutra%,title.ilike.%Shiv Puran%,title.ilike.%Gayatri Mantra%,title.ilike.%Gayathri Mantra%,title.ilike.%Bible%,title.ilike.%Quran%'
+    );
+  }
+  if (genre === 'Fiction') {
+    return q.eq('genre', 'Fiction')
+      .not('title', 'ilike', '%Durga Saptashati%')
+      .not('title', 'ilike', '%Chandi%')
+      .not('title', 'ilike', '%Bhagavad%')
+      .not('title', 'ilike', '%Bhagwat%')
+      .not('title', 'ilike', '%Ramayan%');
+  }
+  if (genre === 'Classics' || genre === 'Classic Literature') {
+    return q.or('genre.eq.Classics,genre.eq.Classic Literature,genre.ilike.%Classic%');
+  }
+  if (genre === 'Biography') {
+    return q.or('genre.eq.Biography,genre.eq.Biography & Autobiography,genre.ilike.%Biograph%');
+  }
+  if (genre === 'Philosophy') {
+    return q.or('genre.eq.Philosophy,genre.ilike.%Philosoph%');
+  }
+  if (genre === 'Science') {
+    return q.or('genre.eq.Science,genre.ilike.%Physics%,genre.ilike.%Chemistry%,genre.ilike.%Biology%,genre.ilike.%Astrophysics%');
+  }
+  return q.eq('genre', genre);
 }
 
 /** Fetch all matching books in batches to avoid 1000-row limit */
@@ -70,11 +103,7 @@ async function fetchFilteredBooks(
       );
     }
     if (selectedGenre && selectedGenre !== 'All' && contentType !== 'research-papers') {
-      if (selectedGenre === 'Hindi') {
-        query = query.eq('language', 'Hindi');
-      } else {
-        query = query.eq('genre', selectedGenre);
-      }
+      query = applyGenreQueryFilter(query, selectedGenre);
     }
     if (selectedAuthor && selectedAuthor !== 'All') {
       query = query.eq('author', selectedAuthor);
@@ -104,11 +133,7 @@ async function fetchFilteredBooks(
           );
         }
         if (selectedGenre && selectedGenre !== 'All' && contentType !== 'research-papers') {
-          if (selectedGenre === 'Hindi') {
-            fallbackQuery = fallbackQuery.eq('language', 'Hindi');
-          } else {
-            fallbackQuery = fallbackQuery.eq('genre', selectedGenre);
-          }
+          fallbackQuery = applyGenreQueryFilter(fallbackQuery, selectedGenre);
         }
         if (selectedAuthor && selectedAuthor !== 'All') {
           fallbackQuery = fallbackQuery.eq('author', selectedAuthor);
@@ -150,7 +175,7 @@ async function fetchFilteredBooks(
       id: String(row.id),
       title: row.title || p.title,
       author: row.author || p.author || 'Unknown Author',
-      genre: row.genre || p.genre,
+      genre: normalizeBookGenre(row.genre || p.genre, row.title || p.title),
       cover_image_url: row.cover_image_url || p.coverImageUrl,
       description: row.description || p.description,
       publication_year: row.publication_year || p.publicationYear,
@@ -188,11 +213,7 @@ async function fetchFilteredBooks(
         );
       }
       if (selectedGenre && selectedGenre !== 'All') {
-        if (selectedGenre === 'Hindi') {
-          userQuery = userQuery.eq('language', 'Hindi');
-        } else {
-          userQuery = userQuery.eq('genre', selectedGenre);
-        }
+        userQuery = applyGenreQueryFilter(userQuery, selectedGenre);
       }
       if (selectedAuthor && selectedAuthor !== 'All') {
         userQuery = userQuery.eq('author_name', selectedAuthor);
@@ -208,7 +229,7 @@ async function fetchFilteredBooks(
             id: String(row.id),
             title: row.title,
             author: row.author_name || 'Community Author',
-            genre: row.genre || 'Community',
+            genre: normalizeBookGenre(row.genre || 'Community', row.title),
             cover_image_url: normalizeCoverUrl(row.cover_image_url),
             description: row.description || row.subtitle || null,
             publication_year: row.created_at ? new Date(row.created_at).getFullYear() : undefined,

@@ -771,7 +771,7 @@ const mapBook = (book: any): Book => ({
   id: book.id,
   title: book.title,
   author: book.author || 'Unknown Author',
-  genre: normalizeBookGenre(book.genre),
+  genre: normalizeBookGenre(book.genre, book.title),
   cover_image_url: book.cover_image_url,
   description: book.description,
   publication_year: book.publication_year,
