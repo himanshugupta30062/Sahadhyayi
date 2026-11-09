@@ -448,7 +448,9 @@ const BookExpert = () => {
       data-testid={minimized ? "reading-room-mini-launcher" : "reading-room-launcher"}
       title={minimized ? "Restore Reading Room AI" : "Ask Book Expert AI"}
       className={cn(
-        "group fixed z-50 flex items-center rounded-full border border-[#D5B16D]/50 bg-background/95 text-foreground shadow-xl shadow-black/15 backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl hover:border-[#D5B16D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "group fixed z-50 flex items-center rounded-full shadow-2xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_-6px_rgba(213,177,109,0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D]",
+        // Estate Mitra radiant gold styling - highly visible on light and dark backgrounds
+        "bg-gradient-to-r from-[#F5D48B] via-[#D5B16D] to-[#B68A35] text-[#111614] border border-[#FFF2D1]/70 font-medium",
         // Spacing aligned with CallCenterFab
         "bottom-4 right-4 sm:bottom-5 sm:right-5 lg:bottom-6 lg:right-6",
         // Height: 48px on mobile, 56px on sm+
@@ -463,9 +465,9 @@ const BookExpert = () => {
             )
       )}
     >
-      <span className="reader-room-launcher-icon relative flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#1C442D]/10 dark:bg-[#D5B16D]/15">
+      <span className="reader-room-launcher-icon relative flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-black/10">
         <img src={bookIcon} alt="" loading="eager" decoding="async" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110" draggable={false} />
-        <span className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-emerald-500 animate-pulse" aria-hidden="true" />
+        <span className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500 animate-pulse" aria-hidden="true" />
       </span>
 
       {/* Folding / Unfolding Text Label container like Estate Mitra in Faridabad_Estate */}
@@ -480,11 +482,11 @@ const BookExpert = () => {
               : "max-w-0 opacity-0 ml-0"
           )}
         >
-          <span className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold leading-tight text-foreground">
-            <Sparkles className="h-3.5 w-3.5 text-[#D5B16D] shrink-0" />
+          <span className="flex items-center gap-1.5 text-xs sm:text-sm font-bold leading-tight text-[#111614]">
+            <Sparkles className="h-3.5 w-3.5 text-[#5C420D] shrink-0" />
             <span className="truncate">Book Expert AI</span>
           </span>
-          <span className="text-[10px] sm:text-[11px] text-muted-foreground leading-tight">
+          <span className="text-[10px] sm:text-[11px] font-medium text-[#382B10] leading-tight">
             Ask about any book
           </span>
         </span>
@@ -502,7 +504,7 @@ const BookExpert = () => {
           )}
           aria-hidden="true"
         >
-          <MessageCircle className="h-4 w-4 text-[#D5B16D]" />
+          <MessageCircle className="h-4 w-4 text-[#5C420D]" />
         </span>
       )}
     </button>
