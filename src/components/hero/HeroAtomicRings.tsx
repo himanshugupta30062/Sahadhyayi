@@ -3,7 +3,7 @@
 
 import React, { useContext, useEffect, useId, useRef } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { BookExpertContext } from "@/contexts/book-expert.utils";
 
 const toRadTop = (deg: number) => (deg - 90) * (Math.PI / 180);
@@ -72,7 +72,7 @@ const ORBIT_BANDS: OrbitBand[] = [
   {
     id: "reading-life",
     title: "Personal Reading",
-    radius: 170,
+    radius: 201,
     color: "#39734A",
     gradientColors: ["#BBF7D0", "#86EFAC", "#3D9B59", "#166534"],
     icon: "journal",
@@ -89,7 +89,7 @@ const ORBIT_BANDS: OrbitBand[] = [
   {
     id: "reader-village",
     title: "Reader Discovery",
-    radius: 195,
+    radius: 257,
     color: "#98701F",
     gradientColors: ["#FDE68A", "#FBBF24", "#B7791F", "#854D0E"],
     icon: "map",
@@ -106,7 +106,7 @@ const ORBIT_BANDS: OrbitBand[] = [
   {
     id: "reading-together",
     title: "Read Together",
-    radius: 220,
+    radius: 313,
     color: "#326A9A",
     gradientColors: ["#BFDBFE", "#60A5FA", "#2563EB", "#1E3A8A"],
     icon: "discussion",
@@ -125,7 +125,7 @@ const ORBIT_BANDS: OrbitBand[] = [
   {
     id: "stories-writing",
     title: "Stories & Writing",
-    radius: 245,
+    radius: 369,
     color: "#80539A",
     gradientColors: ["#E9D5FF", "#C084FC", "#9333EA", "#581C87"],
     icon: "story",
@@ -133,7 +133,8 @@ const ORBIT_BANDS: OrbitBand[] = [
     duration: 52,
     direction: 1,
     features: [
-      { id: "short-stories", label: "Short Stories", href: "/stories" },
+      { id: "short-stories", label: "Stories & Serials", href: "/stories" },
+      { id: "community-stories", label: "Community Stories", href: "/community-stories" },
       { id: "life-stories", label: "Life Stories", href: "/life-stories" },
       { id: "articles", label: "Articles", href: "/articles" },
       { id: "blogs", label: "Blogs", href: "/blog" },
@@ -144,7 +145,7 @@ const ORBIT_BANDS: OrbitBand[] = [
   {
     id: "authors-voices",
     title: "Authors & Voices",
-    radius: 270,
+    radius: 425,
     color: "#A25232",
     gradientColors: ["#FED7AA", "#FB923C", "#C15A32", "#7C2D12"],
     icon: "quill",
@@ -164,7 +165,7 @@ const ORBIT_BANDS: OrbitBand[] = [
   {
     id: "events-activity",
     title: "Events & Activity",
-    radius: 295,
+    radius: 481,
     color: "#B36B1F",
     gradientColors: ["#FDE68A", "#F59E0B", "#D97706", "#92400E"],
     icon: "activity",
@@ -183,7 +184,7 @@ const ORBIT_BANDS: OrbitBand[] = [
   {
     id: "ai-knowledge",
     title: "AI Knowledge Station",
-    radius: 320,
+    radius: 537,
     color: "#277B91",
     gradientColors: ["#A5F3FC", "#22D3EE", "#0891B2", "#164E63"],
     icon: "ai",
@@ -405,20 +406,21 @@ export default function HeroAtomicRings({ size = 760, className = "", children }
   };
 
   return (
-    <div
-      ref={containerRef}
-      className={"relative w-full h-full aspect-square flex items-center justify-center " + className}
-      style={
-        typeof size === "number"
-          ? { width: size, height: size }
-          : typeof size === "string" && size !== "100%"
-          ? { width: size, height: size }
-          : { width: "100%", height: "100%" }
-      }
-    >
+    <div className={"relative flex w-full flex-col items-center " + className}>
+      <div
+        ref={containerRef}
+        className="relative flex aspect-square w-full items-center justify-center"
+        style={
+          typeof size === "number"
+            ? { width: size, height: size }
+            : typeof size === "string" && size !== "100%"
+            ? { width: size, height: size }
+            : { width: "100%" }
+        }
+      >
       <svg
-        className="block w-full h-full max-w-full max-h-full overflow-visible"
-        viewBox="-440 -440 880 880"
+        className="block h-full w-full max-h-full max-w-full overflow-visible"
+        viewBox="-660 -660 1320 1320"
         role="group"
         aria-label={"Explore " + FEATURE_COUNT + " Sahadhyayi features across eight animated rings"}
         preserveAspectRatio="xMidYMid meet"
@@ -429,6 +431,9 @@ export default function HeroAtomicRings({ size = 760, className = "", children }
             .hero-orbit-node:focus-visible .hero-orbit-label rect { stroke-width: 3; }
             .dark .hero-orbit-label rect { fill: #111614; }
             .dark .hero-orbit-label text { fill: #F3F0E7; }
+            @media (max-width: 1023px) {
+              .hero-orbit-node { display: none; }
+            }
           `}</style>
           {ORBIT_BANDS.map((band) => (
             <linearGradient
@@ -474,7 +479,7 @@ export default function HeroAtomicRings({ size = 760, className = "", children }
 
         {ORBIT_BANDS.map((band, bandIndex) =>
           band.features.map((feature, featureIndex) => {
-            const labelWidth = Math.min(180, Math.max(84, feature.label.length * 7.3 + 18));
+            const labelWidth = Math.min(190, Math.max(90, feature.label.length * 8.1 + 20));
             const isAction = feature.action === "open-book-expert";
             return (
               <g
@@ -527,7 +532,7 @@ export default function HeroAtomicRings({ size = 760, className = "", children }
                     x="0"
                     y="5"
                     textAnchor="middle"
-                    fontSize="14"
+                    fontSize="16"
                     fontWeight="700"
                     letterSpacing="0.05"
                     fill="#1C201D"
@@ -542,12 +547,49 @@ export default function HeroAtomicRings({ size = 760, className = "", children }
       </svg>
 
       {children && (
-        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-          <div className="w-full max-w-[92%] sm:max-w-[88%] pointer-events-auto flex items-center justify-center">
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+          <div className="pointer-events-auto flex w-full max-w-[92%] items-center justify-center sm:max-w-[88%]">
             {children}
           </div>
         </div>
       )}
+      </div>
+
+      {/* The radial labels become a clear, thumb-friendly feature directory on tablets and phones. */}
+      <nav
+        aria-label="Explore Sahadhyayi features"
+        className="mt-3 grid w-full max-w-4xl grid-cols-1 gap-2 px-1 pb-2 lg:hidden sm:grid-cols-2"
+      >
+        <p className="col-span-full mb-1 text-center text-xs font-medium tracking-wide text-[#636B65] dark:text-[#A5ADA6]">
+          Explore every part of Sahadhyayi
+        </p>
+        {ORBIT_BANDS.map((band) => (
+          <details
+            key={band.id}
+            className="group overflow-hidden rounded-2xl border border-[#E8E2D9] bg-white/85 shadow-sm transition-colors open:border-[#CDBB99] dark:border-[#29332D] dark:bg-[#111614]/90 dark:open:border-[#6B5A37]"
+          >
+            <summary className="flex min-h-12 cursor-pointer list-none items-center gap-3 px-3 py-3 outline-none marker:hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#8F681C] dark:focus-visible:ring-[#D5B16D] [&::-webkit-details-marker]:hidden">
+              <span aria-hidden="true" className="h-3 w-3 shrink-0 rounded-full ring-4 ring-black/5 dark:ring-white/10" style={{ backgroundColor: band.color }} />
+              <span className="min-w-0 flex-1 text-left text-sm font-semibold text-[#1C201D] dark:text-[#F3F0E7]">{band.title}</span>
+              <span className="text-[11px] font-medium text-[#636B65] dark:text-[#A5ADA6]">{band.features.length} {band.features.length === 1 ? "feature" : "features"}</span>
+              <span aria-hidden="true" className="ml-1 text-lg leading-none text-[#8F681C] transition-transform group-open:rotate-45 dark:text-[#D5B16D]">+</span>
+            </summary>
+            <div className="grid grid-cols-1 gap-1 border-t border-[#E8E2D9] p-2 dark:border-[#29332D] sm:grid-cols-2">
+              {band.features.map((feature) =>
+                feature.action === "open-book-expert" ? (
+                  <button key={feature.id} type="button" onClick={() => openFeature(feature)} className="flex min-h-10 items-center rounded-lg px-3 py-2 text-left text-sm font-medium text-[#1C442D] transition-colors hover:bg-[#F2F5EF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:text-[#D5B16D] dark:hover:bg-[#1B241E]">
+                    {feature.label}
+                  </button>
+                ) : (
+                  <Link key={feature.id} to={feature.href || "/"} className="flex min-h-10 items-center rounded-lg px-3 py-2 text-sm font-medium text-[#1C201D] transition-colors hover:bg-[#F2F5EF] hover:text-[#1C442D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:text-[#F3F0E7] dark:hover:bg-[#1B241E] dark:hover:text-[#D5B16D]">
+                    {feature.label}
+                  </Link>
+                ),
+              )}
+            </div>
+          </details>
+        ))}
+      </nav>
     </div>
   );
 }
