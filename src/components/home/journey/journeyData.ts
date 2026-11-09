@@ -1,10 +1,6 @@
-export interface JourneyMenuItem {
-  id: string;
+export interface JourneyFeature {
   label: string;
   description: string;
-  route?: string;
-  requiresAuth?: boolean;
-  action?: 'open-book-expert';
 }
 
 export interface QuickPrompt {
@@ -17,13 +13,20 @@ export interface QuickPrompt {
 export interface JourneyDestination {
   id: string;
   index: number;
+  distanceKm: number;
   title: string;
   subtitle: string;
   landmarkName: string;
+  lore: string;
   description: string;
-  menuPreview: string;
-  menuItems: JourneyMenuItem[];
-  accentColor: string;
+  badge: string;
+  route: string;
+  ctaText: string;
+  secondaryRoute?: string;
+  secondaryCtaText?: string;
+  stats: { value: string; label: string }[];
+  features: JourneyFeature[];
+  accentColor: string; // HSL color or theme token
   prompts?: QuickPrompt[];
 }
 
@@ -31,123 +34,207 @@ export const JOURNEY_DESTINATIONS: JourneyDestination[] = [
   {
     id: 'library-city',
     index: 1,
+    distanceKm: 0.0,
     title: 'Library City',
-    subtitle: 'A world of books, ideas and discovery',
+    subtitle: 'Where Human Knowledge Gathers',
     landmarkName: 'The Grand Classical Archives',
-    description: 'Start with the collection. Browse books, discover your next read, explore research and open titles in the digital library.',
-    menuPreview: 'Books · Discovery · Research',
+    badge: 'Milestone 01 · Departure City',
+    lore: 'Our student begins at the great metropolitan archives — towering marble arches, sunlit reading halls, and endless rows of open books waiting to be explored.',
+    description: 'Dive into more than 100,000 public domain classics, contemporary masterpieces, and curated anthologies. Filter by genre, era, language, or theme.',
+    route: '/library',
+    ctaText: 'Explore Digital Library',
+    secondaryRoute: '/discovery',
+    secondaryCtaText: 'Smart Book Discovery',
     accentColor: '#1C442D',
-    menuItems: [
-      { id: 'digital-library', label: 'Digital Library', description: 'Browse books across genres, subjects and reading interests.', route: '/library' },
-      { id: 'book-discovery', label: 'Discover Books', description: 'Find books by topic, mood, author or reading preference.', route: '/discovery' },
-      { id: 'research-papers', label: 'Research Papers', description: 'Explore papers, ideas and academic reading.', route: '/research-papers' },
-      { id: 'book-archive', label: 'Book Archive', description: 'Browse the wider public book collection.', route: '/book-library' },
+    stats: [
+      { value: '100K+', label: 'Digital Books' },
+      { value: '45+', label: 'Literary Genres' },
+      { value: 'Free', label: 'Open Access' },
+    ],
+    features: [
+      { label: 'Public Domain Classics', description: 'Timeless philosophy, world literature, and historical treatises.' },
+      { label: 'Curated Anthologies', description: 'Hand-selected collections tailored for deep thematic study.' },
+      { label: 'Instant In-Browser Reader', description: 'Distraction-free typography, bookmarks, and font tuning.' },
     ],
   },
   {
     id: 'reading-valley',
     index: 2,
+    distanceKm: 3.4,
     title: 'Reading Valley',
-    subtitle: 'Make every reading day count',
+    subtitle: 'Your Private Sanctuary',
     landmarkName: 'The Ancient Oak of Solitude',
-    description: 'Build a reading life of your own. Keep your shelves organised, follow your progress and save the ideas worth returning to.',
-    menuPreview: 'My Bookshelf · Journal · Goals',
+    badge: 'Milestone 02 · Rolling Hills',
+    lore: 'Pedaling past the city gates into rolling green pastures, our cyclist pauses beneath a magnificent oak tree where a fellow reader sits lost in thought.',
+    description: 'Keep your reading life beautifully organized. Track current reads, build custom shelves, log reading streaks, and preserve marginalia highlights.',
+    route: '/bookshelf',
+    ctaText: 'Open Your Bookshelf',
+    secondaryRoute: '/dashboard',
+    secondaryCtaText: 'Reading Dashboard',
     accentColor: '#2D5E3A',
-    menuItems: [
-      { id: 'bookshelf', label: 'My Bookshelf', description: 'Keep track of books you are reading, want to read and have finished.', route: '/bookshelf' },
-      { id: 'reading-dashboard', label: 'Reading Dashboard', description: 'See your personal reading activity and progress. Sign-in required.', route: '/dashboard', requiresAuth: true },
-      { id: 'reading-journal', label: 'Reading Journal', description: 'Return to notes and reflections from your reading.', route: '/journal' },
-      { id: 'quotes', label: 'Quotes & Highlights', description: 'Collect meaningful passages and memorable lines.', route: '/quotes' },
+    stats: [
+      { value: 'Personal', label: 'Custom Shelves' },
+      { value: 'Daily', label: 'Streak Tracker' },
+      { value: 'Private', label: 'Reading Notes' },
+    ],
+    features: [
+      { label: 'Custom Digital Shelves', description: 'Organize by Currently Reading, Want to Read, and Favorites.' },
+      { label: 'Daily Streak Counter', description: 'Build consistency with gentle habit tracking and milestones.' },
+      { label: 'Reading Goal Insights', description: 'Visualize your yearly reading targets and pacing.' },
     ],
   },
   {
     id: 'reader-village',
     index: 3,
+    distanceKm: 7.8,
     title: 'Reader Village',
-    subtitle: 'Find the people who love what you read',
+    subtitle: 'Fellow Readers in Every Corner',
     landmarkName: 'The Village Book Exchange Kiosk',
-    description: 'Meet fellow readers, discover nearby reading connections and find people exploring the same book.',
-    menuPreview: 'Friends · Nearby Readers · Maps',
+    badge: 'Milestone 03 · Cobblestone Hamlet',
+    lore: 'Arriving in a cozy hamlet with stone cottages and chimney smoke, the student spots a neighborhood "Take a Book, Leave a Book" library where neighbors gather.',
+    description: 'Reading never has to be lonely. Discover readers in your neighborhood, find local book swaps, and form meaningful friendships with kindred spirits.',
+    route: '/map',
+    ctaText: 'Find Readers Near Me',
+    secondaryRoute: '/social?tab=friends',
+    secondaryCtaText: 'Reader Connections',
     accentColor: '#8F681C',
-    menuItems: [
-      { id: 'friends-feed', label: 'Friends Feed', description: 'See what fellow readers are sharing in the community.', route: '/social' },
-      { id: 'reader-map', label: 'Readers Near Me', description: 'Explore the reader map. Sign-in required.', route: '/map', requiresAuth: true },
-      { id: 'book-reader-map', label: 'Readers Around a Book', description: 'Find readers connected to a particular title. Sign-in required.', route: '/reader-map', requiresAuth: true },
+    stats: [
+      { value: 'Local', label: 'Reader Map' },
+      { value: '100%', label: 'Privacy Safe' },
+      { value: 'Nearby', label: 'Book Swaps' },
+    ],
+    features: [
+      { label: 'Interactive Reader Map', description: 'Discover fellow book lovers around your campus or neighborhood.' },
+      { label: 'Privacy First', description: 'Only share what you choose with coarse city-level precision.' },
+      { label: 'Book Lending Circles', description: 'Borrow and exchange physical books with trusted peers.' },
     ],
   },
   {
     id: 'reading-bridge',
     index: 4,
+    distanceKm: 12.1,
     title: 'Reading Together Bridge',
-    subtitle: 'Good books become better conversations',
+    subtitle: 'Shared Thoughts, Boundless Discourse',
     landmarkName: 'The Stone Aqueduct of Dialogue',
-    description: 'Move from reading alone to reading together. Join groups, exchange perspectives and take part in shared community activity.',
-    menuPreview: 'Reading Groups · Feed · Activity',
+    badge: 'Milestone 04 · River Crossing',
+    lore: 'Crossing a grand triple-arched stone bridge spanning a glittering river, the student joins lively book clubs gathered on the balustrades discussing favorite chapters.',
+    description: 'Join community book clubs, schedule buddy reads, debate plot twists, and share chapter-by-chapter reflections in dedicated reading spaces.',
+    route: '/groups',
+    ctaText: 'Browse Book Clubs',
+    secondaryRoute: '/social',
+    secondaryCtaText: 'Community Feed',
     accentColor: '#2B577E',
-    menuItems: [
-      { id: 'reading-groups', label: 'Reading Groups', description: 'Find and participate in shared reading groups. Sign-in required.', route: '/groups', requiresAuth: true },
-      { id: 'community-feed', label: 'Community Feed', description: 'Continue the conversation with fellow readers.', route: '/social' },
-      { id: 'community-activity', label: 'Community Activity', description: 'Explore reading challenges and shared activities.', route: '/activity' },
+    stats: [
+      { value: '250+', label: 'Reading Clubs' },
+      { value: 'Live', label: 'Buddy Reads' },
+      { value: 'Daily', label: 'Chapter Salons' },
+    ],
+    features: [
+      { label: 'Themed Book Circles', description: 'From Sci-Fi & Philosophy to Classics and Non-Fiction.' },
+      { label: 'Chapter Discussions', description: 'Spoiler-protected threads for safe reading progress.' },
+      { label: 'Live Virtual Salons', description: 'Schedule weekend reading sprints and voice discussions.' },
     ],
   },
   {
     id: 'storytelling-forest',
     index: 5,
+    distanceKm: 16.5,
     title: 'Storytelling Forest',
-    subtitle: 'Read a story. Then write your own.',
+    subtitle: 'From Reader to Creator',
     landmarkName: 'The Lantern Gazebo of Tales',
-    description: 'Explore original writing and community voices, or move from reader to creator by sharing your own stories and articles.',
-    menuPreview: 'Short Stories · Life Stories · Articles',
+    badge: 'Milestone 05 · Enchanted Woods',
+    lore: 'Deep in an enchanted birch forest glowing with hanging paper lanterns, our traveler finds writers seated at open-air cedar desks penning original serialized tales.',
+    description: 'Unleash your creativity. Publish serialized fiction, write reflective essays, receive constructive peer feedback, and build a following of devoted readers.',
+    route: '/stories',
+    ctaText: 'Read & Write Stories',
+    secondaryRoute: '/articles',
+    secondaryCtaText: 'Literary Articles',
     accentColor: '#6B4286',
-    menuItems: [
-      { id: 'short-stories', label: 'Short Stories', description: 'Read and publish community short fiction.', route: '/stories' },
-      { id: 'community-stories', label: 'Community Stories', description: 'Discover stories shared by readers in the community.', route: '/community-stories' },
-      { id: 'life-stories', label: 'Life Stories', description: 'Read personal journeys and lived experiences.', route: '/life-stories' },
-      { id: 'articles', label: 'Articles & Essays', description: 'Explore long-form writing, ideas and literary reflections.', route: '/articles' },
+    stats: [
+      { value: 'Chapters', label: 'Serial Releases' },
+      { value: 'Rich Text', label: 'Distraction-Free' },
+      { value: 'Community', label: 'Peer Reviews' },
+    ],
+    features: [
+      { label: 'Serialized Fiction Hub', description: 'Publish chapter-by-chapter with subscriber notifications.' },
+      { label: 'Literary Articles', description: 'Write long-form book critiques and philosophical essays.' },
+      { label: 'Writer Prompts', description: 'Weekly creative challenges to spark fresh inspiration.' },
     ],
   },
   {
     id: 'author-avenue',
     index: 6,
+    distanceKm: 21.0,
     title: 'Author Avenue',
-    subtitle: 'Discover the people behind the pages',
+    subtitle: 'Walk With the Masters',
     landmarkName: 'The Boulevard of Great Pens',
-    description: 'Explore author profiles, connect with literary voices and discover the people, influences and ideas behind books.',
-    menuPreview: 'Authors · Author Connect · Critics',
+    badge: 'Milestone 06 · Boulevard of Pens',
+    lore: 'A scenic promenade lined with gas lamps and bronze bust plaques of history’s greatest authors — from Tagore and Tolstoy to Woolf and Morrison.',
+    description: 'Explore comprehensive biographies, literary timelines, verified author accounts, and exclusive author interviews shedding light on the craft.',
+    route: '/authors',
+    ctaText: 'Meet Renowned Authors',
+    secondaryRoute: '/author-interviews',
+    secondaryCtaText: 'Author Interviews',
     accentColor: '#964326',
-    menuItems: [
-      { id: 'authors', label: 'Author Directory', description: 'Explore author profiles and their work.', route: '/authors' },
-      { id: 'author-connect', label: 'Author Connect', description: 'Explore ways to connect with authors and literary creators.', route: '/author-connect' },
-      { id: 'reviewers-critics', label: 'Reviewers & Critics', description: 'Discover literary reviewers and critical voices.', route: '/reviewers-critics' },
+    stats: [
+      { value: '500+', label: 'Author Profiles' },
+      { value: 'Verified', label: 'Creator Hubs' },
+      { value: 'In-Depth', label: 'Craft Interviews' },
+    ],
+    features: [
+      { label: 'Author Portfolios', description: 'Complete bibliographies, chronological guides, and quotes.' },
+      { label: 'Creator Verification', description: 'Direct connection between contemporary authors and fans.' },
+      { label: 'Literary Lineage', description: 'See who influenced who across centuries of literature.' },
     ],
   },
   {
     id: 'festival-hills',
     index: 7,
+    distanceKm: 26.2,
     title: 'Festival Hills',
-    subtitle: 'Make reading an adventure',
+    subtitle: 'The Literary Playground',
     landmarkName: 'The Mountain Book Fair Pavilion',
-    description: 'Step into the lively side of Sahadhyayi with literary events, quizzes, games, challenges and community updates.',
-    menuPreview: 'Events · Games · Newsroom',
+    badge: 'Milestone 07 · Highland Fair',
+    lore: 'Climbing into the highlands, colorful festival pavilions appear with bunting banners, book trivia contests, celebratory bonfires, and hot air balloons drifting overhead.',
+    description: 'Test your literary knowledge with daily quizzes, compete on global leaderboards, join annual reading challenges, and participate in virtual book festivals.',
+    route: '/events',
+    ctaText: 'Explore Literary Events',
+    secondaryRoute: '/games',
+    secondaryCtaText: 'Play Literary Games',
     accentColor: '#A0641E',
-    menuItems: [
-      { id: 'events', label: 'Literary Events', description: 'Discover upcoming literary gatherings and events.', route: '/events' },
-      { id: 'games', label: 'Literary Games', description: 'Play games and test your literary knowledge.', route: '/games' },
-      { id: 'activity', label: 'Activity Hub', description: 'Explore reading challenges and community activities.', route: '/activity' },
-      { id: 'newsroom', label: 'Newsroom', description: 'Catch up on books, authors, education and research news.', route: '/news' },
+    stats: [
+      { value: 'Daily', label: 'Trivia Quizzes' },
+      { value: 'Global', label: 'Leaderboard' },
+      { value: 'Live', label: 'Festival Events' },
+    ],
+    features: [
+      { label: 'Interactive Book Games', description: 'Word quests, quote identification, and literary trivia.' },
+      { label: 'Seasonal Reading Quests', description: 'Badges and accomplishments for expanding your horizons.' },
+      { label: 'Community Gatherings', description: 'Book launch events, webinars, and literary meetups.' },
     ],
   },
   {
     id: 'ai-knowledge-station',
     index: 8,
+    distanceKm: 30.0,
     title: 'AI Knowledge Station',
-    subtitle: 'Meet your Book Expert AI',
+    subtitle: 'Meet Your Book Expert AI',
     landmarkName: 'The Summit Observatory Rotunda',
-    description: 'Ask questions, explore ideas and get help finding your next read with the Book Expert AI companion.',
-    menuPreview: 'Book Questions · Recommendations · Ideas',
+    badge: 'Milestone 08 · Summit Observatory',
+    lore: 'At the peak of the mountain stands a luminous domed observatory with an astrolabe and a floating holographic book sphere — the nerve center of Book Expert AI.',
+    description: 'Your 24/7 personal literary companion. Ask anything — from complex philosophical comparisons and plot clarifications to hyper-personalized book recommendations.',
+    route: '/book-expert',
+    ctaText: 'Open Book Expert AI',
     accentColor: '#1F5475',
-    menuItems: [
-      { id: 'open-book-expert', label: 'Open Book Expert AI', description: 'Start a conversation with your AI reading companion.', action: 'open-book-expert' },
+    stats: [
+      { value: 'Instant', label: 'Deep Answers' },
+      { value: 'Omniscient', label: 'Book Analysis' },
+      { value: '24/7', label: 'Reading Guide' },
+    ],
+    features: [
+      { label: 'Philosophical Synthesis', description: 'Compare Eastern and Western philosophy or dissect complex metaphors.' },
+      { label: 'Hyper-Personalized Recs', description: 'Describe your exact mood, taste, or dilemma to get tailored titles.' },
+      { label: 'Chapter Companion', description: 'Ask questions without spoilers while progressing through any book.' },
     ],
     prompts: [
       {

@@ -183,6 +183,8 @@ describe('Sahadhyayi Bicycle Adventure Journey', () => {
       expect(screen.getByText('Explore Sahadhyayi as You Ride')).toBeInTheDocument();
       expect(screen.getByText('A Journey Through Sahadhyayi')).toBeInTheDocument();
       expect(container.querySelector('[data-testid="journey-scenic-trail"]')).toBeInTheDocument();
+      expect(container.querySelector('[data-testid="journey-illustrated-landscape"]')).toBeInTheDocument();
+      expect(container.querySelectorAll('.journey-landscape-vignette')).toHaveLength(8);
       expect(container.querySelector('.journey-scenic-trail__path-measure')).toHaveAttribute('d');
       expect(container.querySelector('.journey-scenic-trail__cyclist svg')).toBeInTheDocument();
 
@@ -231,6 +233,20 @@ describe('Sahadhyayi Bicycle Adventure Journey', () => {
             expect(screen.getByRole('button', { name: new RegExp(item.label, 'i') })).toBeInTheDocument();
           }
         });
+      });
+    });
+
+    it('keeps all eight destination menus visible and reachable on a narrow screen layout', () => {
+      const { container } = render(
+        <MemoryRouter>
+          <SahadhyayiJourney />
+        </MemoryRouter>
+      );
+
+      expect(container.querySelector('.journey-scenic-trail__mobile-route')).toBeInTheDocument();
+      expect(container.querySelectorAll('.journey-scenic-stop__menu-cue')).toHaveLength(8);
+      JOURNEY_DESTINATIONS.forEach((destination) => {
+        expect(screen.getByRole('button', { name: new RegExp('explore ' + destination.title, 'i') })).toBeInTheDocument();
       });
     });
 
