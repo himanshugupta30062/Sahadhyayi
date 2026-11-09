@@ -577,7 +577,7 @@ export default function HeroAtomicRings({ size = 760, className = "", children }
             <div className="grid grid-cols-1 gap-1 border-t border-[#E8E2D9] p-2 dark:border-[#29332D] sm:grid-cols-2">
               {band.features.map((feature) =>
                 feature.action === "open-book-expert" ? (
-                  <button key={feature.id} type="button" onClick={() => openFeature(feature)} className="flex min-h-10 items-center rounded-lg px-3 py-2 text-left text-sm font-medium text-[#1C442D] transition-colors hover:bg-[#F2F5EF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:text-[#D5B16D] dark:hover:bg-[#1B241E]">
+                  <button key={feature.id} type="button" aria-label="Open Book Expert AI" onClick={() => openFeature(feature)} className="flex min-h-10 items-center rounded-lg px-3 py-2 text-left text-sm font-medium text-[#1C442D] transition-colors hover:bg-[#F2F5EF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:text-[#D5B16D] dark:hover:bg-[#1B241E]">
                     {feature.label}
                   </button>
                 ) : (
