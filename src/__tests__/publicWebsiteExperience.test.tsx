@@ -52,9 +52,9 @@ describe('Phase 2 — Public Website Experience', () => {
       );
 
       expect(screen.getByText(/A Reading Community/i)).toBeInTheDocument();
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Read deeper\.\s*Connect meaningfully\./i);
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/Capture your reading journey\.\s*Share it with friends\./i);
       expect(
-        screen.getByText(/Discover books, exchange ideas, join reading groups/i)
+        screen.getByText(/Keep your books, reviews, and reading moments together/i)
       ).toBeInTheDocument();
     });
 
