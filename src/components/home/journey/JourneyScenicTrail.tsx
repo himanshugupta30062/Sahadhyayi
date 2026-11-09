@@ -252,8 +252,9 @@ export const JourneyScenicTrail: React.FC<JourneyScenicTrailProps> = ({
                 className="journey-scenic-stop__trigger"
                 onClick={() => onSelect(destination.index)}
                 aria-label={'Explore ' + destination.title + ' — ' + position.shortDescription}
-                aria-controls={menuTarget}
-                aria-haspopup="region"
+                aria-pressed={isActive}
+                aria-expanded={isActive}
+                aria-controls={isActive ? menuTarget : undefined}
               >
                 <span className="journey-scenic-stop__art">
                   <JourneyLandmarkArt id={destination.id} isCurrent={isActive} />

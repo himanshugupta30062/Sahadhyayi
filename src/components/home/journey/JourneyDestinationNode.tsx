@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { ArrowUpRight, Bot, LockKeyhole } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { JourneyDestination, JourneyMenuItem } from './journeyData';
+import type { JourneyDestination, JourneyMenuItem } from './journeyData';
 import { JourneyLandmarkArt } from './JourneyLandmarkArt';
 import { JourneyAiStation } from './JourneyAiStation';
 import { BookExpertContext } from '@/contexts/book-expert.utils';
