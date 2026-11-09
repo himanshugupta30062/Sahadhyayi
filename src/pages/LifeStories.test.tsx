@@ -4,7 +4,19 @@ import '@testing-library/jest-dom/vitest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import LifeStories from './LifeStories';
+
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+    },
+  });
+  return ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+};
 
 describe('LifeStories', () => {
   beforeEach(() => {
@@ -16,10 +28,13 @@ describe('LifeStories', () => {
   });
 
   it('renders life stories directory with title and biographies', () => {
+    const Wrapper = createWrapper();
     render(
-      <MemoryRouter>
-        <LifeStories />
-      </MemoryRouter>
+      <Wrapper>
+        <MemoryRouter>
+          <LifeStories />
+        </MemoryRouter>
+      </Wrapper>
     );
 
     expect(screen.getByText(/Every life has a story/i)).toBeInTheDocument();
@@ -29,13 +44,16 @@ describe('LifeStories', () => {
   });
 
   it('filters stories by search term', () => {
+    const Wrapper = createWrapper();
     render(
-      <MemoryRouter>
-        <LifeStories />
-      </MemoryRouter>
+      <Wrapper>
+        <MemoryRouter>
+          <LifeStories />
+        </MemoryRouter>
+      </Wrapper>
     );
 
-    const searchInput = screen.getByPlaceholderText(/Search people, journeys, or themes/i);
+    const searchInput = screen.getByPlaceholderText(/Search.*journeys.*themes/i);
     fireEvent.change(searchInput, { target: { value: 'Ramanujan' } });
 
     expect(screen.getByText('Srinivasa Ramanujan')).toBeInTheDocument();
@@ -43,12 +61,15 @@ describe('LifeStories', () => {
   });
 
   it('renders single life story detail page with lesson and source link', () => {
+    const Wrapper = createWrapper();
     render(
-      <MemoryRouter initialEntries={['/life-stories/kalpana-chawla']}>
-        <Routes>
-          <Route path="/life-stories/:slug" element={<LifeStories />} />
-        </Routes>
-      </MemoryRouter>
+      <Wrapper>
+        <MemoryRouter initialEntries={['/life-stories/kalpana-chawla']}>
+          <Routes>
+            <Route path="/life-stories/:slug" element={<LifeStories />} />
+          </Routes>
+        </MemoryRouter>
+      </Wrapper>
     );
 
     expect(screen.getByRole('heading', { name: 'Kalpana Chawla' })).toBeInTheDocument();

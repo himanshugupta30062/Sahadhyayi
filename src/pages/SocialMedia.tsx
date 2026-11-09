@@ -54,7 +54,6 @@ const SpoilerThreadsFeed = lazy(() => import('@/components/social/threads/Spoile
 const ReadingRoomsPanel = lazy(() => import('@/components/social/rooms/ReadingRoomsPanel'));
 const ReadingDnaPanel = lazy(() => import('@/components/social/dna/ReadingDnaPanel'));
 const BookReviewsFeed = lazy(() => import('@/components/social/BookReviewsFeed'));
-const StoriesFeed = lazy(() => import('@/components/stories/StoriesFeed'));
 
 const VALID_SOCIAL_TABS = ['feed', 'reviews', 'rooms', 'threads', 'margins', 'dna', 'friends', 'map', 'groups'] as const;
 const SOCIAL_TAB_LABELS: Record<string, string> = {
@@ -701,14 +700,6 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                   >
                     <Suspense fallback={<TabLoader />}>
                       <EnhancedSocialFeed />
-                    </Suspense>
-                  </ErrorBoundary>
-                </TabsContent>
-
-                <TabsContent value="stories" className="mt-0 space-y-6">
-                  <ErrorBoundary>
-                    <Suspense fallback={<TabLoader />}>
-                      <StoriesFeed />
                     </Suspense>
                   </ErrorBoundary>
                 </TabsContent>

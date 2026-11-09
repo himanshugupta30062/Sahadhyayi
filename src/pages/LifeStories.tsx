@@ -1007,7 +1007,7 @@ const LifeStories = () => {
                               {story.reading_time_minutes || 3} min read
                             </span>
                             <Link
-                              to={`/story/${story.id}`}
+                              to={`/stories/${story.id}`}
                               className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1C442D] hover:underline dark:text-[#D5B16D]"
                             >
                               Read memoir <ArrowRight className="h-3.5 w-3.5" />
