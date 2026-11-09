@@ -39,11 +39,16 @@ afterEach(() => {
 });
 
 describe("WhatsAppCallCenterFab & Reading Room Expand/Collapse UI", () => {
-  it("renders the WhatsApp floating action button above the bottom bar", () => {
+  it("renders the WhatsApp floating action button sized exactly like book reader and aligned directly above it", () => {
     render(<WhatsAppCallCenterFab />);
     const button = screen.getByRole("button", { name: /call center and whatsapp support/i });
     expect(button).toBeInTheDocument();
     expect(button).toHaveAttribute("data-testid", "whatsapp-callcenter-fab");
+    // Verify dimensions match Book Reader launcher (48px mobile w-12 h-12, 56px desktop sm:w-14 sm:h-14)
+    expect(button).toHaveClass("w-12", "h-12", "sm:w-14", "sm:h-14");
+    // Verify vertical alignment directly above Book Reader (aligned on right-4 sm:right-5 lg:right-6)
+    expect(button).toHaveClass("right-4", "sm:right-5", "lg:right-6");
+    expect(button).toHaveClass("bottom-[76px]", "sm:bottom-[88px]", "lg:bottom-[96px]");
   });
 
   it("opens the Helpline modal on click with call action and WhatsApp option without displaying raw phone number", () => {
@@ -198,14 +203,16 @@ describe("WhatsAppCallCenterFab & Reading Room Expand/Collapse UI", () => {
     expect(bookExpertLauncher.className).toContain("sm:bottom-5");
     expect(bookExpertLauncher.className).toContain("sm:right-5");
 
-    // Call Center FAB positioned at bottom-[76px] right-4 (12px gap) and sm:bottom-[90px] sm:right-5 (14px gap)
+    // Call Center FAB positioned at bottom-[76px] right-4 (12px gap) and sm:bottom-[88px] sm:right-5 (12px gap)
     expect(callCenterFab.className).toContain("bottom-[76px]");
     expect(callCenterFab.className).toContain("right-4");
-    expect(callCenterFab.className).toContain("sm:bottom-[90px]");
+    expect(callCenterFab.className).toContain("sm:bottom-[88px]");
     expect(callCenterFab.className).toContain("sm:right-5");
+    expect(callCenterFab.className).toContain("w-12");
+    expect(callCenterFab.className).toContain("sm:w-14");
 
-    // Verifies Call Center uses the Headset icon (SVG containing headset / headphone curves)
-    const headsetSvg = callCenterFab.querySelector("svg");
-    expect(headsetSvg).toBeInTheDocument();
+    // Verifies Call Center uses the Support / Help icon (LifeBuoy SVG)
+    const supportSvg = callCenterFab.querySelector("svg");
+    expect(supportSvg).toBeInTheDocument();
   });
 });
