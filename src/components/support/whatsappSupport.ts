@@ -1,5 +1,5 @@
-export const SAHADHYAYI_PHONE = '+91 8264135459';
-export const SAHADHYAYI_PHONE_RAW = '918264135459';
+export const SAHADHYAYI_PHONE = '+91 8920785645';
+export const SAHADHYAYI_PHONE_RAW = '918920785645';
 export const SAHADHYAYI_EMAIL = 'gyan@sahadhyayi.com';
 
 export const SUPPORT_TOPICS = [
