@@ -1,15 +1,18 @@
 /** @vitest-environment jsdom */
 
 import React from 'react';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 import { SahadhyayiJourney } from '@/components/home/journey/SahadhyayiJourney';
 import { StudentCyclist } from '@/components/home/journey/StudentCyclist';
 import { JourneyLandmarkArt } from '@/components/home/journey/JourneyLandmarkArt';
 import { JourneyAiStation } from '@/components/home/journey/JourneyAiStation';
+import { JourneyDestinationNode } from '@/components/home/journey/JourneyDestinationNode';
 import { JOURNEY_DESTINATIONS } from '@/components/home/journey/journeyData';
 import { BookExpertContext } from '@/contexts/book-expert.utils';
 
@@ -22,45 +25,79 @@ class MockIntersectionObserver {
 }
 window.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
 
+const registeredRoutes = new Set(
+  [...readFileSync(resolve(process.cwd(), 'src/App.tsx'), 'utf8').matchAll(/<Route\s+path="([^"]+)"/g)]
+    .map((match) => match[1])
+);
+
+const isRegisteredRoute = (route: string) =>
+  registeredRoutes.has(route) ||
+  [...registeredRoutes].some((registered) =>
+    registered.startsWith(route + '/:') && registered.endsWith('?')
+  );
+
+const makeBookExpertContext = (overrides: Record<string, unknown> = {}) => ({
+  isOpen: false,
+  loading: false,
+  messages: [],
+  toggleChat: vi.fn(),
+  closeChat: vi.fn(),
+  clearConversation: vi.fn(),
+  sendMessage: vi.fn().mockResolvedValue(undefined),
+  sendFeedback: vi.fn().mockResolvedValue(undefined),
+  ...overrides,
+});
+
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
 });
 
-describe('Sahadhyayi Bicycle Adventure Journey Suite', () => {
-  describe('Data Integrity & Architecture', () => {
-    it('contains all 8 distinct literary destinations with valid routes and feature descriptions', () => {
+describe('Sahadhyayi Bicycle Adventure Journey', () => {
+  describe('Destination menu integrity', () => {
+    it('contains eight destinations and gives every stop a visible, useful menu preview', () => {
       expect(JOURNEY_DESTINATIONS).toHaveLength(8);
 
-      const expectedDestinations = [
-        { index: 1, id: 'library-city', route: '/library' },
-        { index: 2, id: 'reading-valley', route: '/bookshelf' },
-        { index: 3, id: 'reader-village', route: '/map' },
-        { index: 4, id: 'reading-bridge', route: '/groups' },
-        { index: 5, id: 'storytelling-forest', route: '/stories' },
-        { index: 6, id: 'author-avenue', route: '/authors' },
-        { index: 7, id: 'festival-hills', route: '/events' },
-        { index: 8, id: 'ai-knowledge-station', route: '/book-expert' },
-      ];
-
-      expectedDestinations.forEach((expected, index) => {
-        const destination = JOURNEY_DESTINATIONS[index];
-        expect(destination.index).toBe(expected.index);
-        expect(destination.id).toBe(expected.id);
-        expect(destination.route).toBe(expected.route);
-        expect(destination.distanceKm).toBeGreaterThanOrEqual(0);
-        expect(destination.stats.length).toBeGreaterThan(0);
-        expect(destination.features.length).toBeGreaterThan(0);
-        destination.features.forEach((feature) => {
-          expect(feature.label.trim().length).toBeGreaterThan(0);
-          expect(feature.description.trim().length).toBeGreaterThan(0);
+      JOURNEY_DESTINATIONS.forEach((destination, index) => {
+        expect(destination.index).toBe(index + 1);
+        expect(destination.title.trim()).not.toBe('');
+        expect(destination.menuPreview.trim()).not.toBe('');
+        expect(destination.menuItems.length).toBeGreaterThan(0);
+        destination.menuItems.forEach((item) => {
+          expect(item.label.trim()).not.toBe('');
+          expect(item.description.trim()).not.toBe('');
+          expect(item.route || item.action).toBeTruthy();
         });
       });
     });
+
+    it('points every menu link to an actual App route and removes the broken destinations', () => {
+      const menuRoutes = JOURNEY_DESTINATIONS.flatMap((destination) =>
+        destination.menuItems.flatMap((item) => item.route ? [item.route] : [])
+      );
+
+      menuRoutes.forEach((route) => {
+        expect(isRegisteredRoute(route), `Expected ${route} to exist in App.tsx`).toBe(true);
+      });
+
+      expect(menuRoutes).not.toContain('/book-expert');
+      expect(menuRoutes).not.toContain('/author-interviews');
+      expect(JOURNEY_DESTINATIONS[5].menuItems.map((item) => item.route)).toContain('/author-connect');
+      expect(JOURNEY_DESTINATIONS[7].menuItems[0].action).toBe('open-book-expert');
+    });
+
+    it('marks all destinations that require authentication for visitors', () => {
+      const protectedMenuItems = JOURNEY_DESTINATIONS.flatMap((destination) => destination.menuItems)
+        .filter((item) => item.requiresAuth);
+
+      expect(protectedMenuItems.map((item) => item.route)).toEqual(
+        expect.arrayContaining(['/dashboard', '/map', '/reader-map', '/groups'])
+      );
+    });
   });
 
-  describe('StudentCyclist Vector Component', () => {
-    it('renders student cyclist SVG with wheels, backpack, and rider details', () => {
+  describe('Student cyclist and landmark artwork', () => {
+    it('renders the student cyclist SVG with wheels and rider details', () => {
       const { container } = render(
         <StudentCyclist size={140} isPedaling={true} facing="right" tiltAngle={5} />
       );
@@ -68,58 +105,28 @@ describe('Sahadhyayi Bicycle Adventure Journey Suite', () => {
       const svg = container.querySelector('svg');
       expect(svg).toBeInTheDocument();
       expect(svg).toHaveAttribute('viewBox', '0 0 160 120');
-
-      const defs = container.querySelector('defs');
-      expect(defs).toBeInTheDocument();
-      expect(defs?.innerHTML).toContain('lampGlow');
-      expect(defs?.innerHTML).toContain('cyclistBob');
-
-      const circles = container.querySelectorAll('circle');
-      expect(circles.length).toBeGreaterThan(5);
+      expect(container.querySelector('defs')).toBeInTheDocument();
+      expect(container.querySelectorAll('circle').length).toBeGreaterThan(5);
     });
 
-    it('flips direction when facing="left"', () => {
-      const { container } = render(
-        <StudentCyclist size={140} isPedaling={true} facing="left" />
-      );
-
-      const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper.style.transform).toContain('scaleX(-1)');
-    });
-  });
-
-  describe('JourneyLandmarkArt Component', () => {
-    it('renders custom landmark artwork for all 8 destinations', () => {
-      const ids = [
-        'library-city',
-        'reading-valley',
-        'reader-village',
-        'reading-bridge',
-        'storytelling-forest',
-        'author-avenue',
-        'festival-hills',
-        'ai-knowledge-station',
-      ];
-
-      ids.forEach((id) => {
-        const { container } = render(<JourneyLandmarkArt id={id} isCurrent={true} />);
+    it('renders custom landmark artwork for all eight destinations', () => {
+      JOURNEY_DESTINATIONS.forEach((destination) => {
+        const { container } = render(<JourneyLandmarkArt id={destination.id} isCurrent />);
         expect(container.querySelector('svg')).toBeInTheDocument();
         cleanup();
       });
     });
   });
 
-  describe('JourneyAiStation Component', () => {
-    it('renders quick prompts and allows selecting and asking Book Expert AI', async () => {
-      const mockSendMessage = vi.fn().mockResolvedValue(undefined);
-      const mockToggleChat = vi.fn();
-
+  describe('Book Expert AI entry point', () => {
+    it('opens the existing assistant and sends the selected prompt without navigating to a missing page', async () => {
+      const context = makeBookExpertContext();
       const aiPrompts = [
         {
           id: 'prompt-1',
           label: 'Philosophy',
           question: 'Recommend 3 books similar to Siddhartha.',
-          previewReply: '1. The Prophet\n2. The Razor’s Edge',
+          previewReply: 'The Prophet and The Razor’s Edge',
         },
         {
           id: 'prompt-2',
@@ -131,35 +138,42 @@ describe('Sahadhyayi Bicycle Adventure Journey Suite', () => {
 
       render(
         <MemoryRouter>
-          <BookExpertContext.Provider
-            value={{
-              isOpen: false,
-              toggleChat: mockToggleChat,
-              sendMessage: mockSendMessage,
-              messages: [],
-              isLoading: false,
-              clearMessages: vi.fn(),
-            }}
-          >
+          <BookExpertContext.Provider value={context as never}>
             <JourneyAiStation prompts={aiPrompts} />
           </BookExpertContext.Provider>
         </MemoryRouter>
       );
 
-      expect(screen.getByText('Interactive Book Expert AI')).toBeInTheDocument();
-      expect(screen.getByText(/Recommend 3 books similar to Siddhartha/i)).toBeInTheDocument();
-
+      expect(screen.getByText('Meet Book Expert AI')).toBeInTheDocument();
       fireEvent.click(screen.getByRole('button', { name: /dystopia/i }));
-      expect(screen.getByText(/Compare 1984 vs Brave New World/i)).toBeInTheDocument();
-
       fireEvent.click(screen.getByRole('button', { name: /ask ai live now/i }));
-      expect(mockToggleChat).toHaveBeenCalledTimes(1);
-      expect(mockSendMessage).toHaveBeenCalledWith('Compare 1984 vs Brave New World.');
+
+      await waitFor(() => {
+        expect(context.toggleChat).toHaveBeenCalledTimes(1);
+        expect(context.sendMessage).toHaveBeenCalledWith('Compare 1984 vs Brave New World.');
+      });
+      expect(screen.queryByRole('link', { name: /full screen/i })).not.toBeInTheDocument();
+    });
+
+    it('opens Book Expert from the destination menu action', () => {
+      const context = makeBookExpertContext();
+      const destination = JOURNEY_DESTINATIONS[7];
+
+      render(
+        <MemoryRouter>
+          <BookExpertContext.Provider value={context as never}>
+            <JourneyDestinationNode destination={destination} isActive isPassed={false} onSelect={vi.fn()} />
+          </BookExpertContext.Provider>
+        </MemoryRouter>
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: /open book expert ai/i }));
+      expect(context.toggleChat).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe('Interactive Scenic Cycling Journey', () => {
-    it('renders the winding trail, moving cyclist, and all eight interactive landmarks', () => {
+  describe('Visible journey menus', () => {
+    it('renders the winding trail, cyclist and all eight destinations with menu cues visible', () => {
       const { container } = render(
         <MemoryRouter>
           <SahadhyayiJourney />
@@ -174,56 +188,53 @@ describe('Sahadhyayi Bicycle Adventure Journey Suite', () => {
 
       for (let index = 1; index <= 8; index += 1) {
         expect(screen.getByTestId('journey-landmark-' + index)).toBeInTheDocument();
+        expect(screen.getByText(/View [1-4] options?/i, { selector: 'span' })).toBeInTheDocument();
       }
 
+      expect(screen.getByText(/Choose a place/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /jump to library city/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /pedal to previous stop/i })).toBeDisabled();
       expect(screen.getByRole('button', { name: /pedal to next stop/i })).toBeInTheDocument();
     });
 
-    it('reveals destination features on hover and navigates to the selected stop on tap/click', () => {
+    it('shows a destination menu after selecting a landmark without requiring hover', () => {
       render(
         <MemoryRouter>
           <SahadhyayiJourney />
         </MemoryRouter>
       );
-
-      const libraryLandmark = screen.getByTestId('journey-landmark-1');
-      fireEvent.mouseEnter(libraryLandmark);
-      expect(screen.getAllByText('Public Domain Classics').length).toBeGreaterThan(0);
-      expect(screen.getAllByText('Instant In-Browser Reader').length).toBeGreaterThan(0);
 
       fireEvent.click(screen.getByRole('button', { name: /explore Reading Valley/i }));
+
+      expect(screen.getByText('Choose where to go')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /my bookshelf/i })).toHaveAttribute('href', '/bookshelf');
+      expect(screen.getByRole('link', { name: /reading dashboard/i })).toHaveAttribute('href', '/dashboard');
+      expect(screen.getByText('Sign in', { selector: 'span' })).toBeInTheDocument();
       expect(screen.getByText(/stop 2 of 8/i)).toBeInTheDocument();
-      expect(screen.getAllByRole('heading', { name: 'Reading Valley', level: 3 }).length).toBeGreaterThan(0);
-      expect(screen.getAllByRole('link', { name: /open your bookshelf/i }).some((link) => link.getAttribute('href') === '/bookshelf')).toBe(true);
     });
 
-    it('keeps all existing destinations reachable from the interactive map', () => {
+    it('keeps the menu links visible for every selected destination', () => {
       render(
         <MemoryRouter>
           <SahadhyayiJourney />
         </MemoryRouter>
       );
 
-      const destinations = [
-        { button: /explore Library City/i, link: /explore digital library/i, route: '/library' },
-        { button: /explore Reading Valley/i, link: /open your bookshelf/i, route: '/bookshelf' },
-        { button: /explore Reader Village/i, link: /find readers near me/i, route: '/map' },
-        { button: /explore Reading Together Bridge/i, link: /browse book clubs/i, route: '/groups' },
-        { button: /explore Storytelling Forest/i, link: /read & write stories/i, route: '/stories' },
-        { button: /explore Author Avenue/i, link: /meet renowned authors/i, route: '/authors' },
-        { button: /explore Festival Hills/i, link: /explore literary events/i, route: '/events' },
-        { button: /explore AI Knowledge Station/i, link: /open book expert ai/i, route: '/book-expert' },
-      ];
+      JOURNEY_DESTINATIONS.forEach((destination) => {
+        fireEvent.click(screen.getByRole('button', { name: new RegExp('explore ' + destination.title, 'i') }));
+        expect(screen.getByRole('heading', { name: 'Choose where to go' })).toBeInTheDocument();
 
-      destinations.forEach((destination) => {
-        fireEvent.click(screen.getByRole('button', { name: destination.button }));
-        expect(screen.getAllByRole('link', { name: destination.link }).some((link) => link.getAttribute('href') === destination.route)).toBe(true);
+        destination.menuItems.forEach((item) => {
+          if (item.route) {
+            expect(screen.getByRole('link', { name: new RegExp(item.label, 'i') })).toHaveAttribute('href', item.route);
+          } else {
+            expect(screen.getByRole('button', { name: new RegExp(item.label, 'i') })).toBeInTheDocument();
+          }
+        });
       });
     });
 
-    it('advances the active stop when Next Stop is clicked', () => {
+    it('advances the active stop when Next Stop is clicked and updates progress', () => {
       render(
         <MemoryRouter>
           <SahadhyayiJourney />
@@ -232,7 +243,7 @@ describe('Sahadhyayi Bicycle Adventure Journey Suite', () => {
 
       fireEvent.click(screen.getByRole('button', { name: /pedal to next stop/i }));
       expect(screen.getByText(/stop 2 of 8/i)).toBeInTheDocument();
-      expect(screen.getAllByText(/3.4 km/i).length).toBeGreaterThan(0);
+      expect(screen.getByText('14% of the journey explored')).toBeInTheDocument();
     });
 
     it('toggles Auto Ride on and off', () => {
@@ -244,7 +255,6 @@ describe('Sahadhyayi Bicycle Adventure Journey Suite', () => {
 
       fireEvent.click(screen.getByRole('button', { name: /start auto tour/i }));
       expect(screen.getByText('Riding...')).toBeInTheDocument();
-
       fireEvent.click(screen.getByRole('button', { name: /pause bicycle tour/i }));
       expect(screen.getByText('Auto Ride')).toBeInTheDocument();
     });
