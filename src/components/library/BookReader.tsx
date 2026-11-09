@@ -19,6 +19,11 @@ import { motion } from 'framer-motion';
 import type { Book } from '@/hooks/useLibraryBooks';
 import { useAuth } from '@/contexts/authHelpers';
 import { loadProgressLocally, saveProgressLocally } from '@/utils/readingProgressStorage';
+import {
+  validateReaderUrl,
+  buildSafeGoogleBooksEmbedUrl,
+  buildSafePdfEmbedUrl,
+} from '@/utils/bookReaderPreview';
 
 interface BookReaderProps {
   book: Book | null;
@@ -128,94 +133,114 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
     return () => window.removeEventListener('keydown', handleKey);
   }, [isOpen, handlePrevPage, handleNextPage, isFullscreen, onClose]);
 
-  // Detect URL type
-  const isGoogleBooksUrl = (url: string) => url.includes('books.google');
-  
-  const getGoogleBooksId = (url: string) => {
-    const match = url.match(/id=([^&]+)/);
-    return match ? match[1] : null;
-  };
-
-  // Determine the best PDF embed URL
-  const getPdfEmbedUrl = (url: string) => {
-    if (isGoogleBooksUrl(url)) {
-      const bookId = getGoogleBooksId(url);
-      return bookId
-        ? `https://books.google.com/books?id=${bookId}&lpg=PP1&pg=PP1&output=embed`
-        : url;
-    }
-    // Use our edge function proxy to bypass CORS/X-Frame-Options blocks
-    const SUPABASE_URL = 'https://rknxtatvlzunatpyqxro.supabase.co';
-    return `${SUPABASE_URL}/functions/v1/pdf-proxy?url=${encodeURIComponent(url)}`;
-  };
-
   const [pdfLoadFailed, setPdfLoadFailed] = useState(false);
+  const [iframeLoaded, setIframeLoaded] = useState(false);
 
   // Reset load state when book changes
   useEffect(() => {
     setPdfLoadFailed(false);
-  }, [book?.pdf_url]);
+    setIframeLoaded(false);
+
+    if (!book?.pdf_url) return;
+
+    // Timeout: if preview doesn't confirm loaded in 7s, offer fallback
+    const timer = setTimeout(() => {
+      setPdfLoadFailed((prev) => !iframeLoaded || prev);
+    }, 7000);
+
+    return () => clearTimeout(timer);
+  }, [book?.pdf_url, iframeLoaded]);
 
   // PDF viewer component
   const renderPdfViewer = () => {
     if (!book?.pdf_url) return null;
-    
-    const embedUrl = getPdfEmbedUrl(book.pdf_url);
-    const isGBooks = isGoogleBooksUrl(book.pdf_url);
-    
+
+    const analysis = validateReaderUrl(book.pdf_url);
+    const isGBooks = analysis.isGoogleBooks;
+    const embedUrl = isGBooks && analysis.googleBooksId
+      ? buildSafeGoogleBooksEmbedUrl(analysis.googleBooksId)
+      : buildSafePdfEmbedUrl(book.pdf_url, currentPage);
+
     return (
       <div 
-        className="w-full rounded-lg overflow-hidden shadow-lg"
+        className="w-full rounded-lg overflow-hidden shadow-lg flex flex-col justify-between"
         style={{
           minHeight: isFullscreen ? 'calc(100vh - 160px)' : '70vh',
           height: isFullscreen ? 'calc(100vh - 160px)' : '70vh',
         }}
       >
         {pdfLoadFailed ? (
-          <div className="flex flex-col items-center justify-center h-full bg-muted/30 rounded-lg gap-4 p-6">
+          <div className="flex flex-col items-center justify-center flex-1 bg-muted/30 rounded-lg gap-4 p-6 text-center">
             <BookOpen className="w-12 h-12 text-muted-foreground" />
-            <p className="text-muted-foreground text-center">
-              This PDF cannot be displayed inline due to hosting restrictions.
-            </p>
+            <div className="space-y-1 max-w-md">
+              <h4 className="font-semibold text-base">Inline Preview Blocked or Restricted</h4>
+              <p className="text-xs text-muted-foreground">
+                This {isGBooks ? 'Google Books volume' : 'PDF document'} cannot be displayed inline due to publisher or hosting security restrictions.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 justify-center">
+              <a 
+                href={book.pdf_url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm font-medium"
+              >
+                {isGBooks ? 'Read on Google Books ↗' : 'Open PDF in new tab ↗'}
+              </a>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setPdfLoadFailed(false);
+                  setIframeLoaded(false);
+                }}
+                className="text-xs"
+              >
+                Retry Preview
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="relative flex-1 w-full h-full">
+            {!iframeLoaded && (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-card/90">
+                <BookOpen className="w-8 h-8 text-primary animate-pulse mb-2" />
+                <p className="text-xs text-muted-foreground">Loading preview...</p>
+              </div>
+            )}
+            <iframe
+              src={embedUrl}
+              width="100%"
+              height="100%"
+              className="border-0 rounded-lg w-full h-full"
+              title={`${book.title} - Reader`}
+              allow="autoplay; fullscreen"
+              onLoad={() => setIframeLoaded(true)}
+              onError={() => setPdfLoadFailed(true)}
+            />
+          </div>
+        )}
+        <div className="text-center py-2 border-t border-border/40 flex items-center justify-between px-4 text-xs">
+          <span className="text-muted-foreground truncate max-w-xs">{book.title}</span>
+          <div className="flex items-center gap-2">
             <a 
               href={book.pdf_url} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity text-sm font-medium"
+              className="text-xs text-primary hover:underline font-medium"
             >
-              Open PDF in new tab ↗
+              {isGBooks ? 'Open in Google Books ↗' : 'Open in new tab ↗'}
             </a>
+            {!pdfLoadFailed && (
+              <button
+                type="button"
+                onClick={() => setPdfLoadFailed(true)}
+                className="text-muted-foreground hover:text-foreground text-[11px]"
+              >
+                Blocked?
+              </button>
+            )}
           </div>
-        ) : isGBooks ? (
-          <iframe
-            src={embedUrl}
-            width="100%"
-            height="100%"
-            className="border-0 rounded-lg"
-            title={`${book.title} - Reader`}
-            allow="autoplay"
-            sandbox="allow-scripts allow-same-origin allow-popups"
-            onError={() => setPdfLoadFailed(true)}
-          />
-        ) : (
-          <iframe
-            src={embedUrl}
-            width="100%"
-            height="100%"
-            className="border-0 rounded-lg"
-            title={`${book.title} - PDF Viewer`}
-            onError={() => setPdfLoadFailed(true)}
-          />
-        )}
-        <div className="text-center mt-2">
-          <a 
-            href={book.pdf_url} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-sm text-primary hover:underline"
-          >
-            {isGBooks ? 'Open in Google Books ↗' : 'Open PDF in new tab ↗'}
-          </a>
         </div>
       </div>
     );
