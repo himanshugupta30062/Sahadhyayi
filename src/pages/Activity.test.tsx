@@ -132,7 +132,7 @@ describe('Activity Page', () => {
     expect(screen.getByRole('button', { name: 'All Activities' })).toBeInTheDocument();
     expect(screen.getAllByText('Reading Challenges').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Book Games').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Reading Groups').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Events').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Meetups').length).toBeGreaterThan(0);
   });
 
@@ -160,8 +160,8 @@ describe('Activity Page', () => {
     renderActivity();
 
     const searchInputs = screen.getAllByPlaceholderText('Filter activities...');
-    fireEvent.change(searchInputs[0], { target: { value: 'Delhi Classics' } });
+    fireEvent.change(searchInputs[0], { target: { value: 'Poetry' } });
 
-    expect(screen.getAllByText('Delhi Classics Circle').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('30 Days of Poetry').length).toBeGreaterThan(0);
   });
 });

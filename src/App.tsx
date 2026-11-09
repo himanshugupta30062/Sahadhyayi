@@ -219,6 +219,21 @@ const BooksRedirect = () => {
   return <Navigate to={`/book/${id}${query ? `?${query}` : ''}`} replace />;
 };
 
+const StoryRedirect = () => {
+  const { id, storyId } = useParams<{ id?: string; storyId?: string }>();
+  const [searchParams] = useSearchParams();
+  const sid = storyId || id;
+  const query = searchParams.toString();
+  return <Navigate to={sid ? `/stories/${sid}${query ? `?${query}` : ''}` : '/stories'} replace />;
+};
+
+const StoryPartRedirect = () => {
+  const { storyId, partNumber } = useParams<{ storyId?: string; partNumber?: string }>();
+  const [searchParams] = useSearchParams();
+  const query = searchParams.toString();
+  return <Navigate to={storyId ? `/stories/${storyId}/part/${partNumber || 1}${query ? `?${query}` : ''}` : '/stories'} replace />;
+};
+
 const PageTracker = () => {
   usePageVisitTracker();
   return null;
@@ -462,6 +477,9 @@ const App = memo(() => {
                             </Suspense>
                           }
                         />
+                        <Route path="/story" element={<Navigate to="/stories" replace />} />
+                        <Route path="/story/:storyId" element={<StoryRedirect />} />
+                        <Route path="/story/:storyId/part/:partNumber" element={<StoryPartRedirect />} />
                         <Route
                           path="/discovery"
                           element={

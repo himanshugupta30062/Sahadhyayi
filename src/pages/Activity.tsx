@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   CalendarDays,
   CheckCircle2,
@@ -29,7 +29,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/authHelpers';
 import { useChallenges, useJoinChallenge, useUserChallenges } from '@/hooks/useReadingChallenges';
-import { useGroups } from '@/hooks/useGroupManagement';
 import { useUserJoinedGroups } from '@/hooks/useUserGroups';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { safeFormatDistanceToNow } from '@/lib/dateUtils';
@@ -39,6 +38,7 @@ type ActivityCategory = 'all' | 'events' | 'challenges' | 'games' | 'meetups';
 
 export default function Activity() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = (searchParams.get('tab') as ActivityCategory) || 'all';
   const [activeCategory, setActiveCategory] = useState<ActivityCategory>(
@@ -46,11 +46,18 @@ export default function Activity() {
   );
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Redirect legacy /activity?tab=groups directly to Social Media Reading Groups
+  useEffect(() => {
+    if (searchParams.get('tab') === 'groups') {
+      navigate('/social?tab=groups', { replace: true });
+    }
+  }, [searchParams, navigate]);
+
   // Sync tab state when URL changes (e.g. from nav clicks)
   useEffect(() => {
     const rawTab = searchParams.get('tab') as ActivityCategory | null;
-    if (rawTab && rawTab !== activeCategory) {
-      setActiveCategory(rawTab === ('groups' as any) ? 'all' : rawTab);
+    if (rawTab && rawTab !== 'groups' && rawTab !== activeCategory) {
+      setActiveCategory(rawTab);
     }
   }, [searchParams, activeCategory]);
 
@@ -73,10 +80,8 @@ export default function Activity() {
   const joinedChallengeIds = new Set(userChallenges.map((uc) => uc.challenge_id));
   const userChallengeMap = new Map(userChallenges.map((uc) => [uc.challenge_id, uc]));
 
-  // 2. Reading Groups
-  const { data: groups = [], isLoading: isLoadingGroups } = useGroups({ enabled: true });
+  // 2. User Joined Circles
   const { data: joinedGroups = [] } = useUserJoinedGroups();
-  const joinedGroupIds = new Set(joinedGroups.map((g) => g.group_id || g.id));
 
   // 3. Events & Meetups from Supabase
   const [events, setEvents] = useState<any[]>([]);
@@ -133,7 +138,7 @@ export default function Activity() {
   return (
     <>
       <SEO
-        title="Activity Hub - Events, Challenges, Book Games & Reading Groups | Sahadhyayi"
+        title="Activity Hub - Events, Challenges, Book Games & Reader Meetups | Sahadhyayi"
         description="Discover interactive reading activities on Sahadhyayi: book festivals, reading challenges, literary quizzes, and local meetups."
         canonical="https://sahadhyayi.com/activity"
       />
@@ -179,10 +184,10 @@ export default function Activity() {
                   Book Games
                 </Button>
               </Link>
-              <Link to="/social?tab=groups">
+              <Link to="/activity?tab=meetups">
                 <Button variant="outline" className="gap-2 rounded-xl bg-white dark:bg-[#111614] text-xs h-10 border-[#E8E2D9] dark:border-[#29332D]">
-                  <Users className="h-4 w-4 text-[#1C442D] dark:text-[#D5B16D]" />
-                  Reading Groups
+                  <MapPin className="h-4 w-4 text-[#1C442D] dark:text-[#D5B16D]" />
+                  Reader Meetups
                 </Button>
               </Link>
             </div>
@@ -329,7 +334,6 @@ export default function Activity() {
                   { id: 'events', label: 'Events' },
                   { id: 'challenges', label: 'Reading Challenges' },
                   { id: 'games', label: 'Book Games' },
-                  { id: 'groups', label: 'Reading Groups' },
                   { id: 'meetups', label: 'Meetups' },
                 ].map(({ id, label }) => {
                   const isCurrent = activeCategory === id;
@@ -534,97 +538,7 @@ export default function Activity() {
               </section>
             )}
 
-            {/* 3. READING GROUPS SECTION */}
-            {(activeCategory === 'all' || activeCategory === 'groups') && (
-              <section className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="flex items-center gap-2 font-serif text-xl font-bold text-[#1C201D] dark:text-[#F3F0E7]">
-                      <Users className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                      Reading Groups & Book Circles
-                    </h2>
-                    <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">
-                      Join genre-specific circles, co-read books together, and hold chapter discussions in Sahadhyayi Social.
-                    </p>
-                  </div>
-                  <Link to="/social?tab=groups">
-                    <Button variant="ghost" size="sm" className="text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">
-                      Explore All Groups in Social →
-                    </Button>
-                  </Link>
-                </div>
-
-                {/* Information Banner regarding Social Integration */}
-                <div className="rounded-xl border border-emerald-600/20 bg-emerald-500/10 p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white">
-                      <Users className="h-4 w-4" />
-                    </div>
-                    <p className="text-[#1C201D] dark:text-[#F3F0E7] leading-relaxed">
-                      <strong className="font-semibold text-emerald-800 dark:text-emerald-300">Reading Groups are integrated with Social Media!</strong> Browse circles, participate in chapter discussions, and share live updates with group members.
-                    </p>
-                  </div>
-                  <Link to="/social?tab=groups" className="shrink-0">
-                    <Button size="sm" className="rounded-xl text-xs h-8 px-3.5 bg-emerald-700 hover:bg-emerald-800 text-white">
-                      Open Social Groups →
-                    </Button>
-                  </Link>
-                </div>
-
-                {isLoadingGroups ? (
-                  <div className="py-8 text-center text-xs text-muted-foreground">Loading reading groups…</div>
-                ) : groups.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-[#E8E2D9] p-6 text-center text-xs text-muted-foreground dark:border-[#29332D]">
-                    No reading groups active yet.
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {groups
-                      .filter((g) => !searchQuery || g.name.toLowerCase().includes(searchQuery.toLowerCase()))
-                      .slice(0, 6)
-                      .map((group) => {
-                        const isJoined = joinedGroupIds.has(group.id);
-                        return (
-                          <Card key={group.id} className="rounded-2xl border-[#E8E2D9] bg-white p-5 shadow-xs dark:border-[#29332D] dark:bg-[#111614] flex flex-col justify-between">
-                            <div>
-                              <div className="flex items-center justify-between gap-2 mb-2">
-                                <Badge variant="outline" className="text-[10px]">
-                                  {group.is_private ? 'Private Club' : 'Public Circle'}
-                                </Badge>
-                                {isJoined && (
-                                  <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                                    Member
-                                  </span>
-                                )}
-                              </div>
-                              <h3 className="font-serif text-base font-bold text-[#1C201D] dark:text-[#F3F0E7]">
-                                {group.name}
-                              </h3>
-                              <p className="mt-1 line-clamp-2 text-xs text-[#636B65] dark:text-[#A5ADA6] leading-relaxed">
-                                {group.description || 'A group for passionate book discussions.'}
-                              </p>
-                            </div>
-
-                            <div className="mt-4 pt-3 border-t border-[#E8E2D9] dark:border-[#29332D] flex items-center justify-between">
-                              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Users className="h-3.5 w-3.5" />
-                                {group.member_count || 1} members
-                              </span>
-                              <Link to={`/groups/${group.id}`}>
-                                <Button size="sm" variant={isJoined ? 'outline' : 'default'} className="rounded-xl text-xs h-8 px-4">
-                                  {isJoined ? 'Open Chat' : 'Join Circle'}
-                                </Button>
-                              </Link>
-                            </div>
-                          </Card>
-                        );
-                      })}
-                  </div>
-                )}
-              </section>
-            )}
-
-            {/* 4. EVENTS & MEETUPS SECTION */}
+            {/* 3. EVENTS & MEETUPS SECTION */}
             {(activeCategory === 'all' || activeCategory === 'events' || activeCategory === 'meetups') && (
               <section id="activity-meetups-section" className="space-y-4">
                 <div className="flex items-center justify-between">
