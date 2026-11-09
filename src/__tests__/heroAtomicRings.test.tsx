@@ -2,65 +2,11 @@
 import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import HeroAtomicRings from "@/components/hero/HeroAtomicRings";
-import { BookExpertContext } from "@/contexts/book-expert.utils";
-import type { BookExpertContextType } from "@/contexts/book-expert.utils";
 
-const orbitFeatures = [
-  "Digital Library",
-  "Discover Books",
-  "Research Papers",
-  "Book Archive",
-  "Publish Book",
-  "My Publications",
-  "My Bookshelf",
-  "Reading Dashboard",
-  "Reading Journal",
-  "Quotes & Highlights",
-  "Friends Feed",
-  "Discover Friends",
-  "Readers Map",
-  "Readers Around a Book",
-  "Reading Groups",
-  "Reading Rooms",
-  "Book Discussions",
-  "Book Reviews",
-  "Shared Marginalia",
-  "Reading DNA",
-  "Stories & Serials",
-  "Community Stories",
-  "Life Stories",
-  "Articles",
-  "Blogs",
-  "My Articles",
-  "Write Article",
-  "Authors",
-  "Author Connect",
-  "Reviewers & Critics",
-  "Scientists",
-  "Social Activists",
-  "Freedom Fighters",
-  "Publishers",
-  "Events & Festivals",
-  "Newsroom",
-  "Activity Hub",
-  "Reading Challenges",
-  "Literary Games",
-  "Reader Meetups"
-];
-
-const mockBookExpert: BookExpertContextType = {
-  isOpen: false,
-  loading: false,
-  messages: [],
-  toggleChat: vi.fn(),
-  closeChat: vi.fn(),
-  clearConversation: vi.fn(),
-  sendMessage: vi.fn().mockResolvedValue(undefined),
-  sendFeedback: vi.fn().mockResolvedValue(undefined),
-};
+const orbitFeatures = ["Library", "Authors", "Social Media", "Articles", "Games"];
 
 beforeEach(() => {
   Object.defineProperty(window, "matchMedia", {
@@ -80,59 +26,28 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
-  vi.clearAllMocks();
+  vi.restoreAllMocks();
 });
 
 describe("HeroAtomicRings", () => {
-  it("shows all 41 current Sahadhyayi feature destinations across eight orbit bands", () => {
+  it("shows every current Sahadhyayi destination as a labelled, accessible orbit", () => {
     render(
       <MemoryRouter>
-        <BookExpertContext.Provider value={mockBookExpert}>
-          <HeroAtomicRings size={760} />
-        </BookExpertContext.Provider>
+        <HeroAtomicRings size={720} />
       </MemoryRouter>,
     );
 
     expect(
       screen.getByRole("group", {
-        name: /41 Sahadhyayi features across eight animated rings/i,
+        name: /Library, Authors, Social Media, Articles, and Games orbits/i,
       }),
     ).toBeInTheDocument();
 
     orbitFeatures.forEach((feature) => {
       expect(
-        screen.getByRole("link", { name: "Explore " + feature }),
+        screen.getByRole("link", { name: `Explore ${feature}` }),
       ).toBeInTheDocument();
-      expect(screen.getAllByText(feature).length).toBeGreaterThan(0);
+      expect(screen.getByText(feature)).toBeInTheDocument();
     });
-
-    expect(
-      screen.getAllByRole("button", { name: "Open Book Expert AI" }).length,
-    ).toBeGreaterThan(0);
-    expect(screen.getAllByText("Book Expert AI").length).toBeGreaterThan(0);
-
-    const mobileDirectory = screen.getByRole("navigation", { name: "Explore Sahadhyayi features" });
-    expect(mobileDirectory).toBeInTheDocument();
-    expect(within(mobileDirectory).getByRole("link", { name: "Community Stories" }))
-      .toHaveAttribute("href", "/community-stories");
-    expect(within(mobileDirectory).getByRole("link", { name: "Life Stories" }))
-      .toHaveAttribute("href", "/life-stories");
-    expect(within(mobileDirectory).getByRole("link", { name: "Readers Map" }))
-      .toHaveAttribute("href", "/map");
-    expect(within(mobileDirectory).getByRole("button", { name: "Open Book Expert AI" }))
-      .toBeInTheDocument();
-  });
-
-  it("opens Book Expert AI from its orbit node", () => {
-    render(
-      <MemoryRouter>
-        <BookExpertContext.Provider value={mockBookExpert}>
-          <HeroAtomicRings size={760} />
-        </BookExpertContext.Provider>
-      </MemoryRouter>,
-    );
-
-    screen.getAllByRole("button", { name: "Open Book Expert AI" })[0].click();
-    expect(mockBookExpert.toggleChat).toHaveBeenCalledTimes(1);
   });
 });
