@@ -1079,3 +1079,13 @@
     transition: none !important;
   }
 }
+
+
+/* Keep the rider facing the direction of travel while banking gently. */
+.journey-scenic-trail__cyclist[data-direction="left"] > div {
+  transform: scaleX(-1) !important;
+}
+
+.journey-scenic-trail__cyclist[data-direction="right"] > div {
+  transform: none !important;
+}

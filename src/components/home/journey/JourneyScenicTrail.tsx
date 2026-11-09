@@ -64,6 +64,7 @@ export const JourneyScenicTrail: React.FC<JourneyScenicTrailProps> = ({
     let animationFrame = 0;
     let startTime = 0;
     let pathLength = 0;
+    let lastFacingDirection: 'left' | 'right' = 'right';
     const startProgress = progressRef.current;
 
     const getPathLength = (activePath: SVGPathElement) => {
@@ -121,9 +122,14 @@ export const JourneyScenicTrail: React.FC<JourneyScenicTrailProps> = ({
       screenPoint.y = point.y;
       const screen = screenPoint.matrixTransform(matrix);
       const bounds = map.getBoundingClientRect();
-      const angle = Math.atan2(after.y - before.y, after.x - before.x) * (180 / Math.PI);
+      const tangentX = after.x - before.x;
+      if (Math.abs(tangentX) > 0.35) {
+        lastFacingDirection = tangentX < 0 ? 'left' : 'right';
+      }
+      const angle = Math.atan2(after.y - before.y, tangentX) * (180 / Math.PI);
       const bankAngle = Math.max(-12, Math.min(12, angle * 0.16));
 
+      cyclist.dataset.direction = lastFacingDirection;
       cyclist.style.left = (screen.x - bounds.left) + 'px';
       cyclist.style.top = (screen.y - bounds.top) + 'px';
       cyclist.style.transform = 'translate(-50%, -56%) rotate(' + bankAngle + 'deg)';
