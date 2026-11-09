@@ -24,9 +24,14 @@ const LIMITS = {
   perMinute: 20,
   perDay: 100,
   maxRetrievedBooks: 5,
-  requestTimeoutMs: 8500,
+  primaryGeminiTimeoutMs: 7500,
+  fallbackGeminiTimeoutMs: 4500,
   embeddingTimeoutMs: 2500,
 };
+
+const DEFAULT_PRIMARY_MODEL = "gemini-2.5-flash";
+const FALLBACK_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash"];
+const DEFAULT_EMBEDDING_MODEL = "text-embedding-004";
 
 const STOP_WORDS = new Set([
   "about", "after", "again", "also", "and", "are", "because", "best", "can",
@@ -317,8 +322,9 @@ async function generateQueryEmbedding(text: string, apiKey: string): Promise<num
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), LIMITS.embeddingTimeoutMs);
   try {
+    const embeddingModel = Deno.env.get("BOOK_EXPERT_EMBEDDING_MODEL") || DEFAULT_EMBEDDING_MODEL;
     const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent",
+      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(embeddingModel)}:embedContent`,
       {
         method: "POST",
         headers: {
@@ -538,17 +544,20 @@ async function callGemini(
   apiKey: string,
   history: HistoryItem[],
   latestPrompt: string,
-  timeoutMs = LIMITS.requestTimeoutMs,
+  timeoutMs = LIMITS.primaryGeminiTimeoutMs,
 ): Promise<{ ok: boolean; status: number; body: any; raw: string }> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const isGemini3 = model.startsWith("gemini-3") || model.startsWith("gemini-4");
     const generationConfig: Record<string, unknown> = {
       maxOutputTokens: 800,
+      temperature: 0.5,
     };
-    if (isGemini3) {
-      generationConfig.thinkingConfig = { thinkingLevel: "minimal" };
+
+    // For models that support or default to thinking mode, disable thinking
+    // budget to ensure immediate generation within 2-4 seconds.
+    if (model.includes("2.5") || model.includes("think") || model.startsWith("gemini-3")) {
+      generationConfig.thinkingConfig = { thinkingBudget: 0 };
     }
 
     const response = await fetch(
@@ -736,29 +745,23 @@ serve(async (req: Request) => {
     return jsonResponse({ error: "Please keep messages under 2,000 characters." }, 413);
   }
 
-  const minuteLimit = await checkRateLimit(
-    supabaseClient, identifier, "book-expert-gemini-minute", LIMITS.perMinute, 1,
-  );
+  const [minuteLimit, dailyLimit] = await Promise.all([
+    checkRateLimit(supabaseClient, identifier, "book-expert-gemini-minute", LIMITS.perMinute, 1),
+    checkRateLimit(supabaseClient, identifier, "book-expert-gemini-daily", LIMITS.perDay, 1440),
+  ]);
   if (minuteLimit === "limited") {
     return jsonResponse({ error: "You have reached the short-term request limit. Please wait a minute and try again." }, 429);
   }
-  if (minuteLimit === "unavailable") {
-    return jsonResponse({ error: "Book Expert is temporarily unable to verify usage limits. Please try again shortly." }, 503);
-  }
-
-  const dailyLimit = await checkRateLimit(
-    supabaseClient, identifier, "book-expert-gemini-daily", LIMITS.perDay, 1440,
-  );
   if (dailyLimit === "limited") {
     return jsonResponse({ error: "You've reached today's Book Expert usage limit. Please try again tomorrow." }, 429);
   }
-  if (dailyLimit === "unavailable") {
+  if (minuteLimit === "unavailable" || dailyLimit === "unavailable") {
     return jsonResponse({ error: "Book Expert is temporarily unable to verify usage limits. Please try again shortly." }, 503);
   }
 
   const requestId = crypto.randomUUID();
   const startedAt = Date.now();
-  const configuredModel = Deno.env.get("BOOK_EXPERT_MODEL") || "gemini-3.8-flash";
+  const configuredModel = Deno.env.get("BOOK_EXPERT_MODEL") || DEFAULT_PRIMARY_MODEL;
   let modelUsed = configuredModel;
   let retrievedBookCount = 0;
 
@@ -853,30 +856,59 @@ serve(async (req: Request) => {
       "Retrieved RAG evidence from approved/indexed Sahadhyayi sources (reference labels must be cited exactly if used):\n" + buildRagContext(ragChunks),
     ].join("\n\n");
 
-    let generated: Awaited<ReturnType<typeof callGemini>>;
-    try {
-      generated = await callGemini(configuredModel, geminiApiKey, history, latestPrompt);
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") {
+    const candidateModels = [
+      configuredModel,
+      ...FALLBACK_MODELS.filter((m) => m !== configuredModel),
+    ];
+
+    let generated: Awaited<ReturnType<typeof callGemini>> | null = null;
+    let geminiTimeoutOccurred = false;
+
+    for (let i = 0; i < candidateModels.length; i++) {
+      const currentModel = candidateModels[i];
+      modelUsed = currentModel;
+      const timeoutMs = i === 0 ? LIMITS.primaryGeminiTimeoutMs : LIMITS.fallbackGeminiTimeoutMs;
+
+      try {
+        const result = await callGemini(currentModel, geminiApiKey, history, latestPrompt, timeoutMs);
+        generated = result;
+
+        if (result.ok && result.body?.candidates?.[0]?.content?.parts?.length) {
+          break;
+        }
+
+        const rawLower = String(result.raw || "").toLowerCase();
+        const isModelIssue = result.status === 404 ||
+          (result.status === 400 && (rawLower.includes("model") || rawLower.includes("not found") || rawLower.includes("not supported") || rawLower.includes("unknown name")));
+        const isQuotaOrBusy = result.status === 429 || result.status === 503;
+
+        if (i === candidateModels.length - 1 || (!isModelIssue && !isQuotaOrBusy)) {
+          break;
+        }
+        console.warn(`Gemini model ${currentModel} returned ${result.status}; attempting fallback candidate...`);
+      } catch (callError) {
+        if (callError instanceof DOMException && callError.name === "AbortError") {
+          console.warn(`Gemini model ${currentModel} timed out after ${timeoutMs}ms.`);
+          geminiTimeoutOccurred = true;
+          if (i < candidateModels.length - 1 && (Date.now() - startedAt < 9000)) {
+            continue;
+          }
+        }
+        if (i === candidateModels.length - 1) {
+          throw callError;
+        }
+      }
+    }
+
+    if (!generated) {
+      if (geminiTimeoutOccurred) {
         await recordUsageEvent(supabaseClient, {
           requestId, model: modelUsed, success: false, durationMs: Date.now() - startedAt,
           retrievedBookCount, upstreamStatus: 504, failureClass: "timeout",
         });
         return jsonResponse({ error: "Book Expert took too long to respond. Please try again." }, 504);
       }
-      throw error;
-    }
-
-    // Fall back to a stable alternative Flash model only when
-    // the configured model is explicitly unavailable.
-    const modelErrorText = String(generated.raw || "").toLowerCase();
-    const modelUnavailable = generated.status === 404 ||
-      (generated.status === 400 && modelErrorText.includes("model") &&
-        (modelErrorText.includes("not found") || modelErrorText.includes("not supported")));
-    if (!generated.ok && modelUnavailable) {
-      const fallbackModel = configuredModel !== "gemini-2.5-flash" ? "gemini-2.5-flash" : "gemini-3.6-flash";
-      modelUsed = fallbackModel;
-      generated = await callGemini(fallbackModel, geminiApiKey, history, latestPrompt, 7000);
+      return jsonResponse({ error: "Book Expert is temporarily unavailable. Please try again." }, 503);
     }
 
     if (!generated.ok) {
