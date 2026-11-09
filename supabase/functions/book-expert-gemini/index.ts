@@ -29,8 +29,8 @@ const LIMITS = {
   embeddingTimeoutMs: 2500,
 };
 
-const DEFAULT_PRIMARY_MODEL = "gemini-2.5-flash";
-const FALLBACK_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash"];
+const DEFAULT_PRIMARY_MODEL = "gemini-1.5-flash";
+const FALLBACK_MODELS = ["gemini-2.0-flash", "gemini-1.5-pro"];
 const DEFAULT_EMBEDDING_MODEL = "text-embedding-004";
 
 const STOP_WORDS = new Set([
@@ -556,7 +556,7 @@ async function callGemini(
 
     // For models that support or default to thinking mode, disable thinking
     // budget to ensure immediate generation within 2-4 seconds.
-    if (model.includes("2.5") || model.includes("think") || model.startsWith("gemini-3")) {
+    if (model.includes("2.5") || model.includes("think") || model.startsWith("gemini-3") || model.includes("2.0")) {
       generationConfig.thinkingConfig = { thinkingBudget: 0 };
     }
 
