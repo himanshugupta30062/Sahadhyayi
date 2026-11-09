@@ -160,4 +160,140 @@ describe('BookReader', () => {
     expect(mocks.loadProgressLocally).toHaveBeenCalledWith('book-1', 'reader-1');
     expect(screen.getByText('1 Bookmarks')).toBeInTheDocument();
   });
+
+  it('renders Google Books preview when embeddable is available, keeping toolbar and margin notes active', async () => {
+    const originalFetch = global.fetch;
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: 'fqiEEQAAQBAJ',
+        volumeInfo: { title: 'The Dispossessed' },
+        accessInfo: { embeddable: true, viewability: 'PARTIAL' },
+      }),
+    } as any);
+
+    renderReader('https://books.google.com/books?id=fqiEEQAAQBAJ');
+
+    await waitFor(() => {
+      expect(screen.getByText(/Google Books Online Preview/i)).toBeInTheDocument();
+    });
+
+    // Check iframe embed src
+    const iframe = screen.getByTitle('The Dispossessed');
+    expect(iframe).toHaveAttribute(
+      'src',
+      'https://books.google.com/books?id=fqiEEQAAQBAJ&lpg=PP1&pg=PP1&output=embed'
+    );
+
+    // Toolbar and Margin Note buttons remain available
+    expect(screen.getByRole('button', { name: 'Settings' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open Margins' })).toBeInTheDocument();
+
+    global.fetch = originalFetch;
+  });
+
+  it('displays clean publisher restricted fallback instead of blank iframe when Google Books preview is restricted', async () => {
+    const originalFetch = global.fetch;
+    const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: 'restricted-id',
+        volumeInfo: { title: 'The Dispossessed', previewLink: 'https://books.google.com/preview' },
+        accessInfo: { embeddable: false, viewability: 'NO_PAGES' },
+      }),
+    } as any);
+
+    renderReader('https://books.google.com/books?id=restricted-id');
+
+    await waitFor(() => {
+      expect(screen.getByText(/Publisher Preview Restricted/i)).toBeInTheDocument();
+    });
+
+    const readBtn = screen.getByRole('button', { name: /Read on Google Books/i });
+    expect(readBtn).toBeInTheDocument();
+
+    fireEvent.click(readBtn);
+    expect(windowOpenSpy).toHaveBeenCalledWith(
+      'https://books.google.com/preview',
+      '_blank',
+      'noopener,noreferrer'
+    );
+
+    global.fetch = originalFetch;
+  });
+
+  it('allows user to toggle fallback and retry when Google Books preview is blocked by browser', async () => {
+    const originalFetch = global.fetch;
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: 'blocked-id',
+        volumeInfo: { title: 'The Dispossessed' },
+        accessInfo: { embeddable: true, viewability: 'PARTIAL' },
+      }),
+    } as any);
+
+    renderReader('https://books.google.com/books?id=blocked-id');
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Preview Blocked\?/i })).toBeInTheDocument();
+    });
+
+    // User reports preview is blocked
+    fireEvent.click(screen.getByRole('button', { name: /Preview Blocked\?/i }));
+
+    expect(screen.getByText(/Embedded Preview Blocked by Browser/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Read on Google Books/i })).toBeInTheDocument();
+
+    // User clicks Retry Preview
+    fireEvent.click(screen.getByRole('button', { name: /Retry Preview/i }));
+    await waitFor(() => {
+      expect(screen.getByTitle('The Dispossessed')).toBeInTheDocument();
+    });
+
+    global.fetch = originalFetch;
+  });
+
+  it('preserves query and signed authentication parameters on direct PDF embeds', async () => {
+    const signedPdfUrl =
+      'https://example.com/vault/manuscript.pdf?X-Amz-Security-Token=sec987&X-Amz-Signature=sig456';
+    renderReader(signedPdfUrl, '/book/book-1?page=3');
+
+    await waitFor(() => {
+      expect(screen.getByTitle('The Dispossessed')).toBeInTheDocument();
+    });
+
+    const iframe = screen.getByTitle('The Dispossessed');
+    const src = iframe.getAttribute('src');
+
+    // Signed parameters are strictly preserved
+    expect(src).toContain('X-Amz-Security-Token=sec987');
+    expect(src).toContain('X-Amz-Signature=sig456');
+    expect(src).toContain('#toolbar=1&navpanes=1&scrollbar=1&page=3');
+  });
+
+  it('renders a clean fallback with external opening and download options when PDF embedding is blocked', async () => {
+    const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
+    renderReader('https://example.com/blocked-book.pdf');
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Preview blocked\?/i })).toBeInTheDocument();
+    });
+
+    // Trigger blocked state
+    fireEvent.click(screen.getByRole('button', { name: /Preview blocked\?/i }));
+
+    expect(screen.getByText(/Inline PDF Preview Restricted/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Open PDF in New Window/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Download PDF/i })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Open PDF in New Window/i }));
+    expect(windowOpenSpy).toHaveBeenCalledWith(
+      'https://example.com/blocked-book.pdf',
+      '_blank',
+      'noopener,noreferrer'
+    );
+  });
 });

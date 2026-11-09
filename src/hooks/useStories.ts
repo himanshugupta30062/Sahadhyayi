@@ -740,29 +740,6 @@ export const useReorderStoryParts = () => {
   });
 };
 
-export const useDeleteStory = () => {
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
-
-  return useMutation({
-    mutationFn: async (storyId: string) => {
-      if (!user) throw new Error('Authentication required');
-
-      const { error } = await supabase
-        .from('stories')
-        .delete()
-        .eq('id', storyId)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['stories'] });
-      toast.success('Story deleted.');
-    },
-  });
-};
-
 /**
  * Interactions: Likes, Bookmarks, Follows, Reading Progress
  */

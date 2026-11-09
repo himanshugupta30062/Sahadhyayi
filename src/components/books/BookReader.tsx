@@ -29,7 +29,12 @@ import {
   Eye,
   Download,
   Share2,
-  Quote
+  Quote,
+  AlertTriangle,
+  ExternalLink,
+  FileText,
+  RefreshCw,
+  ShieldAlert
 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { AddMarginNoteDialog } from '@/components/social/margins/AddMarginNoteDialog';
@@ -42,6 +47,14 @@ import { searchExternalSources } from '@/utils/searchExternalSources';
 import { loadProgressLocally, saveProgressLocally } from '@/utils/readingProgressStorage';
 import { useReaderBookmarks, useAddReaderBookmark } from '@/hooks/useReaderBookmarks';
 import { useAddReaderHighlight } from '@/hooks/useReaderHighlights';
+import {
+  extractGoogleBooksId,
+  validateReaderUrl,
+  buildSafePdfEmbedUrl,
+  buildSafeGoogleBooksEmbedUrl,
+  checkGoogleBooksEmbeddability,
+  GoogleBooksVolumeDetails,
+} from '@/utils/bookReaderPreview';
 
 interface BookReaderProps {
   bookId: string;
@@ -133,6 +146,18 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     };
   }, [bookTitle]);
 
+  // Google Books & PDF Preview State
+  const [gbooksStatus, setGbooksStatus] = useState<'loading' | 'available' | 'restricted' | 'error' | 'idle'>('idle');
+  const [gbooksDetails, setGbooksDetails] = useState<GoogleBooksVolumeDetails | null>(null);
+  const [gbooksIframeLoaded, setGbooksIframeLoaded] = useState(false);
+  const [gbooksFallbackActive, setGbooksFallbackActive] = useState(false);
+  const [gbooksRetryCount, setGbooksRetryCount] = useState(0);
+
+  const [pdfStatus, setPdfStatus] = useState<'loading' | 'loaded' | 'blocked' | 'error'>('loading');
+  const [pdfIframeLoaded, setPdfIframeLoaded] = useState(false);
+  const [pdfManualFallback, setPdfManualFallback] = useState(false);
+  const [pdfRetryCount, setPdfRetryCount] = useState(0);
+
   const activeReadUrl = readUrls[activeReadUrlIndex];
 
   useEffect(() => {
@@ -150,25 +175,79 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     if (resumePage > 1) setCurrentPage(resumePage);
   }, [bookId, readingProgress, user?.id, pageParam]);
 
+  const urlAnalysis = React.useMemo(() => {
+    return validateReaderUrl(activeReadUrl);
+  }, [activeReadUrl]);
+
   // Determine book type and URLs
-  const isEpub = epubUrl && epubUrl.length > 0;
-  const isGoogleBooks = activeReadUrl?.includes('books.google');
-  const isArchive = !!activeReadUrl && /archive\.org/i.test(activeReadUrl);
-  const isExplicitPdf = !!activeReadUrl && (/\.pdf($|\?)/i.test(activeReadUrl) || /\/pdf\//i.test(activeReadUrl));
+  const isEpub = Boolean(epubUrl && epubUrl.length > 0);
+  const isGoogleBooks = urlAnalysis.isGoogleBooks;
+  const googleBooksId = urlAnalysis.googleBooksId;
+  const isArchive = Boolean(activeReadUrl && /archive\.org/i.test(activeReadUrl));
+  const isExplicitPdf = urlAnalysis.isPdf;
   // Treat any non-Google reading URL as a PDF/embed candidate so books with
   // unusual extensions still get a viewer instead of "Unsupported format".
-  const isPdf = !!activeReadUrl && !isGoogleBooks && (isExplicitPdf || isArchive || !!pdfUrl);
+  const isPdf = !isEpub && !isGoogleBooks && Boolean(activeReadUrl && (isExplicitPdf || isArchive || !!pdfUrl));
 
   const bookUrl = isEpub ? epubUrl : activeReadUrl;
-  
-  // Extract Google Books ID from URL for embedding
-  const getGoogleBooksId = (url: string | undefined) => {
-    if (!url) return null;
-    const match = url.match(/id=([^&]+)/);
-    return match ? match[1] : null;
-  };
-  
-  const googleBooksId = isGoogleBooks ? getGoogleBooksId(activeReadUrl) : null;
+
+  // Probe Google Books API for embed restrictions
+  useEffect(() => {
+    if (!isGoogleBooks || !googleBooksId) {
+      setGbooksStatus('idle');
+      setGbooksDetails(null);
+      return;
+    }
+
+    let isCancelled = false;
+    setGbooksStatus('loading');
+    setGbooksIframeLoaded(false);
+    setGbooksFallbackActive(false);
+
+    checkGoogleBooksEmbeddability(googleBooksId)
+      .then((details) => {
+        if (isCancelled) return;
+        setGbooksDetails(details);
+        if (details.status === 'restricted' || details.status === 'invalid_id') {
+          setGbooksStatus('restricted');
+        } else {
+          setGbooksStatus('available');
+        }
+      })
+      .catch(() => {
+        if (isCancelled) return;
+        setGbooksStatus('available');
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [isGoogleBooks, googleBooksId, gbooksRetryCount]);
+
+  // Handle PDF embed timeout detection
+  useEffect(() => {
+    if (!isPdf || !activeReadUrl) {
+      setPdfStatus('loading');
+      setPdfIframeLoaded(false);
+      return;
+    }
+
+    let isCancelled = false;
+    setPdfStatus('loading');
+    setPdfIframeLoaded(false);
+    setPdfManualFallback(false);
+
+    const timer = setTimeout(() => {
+      if (!isCancelled) {
+        setPdfStatus((prev) => (prev === 'loaded' ? 'loaded' : 'blocked'));
+      }
+    }, 6500);
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timer);
+    };
+  }, [isPdf, activeReadUrl, currentPage, pdfRetryCount]);
 
   const handleReaderLoadError = () => {
     if (activeReadUrlIndex >= readUrls.length - 1) return;
@@ -1012,57 +1091,307 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
               </>
             ) : isGoogleBooks && googleBooksId ? (
               <div className="relative space-y-4">
-                <div className="bg-accent/50 border border-border rounded-lg p-4 text-center">
-                  <p className="text-sm text-muted-foreground mb-1">
-                    Some books have limited preview due to publisher restrictions.
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    If the preview below appears blank, use the buttons to open it externally.
-                  </p>
+                {/* Google Books Online Preview Banner */}
+                <div className="bg-accent/40 border border-border/70 rounded-xl p-3 sm:p-4 text-center">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+                    <div className="text-left">
+                      <p className="text-xs sm:text-sm font-medium text-foreground flex items-center gap-1.5">
+                        <BookOpen className="w-4 h-4 text-primary shrink-0" />
+                        Google Books Online Preview
+                      </p>
+                      <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+                        Publisher preview terms apply. If your browser blocks embedded frames, use the direct buttons below.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setGbooksFallbackActive(!gbooksFallbackActive)}
+                        className="text-xs h-7 gap-1"
+                      >
+                        {gbooksFallbackActive ? 'Show Preview Frame' : 'Preview Blocked?'}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setGbooksRetryCount((c) => c + 1)}
+                        className="text-xs h-7 gap-1"
+                        title="Retry loading preview"
+                      >
+                        <RefreshCw className="w-3 h-3" /> Retry
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                <iframe
-                  src={`https://books.google.com/books?id=${googleBooksId}&lpg=PP1&pg=PP1&output=embed`}
-                  className={`w-full border-0 rounded-lg bg-white ${isFullscreen ? 'h-screen' : 'h-[700px]'}`}
-                  style={{ width: '100%' }}
-                  title={bookTitle}
-                  allowFullScreen
-                />
-                <div className="flex flex-wrap gap-2 justify-center">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => window.open(`https://books.google.com/books?id=${googleBooksId}`, '_blank', 'noopener,noreferrer')}
-                    className="flex items-center gap-2"
-                  >
-                    <BookOpen className="w-4 h-4" />
-                    Read on Google Books
-                  </Button>
-                  {activeReadUrl && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.open(activeReadUrl, '_blank', 'noopener,noreferrer')}
-                      className="flex items-center gap-2"
-                    >
-                      Open Original Link ↗
-                    </Button>
-                  )}
-                </div>
+
+                {/* Restricted View (e.g. publisher restricted or user/browser blocked) */}
+                {gbooksStatus === 'restricted' || gbooksFallbackActive ? (
+                  <div className={`w-full rounded-2xl border border-border p-8 sm:p-12 text-center flex flex-col items-center justify-center space-y-4 shadow-sm transition-colors ${
+                    readerTheme === 'dark' ? 'bg-gray-900 text-gray-100' : readerTheme === 'sepia' ? 'bg-[#fbf0d9] text-[#4a3c28]' : 'bg-white text-gray-900'
+                  } ${isFullscreen ? 'min-h-[70vh]' : 'min-h-[480px]'}`}>
+                    <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                      <ShieldAlert className="w-7 h-7" />
+                    </div>
+                    <div className="max-w-md space-y-1.5">
+                      <h4 className="text-lg font-serif font-bold">
+                        {gbooksStatus === 'restricted'
+                          ? 'Publisher Preview Restricted'
+                          : 'Embedded Preview Blocked by Browser'}
+                      </h4>
+                      <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                        {gbooksStatus === 'restricted'
+                          ? 'The publisher or copyright holder has restricted direct in-browser iframe embedding for this volume on Google Books. You can read available preview pages directly on Google Books.'
+                          : 'Your browser or publisher security headers prevented embedding this book inline. You can open and read the book directly on Google Books in a new window.'}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2.5 justify-center pt-2">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => {
+                          const target = gbooksDetails?.webReaderLink || gbooksDetails?.previewLink || `https://books.google.com/books?id=${googleBooksId}`;
+                          window.open(target, '_blank', 'noopener,noreferrer');
+                        }}
+                        className="gap-2 text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90"
+                      >
+                        <BookOpen className="w-4 h-4" />
+                        Read on Google Books ↗
+                      </Button>
+
+                      {activeReadUrl && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(activeReadUrl, '_blank', 'noopener,noreferrer')}
+                          className="gap-2 text-xs"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          Open Original Link ↗
+                        </Button>
+                      )}
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setGbooksFallbackActive(false);
+                          setGbooksRetryCount((c) => c + 1);
+                        }}
+                        className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        Retry Preview
+                      </Button>
+
+                      {readUrls.length > 1 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleReaderLoadError}
+                          className="gap-1.5 text-xs text-amber-600 border-amber-300 dark:text-amber-400"
+                        >
+                          Try Alternate Source ({activeReadUrlIndex + 1}/{readUrls.length})
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* Available Preview Iframe */
+                  <div className="relative rounded-2xl overflow-hidden border border-border shadow-sm">
+                    {gbooksStatus === 'loading' && !gbooksIframeLoaded && (
+                      <div className={`absolute inset-0 z-10 flex flex-col items-center justify-center p-8 transition-colors ${
+                        readerTheme === 'dark' ? 'bg-gray-900' : readerTheme === 'sepia' ? 'bg-[#fbf0d9]' : 'bg-white'
+                      }`}>
+                        <BookOpen className="w-10 h-10 text-primary/40 animate-pulse mb-3" />
+                        <p className="text-sm font-medium text-foreground">Loading Google Books preview...</p>
+                        <p className="text-xs text-muted-foreground mt-1">Connecting to book volume...</p>
+                      </div>
+                    )}
+                    <iframe
+                      key={`${googleBooksId}-${gbooksRetryCount}`}
+                      src={buildSafeGoogleBooksEmbedUrl(googleBooksId)}
+                      className={`w-full border-0 bg-white ${isFullscreen ? 'h-screen' : 'h-[720px]'}`}
+                      style={{ width: '100%' }}
+                      title={bookTitle}
+                      allowFullScreen
+                      onLoad={() => {
+                        setGbooksIframeLoaded(true);
+                        setGbooksStatus('available');
+                      }}
+                      onError={() => {
+                        setGbooksStatus('restricted');
+                        setGbooksFallbackActive(true);
+                      }}
+                    />
+
+                    <div className="p-3 bg-card border-t border-border flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <span className="text-muted-foreground text-[11px]">
+                        Reading "{bookTitle}" via Google Books
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => window.open(`https://books.google.com/books?id=${googleBooksId}`, '_blank', 'noopener,noreferrer')}
+                          className="h-7 text-xs gap-1 text-primary"
+                        >
+                          <ExternalLink className="w-3 h-3" /> Open in new tab
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setGbooksFallbackActive(true)}
+                          className="h-7 text-xs"
+                        >
+                          Having issues?
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : isPdf ? (
-              <div className="relative">
-                <iframe
-                  key={`${activeReadUrl}-${currentPage}`}
-                  src={`${activeReadUrl}#toolbar=1&navpanes=1&scrollbar=1&page=${currentPage}`}
-                  className={`w-full border rounded-lg ${isFullscreen ? 'h-screen' : 'h-[600px]'}`}
-                  style={{ width: '100%', height: '100%' }}
-                  title={bookTitle}
-                  onError={handleReaderLoadError}
-                />
-                {/* PDF Navigation Helper */}
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-lg text-sm">
-                  Page {currentPage}{totalPages ? ` of ${totalPages}` : ''}
-                </div>
+              <div className="relative space-y-4">
+                {pdfStatus === 'blocked' || pdfManualFallback ? (
+                  /* Fallback state when PDF cannot be embedded or user toggles */
+                  <div className={`w-full rounded-2xl border border-border p-8 sm:p-12 text-center flex flex-col items-center justify-center space-y-4 shadow-sm transition-colors ${
+                    readerTheme === 'dark' ? 'bg-gray-900 text-gray-100' : readerTheme === 'sepia' ? 'bg-[#fbf0d9] text-[#4a3c28]' : 'bg-white text-gray-900'
+                  } ${isFullscreen ? 'min-h-[70vh]' : 'min-h-[480px]'}`}>
+                    <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                      <FileText className="w-7 h-7" />
+                    </div>
+                    <div className="max-w-md space-y-1.5">
+                      <h4 className="text-lg font-serif font-bold">
+                        Inline PDF Preview Restricted
+                      </h4>
+                      <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                        This document host server blocks in-browser iframe embedding (via security headers) or requires direct browser access. You can open or download the complete PDF directly.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2.5 justify-center pt-2">
+                      {activeReadUrl && (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => window.open(activeReadUrl, '_blank', 'noopener,noreferrer')}
+                          className="gap-2 text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          Open PDF in New Window ↗
+                        </Button>
+                      )}
+
+                      {activeReadUrl && (
+                        <a
+                          href={activeReadUrl}
+                          download={`${bookTitle.replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex"
+                        >
+                          <Button variant="outline" size="sm" className="gap-2 text-xs">
+                            <Download className="w-3.5 h-3.5" />
+                            Download PDF
+                          </Button>
+                        </a>
+                      )}
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setPdfManualFallback(false);
+                          setPdfStatus('loading');
+                          setPdfRetryCount((c) => c + 1);
+                        }}
+                        className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        Retry Preview
+                      </Button>
+
+                      {readUrls.length > 1 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleReaderLoadError}
+                          className="gap-1.5 text-xs text-amber-600 border-amber-300 dark:text-amber-400"
+                        >
+                          Try Alternate Source ({activeReadUrlIndex + 1}/{readUrls.length})
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* PDF Iframe View with Skeleton */
+                  <div className="relative rounded-2xl overflow-hidden border border-border shadow-sm">
+                    {pdfStatus === 'loading' && !pdfIframeLoaded && (
+                      <div className={`absolute inset-0 z-10 flex flex-col items-center justify-center p-8 transition-colors ${
+                        readerTheme === 'dark' ? 'bg-gray-900' : readerTheme === 'sepia' ? 'bg-[#fbf0d9]' : 'bg-white'
+                      }`}>
+                        <FileText className="w-10 h-10 text-primary/40 animate-pulse mb-3" />
+                        <p className="text-sm font-medium text-foreground">Loading PDF document...</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Page {currentPage}{totalPages ? ` of ${totalPages}` : ''}
+                        </p>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          onClick={() => setPdfManualFallback(true)}
+                          className="text-xs text-muted-foreground mt-4"
+                        >
+                          Taking too long? Open externally ↗
+                        </Button>
+                      </div>
+                    )}
+
+                    <iframe
+                      key={`${activeReadUrl}-${currentPage}-${pdfRetryCount}`}
+                      src={buildSafePdfEmbedUrl(activeReadUrl, currentPage)}
+                      className={`w-full border-0 ${isFullscreen ? 'h-screen' : 'h-[650px]'}`}
+                      style={{ width: '100%', height: isFullscreen ? '100vh' : '650px' }}
+                      title={bookTitle}
+                      onLoad={() => {
+                        setPdfIframeLoaded(true);
+                        setPdfStatus('loaded');
+                      }}
+                      onError={() => {
+                        setPdfStatus('blocked');
+                      }}
+                    />
+
+                    {/* PDF Navigation & Helper overlay bar */}
+                    <div className="p-3 bg-card border-t border-border flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-foreground">
+                          Page {currentPage}{totalPages ? ` of ${totalPages}` : ''}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => activeReadUrl && window.open(activeReadUrl, '_blank', 'noopener,noreferrer')}
+                          className="h-7 text-xs gap-1 text-primary"
+                        >
+                          <ExternalLink className="w-3 h-3" /> Open in new window
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setPdfManualFallback(true)}
+                          className="h-7 text-xs"
+                        >
+                          Preview blocked?
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-12 border border-gray-300 rounded-lg space-y-3">
