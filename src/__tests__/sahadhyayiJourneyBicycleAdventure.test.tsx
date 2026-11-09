@@ -188,8 +188,8 @@ describe('Sahadhyayi Bicycle Adventure Journey', () => {
 
       for (let index = 1; index <= 8; index += 1) {
         expect(screen.getByTestId('journey-landmark-' + index)).toBeInTheDocument();
-        expect(screen.getByText(/View [1-4] options?/i, { selector: 'span' })).toBeInTheDocument();
       }
+      expect(container.querySelectorAll('.journey-scenic-stop__menu-cue')).toHaveLength(8);
 
       expect(screen.getByText(/Choose a place/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /jump to library city/i })).toBeInTheDocument();
