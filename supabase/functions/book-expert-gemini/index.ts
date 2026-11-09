@@ -24,13 +24,13 @@ const LIMITS = {
   perMinute: 20,
   perDay: 100,
   maxRetrievedBooks: 5,
-  primaryGeminiTimeoutMs: 7500,
-  fallbackGeminiTimeoutMs: 4500,
+  primaryGeminiTimeoutMs: 18000,
+  fallbackGeminiTimeoutMs: 12000,
   embeddingTimeoutMs: 2500,
 };
 
-const DEFAULT_PRIMARY_MODEL = "gemini-2.5-flash";
-const FALLBACK_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash"];
+const DEFAULT_PRIMARY_MODEL = "gemini-3.8-flash";
+const FALLBACK_MODELS = ["gemini-3.6-flash", "gemini-2.5-flash"];
 const DEFAULT_EMBEDDING_MODEL = "text-embedding-004";
 
 const STOP_WORDS = new Set([
@@ -880,12 +880,13 @@ serve(async (req: Request) => {
         const rawLower = String(result.raw || "").toLowerCase();
         const isModelIssue = result.status === 404 ||
           (result.status === 400 && (rawLower.includes("model") || rawLower.includes("not found") || rawLower.includes("not supported") || rawLower.includes("unknown name")));
-        const isQuotaOrBusy = result.status === 429 || result.status === 503;
+        const isQuotaOrBusy = result.status === 429 || result.status === 503 || result.status === 502;
 
         if (i === candidateModels.length - 1 || (!isModelIssue && !isQuotaOrBusy)) {
           break;
         }
         console.warn(`Gemini model ${currentModel} returned ${result.status}; attempting fallback candidate...`);
+        if (isQuotaOrBusy) await new Promise((resolve) => setTimeout(resolve, 600 * (i + 1)));
       } catch (callError) {
         if (callError instanceof DOMException && callError.name === "AbortError") {
           console.warn(`Gemini model ${currentModel} timed out after ${timeoutMs}ms.`);
