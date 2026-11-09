@@ -115,7 +115,7 @@ describe('Primary Navigation (5 core sections)', () => {
     expect(screen.getByRole('button', { name: /activity/i })).toBeInTheDocument();
   });
 
-  it('renders Social menu with Stories group and links', async () => {
+  it('renders Social menu with Connect & Friends, Interactive Map, Live Circles, and Discussions', async () => {
     const { fireEvent } = await import('@testing-library/react');
     render(
       <MemoryRouter initialEntries={['/']}>
@@ -127,22 +127,25 @@ describe('Primary Navigation (5 core sections)', () => {
     expect(socialButton).toBeInTheDocument();
     fireEvent.mouseEnter(socialButton);
 
-    expect(screen.getByText('Friends')).toBeInTheDocument();
-    expect(screen.getByText('Stories')).toBeInTheDocument();
-    expect(screen.getByText('Discussions')).toBeInTheDocument();
-    expect(screen.getByText('Readers Map')).toBeInTheDocument();
+    expect(screen.getByText('Connect & Friends')).toBeInTheDocument();
+    expect(screen.getByText('Interactive Map')).toBeInTheDocument();
+    expect(screen.getByText('Live Circles')).toBeInTheDocument();
+    expect(screen.getByText('Discussions & Reviews')).toBeInTheDocument();
 
-    const shortStoriesLink = screen.getByRole('menuitem', { name: 'Short Stories' });
-    expect(shortStoriesLink).toHaveAttribute('href', '/social?tab=stories');
+    const friendsFeedLink = screen.getByRole('menuitem', { name: 'Friends Feed' });
+    expect(friendsFeedLink).toHaveAttribute('href', '/social');
 
-    const communityStoriesLink = screen.getByRole('menuitem', { name: 'Community Stories' });
-    expect(communityStoriesLink).toHaveAttribute('href', '/community-stories');
+    const discoverFriendsLink = screen.getByRole('menuitem', { name: 'Discover Friends' });
+    expect(discoverFriendsLink).toHaveAttribute('href', '/social?tab=friends');
 
-    const lifeStoriesLink = screen.getByRole('menuitem', { name: 'Life Stories' });
-    expect(lifeStoriesLink).toHaveAttribute('href', '/life-stories');
+    const readingGroupsLink = screen.getByRole('menuitem', { name: 'Reading Groups' });
+    expect(readingGroupsLink).toHaveAttribute('href', '/groups');
+
+    const readerMapLink = screen.getByRole('menuitem', { name: 'Reader Map' });
+    expect(readerMapLink).toHaveAttribute('href', '/map');
   });
 
-  it('renders Activity menu with all interactive categories', async () => {
+  it('renders Activity menu with interactive categories', async () => {
     const { fireEvent } = await import('@testing-library/react');
     render(
       <MemoryRouter initialEntries={['/']}>
@@ -157,13 +160,11 @@ describe('Primary Navigation (5 core sections)', () => {
     expect(screen.getByText('Hub & Gatherings')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Events & Festivals' })).toBeInTheDocument();
     expect(screen.getByText('Challenges & Games')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Reading Groups' })).toBeInTheDocument();
 
     expect(screen.getByRole('menuitem', { name: 'Activity Hub' })).toHaveAttribute('href', '/activity');
     expect(screen.getByRole('menuitem', { name: 'Events & Festivals' })).toHaveAttribute('href', '/events');
     expect(screen.getByRole('menuitem', { name: 'Reading Challenges' })).toHaveAttribute('href', '/activity?tab=challenges');
     expect(screen.getByRole('menuitem', { name: 'Book Games' })).toHaveAttribute('href', '/games');
-    expect(screen.getByRole('menuitem', { name: 'Reading Groups' })).toHaveAttribute('href', '/groups');
     expect(screen.getByRole('menuitem', { name: 'Reader Meetups' })).toHaveAttribute('href', '/activity?tab=meetups');
   });
 });

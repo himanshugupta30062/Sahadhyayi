@@ -82,19 +82,14 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
     href: "/social",
     items: [
       { name: "Friends Feed", href: "/social", tourTarget: "community" },
-      { name: "Reading Groups", href: "/social?tab=groups" },
-      { name: "Short Stories", href: "/social?tab=stories" },
-      { name: "Community Stories", href: "/community-stories" },
-      { name: "Life Stories", href: "/life-stories" },
-      { name: "Book Reviews", href: "/social?tab=reviews" },
       { name: "Discover Friends", href: "/social?tab=friends" },
+      { name: "Reading Groups", href: "/groups" },
+      { name: "Reader Map", href: "/map" },
       { name: "Book Discussions", href: "/social?tab=threads" },
       { name: "Reading Rooms", href: "/social?tab=rooms" },
+      { name: "Book Reviews", href: "/social?tab=reviews" },
       { name: "Shared Marginalia", href: "/social?tab=margins" },
       { name: "Reading DNA", href: "/social?tab=dna" },
-      { name: "Reader's Map", href: "/social?tab=map" },
-      { name: "Reader Map by Book", href: "/reader-map" },
-      { name: "Friends & Readers Map", href: "/map" },
     ],
   },
   {
@@ -102,9 +97,8 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
     href: "/articles",
     items: [
       { name: "Articles", href: "/articles", tourTarget: "articles" },
-      { name: "Stories", href: "/stories" },
-      { name: "Community Stories", href: "/community-stories" },
-      { name: "Life Stories", href: "/life-stories" },
+      { name: "Stories & Serials", href: "/stories" },
+      { name: "Life Stories & Memoirs", href: "/life-stories" },
       { name: "Newsroom", href: "/news" },
       { name: "Blogs", href: "/blog" },
       { name: "Quotes", href: "/quotes" },
@@ -133,7 +127,6 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
       { name: "Reading Challenges", href: "/activity?tab=challenges" },
       { name: "Book Games", href: "/games" },
       { name: "Reader Meetups", href: "/activity?tab=meetups" },
-      { name: "Reading Groups", href: "/groups" },
     ],
   },
 ];
@@ -665,10 +658,10 @@ const Navigation = () => {
                           item.children?.length ? item.children : [item]
                         );
                         const groups = [
-                          { title: "Friends", description: "Connect with fellow readers", names: ["Friends Feed", "Discover Friends"] },
-                          { title: "Stories", description: "Original stories and series", names: ["Short Stories", "Community Stories", "Life Stories"] },
-                          { title: "Discussions", description: "Go deeper into books and reflections", names: ["Book Reviews", "Book Discussion", "Book Discussions", "Reading Rooms", "Shared Marginalia", "Reading DNA"] },
-                          { title: "Readers Map", description: "Find fellow readers around you", names: ["Reader's Map", "Reader Map by Book", "Friends & Readers Map"] },
+                          { title: "Connect & Friends", description: "Your reader network and book clubs", names: ["Friends Feed", "Discover Friends", "Reading Groups"] },
+                          { title: "Interactive Map", description: "Snapchat-style live readers map", names: ["Reader Map"] },
+                          { title: "Live Circles", description: "Shared reading rooms and marginalia", names: ["Reading Rooms", "Shared Marginalia", "Reading DNA"] },
+                          { title: "Discussions & Reviews", description: "Chapter discussions and book critiques", names: ["Book Discussions", "Book Reviews", "Book Discussion"] },
                         ];
                         return (
                           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -713,7 +706,6 @@ const Navigation = () => {
                           { title: "Hub & Gatherings", description: "Central home and local meetups", names: ["Activity Hub", "Reader Meetups"] },
                           { title: "Events & Festivals", description: "Literary sessions and festivals", names: ["Events & Festivals"] },
                           { title: "Challenges & Games", description: "Milestones and book trivia", names: ["Reading Challenges", "Book Games"] },
-                          { title: "Reading Groups", description: "Read together in active clubs", names: ["Reading Groups"] },
                         ];
                         const validGroups = groups
                           .map((group) => ({
