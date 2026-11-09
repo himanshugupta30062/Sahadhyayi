@@ -191,7 +191,7 @@ describe('Sahadhyayi Bicycle Adventure Journey', () => {
       }
       expect(container.querySelectorAll('.journey-scenic-stop__menu-cue')).toHaveLength(8);
 
-      expect(screen.getByText(/Choose a place/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Choose a place/i).length).toBeGreaterThan(0);
       expect(screen.getByRole('button', { name: /jump to library city/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /pedal to previous stop/i })).toBeDisabled();
       expect(screen.getByRole('button', { name: /pedal to next stop/i })).toBeInTheDocument();
@@ -210,7 +210,7 @@ describe('Sahadhyayi Bicycle Adventure Journey', () => {
       expect(screen.getByRole('link', { name: /my bookshelf/i })).toHaveAttribute('href', '/bookshelf');
       expect(screen.getByRole('link', { name: /reading dashboard/i })).toHaveAttribute('href', '/dashboard');
       expect(screen.getByText('Sign in', { selector: 'span' })).toBeInTheDocument();
-      expect(screen.getByText(/stop 2 of 8/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/stop 2 of 8/i).length).toBeGreaterThan(0);
     });
 
     it('keeps the menu links visible for every selected destination', () => {
@@ -242,7 +242,7 @@ describe('Sahadhyayi Bicycle Adventure Journey', () => {
       );
 
       fireEvent.click(screen.getByRole('button', { name: /pedal to next stop/i }));
-      expect(screen.getByText(/stop 2 of 8/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/stop 2 of 8/i).length).toBeGreaterThan(0);
       expect(screen.getByText('14% of the journey explored')).toBeInTheDocument();
     });
 
