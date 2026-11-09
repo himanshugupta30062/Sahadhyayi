@@ -23,10 +23,8 @@ export const SahadhyayiJourney: React.FC = () => {
 
   const activeDestination =
     JOURNEY_DESTINATIONS[activeStopIndex - 1] || JOURNEY_DESTINATIONS[0];
-  const totalDistance = JOURNEY_DESTINATIONS[JOURNEY_DESTINATIONS.length - 1]?.distanceKm || 30;
-  const progressPercent = Math.min(
-    100,
-    Math.max(0, (activeDestination.distanceKm / totalDistance) * 100)
+  const progressPercent = Math.round(
+    ((activeDestination.index - 1) / (JOURNEY_DESTINATIONS.length - 1)) * 100
   );
 
   const scrollToDestination = useCallback((targetIndex: number) => {
@@ -140,11 +138,15 @@ export const SahadhyayiJourney: React.FC = () => {
           </h2>
 
           <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-            Follow a student cycling along a scenic, winding trail. Stop at illustrated places to discover the books, people, stories, communities, events and AI experiences waiting across Sahadhyayi.
+            Follow the trail through Sahadhyayi. Each stop represents a real section of the platform, with its own menu of places to explore.
           </p>
           <p className="mt-3 inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-semibold text-[hsl(var(--brand-primary))]">
             <Route className="w-4 h-4" />
-            Hover over a landmark or tap it to explore its features
+            <span className="inline-flex items-center gap-1.5"><span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(var(--brand-primary))] text-white text-[10px]">1</span> Choose a place</span>
+            <span aria-hidden="true">→</span>
+            <span className="inline-flex items-center gap-1.5"><span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(var(--brand-primary))] text-white text-[10px]">2</span> View its menu</span>
+            <span aria-hidden="true">→</span>
+            <span className="inline-flex items-center gap-1.5"><span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(var(--brand-primary))] text-white text-[10px]">3</span> Open a feature</span>
           </p>
         </div>
 
@@ -156,9 +158,9 @@ export const SahadhyayiJourney: React.FC = () => {
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[hsl(var(--brand-primary))]">
-                  <span>Stop {activeDestination.index} of {JOURNEY_DESTINATIONS.length}</span>
+                  <span>STOP {activeDestination.index} OF {JOURNEY_DESTINATIONS.length}</span>
                   <span>·</span>
-                  <span>{activeDestination.distanceKm.toFixed(1)} km</span>
+                  <span>JOURNEY PROGRESS</span>
                 </div>
                 <h3 className="text-base sm:text-lg font-serif font-bold text-foreground truncate">
                   {activeDestination.title}
@@ -245,11 +247,11 @@ export const SahadhyayiJourney: React.FC = () => {
 
           <div className="mt-4 pt-3 border-t border-border">
             <div className="flex items-center justify-between gap-3 text-[11px] text-muted-foreground mb-2">
-              <span>Library City</span>
+              <span>START</span>
               <span className="font-semibold text-foreground tabular-nums">
-                {progressPercent.toFixed(0)}% of the trail explored
+                {progressPercent}% of the journey explored
               </span>
-              <span>AI Knowledge Station</span>
+              <span>FINISH</span>
             </div>
             <div
               className="h-2.5 rounded-full bg-muted overflow-hidden"
