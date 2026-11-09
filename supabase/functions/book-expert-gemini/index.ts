@@ -24,7 +24,8 @@ const LIMITS = {
   perMinute: 20,
   perDay: 100,
   maxRetrievedBooks: 5,
-  requestTimeoutMs: 20000,
+  requestTimeoutMs: 8500,
+  embeddingTimeoutMs: 2500,
 };
 
 const STOP_WORDS = new Set([
@@ -199,19 +200,28 @@ function scoreBook(book: BookRecord, tokens: string[], normalizedQuestion: strin
   return score;
 }
 
+function isCatalogSizeQuestion(text: string): boolean {
+  return /\b(how many|count|total|number of)\s+(?:books|titles|records|volumes)\b/i.test(text);
+}
+
+let cachedLibraryCount: { count: number; expiresAt: number } | null = null;
+
 async function getLibraryRecordCount(supabaseClient: any): Promise<number | null> {
+  const now = Date.now();
+  if (cachedLibraryCount && cachedLibraryCount.expiresAt > now) {
+    return cachedLibraryCount.count;
+  }
   try {
     const { count, error } = await supabaseClient
       .from("books_library")
       .select("id", { count: "exact", head: true });
     if (error || typeof count !== "number") {
-      console.error("Book Expert catalog count is unavailable.");
-      return null;
+      return cachedLibraryCount ? cachedLibraryCount.count : null;
     }
+    cachedLibraryCount = { count, expiresAt: now + 3600000 }; // 1 hour TTL
     return count;
   } catch {
-    console.error("Book Expert catalog count lookup failed.");
-    return null;
+    return cachedLibraryCount ? cachedLibraryCount.count : null;
   }
 }
 
@@ -295,9 +305,17 @@ async function retrieveFeaturedLibraryBooks(supabaseClient: any): Promise<BookRe
   }
 }
 
+const embeddingCache = new Map<string, { embedding: number[]; expiresAt: number }>();
+
 async function generateQueryEmbedding(text: string, apiKey: string): Promise<number[]> {
+  const cacheKey = text.trim().toLowerCase();
+  const cached = embeddingCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.embedding;
+  }
+
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10000);
+  const timeout = setTimeout(() => controller.abort(), LIMITS.embeddingTimeoutMs);
   try {
     const response = await fetch(
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent",
@@ -319,8 +337,8 @@ async function generateQueryEmbedding(text: string, apiKey: string): Promise<num
       },
     );
     if (!response.ok) {
-      console.error("Book Expert query embedding failed with status " + response.status + ".");
-      throw new Error("RAG_QUERY_EMBEDDING_FAILED");
+      console.warn("Book Expert query embedding returned status " + response.status + "; proceeding without vector search.");
+      return [];
     }
     const payload = await response.json();
     const values = payload?.embedding?.values;
@@ -329,9 +347,17 @@ async function generateQueryEmbedding(text: string, apiKey: string): Promise<num
       values.length !== 768 ||
       !values.every((value: unknown) => typeof value === "number" && Number.isFinite(value))
     ) {
-      throw new Error("RAG_QUERY_EMBEDDING_INVALID");
+      return [];
     }
+    if (embeddingCache.size > 100) {
+      const oldestKey = embeddingCache.keys().next().value;
+      if (oldestKey) embeddingCache.delete(oldestKey);
+    }
+    embeddingCache.set(cacheKey, { embedding: values as number[], expiresAt: Date.now() + 1800000 });
     return values as number[];
+  } catch (err) {
+    console.warn("Book Expert query embedding timed out or failed; proceeding without vector search.");
+    return [];
   } finally {
     clearTimeout(timeout);
   }
@@ -353,18 +379,66 @@ async function retrieveRagChunks(
   text: string,
   history: HistoryItem[],
   apiKey: string,
+  scopedBookId?: string | null,
 ): Promise<RagChunk[]> {
   try {
+    // If on a specific book page, prioritize fetching authentic RAG documents for this specific book
+    if (scopedBookId) {
+      try {
+        const { data: bookChunks, error: bookChunksError } = await supabaseClient
+          .from("book_expert_documents")
+          .select("id, title, author, source_type, source_url, source_license, metadata, book_expert_chunks(id, content, chunk_index)")
+          .eq("book_id", scopedBookId)
+          .eq("is_active", true)
+          .eq("ingest_status", "indexed")
+          .limit(3);
+
+        if (!bookChunksError && Array.isArray(bookChunks) && bookChunks.length > 0) {
+          const directChunks: RagChunk[] = [];
+          for (const doc of bookChunks) {
+            for (const ch of (doc.book_expert_chunks || [])) {
+              if (ch && typeof ch.content === "string") {
+                directChunks.push({
+                  chunk_id: ch.id,
+                  document_id: doc.id,
+                  source_type: doc.source_type,
+                  source_ref: doc.id,
+                  book_id: scopedBookId,
+                  title: doc.title,
+                  author: doc.author,
+                  source_url: doc.source_url,
+                  source_license: doc.source_license,
+                  content: ch.content,
+                  similarity: 1.0,
+                  keyword_score: 1.0,
+                  metadata: doc.metadata,
+                });
+              }
+            }
+          }
+          if (directChunks.length > 0) {
+            return directChunks.slice(0, 5);
+          }
+        }
+      } catch {
+        // Fall back to semantic retrieval
+      }
+    }
+
     const retrievalQuery = buildContextualRetrievalQuery(text, history);
     const embedding = await generateQueryEmbedding(retrievalQuery, apiKey);
+    if (!embedding || embedding.length === 0) {
+      return [];
+    }
+
     const { data, error } = await supabaseClient.rpc("match_book_expert_chunks", {
       p_query_embedding: embedding,
       p_query_text: retrievalQuery,
-      p_match_count: 8,
+      p_match_count: 6,
       p_match_threshold: 0.34,
     });
     if (error) {
-      console.error("Book Expert RAG retrieval failed.");
+      console.warn("Book Expert RAG retrieval rpc error:", error.message);
       return [];
     }
     return (Array.isArray(data) ? data : [])
@@ -375,10 +449,10 @@ async function retrieveRagChunks(
         typeof row.content === "string" &&
         typeof row.title === "string"
       )
-      .slice(0, 6) as RagChunk[];
+      .slice(0, 5) as RagChunk[];
   } catch (error) {
     const kind = error instanceof Error ? error.message : "RAG_RETRIEVAL_FAILED";
-    console.error("Book Expert RAG retrieval unavailable: " + kind.slice(0, 80));
+    console.warn("Book Expert RAG retrieval unavailable: " + kind.slice(0, 80));
     return [];
   }
 }
@@ -464,10 +538,19 @@ async function callGemini(
   apiKey: string,
   history: HistoryItem[],
   latestPrompt: string,
+  timeoutMs = LIMITS.requestTimeoutMs,
 ): Promise<{ ok: boolean; status: number; body: any; raw: string }> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), LIMITS.requestTimeoutMs);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
+    const isGemini3 = model.startsWith("gemini-3") || model.startsWith("gemini-4");
+    const generationConfig: Record<string, unknown> = {
+      maxOutputTokens: 800,
+    };
+    if (isGemini3) {
+      generationConfig.thinkingConfig = { thinkingLevel: "minimal" };
+    }
+
     const response = await fetch(
       "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent",
       {
@@ -485,10 +568,7 @@ async function callGemini(
             })),
             { role: "user", parts: [{ text: latestPrompt }] },
           ],
-          generationConfig: {
-            thinkingConfig: { thinkingLevel: "medium" },
-            maxOutputTokens: 1000,
-          },
+          generationConfig,
         }),
         signal: controller.signal,
       },
@@ -684,32 +764,8 @@ serve(async (req: Request) => {
 
   try {
     const history = normalizeHistory(body.history);
-    const libraryCountPromise = getLibraryRecordCount(supabaseClient);
-    const ragPromise = retrieveRagChunks(supabaseClient, text, history, geminiApiKey);
-    let libraryBooks: BookRecord[] = [];
-    try {
-      libraryBooks = await retrieveLibraryBooks(supabaseClient, text);
-      if (
-        libraryBooks.length === 0 &&
-        /\bmeet (?:another )?book\b|\bintroduce me to\b|\btalking book\b|\bhear from a book\b/i.test(text)
-      ) {
-        libraryBooks = await retrieveFeaturedLibraryBooks(supabaseClient);
-      }
-    } catch {
-      // Keep general literary help available if catalog search is temporarily unavailable.
-      console.error("Book Expert library retrieval failed.");
-    }
-    const [libraryRecordCount, ragChunks] = await Promise.all([libraryCountPromise, ragPromise]);
 
-    const publicBooks = libraryBooks.map(toPublicBook);
-    retrievedBookCount = publicBooks.length;
-    const searchWasRelevant = isBookRelatedQuestion(text) || libraryBooks.some((book) => {
-      const title = normalizeSearchText(book.title || "");
-      const author = normalizeSearchText(book.author || "");
-      const query = normalizeSearchText(text);
-      return (title.length > 2 && query.includes(title)) || (author.length > 2 && query.includes(author));
-    });
-
+    // Parse book-scoped context early for targeted retrieval
     const rawBookContext = body.bookContext && typeof body.bookContext === "object" ? body.bookContext : null;
     const scopedBook = rawBookContext ? {
       id: typeof rawBookContext.id === "string" ? rawBookContext.id.slice(0, 100) : null,
@@ -718,6 +774,69 @@ serve(async (req: Request) => {
       description: typeof rawBookContext.description === "string" ? rawBookContext.description.slice(0, 1200) : null,
       language: typeof rawBookContext.language === "string" ? rawBookContext.language.slice(0, 80) : null,
     } : null;
+
+    // Only query catalog count when reader explicitly asks about library size
+    const needsCatalogCount = isCatalogSizeQuestion(text);
+    const libraryCountPromise = needsCatalogCount ? getLibraryRecordCount(supabaseClient) : Promise.resolve(null);
+
+    // Fast-path for book detail pages: prioritize the scoped book directly
+    const ragPromise = retrieveRagChunks(supabaseClient, text, history, geminiApiKey, scopedBook?.id);
+    let libraryBooks: BookRecord[] = [];
+
+    if (scopedBook?.id || scopedBook?.title) {
+      // Direct lookup by ID (2ms index hit) or use supplied book context directly
+      if (scopedBook.id) {
+        try {
+          const { data: dbBook } = await supabaseClient
+            .from("books_library")
+            .select("id,title,author,genre,description,cover_image_url,publication_year,language,pdf_url")
+            .eq("id", scopedBook.id)
+            .maybeSingle();
+          if (dbBook) {
+            libraryBooks = [dbBook as BookRecord];
+          }
+        } catch {
+          // Continue with context
+        }
+      }
+      if (libraryBooks.length === 0 && scopedBook.title) {
+        libraryBooks = [{
+          id: scopedBook.id || "scoped-book",
+          title: scopedBook.title,
+          author: scopedBook.author || null,
+          genre: null,
+          description: scopedBook.description || null,
+          cover_image_url: null,
+          publication_year: null,
+          language: scopedBook.language || null,
+          pdf_url: null,
+        }];
+      }
+    } else {
+      // General question: retrieve catalog matches
+      try {
+        libraryBooks = await retrieveLibraryBooks(supabaseClient, text);
+        if (
+          libraryBooks.length === 0 &&
+          /\bmeet (?:another )?book\b|\bintroduce me to\b|\btalking book\b|\bhear from a book\b/i.test(text)
+        ) {
+          libraryBooks = await retrieveFeaturedLibraryBooks(supabaseClient);
+        }
+      } catch {
+        console.error("Book Expert library retrieval failed.");
+      }
+    }
+
+    const [libraryRecordCount, ragChunks] = await Promise.all([libraryCountPromise, ragPromise]);
+
+    const publicBooks = libraryBooks.map(toPublicBook);
+    retrievedBookCount = publicBooks.length;
+    const searchWasRelevant = Boolean(scopedBook?.title) || isBookRelatedQuestion(text) || libraryBooks.some((book) => {
+      const title = normalizeSearchText(book.title || "");
+      const author = normalizeSearchText(book.author || "");
+      const query = normalizeSearchText(text);
+      return (title.length > 2 && query.includes(title)) || (author.length > 2 && query.includes(author));
+    });
 
     const latestPrompt = [
       scopedBook?.title
@@ -748,15 +867,16 @@ serve(async (req: Request) => {
       throw error;
     }
 
-    // Fall back to the stable previous-generation Flash model only when
+    // Fall back to a stable alternative Flash model only when
     // the configured model is explicitly unavailable.
     const modelErrorText = String(generated.raw || "").toLowerCase();
     const modelUnavailable = generated.status === 404 ||
       (generated.status === 400 && modelErrorText.includes("model") &&
         (modelErrorText.includes("not found") || modelErrorText.includes("not supported")));
-    if (!generated.ok && modelUnavailable && configuredModel !== "gemini-3.6-flash") {
-      modelUsed = "gemini-3.6-flash";
-      generated = await callGemini("gemini-3.6-flash", geminiApiKey, history, latestPrompt);
+    if (!generated.ok && modelUnavailable) {
+      const fallbackModel = configuredModel !== "gemini-2.5-flash" ? "gemini-2.5-flash" : "gemini-3.6-flash";
+      modelUsed = fallbackModel;
+      generated = await callGemini(fallbackModel, geminiApiKey, history, latestPrompt, 7000);
     }
 
     if (!generated.ok) {
