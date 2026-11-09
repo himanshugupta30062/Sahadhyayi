@@ -72,13 +72,13 @@ export const WhatsAppCallCenterFab: React.FC = () => {
         aria-haspopup="dialog"
         data-testid="whatsapp-callcenter-fab"
         className={cn(
-          'group fixed z-40 flex items-center justify-center rounded-full shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-          // Mobile: Exactly 12px above Book Expert (bottom: 16px, height: 48px -> top is 64px + 12px = 76px)
-          'bottom-[76px] right-4 h-11 w-11 bg-[#1C442D] text-[#D5B16D] border border-[#D5B16D]/50 hover:bg-[#153422] hover:border-[#D5B16D] focus-visible:ring-[#D5B16D]',
-          // Desktop sm: Exactly 14px above Book Expert (bottom: 20px, height: 56px -> top is 76px + 14px = 90px)
-          'sm:bottom-[90px] sm:right-5 sm:h-12 sm:w-12',
-          // Desktop lg: 16px above Book Expert (bottom: 24px, height: 56px -> top is 80px + 16px = 96px)
-          'lg:bottom-[96px] lg:right-6'
+          'group fixed z-40 flex items-center justify-center rounded-full shadow-2xl transition-all duration-300 hover:-translate-y-0.5 hover:scale-105 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D] focus-visible:ring-offset-2',
+          // Exactly matching Book Reader launcher dimensions: 48px (w-12 h-12) on mobile, 56px (sm:w-14 sm:h-14) on sm+
+          'w-12 h-12 sm:w-14 sm:h-14',
+          // Positioned directly above Book Reader: right-4 sm:right-5 lg:right-6 (vertically aligned)
+          'bottom-[76px] right-4 sm:bottom-[88px] sm:right-5 lg:bottom-[96px] lg:right-6',
+          // Deep emerald & radiant gold styling
+          'bg-[#1C442D] text-[#D5B16D] border border-[#D5B16D]/50 hover:bg-[#153422] hover:border-[#D5B16D]'
         )}
       >
         {/* Radar ping ring */}
@@ -86,8 +86,8 @@ export const WhatsAppCallCenterFab: React.FC = () => {
           className="pointer-events-none absolute inset-0 rounded-full bg-[#D5B16D]/25 opacity-40 animate-ping [animation-duration:2.8s]"
           aria-hidden="true"
         />
-        {/* Support / Help Icon */}
-        <LifeBuoy className="relative h-5 w-5 sm:h-5.5 sm:w-5.5 transition-transform group-hover:scale-110" aria-hidden="true" />
+        {/* Support / Help Icon matching Book Reader icon scale */}
+        <LifeBuoy className="relative h-6 w-6 sm:h-7 sm:w-7 transition-transform group-hover:scale-110" aria-hidden="true" />
 
         {/* Desktop Tooltip */}
         <span
@@ -114,7 +114,7 @@ export const WhatsAppCallCenterFab: React.FC = () => {
             role="dialog"
             aria-modal="true"
             aria-label="Sahadhyayi Support & Call Center"
-            className="fixed bottom-[130px] right-4 left-4 sm:left-auto sm:right-5 sm:bottom-[150px] lg:right-6 lg:bottom-[160px] z-50 w-auto sm:w-[380px] overflow-hidden rounded-2xl border border-[#D5B16D]/30 bg-background/98 p-0 text-foreground shadow-2xl shadow-black/25 backdrop-blur-md transition-all animate-in fade-in-0 zoom-in-95 duration-200"
+            className="fixed bottom-[136px] right-4 left-4 sm:left-auto sm:right-5 sm:bottom-[154px] lg:right-6 lg:bottom-[164px] z-50 w-auto sm:w-[380px] overflow-hidden rounded-2xl border border-[#D5B16D]/30 bg-background/98 p-0 text-foreground shadow-2xl shadow-black/25 backdrop-blur-md transition-all animate-in fade-in-0 zoom-in-95 duration-200"
           >
             {/* Header */}
             <div className="relative border-b border-border/70 bg-[#111614] p-4 text-white">
