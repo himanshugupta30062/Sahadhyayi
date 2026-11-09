@@ -24,17 +24,17 @@ const AnimatedHero: React.FC = () => {
         `}</style>
       </div>
 
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 w-full max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 xl:gap-12 items-center">
           {/* Left Column: Editorial Headline & CTAs (stacked on mobile, left-aligned on desktop) */}
-          <div className="lg:col-span-6 xl:col-span-6 flex justify-center lg:justify-start order-1">
+          <div className="lg:col-span-5 xl:col-span-5 flex justify-center lg:justify-start order-1">
             <HeroContent />
           </div>
 
-          {/* Right Column: Five clearly labelled, interactive feature orbits */}
-          <div className="lg:col-span-6 xl:col-span-5 flex items-center justify-center order-2">
-            <div className="relative w-full max-w-[400px] sm:max-w-[460px] md:max-w-[520px] lg:max-w-[610px] xl:max-w-[660px] aspect-square flex items-center justify-center">
-              <HeroAtomicRings size="100%" className="w-full h-full max-w-full max-h-full">
+          {/* Eight expanded feature rings with a grouped mobile directory */}
+          <div className="lg:col-span-7 xl:col-span-7 flex items-center justify-center order-2">
+            <div className="relative mx-auto w-full max-w-[460px] sm:max-w-[600px] lg:max-w-[760px] xl:max-w-[800px]">
+              <HeroAtomicRings size="100%" className="w-full max-w-full">
                 {/* Center Core Brand Sigil — kept inside the animated rings */}
                 <div className="text-center p-3 select-none pointer-events-none flex flex-col items-center justify-center">
                   <div className="relative mb-2 flex items-center justify-center">

@@ -2,7 +2,7 @@
 import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import HeroAtomicRings from "@/components/hero/HeroAtomicRings";
 import { BookExpertContext } from "@/contexts/book-expert.utils";
@@ -29,7 +29,8 @@ const orbitFeatures = [
   "Book Reviews",
   "Shared Marginalia",
   "Reading DNA",
-  "Short Stories",
+  "Stories & Serials",
+  "Community Stories",
   "Life Stories",
   "Articles",
   "Blogs",
@@ -83,7 +84,7 @@ afterEach(() => {
 });
 
 describe("HeroAtomicRings", () => {
-  it("shows all 40 current Sahadhyayi feature destinations across eight orbit bands", () => {
+  it("shows all 41 current Sahadhyayi feature destinations across eight orbit bands", () => {
     render(
       <MemoryRouter>
         <BookExpertContext.Provider value={mockBookExpert}>
@@ -94,7 +95,7 @@ describe("HeroAtomicRings", () => {
 
     expect(
       screen.getByRole("group", {
-        name: /40 Sahadhyayi features across eight animated rings/i,
+        name: /41 Sahadhyayi features across eight animated rings/i,
       }),
     ).toBeInTheDocument();
 
@@ -102,13 +103,24 @@ describe("HeroAtomicRings", () => {
       expect(
         screen.getByRole("link", { name: "Explore " + feature }),
       ).toBeInTheDocument();
-      expect(screen.getByText(feature)).toBeInTheDocument();
+      expect(screen.getAllByText(feature).length).toBeGreaterThan(0);
     });
 
     expect(
-      screen.getByRole("button", { name: "Open Book Expert AI" }),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Book Expert AI")).toBeInTheDocument();
+      screen.getAllByRole("button", { name: "Open Book Expert AI" }).length,
+    ).toBeGreaterThan(0);
+    expect(screen.getAllByText("Book Expert AI").length).toBeGreaterThan(0);
+
+    const mobileDirectory = screen.getByRole("navigation", { name: "Explore Sahadhyayi features" });
+    expect(mobileDirectory).toBeInTheDocument();
+    expect(within(mobileDirectory).getByRole("link", { name: "Community Stories" }))
+      .toHaveAttribute("href", "/community-stories");
+    expect(within(mobileDirectory).getByRole("link", { name: "Life Stories" }))
+      .toHaveAttribute("href", "/life-stories");
+    expect(within(mobileDirectory).getByRole("link", { name: "Readers Map" }))
+      .toHaveAttribute("href", "/map");
+    expect(within(mobileDirectory).getByRole("button", { name: "Open Book Expert AI" }))
+      .toBeInTheDocument();
   });
 
   it("opens Book Expert AI from its orbit node", () => {
@@ -120,7 +132,7 @@ describe("HeroAtomicRings", () => {
       </MemoryRouter>,
     );
 
-    screen.getByRole("button", { name: "Open Book Expert AI" }).click();
+    screen.getAllByRole("button", { name: "Open Book Expert AI" })[0].click();
     expect(mockBookExpert.toggleChat).toHaveBeenCalledTimes(1);
   });
 });
