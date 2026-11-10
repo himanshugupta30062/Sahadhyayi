@@ -478,7 +478,12 @@ export const useCreateStory = () => {
           published_at: isPublished ? new Date().toISOString() : null,
         });
 
-        if (partErr) throw partErr;
+        if (partErr) {
+          // Avoid leaving a story without its required first chapter.
+          const { error: rollbackErr } = await supabase.from('stories').delete().eq('id', story.id).eq('user_id', user.id);
+          if (rollbackErr) throw new Error(`Chapter creation failed (${partErr.message}); rollback failed (${rollbackErr.message}).`);
+          throw partErr;
+        }
       }
 
       return story;
@@ -575,23 +580,27 @@ export const useCreateStoryPart = () => {
       if (error) throw error;
 
       // Update story's parts count and recalculate reading time
-      const { data: allParts } = await supabase
+      const { data: allParts, error: partsReadErr } = await supabase
         .from('story_parts')
         .select('content, status')
         .eq('story_id', payload.storyId);
+
+      if (partsReadErr) throw partsReadErr;
 
       const totalWords = (allParts || []).reduce((acc: number, p: any) => {
         return acc + (p.content?.split(/\s+/).filter(Boolean).length || 0);
       }, 0);
 
-      await supabase
+      const { error: metadataErr } = await supabase
         .from('stories')
         .update({
           parts_count: (allParts || []).length,
           reading_time_minutes: Math.max(1, Math.ceil(totalWords / 200)),
           updated_at: new Date().toISOString(),
         })
-        .eq('id', payload.storyId);
+        .eq('id', payload.storyId)
+        .eq('user_id', user.id);
+      if (metadataErr) throw metadataErr;
 
       return data;
     },
