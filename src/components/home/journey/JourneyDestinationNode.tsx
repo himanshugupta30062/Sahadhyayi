@@ -3,7 +3,6 @@ import { ArrowUpRight, Bot, LockKeyhole } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { JourneyDestination, JourneyMenuItem } from './journeyData';
 import { JourneyLandmarkArt } from './JourneyLandmarkArt';
-import { JourneyAiStation } from './JourneyAiStation';
 import { BookExpertContext } from '@/contexts/book-expert.utils';
 
 interface JourneyDestinationNodeProps {
@@ -89,12 +88,6 @@ export const JourneyDestinationNode: React.FC<JourneyDestinationNodeProps> = ({
               </p>
             )}
           </section>
-
-          {destination.id === 'ai-knowledge-station' && destination.prompts && (
-            <div className="pt-1">
-              <JourneyAiStation prompts={destination.prompts} />
-            </div>
-          )}
 
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
             <span className="text-xs text-muted-foreground">Continue exploring the journey</span>
