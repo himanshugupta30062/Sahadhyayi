@@ -642,28 +642,33 @@ export const useUpdateStoryPart = () => {
         .from('story_parts')
         .update(updates)
         .eq('id', payload.partId)
+        .eq('story_id', payload.storyId)
         .select()
         .single();
 
       if (error) throw error;
 
       // Recalculate reading time
-      const { data: allParts } = await supabase
+      const { data: allParts, error: partsReadErr } = await supabase
         .from('story_parts')
         .select('content')
         .eq('story_id', payload.storyId);
+
+      if (partsReadErr) throw partsReadErr;
 
       const totalWords = (allParts || []).reduce((acc: number, p: any) => {
         return acc + (p.content?.split(/\s+/).filter(Boolean).length || 0);
       }, 0);
 
-      await supabase
+      const { error: metadataErr } = await supabase
         .from('stories')
         .update({
           reading_time_minutes: Math.max(1, Math.ceil(totalWords / 200)),
           updated_at: new Date().toISOString(),
         })
-        .eq('id', payload.storyId);
+        .eq('id', payload.storyId)
+        .eq('user_id', user.id);
+      if (metadataErr) throw metadataErr;
 
       return data;
     },
