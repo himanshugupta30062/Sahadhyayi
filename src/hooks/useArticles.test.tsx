@@ -133,11 +133,11 @@ describe('useArticles hooks', () => {
 
   it('gates my-articles query on authentication and orders by update time', async () => {
     mocks.user = null;
-    const { rerender } = renderHook(({ userId }) => useMyArticles(), { initialProps: { userId: null } });
+    const { rerender } = renderHook(() => useMyArticles());
     expect(mocks.queries[0].enabled).toBe(false);
     mocks.queries = [];
     mocks.user = { id: 'reader-1' };
-    rerender({ userId: 'reader-1' });
+    rerender();
     expect(mocks.queries[0].enabled).toBe(true);
     mocks.responses = { articles: [{ data: [article({ user_id: 'reader-1' })], error: null }] };
     await expect(mocks.queries[0].queryFn()).resolves.toEqual([article({ user_id: 'reader-1' })]);
