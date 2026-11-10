@@ -164,16 +164,23 @@ export function useCreateArticle() {
 
   return useMutation({
     mutationFn: async (article: { title: string; content: string; subtitle?: string; tags?: string[]; cover_image_url?: string; is_published?: boolean }) => {
-      const slug = generateSlug(article.title);
+      if (!user) throw new Error('Authentication required');
+      const title = article.title?.trim();
+      const content = article.content?.trim();
+      if (!title || title.length < 3) throw new Error('Article title must be at least 3 characters.');
+      if (!content || content.length < 50) throw new Error('Article content must be at least 50 characters.');
+      if ((article.tags || []).length > 5) throw new Error('An article can have at most 5 tags.');
+
+      const slug = generateSlug(title);
       const readingTime = estimateReadingTime(article.content);
 
       const { data, error } = await (supabase as any)
         .from('articles')
         .insert({
-          user_id: user!.id,
-          title: article.title,
+          user_id: user.id,
+          title,
           subtitle: article.subtitle || null,
-          content: article.content,
+          content,
           cover_image_url: article.cover_image_url || null,
           tags: article.tags || [],
           is_published: article.is_published || false,
