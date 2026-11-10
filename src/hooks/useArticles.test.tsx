@@ -123,9 +123,11 @@ describe('useArticles hooks', () => {
   it('returns an empty published list and propagates article query errors', async () => {
     renderHook(() => usePublishedArticles());
     mocks.responses = { articles: [{ data: [], error: null }] };
+    mocks.tableCalls = {};
     await expect(mocks.queries[0].queryFn()).resolves.toEqual([]);
     const failure = new Error('articles unavailable');
     mocks.responses = { articles: [{ data: null, error: failure }] };
+    mocks.tableCalls = {};
     await expect(mocks.queries[0].queryFn()).rejects.toBe(failure);
   });
 
@@ -155,6 +157,7 @@ describe('useArticles hooks', () => {
     await expect(mocks.queries[0].queryFn()).resolves.toEqual(
       expect.objectContaining({ id: 'article-1', author_name: 'Writer', author_avatar: 'writer.png' }),
     );
+    mocks.tableCalls = {};
     mocks.responses = {
       articles: [{ data: article(), error: null }],
       public_profiles: [{ data: null, error: null }],
