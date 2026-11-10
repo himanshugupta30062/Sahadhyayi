@@ -80,6 +80,7 @@ describe('article social hooks', () => {
     mocks.calls = [];
     mocks.tableCalls = {};
     mocks.from.mockReset();
+    setResponses({});
     mocks.invalidateQueries.mockReset().mockResolvedValue(undefined);
     mocks.toast.mockReset();
   });
