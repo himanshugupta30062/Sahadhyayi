@@ -1,19 +1,20 @@
 import { createContext, useContext } from 'react';
 
 export interface Quote {
-  id: number;
+  id: number | string;
   text: string;
   source?: string;
   note?: string;
   bookId?: string;
   page?: number;
   location?: string;
+  createdAt?: string;
 }
 
 interface QuotesContextType {
   quotes: Quote[];
   addQuote: (text: string, source?: string, note?: string, metadata?: { bookId?: string; page?: number; location?: string }) => void;
-  removeQuote: (id: number) => void;
+  removeQuote: (id: number | string) => void;
 }
 
 export const QuotesContext = createContext<QuotesContextType | undefined>(undefined);
