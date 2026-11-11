@@ -78,24 +78,27 @@ describe('GroupCard', () => {
     expect(mocks.joinMutate).toHaveBeenCalledWith('group-1');
   });
 
-  it('uses join and leave callbacks when provided', () => {
+  it('shows joined state without offering a duplicate join or leave action', () => {
     mocks.user = { id: 'reader-1' };
     const onJoin = vi.fn();
     const onLeave = vi.fn();
     renderGroup({ onJoin, onLeave, isJoined: true });
-    fireEvent.click(screen.getByRole('button', { name: 'Leave Group' }));
-    expect(onLeave).toHaveBeenCalledWith('group-1');
+    expect(screen.getByLabelText('Already joined this reading group')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Join Group' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Leave Group' })).not.toBeInTheDocument();
+    expect(onJoin).not.toHaveBeenCalled();
+    expect(onLeave).not.toHaveBeenCalled();
     expect(mocks.leaveMutate).not.toHaveBeenCalled();
   });
 
-  it('uses the leave mutation and renders chat for joined members', () => {
+  it('renders chat for joined members without a leave action', () => {
     mocks.user = { id: 'reader-1' };
     const onChat = vi.fn();
     renderGroup({ isJoined: true, onChat });
     fireEvent.click(screen.getByRole('button', { name: 'Chat' }));
     expect(onChat).toHaveBeenCalledWith('group-1');
-    fireEvent.click(screen.getByRole('button', { name: 'Leave Group' }));
-    expect(mocks.leaveMutate).toHaveBeenCalledWith('group-1');
+    expect(screen.queryByRole('button', { name: 'Leave Group' })).not.toBeInTheDocument();
+    expect(mocks.leaveMutate).not.toHaveBeenCalled();
   });
 
   it('prevents leaving the permanent default reading community', () => {
@@ -108,8 +111,8 @@ describe('GroupCard', () => {
         />
       </MemoryRouter>,
     );
-    const button = screen.getByRole('button', { name: 'Permanent Community Member' });
-    expect(button).toBeDisabled();
+    expect(screen.getByLabelText('Already joined this reading group')).toHaveTextContent('Permanent Community Member');
+    expect(screen.queryByRole('button', { name: 'Permanent Community Member' })).not.toBeInTheDocument();
     expect(mocks.leaveMutate).not.toHaveBeenCalled();
   });
 });
