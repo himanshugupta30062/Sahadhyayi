@@ -1,4 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Heart, ThumbsUp, Lightbulb } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { BookOpen, Lock, MessageCircle, Plus, Send, ShieldAlert, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
@@ -40,6 +42,43 @@ const formatCreatedAt = (value: string) => {
   } catch {
     return 'Recently';
   }
+};
+
+type ReactionKind = 'heart' | 'like' | 'insightful';
+const reactionMeta: Record<ReactionKind, { label: string; Icon: typeof Heart }> = {
+  heart: { label: 'Heart', Icon: Heart }, like: { label: 'Like', Icon: ThumbsUp }, insightful: { label: 'Insightful', Icon: Lightbulb },
+};
+const DiscussionReactions = ({ discussionId }: { discussionId: string }) => {
+  const [counts, setCounts] = useState<Record<ReactionKind, { count: number; mine: boolean }>>({
+    heart: { count: 0, mine: false }, like: { count: 0, mine: false }, insightful: { count: 0, mine: false },
+  });
+  const [busy, setBusy] = useState<ReactionKind | null>(null);
+  const refresh = async () => {
+    const { data, error } = await supabase.rpc('list_group_reading_discussion_reactions', { p_discussion_id: discussionId });
+    if (error) { toast.error('Could not load reactions.'); return; }
+    const next = { heart: { count: 0, mine: false }, like: { count: 0, mine: false }, insightful: { count: 0, mine: false } };
+    (data || []).forEach((row: { reaction: ReactionKind; reaction_count: number; mine: boolean }) => {
+      if (row.reaction in next) next[row.reaction] = { count: Number(row.reaction_count), mine: Boolean(row.mine) };
+    });
+    setCounts(next);
+  };
+  useEffect(() => { void refresh(); }, [discussionId]);
+  const toggle = async (kind: ReactionKind) => {
+    setBusy(kind);
+    const { error } = await supabase.rpc('toggle_group_reading_discussion_reaction', { p_discussion_id: discussionId, p_reaction: kind });
+    setBusy(null);
+    if (error) { toast.error(error.message || 'Reaction failed.'); return; }
+    await refresh();
+  };
+  return <div className="mt-3 flex flex-wrap gap-2" aria-label="Discussion reactions">
+    {(Object.keys(reactionMeta) as ReactionKind[]).map(kind => {
+      const { Icon, label } = reactionMeta[kind]; const item = counts[kind];
+      return <Button key={kind} type="button" size="sm" variant={item.mine ? 'secondary' : 'outline'} aria-pressed={item.mine}
+        aria-label={label + ': ' + item.count} disabled={busy !== null} onClick={() => void toggle(kind)} className="h-8 gap-1.5">
+        <Icon className="h-3.5 w-3.5" />{item.count > 0 && <span>{item.count}</span>}<span className="sr-only">{label}</span>
+      </Button>;
+    })}
+  </div>;
 };
 
 interface DiscussionCardProps {
@@ -158,6 +197,8 @@ const DiscussionCard = ({
           </span>
         </div>
       )}
+
+      <DiscussionReactions discussionId={discussion.id} />
 
       <div className="mt-4 border-t border-border pt-3">
         <Button
