@@ -125,8 +125,9 @@ describe('post comment hooks', () => {
     expect(mocks.toast).toHaveBeenCalledWith({ title: 'Comment added successfully!' });
 
     mocks.user = null;
-    await expect(mocks.mutations[0].mutationFn({ postId: 'post-1', content: 'x' })).rejects.toThrow('User not authenticated');
-    await mocks.mutations[0].onError();
+    renderHook(() => useAddComment());
+    await expect(mocks.mutations[1].mutationFn({ postId: 'post-1', content: 'x' })).rejects.toThrow('User not authenticated');
+    await mocks.mutations[1].onError();
     expect(mocks.toast).toHaveBeenCalledWith({ title: 'Failed to add comment', variant: 'destructive' });
   });
 
