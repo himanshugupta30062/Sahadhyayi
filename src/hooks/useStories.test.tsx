@@ -38,6 +38,7 @@ import {
   useStoryDetails,
   useStoryPart,
   useDeleteStory,
+  useSaveStoryProgress,
   useCreateStory,
   useStoryComments,
   useAddStoryComment,
