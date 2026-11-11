@@ -373,6 +373,12 @@ const GroupReadingDiscussions = ({ groupId, canModerate }: GroupReadingDiscussio
       ?? ''
   );
 
+  const requestCloseComposer = () => {
+    if ((title.trim() || body.trim()) && typeof window !== 'undefined'
+      && !window.confirm('Discard your unfinished discussion draft?')) return;
+    setShowComposer(false);
+  };
+
   const handleCreate = () => {
     const chapter = Number(chapterNumber);
     const spoiler = Number(spoilerChapter);
@@ -435,7 +441,7 @@ const GroupReadingDiscussions = ({ groupId, canModerate }: GroupReadingDiscussio
         <Button
           type="button"
           size="sm"
-          onClick={() => setShowComposer((value) => !value)}
+          onClick={() => showComposer ? requestCloseComposer() : setShowComposer(true)}
           disabled={booksLoading || selectableBooks.length === 0}
         >
           <Plus className="mr-1.5 h-4 w-4" />
@@ -539,7 +545,7 @@ const GroupReadingDiscussions = ({ groupId, canModerate }: GroupReadingDiscussio
             </label>
 
             <div className="flex flex-wrap justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setShowComposer(false)}>
+              <Button type="button" variant="outline" onClick={requestCloseComposer}>
                 Cancel
               </Button>
               <Button
