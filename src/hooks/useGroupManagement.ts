@@ -38,7 +38,8 @@ export const useGroups = (options: { enabled?: boolean } = {}) => {
   const queryClient = useQueryClient();
   const enabled = options.enabled ?? true;
   const userId = user?.id;
-  const queryEnabled = enabled && Boolean(user?.id);
+  // Public reading groups are browseable without authentication; only membership actions require a user.
+  const queryEnabled = enabled;
 
   useEffect(() => {
     if (!queryEnabled || !userId) return;
@@ -63,10 +64,6 @@ export const useGroups = (options: { enabled?: boolean } = {}) => {
   return useQuery({
     queryKey: ['all-groups', userId],
     queryFn: async () => {
-      if (!user?.id) {
-        throw new Error('Sign in to browse reading groups.');
-      }
-
       const { data, error } = await supabase
         .from('group_chats')
         .select(`
