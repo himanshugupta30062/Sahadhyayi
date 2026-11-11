@@ -174,6 +174,22 @@ const GroupReadingBoard = ({ groupId, canManage }: GroupReadingBoardProps) => {
             </div>
           )}
 
+          {book.status === 'current' && book.shared_reader_count > 0 && book.average_progress !== null && (
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 space-y-2">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Flag className="h-4 w-4 text-primary" aria-hidden="true" />
+                Group reading challenge
+                {book.average_progress >= 100 && <Badge variant="default">Completed!</Badge>}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {book.average_progress >= 100
+                  ? 'Your group has reached 100% shared progress. Celebrate finishing together!'
+                  : `${Math.max(0, 100 - Math.round(book.average_progress))}% more to reach the collective 100% reading goal.`}
+              </p>
+              {book.target_date && <p className="text-xs font-medium text-muted-foreground">Target: {formatDate(book.target_date)}</p>}
+            </div>
+          )}
+
           {book.target_date && book.status === 'current' && (() => {
             const today = new Date();
             const todayUtc = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
