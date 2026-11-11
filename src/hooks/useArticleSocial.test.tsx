@@ -117,7 +117,6 @@ describe('article social hooks', () => {
     const failure = new Error('likes unavailable');
     mocks.responses = { article_likes: [{ count: null, error: failure }] };
     mocks.tableCalls = {};
-    mocks.tableCalls = {};
     await expect(mocks.queries[0].queryFn()).rejects.toBe(failure);
   });
 
