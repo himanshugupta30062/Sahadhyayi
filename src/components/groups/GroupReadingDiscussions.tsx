@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Heart, ThumbsUp, Lightbulb } from 'lucide-react';
+import { Heart, ThumbsUp, Lightbulb, Bookmark } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { BookOpen, Lock, MessageCircle, Plus, Send, ShieldAlert, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -79,6 +79,34 @@ const DiscussionReactions = ({ discussionId }: { discussionId: string }) => {
       </Button>;
     })}
   </div>;
+};
+
+const DiscussionBookmark = ({ discussionId }: { discussionId: string }) => {
+  const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    supabase.rpc('list_my_group_discussion_bookmarks').then(({ data, error }) => {
+      if (!alive) return;
+      if (error) toast.error('Could not load saved discussions.');
+      else setSaved((data || []).some((row: { discussion_id: string }) => row.discussion_id === discussionId));
+      setLoading(false);
+    });
+    return () => { alive = false; };
+  }, [discussionId]);
+  const toggle = async () => {
+    setBusy(true);
+    const { data, error } = await supabase.rpc('toggle_group_reading_discussion_bookmark', { p_discussion_id: discussionId });
+    setBusy(false);
+    if (error) { toast.error(error.message || 'Could not save discussion.'); return; }
+    setSaved(Boolean(data));
+    toast.success(data ? 'Discussion saved.' : 'Removed from saved discussions.');
+  };
+  return <Button type="button" size="sm" variant={saved ? 'secondary' : 'outline'} aria-pressed={saved}
+    disabled={loading || busy} onClick={() => void toggle()} className="h-8 gap-1.5">
+    <Bookmark className="h-3.5 w-3.5" />{saved ? 'Saved' : 'Save'}
+  </Button>;
 };
 
 interface DiscussionCardProps {
@@ -198,7 +226,7 @@ const DiscussionCard = ({
         </div>
       )}
 
-      <DiscussionReactions discussionId={discussion.id} />
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2"><DiscussionReactions discussionId={discussion.id} /><DiscussionBookmark discussionId={discussion.id} /></div>
 
       <div className="mt-4 border-t border-border pt-3">
         <Button
