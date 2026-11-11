@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { BookSelectionModal } from '@/components/social/BookSelectionModal';
+import { Pin, PinOff } from 'lucide-react';
+import { useSetReadingGroupPostPin } from '@/hooks/useReadingGroupPostPin';
 import GroupPostInteractions from '@/components/groups/GroupPostInteractions';
 import { useCreateReadingGroupPost, useDeleteReadingGroupPost, useReadingGroupPosts } from '@/hooks/useReadingGroupPosts';
 
@@ -16,6 +18,7 @@ const GroupActivityFeed = ({ groupId, canModerate }: Props) => {
   const { data: posts = [], isLoading, error } = useReadingGroupPosts(groupId, true);
   const createPost = useCreateReadingGroupPost();
   const deletePost = useDeleteReadingGroupPost();
+  const setPin = useSetReadingGroupPostPin();
   const [body, setBody] = useState('');
   const [book, setBook] = useState<{ id: string; title: string } | null>(null);
   const [bookPickerOpen, setBookPickerOpen] = useState(false);
@@ -53,6 +56,7 @@ const GroupActivityFeed = ({ groupId, canModerate }: Props) => {
             <article key={post.id} className="rounded-xl border border-border p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0"><p className="font-medium text-sm">{post.author_name}</p><p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</p></div>
+                {canModerate && <Button type="button" variant="ghost" size="icon" aria-label={post.pinned_at ? 'Unpin announcement' : 'Pin announcement'} disabled={setPin.isPending} onClick={() => setPin.mutate({postId:post.id,pin:!post.pinned_at},{onError:e=>toast.error(e.message),onSuccess:()=>toast.success(post.pinned_at?'Announcement unpinned.':'Announcement pinned.')})}>{post.pinned_at ? <PinOff className="h-4 w-4"/> : <Pin className="h-4 w-4"/>}</Button>}
                 {(post.author_id === user?.id || canModerate) && <Button type="button" variant="ghost" size="icon" aria-label="Delete group post" disabled={deletePost.isPending} onClick={() => deletePost.mutate({ groupId, postId: post.id }, { onSuccess: () => toast.success('Post deleted.'), onError: (e) => toast.error(e.message) })}><Trash2 className="h-4 w-4 text-muted-foreground" /></Button>}
               </div>
               <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-relaxed">{post.body}</p>
