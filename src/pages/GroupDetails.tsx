@@ -30,6 +30,7 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import GroupMessaging from '@/components/groups/GroupMessaging';
 import GroupReadingBoard from '@/components/groups/GroupReadingBoard';
 import GroupReadingDiscussions from '@/components/groups/GroupReadingDiscussions';
+import GroupEventsPanel from '@/components/groups/GroupEventsPanel';
 import { toast } from 'sonner';
 
 const GroupDetails = () => {
@@ -315,6 +316,20 @@ const GroupDetails = () => {
                 </div>
               )}
 
+              {/* Reader community navigation */}
+              <nav aria-label="Reading group sections" className="flex flex-wrap gap-2 border-t border-border pt-4">
+                {[
+                  { href: '#reading-board', label: 'Books & progress' },
+                  { href: '#discussions', label: 'Discussions' },
+                  { href: '#group-events', label: 'Events & sessions' },
+                  { href: '#group-members', label: 'Members' },
+                ].map((item) => (
+                  <a key={item.href} href={item.href} className="inline-flex items-center rounded-full border border-border bg-muted/30 px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    {item.label}
+                  </a>
+                ))}
+              </nav>
+
               {/* Group Quick Links */}
               <div className="flex flex-wrap gap-3 pt-2">
                 <Link to="/social?tab=rooms">
@@ -342,11 +357,12 @@ const GroupDetails = () => {
             </CardContent>
           </Card>
 
-          {isMember && <GroupReadingBoard groupId={group.id} canManage={canManageGroup} />}
-          {isMember && <GroupReadingDiscussions groupId={group.id} canModerate={canManageGroup} />}
+          {isMember && <section id="reading-board" className="scroll-mt-24"><GroupReadingBoard groupId={group.id} canManage={canManageGroup} /></section>}
+          {isMember && <section id="discussions" className="scroll-mt-24"><GroupReadingDiscussions groupId={group.id} canModerate={canManageGroup} /></section>}
+          {isMember && <section id="group-events" className="scroll-mt-24"><GroupEventsPanel groupId={group.id} userId={user?.id || ''} canManage={canManageGroup} /></section>}
 
           {/* Members List */}
-          <Card className="border-border bg-card">
+          <Card id="group-members" className="border-border bg-card scroll-mt-24">
             <CardHeader className="pb-3 border-b border-border">
               <CardTitle className="text-base font-semibold flex items-center justify-between">
                 <span className="flex items-center gap-2">

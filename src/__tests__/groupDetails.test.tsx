@@ -16,6 +16,10 @@ vi.mock('@/components/groups/GroupReadingDiscussions', () => ({
   default: () => <div data-testid="group-reading-discussions">Chapter discussions</div>,
 }));
 
+vi.mock('@/components/groups/GroupEventsPanel', () => ({
+  default: () => <div data-testid="group-events-panel">Reading events</div>,
+}));
+
 vi.mock('@/components/groups/GroupModerationPanel', () => ({
   default: () => <div data-testid="group-moderation-panel">Group moderation</div>,
 }));
@@ -118,6 +122,8 @@ describe('GroupDetails Page Tests', () => {
     );
     expect(screen.getByTestId('group-reading-board')).toBeInTheDocument();
     expect(screen.getByTestId('group-reading-discussions')).toBeInTheDocument();
+    expect(screen.getByTestId('group-events-panel')).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Reading group sections' })).toBeInTheDocument();
   });
 
   it('renders group details with membership status and chat button', () => {
