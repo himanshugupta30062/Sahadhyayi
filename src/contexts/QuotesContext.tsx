@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/authHelpers';
 import { supabase } from '@/integrations/supabase/client';
-import { QuotesContext, type Quote } from './quotesHelpers';
+import { mergeQuotes, QuotesContext, type Quote } from './quotesHelpers';
 
 const getStorageKey = (userId?: string) => `savedQuotes:${userId ?? 'guest'}`;
 const isUuid = (value?: string) => Boolean(value && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value));
