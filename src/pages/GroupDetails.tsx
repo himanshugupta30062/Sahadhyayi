@@ -31,6 +31,7 @@ import GroupMessaging from '@/components/groups/GroupMessaging';
 import GroupReadingBoard from '@/components/groups/GroupReadingBoard';
 import GroupReadingDiscussions from '@/components/groups/GroupReadingDiscussions';
 import GroupEventsPanel from '@/components/groups/GroupEventsPanel';
+import GroupActivityFeed from '@/components/groups/GroupActivityFeed';
 import GroupNotificationPreference from '@/components/groups/GroupNotificationPreference';
 import { toast } from 'sonner';
 
@@ -361,6 +362,7 @@ const GroupDetails = () => {
           {isMember && <section id="reading-board" className="scroll-mt-24"><GroupReadingBoard groupId={group.id} canManage={canManageGroup} /></section>}
           {isMember && <section id="discussions" className="scroll-mt-24"><GroupReadingDiscussions groupId={group.id} canModerate={canManageGroup} /></section>}
           {isMember && <section id="group-events" className="scroll-mt-24"><GroupEventsPanel groupId={group.id} userId={user?.id || ''} canManage={canManageGroup} /></section>}
+          {isMember && <section id="group-activity" className="scroll-mt-24"><GroupActivityFeed groupId={group.id}/></section>}
 
           {isMember && <GroupNotificationPreference groupId={group.id} />}
 
