@@ -128,6 +128,7 @@ describe('article social hooks', () => {
       .rejects.toThrow('Sign in to like articles');
 
     mocks.user = { id: 'reader-1' };
+    renderHook(() => useToggleArticleLike());
     mocks.responses = { article_likes: [{ data: null, error: null }, { data: null, error: null }] };
     await mocks.mutation?.mutationFn({ articleId: 'a-1', hasLiked: false });
     await mocks.mutation?.mutationFn({ articleId: 'a-1', hasLiked: true });
@@ -229,6 +230,7 @@ describe('article social hooks', () => {
     await expect(mocks.mutation?.mutationFn({ authorUserId: 'author-1', isFollowing: false }))
       .rejects.toThrow('Sign in to follow authors');
     mocks.user = { id: 'reader-1' };
+    renderHook(() => useToggleFollowAuthor());
     mocks.responses = { article_author_followers: [{ data: null, error: null }, { data: null, error: null }] };
     await mocks.mutation?.mutationFn({ authorUserId: 'author-1', isFollowing: false });
     await mocks.mutation?.mutationFn({ authorUserId: 'author-1', isFollowing: true });
