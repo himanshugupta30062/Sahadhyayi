@@ -47,4 +47,11 @@ describe('notification realtime synchronization', () => {
     expect(source).toContain('onMutate: async () =>');
     expect(source).toContain('queryClient.setQueryData(countKey, 0)');
   });
+  it('renders notification loading and recoverable error states', () => {
+    expect(source).toContain('notificationsLoading ?');
+    expect(source).toContain('notificationsError ?');
+    expect(source).toContain('Couldn’t load notifications.');
+    expect(source).toContain('refetchNotifications()');
+    expect(source).toContain('No notifications yet');
+  });
 });
