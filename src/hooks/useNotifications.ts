@@ -25,6 +25,30 @@ type NotificationRealtimeEntry = { channel: ReturnType<typeof supabase.channel>;
 const notificationRealtimeChannels = new Map<string, NotificationRealtimeEntry>();
 const notificationBroadcastName = (userId: string) => `sahadhyayi-notifications-${userId}`;
 
+// Refresh after returning from background/offline so missed realtime events do
+// not leave the badge or notification list stale on mobile browsers.
+const useNotificationForegroundRefresh = (userId: string | undefined, queryClient: ReturnType<typeof useQueryClient>) => {
+  useEffect(() => {
+    if (!userId) return;
+    let lastRefreshAt = 0;
+    const refreshIfVisible = () => {
+      if (document.visibilityState !== 'visible') return;
+      const now = Date.now();
+      if (now - lastRefreshAt < 3000) return;
+      lastRefreshAt = now;
+      invalidateNotificationQueries(queryClient, userId);
+    };
+    document.addEventListener('visibilitychange', refreshIfVisible);
+    window.addEventListener('focus', refreshIfVisible);
+    window.addEventListener('pageshow', refreshIfVisible);
+    return () => {
+      document.removeEventListener('visibilitychange', refreshIfVisible);
+      window.removeEventListener('focus', refreshIfVisible);
+      window.removeEventListener('pageshow', refreshIfVisible);
+    };
+  }, [userId, queryClient]);
+};
+
 const invalidateNotificationQueries = (queryClient: ReturnType<typeof useQueryClient>, userId: string) => {
   void queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
   void queryClient.invalidateQueries({ queryKey: ['unread-notifications-count', userId] });
@@ -93,6 +117,7 @@ export const useNotifications = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   useNotificationRealtimeSync(user?.id, queryClient);
+  useNotificationForegroundRefresh(user?.id, queryClient);
   return useQuery({
     queryKey: ['notifications', user?.id],
     queryFn: async () => {

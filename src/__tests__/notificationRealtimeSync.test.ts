@@ -30,4 +30,12 @@ describe('notification realtime synchronization', () => {
     expect(source).toContain('crossTabChannel?.close()');
     expect(source).toContain('broadcastNotificationChange(user.id)');
   });
+  it('refreshes notification queries when the app returns to foreground', () => {
+    expect(source).toContain("document.addEventListener('visibilitychange', refreshIfVisible)");
+    expect(source).toContain("window.addEventListener('focus', refreshIfVisible)");
+    expect(source).toContain("window.addEventListener('pageshow', refreshIfVisible)");
+    expect(source).toContain("document.visibilityState !== 'visible'");
+    expect(source).toContain('now - lastRefreshAt < 3000');
+    expect(source).toContain("document.removeEventListener('visibilitychange', refreshIfVisible)");
+  });
 });
