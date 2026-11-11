@@ -164,6 +164,13 @@ const GroupReadingBoard = ({ groupId, canManage }: GroupReadingBoardProps) => {
                 <div className="h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${Math.min(100, Math.max(0, book.average_progress))}%` }} />
               </div>
               <p className="text-[11px] text-muted-foreground">Based only on members who opted in to share.</p>
+              <div className="flex flex-wrap gap-1.5 pt-1" aria-label="Group reading milestones">
+                {[25, 50, 75, 100].map((milestone) => (
+                  <Badge key={milestone} variant={book.average_progress >= milestone ? 'default' : 'outline'} className="text-[10px]">
+                    {book.average_progress >= milestone ? '✓ ' : ''}{milestone}% milestone
+                  </Badge>
+                ))}
+              </div>
             </div>
           )}
 
