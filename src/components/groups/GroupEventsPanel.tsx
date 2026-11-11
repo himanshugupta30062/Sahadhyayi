@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import GroupEventNotificationSettings from '@/components/groups/GroupEventNotificationSettings';
+import GroupMuteControl from '@/components/groups/GroupMuteControl';
 import { CalendarDays, MapPin, Users, Plus, Loader2, XCircle, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +24,7 @@ export default function GroupEventsPanel({ groupId, userId, canManage }: { group
  if(isLoading)return <div className="py-8 text-center"><Loader2 className="mx-auto animate-spin"/>Loading events…</div>;
  if(error)return <p role="alert" className="text-sm text-destructive">Could not load group events. Please retry.</p>;
  return <section className="space-y-4" aria-label="Reading group events">\n <GroupEventNotificationSettings />
+ <GroupMuteControl groupId={groupId} userId={userId} />
  <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-xl font-semibold">Events & sessions</h2>{canManage&&<Button onClick={()=>setOpen(v=>!v)}><Plus className="mr-2 h-4 w-4"/>Create event</Button>}</div>
  {open&&<Card><CardHeader><CardTitle>Plan a reading session</CardTitle></CardHeader><CardContent className="grid gap-3 sm:grid-cols-2">
  <Input aria-label="Event title" placeholder="Event title" value={title} onChange={e=>setTitle(e.target.value)} maxLength={120}/>
