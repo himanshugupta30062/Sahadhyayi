@@ -124,7 +124,8 @@ describe('useStories hooks', () => {
     configureResponses();
     renderHook(() => useStories({ filter: 'my-stories' }));
     await expect(mocks.queries[0].queryFn()).resolves.toEqual([]);
-    expect(mocks.from).toHaveBeenCalledTimes(1);\n    expect(mocks.calls).not.toContainEqual(expect.objectContaining({ table: 'stories', method: 'eq' }));
+    expect(mocks.from).toHaveBeenCalledTimes(1);
+    expect(mocks.calls).not.toContainEqual(expect.objectContaining({ table: 'stories', method: 'eq' }));
   });
 
   it('loads continue-reading stories and restores each progress position', async () => {
