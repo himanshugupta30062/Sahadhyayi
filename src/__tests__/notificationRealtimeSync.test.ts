@@ -6,13 +6,18 @@ const source = readFileSync(resolve(process.cwd(), 'src/hooks/useNotifications.t
 
 describe('notification realtime synchronization', () => {
   it('subscribes to the signed-in user notification rows', () => {
-    expect(source).toMatch(/\.channel\(\`notifications-sync-\$\{userId\}\`\)/);
-    expect(source).toMatch(/table: 'notifications'/);
-    expect(source).toMatch(/filter: \`user_id=eq\.\$\{userId\}\`/);
+    expect(source).toContain('notifications-sync-${userId}');
+    expect(source).toContain("table: 'notifications'");
+    expect(source).toContain('filter: `user_id=eq.${userId}`');
   });
-  it('refreshes both notification list and unread badge on row changes', () => {
-    expect(source).toMatch(/invalidateQueries\(\{ queryKey: \['notifications', userId\] \}\)/);
-    expect(source).toMatch(/invalidateQueries\(\{ queryKey: \['unread-notifications-count', userId\] \}\)/);
-    expect(source).toMatch(/removeChannel\(entry\.channel\)/);\n    expect(source).toMatch(/notificationRealtimeChannels\.get\(userId\)/);\n    expect(source).toMatch(/existing\.refs \+= 1/);
+
+  it('refreshes both notification list and unread badge on row changes and reconnect', () => {
+    expect(source).toContain("queryKey: ['notifications', userId]");
+    expect(source).toContain("queryKey: ['unread-notifications-count', userId]");
+    expect(source).toContain(".subscribe((status) =>");
+    expect(source).toContain("status === 'SUBSCRIBED'");
+    expect(source).toContain('removeChannel(entry.channel)');
+    expect(source).toContain('notificationRealtimeChannels.get(userId)');
+    expect(source).toContain('existing.refs += 1');
   });
 });
