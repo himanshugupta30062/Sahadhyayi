@@ -525,6 +525,7 @@ const GroupReadingDiscussions = ({ groupId, canModerate }: GroupReadingDiscussio
                 maxLength={160}
                 className="mt-1"
               />
+              <p className="mt-1 text-right text-[11px] text-muted-foreground" aria-live="polite">{title.length}/160 characters</p>
             </label>
             <label className="block text-xs font-medium text-muted-foreground">
               Your thoughts
@@ -536,6 +537,7 @@ const GroupReadingDiscussions = ({ groupId, canModerate }: GroupReadingDiscussio
                 maxLength={6000}
                 className="mt-1"
               />
+              <p className="mt-1 text-right text-[11px] text-muted-foreground" aria-live="polite">{body.length}/6000 characters</p>
             </label>
 
             <div className="flex flex-wrap justify-end gap-2">
