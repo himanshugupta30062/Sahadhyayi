@@ -54,4 +54,12 @@ describe('notification realtime synchronization', () => {
     expect(source).toContain('refetchNotifications()');
     expect(source).toContain('No notifications yet');
   });
+  it('reconciles notifications and unread count each time dropdown opens', () => {
+    expect(source).toContain('refetch: refetchUnreadCount');
+    expect(source).toContain('const handleOpenChange = (open: boolean)');
+    expect(source).toContain('if (open)');
+    expect(source).toContain('void refetchNotifications()');
+    expect(source).toContain('void refetchUnreadCount()');
+    expect(source).toContain('onOpenChange={handleOpenChange}');
+  });
 });
