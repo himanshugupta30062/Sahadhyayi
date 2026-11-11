@@ -570,7 +570,16 @@ const GroupReadingDiscussions = ({ groupId, canModerate }: GroupReadingDiscussio
           </div>
         ) : (
           <div className="space-y-3">
-            {visibleDiscussions.map((discussion) => (
+            {visibleDiscussions.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-border px-4 py-6 text-center" role="status">
+                <p className="font-medium text-foreground">No discussions match these filters</p>
+                <p className="mt-1 text-sm text-muted-foreground">Try another search term or topic.</p>
+                <Button type="button" size="sm" variant="outline" className="mt-3"
+                  onClick={() => { setSearchText(''); setTopicFilter('all'); setSortOrder('newest'); }}>
+                  Clear filters
+                </Button>
+              </div>
+            ) : visibleDiscussions.map((discussion) => (
               <DiscussionCard
                 key={discussion.id}
                 discussion={discussion}
