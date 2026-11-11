@@ -13,6 +13,6 @@ describe('notification realtime synchronization', () => {
   it('refreshes both notification list and unread badge on row changes', () => {
     expect(source).toMatch(/invalidateQueries\(\{ queryKey: \['notifications', userId\] \}\)/);
     expect(source).toMatch(/invalidateQueries\(\{ queryKey: \['unread-notifications-count', userId\] \}\)/);
-    expect(source).toMatch(/removeChannel\(channel\)/);
+    expect(source).toMatch(/removeChannel\(entry\.channel\)/);\n    expect(source).toMatch(/notificationRealtimeChannels\.get\(userId\)/);\n    expect(source).toMatch(/existing\.refs \+= 1/);
   });
 });
