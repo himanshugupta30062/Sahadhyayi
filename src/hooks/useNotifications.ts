@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
@@ -20,8 +21,29 @@ export interface Notification {
   actor?: { id: string; full_name?: string; username?: string; profile_photo_url?: string } | null;
 }
 
+const useNotificationRealtimeSync = (userId: string | undefined, queryClient: ReturnType<typeof useQueryClient>) => {
+  useEffect(() => {
+    if (!userId) return;
+    const channel = supabase
+      .channel(`notifications-sync-${userId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${userId}`,
+      }, () => {
+        void queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
+        void queryClient.invalidateQueries({ queryKey: ['unread-notifications-count', userId] });
+      })
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [userId, queryClient]);
+};
+
 export const useNotifications = () => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  useNotificationRealtimeSync(user?.id, queryClient);
   return useQuery({
     queryKey: ['notifications', user?.id],
     queryFn: async () => {
@@ -41,6 +63,8 @@ export const useNotifications = () => {
 
 export const useUnreadNotificationsCount = () => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  useNotificationRealtimeSync(user?.id, queryClient);
   return useQuery({
     queryKey: ['unread-notifications-count', user?.id],
     queryFn: async () => {
