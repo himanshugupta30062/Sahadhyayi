@@ -62,18 +62,9 @@ import GroupMessaging from './GroupMessaging';
 import SignInLink from '@/components/SignInLink';
 import AIReadingGroupAssistant from './AIReadingGroupAssistant';
 import { toast } from 'sonner';
+import { READING_GROUP_TOPICS, matchesReadingGroupTopic } from '@/lib/readingGroupTopics';
 
 type EditableGroup = Pick<Group, 'id' | 'name'> & { description: string };
-
-const READING_TOPICS = [
-  { id: 'all', label: 'All topics', terms: [] },
-  { id: 'fiction', label: 'Fiction', terms: ['fiction', 'novel', 'story', 'stories', 'fantasy', 'mystery', 'romance'] },
-  { id: 'philosophy', label: 'Philosophy', terms: ['philosophy', 'philosoph', 'ethics', 'existential', 'upanishad', 'vedanta'] },
-  { id: 'science', label: 'Science', terms: ['science', 'scientific', 'physics', 'biology', 'technology', 'research'] },
-  { id: 'history', label: 'History', terms: ['history', 'historical', 'civilization', 'culture', 'heritage'] },
-  { id: 'poetry', label: 'Poetry', terms: ['poetry', 'poet', 'verse', 'ghazal', 'literature'] },
-  { id: 'growth', label: 'Personal growth', terms: ['growth', 'self-help', 'self development', 'habits', 'mindfulness'] },
-] as const;
 
 const getErrorMessage = (error: unknown, fallback: string) =>
   error instanceof Error && error.message ? error.message : fallback;
@@ -318,7 +309,7 @@ const ReadingGroupsDirectory = () => {
       <section aria-label="Explore reading topics" className="space-y-2">
         <p className="text-sm font-medium text-muted-foreground">Explore by reading interest</p>
         <div className="flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Reading group topic filters">
-          {READING_TOPICS.map((topic) => (
+          {READING_GROUP_TOPICS.map((topic) => (
             <Button key={topic.id} type="button" size="sm" variant={activeTopic === topic.id ? 'default' : 'outline'} className="shrink-0 rounded-full" aria-pressed={activeTopic === topic.id} onClick={() => setActiveTopic(topic.id)}>
               {topic.label}
             </Button>
