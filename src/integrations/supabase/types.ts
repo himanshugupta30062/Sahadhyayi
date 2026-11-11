@@ -14,6 +14,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      saved_quotes: {
+        Row: { id: string; user_id: string; client_id: string; quote_text: string; source: string | null; note: string | null; book_id: string | null; page: number | null; location: string | null; created_at: string; updated_at: string }
+        Insert: { id?: string; user_id: string; client_id: string; quote_text: string; source?: string | null; note?: string | null; book_id?: string | null; page?: number | null; location?: string | null; created_at?: string; updated_at?: string }
+        Update: { id?: string; user_id?: string; client_id?: string; quote_text?: string; source?: string | null; note?: string | null; book_id?: string | null; page?: number | null; location?: string | null; created_at?: string; updated_at?: string }
+        Relationships: [{ foreignKeyName: "saved_quotes_book_id_fkey"; columns: ["book_id"]; isOneToOne: false; referencedRelation: "books_library"; referencedColumns: ["id"] }]
+      }
       research_paper_bookmarks: {
         Row: { id: string; user_id: string; openalex_id: string; paper: Json; created_at: string }
         Insert: { id?: string; user_id: string; openalex_id: string; paper?: Json; created_at?: string }
