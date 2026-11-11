@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 
@@ -52,6 +52,7 @@ const useNotificationForegroundRefresh = (userId: string | undefined, queryClien
 const invalidateNotificationQueries = (queryClient: ReturnType<typeof useQueryClient>, userId: string) => {
   void queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
   void queryClient.invalidateQueries({ queryKey: ['unread-notifications-count', userId] });
+  void queryClient.invalidateQueries({ queryKey: ['notification-history', userId] });
 };
 
 const broadcastNotificationChange = (userId: string) => {
@@ -131,6 +132,34 @@ export const useNotifications = () => {
       if (error) throw error;
       return (data || []) as Notification[];
     },
+    enabled: !!user?.id,
+  });
+};
+
+// Paginated history for the dedicated notification center. Keep the bell's
+// useNotifications query capped at 50 so opening the dropdown stays lightweight.
+export const useNotificationHistory = (pageSize = 25) => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  useNotificationRealtimeSync(user?.id, queryClient);
+  useNotificationForegroundRefresh(user?.id, queryClient);
+  return useInfiniteQuery({
+    queryKey: ['notification-history', user?.id, pageSize],
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => {
+      if (!user?.id) return [] as Notification[];
+      const start = pageParam as number;
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*, authors:author_id(id, name, profile_image_url), actor:actor_id(id, full_name, username, profile_photo_url)')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
+        .range(start, start + pageSize - 1);
+      if (error) throw error;
+      return (data || []) as Notification[];
+    },
+    getNextPageParam: (lastPage, allPages) => lastPage.length < pageSize ? undefined : allPages.reduce((total, page) => total + page.length, 0),
     enabled: !!user?.id,
   });
 };
