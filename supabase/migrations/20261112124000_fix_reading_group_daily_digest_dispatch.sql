@@ -1,4 +1,14 @@
--- Correct daily digest aggregate syntax and update delivery ledger using each user's local date.
+-- Ensure delivery ledger exists (the original migration's function body had invalid aggregate syntax).
+CREATE TABLE IF NOT EXISTS public.reading_group_digest_deliveries (
+ user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+ digest_date date NOT NULL,
+ notification_id uuid,
+ created_at timestamptz NOT NULL DEFAULT now(),
+ PRIMARY KEY(user_id,digest_date)
+);
+ALTER TABLE public.reading_group_digest_deliveries ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.reading_group_digest_deliveries FROM PUBLIC,anon,authenticated;
+
 CREATE OR REPLACE FUNCTION public.dispatch_reading_group_daily_digest()
 RETURNS integer LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
 AS $function$
@@ -7,17 +17,11 @@ BEGIN
  WITH eligible AS (
   SELECT n.user_id,count(*)::integer AS activity_count,
     (array_agg(DISTINCT coalesce(nullif(n.title,''),'Group activity')))[1:3] AS samples
-  FROM public.notifications n
-  JOIN public.reading_group_notification_preferences pref ON pref.user_id=n.user_id
-  WHERE n.created_at>=now()-interval '24 hours'
-    AND n.created_at<now()-interval '15 minutes'
-    AND n.type LIKE 'reading_group%'
-    AND coalesce(pref.enabled,true) AND coalesce(pref.digest_enabled,false)
-    AND NOT EXISTS(
-      SELECT 1 FROM public.reading_group_digest_deliveries d
-      WHERE d.user_id=n.user_id
-      AND d.digest_date=(now() AT TIME ZONE coalesce(nullif(pref.timezone,''),'Asia/Kolkata'))::date
-    )
+  FROM public.notifications n JOIN public.reading_group_notification_preferences pref ON pref.user_id=n.user_id
+  WHERE n.created_at>=now()-interval '24 hours' AND n.created_at<now()-interval '15 minutes'
+    AND n.type LIKE 'reading_group%' AND coalesce(pref.enabled,true) AND coalesce(pref.digest_enabled,false)
+    AND NOT EXISTS(SELECT 1 FROM public.reading_group_digest_deliveries d WHERE d.user_id=n.user_id
+      AND d.digest_date=(now() AT TIME ZONE coalesce(nullif(pref.timezone,''),'Asia/Kolkata'))::date)
   GROUP BY n.user_id
  ), inserted AS (
   INSERT INTO public.reading_group_digest_deliveries(user_id,digest_date)
@@ -34,8 +38,7 @@ BEGIN
  )
  UPDATE public.reading_group_digest_deliveries d SET notification_id=s.id
  FROM sent s WHERE d.user_id=s.user_id AND d.digest_date=s.entity_id::date;
- GET DIAGNOSTICS v_count=ROW_COUNT;
- RETURN v_count;
+ GET DIAGNOSTICS v_count=ROW_COUNT; RETURN v_count;
 END;
 $function$;
 REVOKE ALL ON FUNCTION public.dispatch_reading_group_daily_digest() FROM PUBLIC,anon,authenticated;
