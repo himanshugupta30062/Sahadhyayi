@@ -106,31 +106,30 @@ const GroupCard: React.FC<GroupCardProps> = ({
               Chat
             </Button>
           )}
-          <Button
-            onClick={handleJoinLeave}
-            disabled={joinGroup.isPending || leaveGroup.isPending || (isJoined && group.name === DEFAULT_READING_GROUP_NAME) || (!isJoined && requiresInvitation)}
-            className={`${isJoined && onChat ? 'flex-1' : 'w-full'} ${
-              isJoined && group.name === DEFAULT_READING_GROUP_NAME
-                ? "bg-muted text-muted-foreground cursor-default"
-                : isJoined
-                  ? "bg-red-600 hover:bg-red-700"
-                  : requiresInvitation
-                    ? "bg-muted text-muted-foreground border border-border cursor-not-allowed opacity-80"
-                    : "bg-amber-600 hover:bg-amber-700"
-            }`}
-          >
-            {isJoined && group.name === DEFAULT_READING_GROUP_NAME
-              ? 'Permanent Community Member'
-              : isJoined
-                ? 'Leave Group'
-                : requiresInvitation
-                  ? (
-                    <span className="flex items-center justify-center gap-1.5">
-                      <Lock className="w-3.5 h-3.5" /> Invite-Only
-                    </span>
-                  )
-                  : 'Join Group'}
-          </Button>
+          {isJoined ? (
+            <Badge
+              variant="secondary"
+              className={`${onChat ? 'flex-1' : 'w-full'} justify-center py-2 text-sm`}
+              aria-label="Already joined this reading group"
+            >
+              <ShieldCheck className="w-4 h-4 mr-1.5 text-emerald-600" />
+              {group.name === DEFAULT_READING_GROUP_NAME ? 'Permanent Community Member' : 'Joined'}
+            </Badge>
+          ) : (
+            <Button
+              onClick={handleJoinLeave}
+              disabled={joinGroup.isPending || leaveGroup.isPending || requiresInvitation}
+              className={`w-full ${
+                requiresInvitation
+                  ? "bg-muted text-muted-foreground border border-border cursor-not-allowed opacity-80"
+                  : "bg-amber-600 hover:bg-amber-700"
+              }`}
+            >
+              {requiresInvitation
+                ? <span className="flex items-center justify-center gap-1.5"><Lock className="w-3.5 h-3.5" /> Invite-Only</span>
+                : 'Join Group'}
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
