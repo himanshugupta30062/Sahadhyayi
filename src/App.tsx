@@ -92,6 +92,7 @@ const ReaderMap = lazy(() => import('./pages/ReaderMap'));
 const Investors = lazy(() => import('./pages/Investors'));
 const QuotesPage = lazy(() => import('./pages/Quotes'));
 const Activity = lazy(() => import('./pages/Activity'));
+const NotificationsPage = lazy(() => import('./pages/Notifications'));
 const StoryReader = lazy(() => import('./pages/StoryReader'));
 const CommunityStories = lazy(() => import('./pages/CommunityStories'));
 const LifeStories = lazy(() => import('./pages/LifeStories'));
