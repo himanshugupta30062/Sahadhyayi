@@ -314,6 +314,9 @@ const DiscussionCard = ({
                   maxLength={2500}
                   aria-label={`Reply to ${discussion.title}`}
                 />
+                <p className="text-right text-xs text-muted-foreground" aria-live="polite">
+                  {replyBody.length.toLocaleString()} / 2,500 characters
+                </p>
                 <div className="flex flex-wrap items-end justify-between gap-2">
                   <label className="text-xs text-muted-foreground">
                     Spoiler chapter (0 = no spoilers)
