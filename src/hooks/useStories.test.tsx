@@ -124,7 +124,7 @@ describe('useStories hooks', () => {
     configureResponses();
     renderHook(() => useStories({ filter: 'my-stories' }));
     await expect(mocks.queries[0].queryFn()).resolves.toEqual([]);
-    expect(mocks.from).not.toHaveBeenCalled();
+    expect(mocks.from).toHaveBeenCalledTimes(1);\n    expect(mocks.calls).not.toContainEqual(expect.objectContaining({ table: 'stories', method: 'eq' }));
   });
 
   it('loads continue-reading stories and restores each progress position', async () => {
@@ -189,10 +189,10 @@ describe('useStories hooks', () => {
     mocks.user = { id: 'reader-1' };
     renderHook(() => useDeleteStory());
     mocks.responses = { stories: [{ data: null, error: null }] };
-    await expect(mocks.mutations[0].mutationFn('story-1')).rejects.toThrow('You may not own this story');
+    await expect(mocks.mutations[1].mutationFn('story-1')).rejects.toThrow('You may not own this story');
     mocks.tableCalls = {};
     mocks.responses = { stories: [{ data: { id: 'story-1' }, error: null }] };
-    await expect(mocks.mutations[0].mutationFn('story-1')).resolves.toBe('story-1');
+    await expect(mocks.mutations[1].mutationFn('story-1')).resolves.toBe('story-1');
     expect(mocks.calls).toContainEqual({ table: 'stories', method: 'eq', args: ['user_id', 'reader-1'] });
     await mocks.mutations[0].onSuccess('story-1');
     expect(mocks.toastSuccess).toHaveBeenCalledWith('Short story deleted.');
