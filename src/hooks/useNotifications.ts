@@ -24,6 +24,11 @@ export interface Notification {
 type NotificationRealtimeEntry = { channel: ReturnType<typeof supabase.channel>; refs: number };
 const notificationRealtimeChannels = new Map<string, NotificationRealtimeEntry>();
 
+const invalidateNotificationQueries = (queryClient: ReturnType<typeof useQueryClient>, userId: string) => {
+  void queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
+  void queryClient.invalidateQueries({ queryKey: ['unread-notifications-count', userId] });
+};
+
 const useNotificationRealtimeSync = (userId: string | undefined, queryClient: ReturnType<typeof useQueryClient>) => {
   useEffect(() => {
     if (!userId) return;
@@ -38,11 +43,12 @@ const useNotificationRealtimeSync = (userId: string | undefined, queryClient: Re
           schema: 'public',
           table: 'notifications',
           filter: `user_id=eq.${userId}`,
-        }, () => {
-          void queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
-          void queryClient.invalidateQueries({ queryKey: ['unread-notifications-count', userId] });
-        })
-        .subscribe();
+        }, () => invalidateNotificationQueries(queryClient, userId))
+        .subscribe((status) => {
+          // Reconcile after initial connection and every successful reconnect;
+          // changes during a network outage may not be replayed by Realtime.
+          if (status === 'SUBSCRIBED') invalidateNotificationQueries(queryClient, userId);
+        });
       notificationRealtimeChannels.set(userId, { channel, refs: 1 });
     }
     return () => {
@@ -107,10 +113,7 @@ export const useMarkNotificationAsRead = () => {
         .eq('id', notificationId).eq('user_id', user.id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
-      void queryClient.invalidateQueries({ queryKey: ['unread-notifications-count', user?.id] });
-    },
+    onSuccess: () => invalidateNotificationQueries(queryClient, user!.id),
   });
 };
 
@@ -124,9 +127,6 @@ export const useMarkAllNotificationsAsRead = () => {
         .eq('user_id', user.id).eq('read', false);
       if (error) throw error;
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
-      void queryClient.invalidateQueries({ queryKey: ['unread-notifications-count', user?.id] });
-    },
+    onSuccess: () => invalidateNotificationQueries(queryClient, user!.id),
   });
 };
