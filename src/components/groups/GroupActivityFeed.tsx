@@ -36,7 +36,7 @@ const GroupActivityFeed = ({ groupId, canModerate }: Props) => {
         <div className="rounded-xl border border-border bg-muted/20 p-3 space-y-3">
           <Textarea value={body} onChange={(e) => setBody(e.target.value)} maxLength={5000}
             placeholder="What are you reading or thinking about?" aria-label="Write a group post" />
-          {book && <div className="text-sm text-primary flex items-center gap-2"><BookOpen className="h-4 w-4" /> Book: {book.title <span />}</div>}
+          {book && <div className="text-sm text-primary flex items-center gap-2"><BookOpen className="h-4 w-4" /> Book: {book.title}</div>}
           <div className="flex flex-wrap items-center justify-between gap-2">
             <Button type="button" variant="outline" size="sm" onClick={() => setBookPickerOpen(true)}><BookOpen className="mr-2 h-4 w-4" />{book ? 'Change book' : 'Attach book'}</Button>
             <span className="text-xs text-muted-foreground">{body.length}/5000</span>
@@ -59,7 +59,7 @@ const GroupActivityFeed = ({ groupId, canModerate }: Props) => {
             {post.pinned_at && <span className="mt-2 inline-block text-xs text-primary">Pinned announcement</span>}
           </article>
         ))}</div>}
-      <BookSelectionModal isOpen={bookPickerOpen} onClose={() => setBookPickerOpen(false)} onSelectBook={(selected) => { setBook({ id: selected.id, title: selected.title }); setBookPickerOpen(false); }} />
+      <BookSelectionModal isOpen={bookPickerOpen} onClose={() => setBookPickerOpen(false)} onSelect={(selected) => { setBook({ id: selected.id, title: selected.title }); setBookPickerOpen(false); }} />
     </CardContent>
     </Card>
   );
