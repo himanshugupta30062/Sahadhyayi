@@ -275,13 +275,16 @@ const DiscussionCard = ({
                           variant="ghost"
                           aria-label="Delete reply"
                           disabled={deleteComment.isPending}
-                          onClick={() => deleteComment.mutate(
+                          onClick={() => {
+                            if (typeof window !== 'undefined' && !window.confirm('Delete this reply? This cannot be undone.')) return;
+                            deleteComment.mutate(
                             { groupId, discussionId: discussion.id, commentId: comment.id },
                             {
                               onSuccess: () => toast.success('Reply removed.'),
                               onError: (mutationError) => toast.error(mutationError.message),
                             },
-                          )}
+                          );
+                          }}
                           className="h-7 w-7 text-muted-foreground hover:text-destructive"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
