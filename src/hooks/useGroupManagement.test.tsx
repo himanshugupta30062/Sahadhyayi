@@ -111,11 +111,11 @@ describe('useGroupManagement', () => {
     expect(mocks.order).toHaveBeenCalledWith('group_chats', 'created_at', { ascending: false });
   });
 
-  it('does not load group membership data for anonymous readers', async () => {
+  it('allows anonymous readers to browse public groups without membership mutations', async () => {
     mocks.user = null;
     renderHook(() => useGroups());
-    expect(mocks.queryOptions.enabled).toBe(false);
-    await expect(mocks.queryOptions.queryFn()).rejects.toThrow('Sign in to browse reading groups.');
+    expect(mocks.queryOptions.enabled).toBe(true);
+    await expect(mocks.queryOptions.queryFn()).resolves.toEqual(mocks.groupListResult.data);
     expect(mocks.rpc).not.toHaveBeenCalled();
   });
 
