@@ -38,4 +38,13 @@ describe('notification realtime synchronization', () => {
     expect(source).toContain('now - lastRefreshAt < 3000');
     expect(source).toContain("document.removeEventListener('visibilitychange', refreshIfVisible)");
   });
+  it('optimistically marks individual and all notifications read with rollback', () => {
+    expect(source).toContain('onMutate: async (notificationId: string)');
+    expect(source).toContain('previousNotifications');
+    expect(source).toContain('previousCount');
+    expect(source).toContain('Math.max(0, previousCount - 1)');
+    expect(source).toContain('onError: (_error, _notificationId, context)');
+    expect(source).toContain('onMutate: async () =>');
+    expect(source).toContain('queryClient.setQueryData(countKey, 0)');
+  });
 });

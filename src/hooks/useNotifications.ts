@@ -158,6 +158,23 @@ export const useMarkNotificationAsRead = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   return useMutation({
+    onMutate: async (notificationId: string) => {
+      if (!user?.id) return;
+      const listKey = ['notifications', user.id] as const;
+      const countKey = ['unread-notifications-count', user.id] as const;
+      await Promise.all([queryClient.cancelQueries({ queryKey: listKey }), queryClient.cancelQueries({ queryKey: countKey })]);
+      const previousNotifications = queryClient.getQueryData<Notification[]>(listKey);
+      const previousCount = queryClient.getQueryData<number>(countKey);
+      const wasUnread = previousNotifications?.some(item => item.id === notificationId && !item.read);
+      queryClient.setQueryData<Notification[]>(listKey, old => old?.map(item => item.id === notificationId ? { ...item, read: true } : item));
+      if (wasUnread && typeof previousCount === 'number') queryClient.setQueryData(countKey, Math.max(0, previousCount - 1));
+      return { previousNotifications, previousCount };
+    },
+    onError: (_error, _notificationId, context) => {
+      if (!user?.id || !context) return;
+      queryClient.setQueryData(['notifications', user.id], context.previousNotifications);
+      queryClient.setQueryData(['unread-notifications-count', user.id], context.previousCount);
+    },
     mutationFn: async (notificationId: string) => {
       if (!user?.id) throw new Error('You must be signed in to update notifications.');
       const { error } = await supabase.from('notifications').update({ read: true })
@@ -176,6 +193,22 @@ export const useMarkAllNotificationsAsRead = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   return useMutation({
+    onMutate: async () => {
+      if (!user?.id) return;
+      const listKey = ['notifications', user.id] as const;
+      const countKey = ['unread-notifications-count', user.id] as const;
+      await Promise.all([queryClient.cancelQueries({ queryKey: listKey }), queryClient.cancelQueries({ queryKey: countKey })]);
+      const previousNotifications = queryClient.getQueryData<Notification[]>(listKey);
+      const previousCount = queryClient.getQueryData<number>(countKey);
+      queryClient.setQueryData<Notification[]>(listKey, old => old?.map(item => ({ ...item, read: true })));
+      queryClient.setQueryData(countKey, 0);
+      return { previousNotifications, previousCount };
+    },
+    onError: (_error, _variables, context) => {
+      if (!user?.id || !context) return;
+      queryClient.setQueryData(['notifications', user.id], context.previousNotifications);
+      queryClient.setQueryData(['unread-notifications-count', user.id], context.previousCount);
+    },
     mutationFn: async () => {
       if (!user?.id) throw new Error('You must be signed in to update notifications.');
       const { error } = await supabase.from('notifications').update({ read: true })
