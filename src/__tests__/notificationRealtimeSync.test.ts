@@ -11,7 +11,7 @@ describe('notification realtime synchronization', () => {
     expect(source).toContain('filter: `user_id=eq.${userId}`');
   });
 
-  it('refreshes both notification list and unread badge on row changes and reconnect', () => {
+  it('reconciles notification list and unread count after changes and reconnect', () => {
     expect(source).toContain("queryKey: ['notifications', userId]");
     expect(source).toContain("queryKey: ['unread-notifications-count', userId]");
     expect(source).toContain(".subscribe((status) =>");
@@ -19,5 +19,15 @@ describe('notification realtime synchronization', () => {
     expect(source).toContain('removeChannel(entry.channel)');
     expect(source).toContain('notificationRealtimeChannels.get(userId)');
     expect(source).toContain('existing.refs += 1');
+  });
+
+  it('broadcasts notification changes across tabs without leaking between users', () => {
+    expect(source).toContain('typeof BroadcastChannel !== \'undefined\'');
+    expect(source).toContain('sahadhyayi-notifications-${userId}');
+    expect(source).toContain("type: 'notifications-changed', userId");
+    expect(source).toContain("event.data?.type === 'notifications-changed'");
+    expect(source).toContain('event.data.userId === userId');
+    expect(source).toContain('crossTabChannel?.close()');
+    expect(source).toContain('broadcastNotificationChange(user.id)');
   });
 });
