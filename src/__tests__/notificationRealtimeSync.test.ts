@@ -10,9 +10,13 @@ describe('notification realtime synchronization', () => {
     expect(source).toMatch(/table: 'notifications'/);
     expect(source).toMatch(/filter: \`user_id=eq\.\$\{userId\}\`/);
   });
-  it('refreshes both notification list and unread badge on row changes', () => {
+  it('refreshes both notification list and unread badge on row changes and reconnect', () => {
     expect(source).toMatch(/invalidateQueries\(\{ queryKey: \['notifications', userId\] \}\)/);
     expect(source).toMatch(/invalidateQueries\(\{ queryKey: \['unread-notifications-count', userId\] \}\)/);
-    expect(source).toMatch(/removeChannel\(entry\.channel\)/);\n    expect(source).toMatch(/notificationRealtimeChannels\.get\(userId\)/);\n    expect(source).toMatch(/existing\.refs \+= 1/);
+    expect(source).toMatch(/\.subscribe\(\(status\) =>/);
+    expect(source).toMatch(/status === 'SUBSCRIBED'/);
+    expect(source).toMatch(/removeChannel\(entry\.channel\)/);
+    expect(source).toMatch(/notificationRealtimeChannels\.get\(userId\)/);
+    expect(source).toMatch(/existing\.refs \+= 1/);
   });
 });
