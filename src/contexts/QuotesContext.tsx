@@ -55,7 +55,7 @@ const QuotesProvider = ({ children }: { children: React.ReactNode }) => {
       const local = quotes;
       const pending = local.map(q => toCloud(q, user.id));
       if (pending.length) {
-        const { error: uploadError } = await (supabase as any).from('saved_quotes').upsert(pending as never, { onConflict: 'user_id,client_id' });
+        const { error: uploadError } = await supabase.from('saved_quotes').upsert(pending, { onConflict: 'user_id,client_id' });
         if (uploadError) return; // local data remains safe; retry on next change/session
       }
       const { data, error } = await supabase.from('saved_quotes')
