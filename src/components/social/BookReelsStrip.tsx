@@ -266,7 +266,7 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
                   </div>
 
                   <Link
-                    to={activeReel.bookSlug ? `/book/${activeReel.bookSlug}` : '/library'}
+                    to={`/library?q=${encodeURIComponent(activeReel.bookTitle)}`}
                     onClick={() => setSelectedReelIndex(null)}
                     className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-[#D5B16D] px-2.5 py-1.5 text-xs font-semibold text-[#0B0D0C] transition-colors hover:bg-[#E8CC91]"
                   >
