@@ -174,6 +174,19 @@ const GroupReadingBoard = ({ groupId, canManage }: GroupReadingBoardProps) => {
             </div>
           )}
 
+          {book.target_date && book.status === 'current' && (() => {
+            const today = new Date();
+            const todayUtc = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+            const targetUtc = Date.parse(`${book.target_date}T00:00:00Z`);
+            const daysRemaining = Math.round((targetUtc - todayUtc) / 86400000);
+            return (
+              <div className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs ${daysRemaining < 0 ? 'bg-destructive/10 text-destructive' : daysRemaining <= 3 ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300' : 'bg-muted/40 text-muted-foreground'}`} role="status">
+                <CalendarDays className="h-3.5 w-3.5 shrink-0" />
+                {daysRemaining < 0 ? `Reading target passed by ${Math.abs(daysRemaining)} day${Math.abs(daysRemaining) === 1 ? '' : 's'}` : daysRemaining === 0 ? 'Reading target is today' : `${daysRemaining} day${daysRemaining === 1 ? '' : 's'} until group target`}
+              </div>
+            );
+          })()}
+
           {canTrack && (
             <div className="space-y-2 rounded-lg bg-muted/40 p-3">
               <div className="flex flex-wrap items-end gap-2">

@@ -138,6 +138,7 @@ describe('GroupReadingBoard', () => {
     expect(screen.getAllByText('Reader Author').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByAltText('Current read cover')).toHaveAttribute('src', 'https://cdn.example.test/current.jpg');
     expect(screen.getByText(/Target/)).toBeInTheDocument();
+    expect(screen.getByRole('status', { name: /until group target|Reading target/ })).toBeInTheDocument();
     expect(screen.getByText(/3 sharing/)).toBeInTheDocument();
     expect(screen.getByText(/44% average/)).toBeInTheDocument();
     expect(screen.getByRole('progressbar', { name: 'Shared progress for Current read' })).toHaveAttribute('aria-valuenow', '44');
