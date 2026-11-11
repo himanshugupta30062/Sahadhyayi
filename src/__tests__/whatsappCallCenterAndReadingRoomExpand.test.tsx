@@ -113,21 +113,21 @@ describe("WhatsAppCallCenterFab & Reading Room Expand/Collapse UI", () => {
     const dialog = screen.getByRole("dialog", { name: /the reading room/i });
 
     // Initial compact view
-    expect(dialog.className).toContain("sm:w-[min(420px,calc(100vw-3rem))]");
+    expect(dialog.className).toContain("sm:w-[min(900px,calc(100vw-4rem))]");
 
     // Click Expand to wide view
     const expandButton = within(dialog).getByRole("button", { name: /expand to wide view/i });
     fireEvent.click(expandButton);
 
     // Should now have the expanded widescreen class
-    expect(dialog.className).toContain("sm:w-[min(720px,calc(100vw-3rem))]");
+    expect(dialog.className).toContain("sm:w-[min(1040px,calc(100vw-4rem))]");
 
     // Click Collapse to compact view
     const collapseButton = within(dialog).getByRole("button", { name: /collapse to compact view/i });
     fireEvent.click(collapseButton);
 
     // Should be restored to compact view
-    expect(dialog.className).toContain("sm:w-[min(420px,calc(100vw-3rem))]");
+    expect(dialog.className).toContain("sm:w-[min(900px,calc(100vw-4rem))]");
   });
 
   it("minimizes Reading Room to an icon and restores the same open panel", () => {

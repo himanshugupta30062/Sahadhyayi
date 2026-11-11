@@ -31,7 +31,12 @@ jobs:
       - name: Install matching Vitest coverage provider
         run: |
           VITEST_VERSION=$(node -p "require('./node_modules/vitest/package.json').version")
-          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund "@vitest/coverage-v8@$VITEST_VERSION"
+          COVERAGE_VERSION=$(node -p "require('./node_modules/@vitest/coverage-v8/package.json').version")
+          if [ "$COVERAGE_VERSION" = "$VITEST_VERSION" ]; then
+            echo "Matching @vitest/coverage-v8 $COVERAGE_VERSION is already installed."
+          else
+            npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund "@vitest/coverage-v8@$VITEST_VERSION"
+          fi
 
       - name: Run tests and collect coverage
         id: tests
