@@ -84,6 +84,7 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
       { name: "Friends Feed", href: "/social", tourTarget: "community" },
       { name: "Discover Friends", href: "/social?tab=friends" },
       { name: "Reading Groups", href: "/groups" },
+      { name: "Saved Discussions", href: "/groups/saved-discussions", authOnly: true },
       { name: "Reader Map", href: "/map" },
       { name: "Book Discussions", href: "/social?tab=threads" },
       { name: "Reading Rooms", href: "/social?tab=rooms" },
