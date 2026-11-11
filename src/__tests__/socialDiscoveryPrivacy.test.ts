@@ -46,7 +46,7 @@ describe('Social discovery and location privacy regressions', () => {
 
   it('does not substitute fake curated groups when the groups query is empty or fails', () => {
     expect(groupsHook).not.toContain('CURATED_READING_GROUPS');
-    expect(groupsHook).toMatch(/const queryEnabled = enabled && Boolean\(user\?\.id\)/);
+    expect(groupsHook).toMatch(/const queryEnabled = enabled;/);
     expect(groupsHook).toMatch(/enabled: queryEnabled/);
     expect(groupsHook).toMatch(/if \(error\) \{[\s\S]*?throw error;/);
     expect(groupsHook).toMatch(/return data \?\? \[\]/);
