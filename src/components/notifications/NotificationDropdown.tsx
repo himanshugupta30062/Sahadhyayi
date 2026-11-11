@@ -19,7 +19,7 @@ import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 export const NotificationDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-  const { data: notifications = [] } = useNotifications();
+  const { data: notifications = [], isLoading: notificationsLoading, isError: notificationsError, refetch: refetchNotifications } = useNotifications();
   const { data: unreadCount = 0 } = useUnreadNotificationsCount();
   const markAsRead = useMarkNotificationAsRead();
   const markAllAsRead = useMarkAllNotificationsAsRead();
@@ -53,7 +53,14 @@ export const NotificationDropdown = () => {
           </Button>}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {notifications.length === 0 ? (
+        {notificationsLoading ? (
+          <div role="status" aria-live="polite" className="p-4 text-center text-muted-foreground text-sm">Loading notifications…</div>
+        ) : notificationsError ? (
+          <div className="p-4 text-center text-sm">
+            <p className="text-muted-foreground mb-2">Couldn’t load notifications.</p>
+            <Button variant="outline" size="sm" onClick={() => void refetchNotifications()}>Try again</Button>
+          </div>
+        ) : notifications.length === 0 ? (
           <div className="p-4 text-center text-muted-foreground text-sm">No notifications yet</div>
         ) : (
           <ScrollArea className="h-96">
