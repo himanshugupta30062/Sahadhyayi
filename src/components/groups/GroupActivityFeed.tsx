@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { BookSelectionModal } from '@/components/social/BookSelectionModal';
+import GroupPostInteractions from '@/components/groups/GroupPostInteractions';
 import { useCreateReadingGroupPost, useDeleteReadingGroupPost, useReadingGroupPosts } from '@/hooks/useReadingGroupPosts';
 
 interface Props { groupId: string; canModerate: boolean }
@@ -56,7 +57,7 @@ const GroupActivityFeed = ({ groupId, canModerate }: Props) => {
               </div>
               <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-relaxed">{post.body}</p>
               {post.book_title && <div className="mt-3 flex items-center gap-3 rounded-lg bg-muted/40 p-2">{post.book_cover_url && <img src={post.book_cover_url} alt="" className="h-12 w-8 rounded object-cover" loading="lazy" />}<div className="text-sm"><span className="text-xs text-muted-foreground">Discussing</span><p className="font-medium">{post.book_title}</p></div></div>}
-            {post.pinned_at && <span className="mt-2 inline-block text-xs text-primary">Pinned announcement</span>}
+            {post.pinned_at && <span className="mt-2 inline-block text-xs text-primary">Pinned announcement</span>}\n            <GroupPostInteractions postId={post.id} />
           </article>
         ))}</div>}
       <BookSelectionModal isOpen={bookPickerOpen} onClose={() => setBookPickerOpen(false)} onSelect={(selected) => { setBook({ id: selected.id, title: selected.title }); setBookPickerOpen(false); }} />
