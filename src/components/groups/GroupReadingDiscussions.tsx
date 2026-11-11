@@ -313,10 +313,17 @@ const DiscussionCard = ({
                   rows={2}
                   maxLength={2500}
                   aria-label={`Reply to ${discussion.title}`}
+                  onKeyDown={(event) => {
+                    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+                      event.preventDefault();
+                      handleReply();
+                    }
+                  }}
                 />
                 <p className="text-right text-xs text-muted-foreground" aria-live="polite">
                   {replyBody.length.toLocaleString()} / 2,500 characters
                 </p>
+                <p className="text-xs text-muted-foreground">Tip: press Ctrl/⌘ + Enter to send</p>
                 <div className="flex flex-wrap items-end justify-between gap-2">
                   <label className="text-xs text-muted-foreground">
                     Spoiler chapter (0 = no spoilers)
