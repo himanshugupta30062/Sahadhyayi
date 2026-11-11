@@ -163,6 +163,7 @@ const DiscussionCard = ({
   };
 
   const handleDeleteDiscussion = () => {
+    if (typeof window !== 'undefined' && !window.confirm('Delete this discussion and its replies? This cannot be undone.')) return;
     deleteDiscussion.mutate(
       { groupId, discussionId: discussion.id },
       {
