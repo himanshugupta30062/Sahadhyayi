@@ -118,6 +118,7 @@ describe('useStories hooks', () => {
     expect(curated.every((item: any) => item.id.startsWith('starter-'))).toBe(true);
 
     mocks.user = null;
+    mocks.from.mockClear();
     mocks.queries = [];
     configureResponses();
     renderHook(() => useStories({ filter: 'my-stories' }));
@@ -150,6 +151,7 @@ describe('useStories hooks', () => {
     const comments = await mocks.queries[0].queryFn();
     expect(comments).toHaveLength(2);
     expect(comments[0]).toMatchObject({ story_id: 'starter-example', profiles: { full_name: 'Priya Sharma' } });
+    mocks.user = null;
     renderHook(() => useAddStoryComment());
     await expect(mocks.mutations[0].mutationFn({ storyId: 'story-1', content: '   ' })).rejects.toThrow('Comment cannot be empty.');
     mocks.user = null;
@@ -180,10 +182,11 @@ describe('useStories hooks', () => {
   });
 
   it('requires auth and ownership for deleting stories and reports absent deletions', async () => {
-    renderHook(() => useDeleteStory());
     mocks.user = null;
+    renderHook(() => useDeleteStory());
     await expect(mocks.mutations[0].mutationFn('story-1')).rejects.toThrow('Authentication required');
     mocks.user = { id: 'reader-1' };
+    renderHook(() => useDeleteStory());
     mocks.responses = { stories: [{ data: null, error: null }] };
     await expect(mocks.mutations[0].mutationFn('story-1')).rejects.toThrow('You may not own this story');
     mocks.tableCalls = {};
