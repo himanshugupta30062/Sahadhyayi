@@ -137,7 +137,7 @@ export const SampleReaderFeedCards: React.FC<SampleReaderFeedCardsProps> = ({
               {/* Book Link Attachment if any */}
               {post.book && (
                 <Link
-                  to={`/book/${post.book.id}`}
+                  to={`/library?q=${encodeURIComponent(post.book.title)}`}
                   className="mt-3.5 flex items-center justify-between gap-3 rounded-xl border border-[#E8E8E3] bg-[#FAF7F2] p-2.5 transition-colors hover:border-[#1C442D]/40 hover:bg-[#EBF2EC]/50 dark:border-[#29332D] dark:bg-[#161D19]/70 dark:hover:border-[#D5B16D]/40"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
