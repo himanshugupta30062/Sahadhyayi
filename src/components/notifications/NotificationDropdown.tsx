@@ -20,7 +20,7 @@ export const NotificationDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const { data: notifications = [], isLoading: notificationsLoading, isError: notificationsError, refetch: refetchNotifications } = useNotifications();
-  const { data: unreadCount = 0 } = useUnreadNotificationsCount();
+  const { data: unreadCount = 0, refetch: refetchUnreadCount } = useUnreadNotificationsCount();
   const markAsRead = useMarkNotificationAsRead();
   const markAllAsRead = useMarkAllNotificationsAsRead();
 
@@ -32,8 +32,17 @@ export const NotificationDropdown = () => {
     }
   };
 
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (open) {
+      // Opening the panel reconciles missed realtime updates immediately.
+      void refetchNotifications();
+      void refetchUnreadCount();
+    }
+  };
+
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+    <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative"
           aria-label={unreadCount > 0 ? `${unreadCount} unread notification${unreadCount === 1 ? '' : 's'}` : 'Notifications'}>
