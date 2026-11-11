@@ -154,7 +154,20 @@ const GroupReadingBoard = ({ groupId, canManage }: GroupReadingBoardProps) => {
             ) : null}
           </div>
 
-          {book.shared_reader_count > 0 && book.average_progress !== null && (\n            <div className="space-y-1.5 rounded-lg border border-border/60 bg-muted/30 px-3 py-2" aria-label={`Group progress for ${book.title}`}>\n              <div className="flex items-center justify-between gap-2 text-xs">\n                <span className="font-medium text-foreground">Group reading progress</span>\n                <span className="tabular-nums text-muted-foreground">{Math.round(book.average_progress)}%</span>\n              </div>\n              <div role="progressbar" aria-label={`Shared progress for ${book.title}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.min(100, Math.max(0, Math.round(book.average_progress)))} className="h-2 overflow-hidden rounded-full bg-muted">\n                <div className="h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${Math.min(100, Math.max(0, book.average_progress))}%` }} />\n              </div>\n              <p className="text-[11px] text-muted-foreground">Based only on members who opted in to share.</p>\n            </div>\n          )}\n\n          {canTrack && (
+          {book.shared_reader_count > 0 && book.average_progress !== null && (
+            <div className="space-y-1.5 rounded-lg border border-border/60 bg-muted/30 px-3 py-2" aria-label={`Group progress for ${book.title}`}>
+              <div className="flex items-center justify-between gap-2 text-xs">
+                <span className="font-medium text-foreground">Group reading progress</span>
+                <span className="tabular-nums text-muted-foreground">{Math.round(book.average_progress)}%</span>
+              </div>
+              <div role="progressbar" aria-label={`Shared progress for ${book.title}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.min(100, Math.max(0, Math.round(book.average_progress)))} className="h-2 overflow-hidden rounded-full bg-muted">
+                <div className="h-full rounded-full bg-primary transition-[width] duration-500" style={{ width: `${Math.min(100, Math.max(0, book.average_progress))}%` }} />
+              </div>
+              <p className="text-[11px] text-muted-foreground">Based only on members who opted in to share.</p>
+            </div>
+          )}
+
+          {canTrack && (
             <div className="space-y-2 rounded-lg bg-muted/40 p-3">
               <div className="flex flex-wrap items-end gap-2">
                 <label className="min-w-0 flex-1">
