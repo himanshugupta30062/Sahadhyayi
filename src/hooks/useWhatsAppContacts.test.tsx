@@ -82,8 +82,9 @@ describe('useWhatsAppContacts', () => {
   it('syncs verified platform matches and refreshes the contact list', async () => {
     queue('user_profile', { data: [{ id: 'platform-reader', phone_number: '9876543210' }], error: null });
     queue('whatsapp_contacts',
-      { data: null, error: null },
-      { data: [contact({ is_on_platform: true, platform_user_id: 'platform-reader' })], error: null },
+      { data: [], error: null }, // initial effect fetch
+      { data: null, error: null }, // upsert
+      { data: [contact({ is_on_platform: true, platform_user_id: 'platform-reader' })], error: null }, // refresh
     );
     const { result } = renderHook(() => useWhatsAppContacts());
 
