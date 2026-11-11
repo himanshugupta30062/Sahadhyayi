@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CalendarDays, MapPin, Users, Plus, Loader2, XCircle } from 'lucide-react';
+import { CalendarDays, MapPin, Users, Plus, Loader2, XCircle, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { downloadGroupEventCalendar } from '@/lib/groupEventCalendar';
 import { useGroupEvents, useGroupEventParticipants, useCreateGroupEvent, useRespondToGroupEvent, useCancelGroupEvent, type GroupEventType } from '@/hooks/useGroupEvents';
 
 const labels: Record<GroupEventType,string> = { book_discussion:'Book discussion', co_reading:'Co-reading', reading_marathon:'Reading marathon', author_meetup:'Author meetup', weekly_session:'Weekly session', other:'Other' };
@@ -35,7 +36,7 @@ export default function GroupEventsPanel({ groupId, userId, canManage }: { group
  {events.length===0?<Card><CardContent className="py-8 text-center text-muted-foreground">No events planned yet. Start a discussion or co-reading session.</CardContent></Card>:<div className="grid gap-3">{events.map(event=>{const people=participants.filter(p=>p.event_id===event.id),mine=people.find(p=>p.user_id===userId);return <Card key={event.id}><CardContent className="space-y-3 p-4">
  <div className="flex flex-wrap items-start justify-between gap-2"><div><h3 className="font-semibold">{event.title}</h3><Badge variant={event.status==='scheduled'?'secondary':'outline'}>{event.status==='scheduled'?labels[event.event_type]:event.status}</Badge></div>{canManage&&event.status==='scheduled'&&<Button size="sm" variant="ghost" onClick={()=>void cancel.mutateAsync(event.id).then(()=>toast.success('Event cancelled')).catch(e=>toast.error(e.message))}><XCircle className="mr-1 h-4 w-4"/>Cancel</Button>}</div>
  {event.description&&<p className="text-sm text-muted-foreground">{event.description}</p>}<p className="flex items-center gap-2 text-sm"><CalendarDays className="h-4 w-4"/>{localDate(event.starts_at)} – {localDate(event.ends_at)}</p>
- {event.location&&<p className="flex items-center gap-2 text-sm"><MapPin className="h-4 w-4"/>{event.location}</p>}<p className="flex items-center gap-2 text-sm"><Users className="h-4 w-4"/>{people.filter(p=>p.response==='going').length}{event.capacity?' / '+event.capacity:''} going · {people.filter(p=>p.response==='maybe').length} maybe</p>
+ {event.location&&<p className="flex items-center gap-2 text-sm"><MapPin className="h-4 w-4"/>{event.location}</p>}\n <Button size="sm" variant="outline" onClick={()=>downloadGroupEventCalendar(event)}><Download className="mr-2 h-4 w-4"/>Add to calendar</Button><p className="flex items-center gap-2 text-sm"><Users className="h-4 w-4"/>{people.filter(p=>p.response==='going').length}{event.capacity?' / '+event.capacity:''} going · {people.filter(p=>p.response==='maybe').length} maybe</p>
  {event.status==='scheduled'&&<div className="flex flex-wrap gap-2"><Button size="sm" variant={mine?.response==='going'?'default':'outline'} disabled={respond.isPending} onClick={()=>void rsvp(event.id,mine?.response==='going'?'decline':'going')}>{mine?.response==='going'?'Withdraw':'I’m going'}</Button><Button size="sm" variant={mine?.response==='maybe'?'secondary':'outline'} disabled={respond.isPending} onClick={()=>void rsvp(event.id,mine?.response==='maybe'?'decline':'maybe')}>{mine?.response==='maybe'?'Withdraw maybe':'Maybe'}</Button></div>}
  </CardContent></Card>})}</div>}
  </section>;
