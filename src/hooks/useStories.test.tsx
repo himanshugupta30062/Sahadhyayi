@@ -152,11 +152,11 @@ describe('useStories hooks', () => {
     const comments = await mocks.queries[0].queryFn();
     expect(comments).toHaveLength(2);
     expect(comments[0]).toMatchObject({ story_id: 'starter-example', profiles: { full_name: 'Priya Sharma' } });
-    mocks.user = null;
     renderHook(() => useAddStoryComment());
     await expect(mocks.mutations[0].mutationFn({ storyId: 'story-1', content: '   ' })).rejects.toThrow('Comment cannot be empty.');
     mocks.user = null;
-    await expect(mocks.mutations[0].mutationFn({ storyId: 'story-1', content: 'Hello' })).rejects.toThrow('Sign in to leave a comment.');
+    renderHook(() => useAddStoryComment());
+    await expect(mocks.mutations[1].mutationFn({ storyId: 'story-1', content: 'Hello' })).rejects.toThrow('Sign in to leave a comment.');
   });
 
   it('creates a story and its initial part, then invalidates the feed', async () => {
