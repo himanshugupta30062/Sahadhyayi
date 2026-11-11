@@ -33,20 +33,35 @@ const loadMappls = (apiKey: string): Promise<void> => {
     script.defer = true;
     script.dataset.mapplsSdk = 'true';
 
+    let settled = false;
+    const timeout = window.setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      resetPromise();
+      reject(new Error('Mappls SDK timed out after 15 seconds. Check network access, the Web Maps key, and allowed domains.'));
+    }, 15_000);
+
     const resetPromise = () => {
+      window.clearTimeout(timeout);
       window.mapplsLoadingPromise = undefined;
       script.remove();
     };
 
     script.onload = () => {
+      if (settled) return;
       if (window.mappls?.Map && window.mappls?.Marker) {
+        settled = true;
+        window.clearTimeout(timeout);
         resolve();
       } else {
+        settled = true;
         resetPromise();
         reject(new Error('Mappls SDK loaded, but the map API was not available. Verify that this key is enabled for Web Maps.'));
       }
     };
     script.onerror = () => {
+      if (settled) return;
+      settled = true;
       resetPromise();
       reject(new Error('Mappls SDK could not be downloaded. Verify the static key, Web Maps access, and allowed domains.'));
     };
@@ -87,11 +102,18 @@ export function MapplsMap({
         if (cancelled || !mapElement.current || mapInstance.current) return;
         const initialCenter = center ?? { lat: 22.9734, lng: 78.6569 };
         // The Web SDK examples initialize the map using the container element's ID.
-        const map = new window.mappls!.Map(containerId, {
-          center: { lat: initialCenter.lat, lng: initialCenter.lng },
-          zoom: center ? 10 : 4,
-        });
-        mapInstance.current = map;
+        let map: any;
+        try {
+          map = new window.mappls!.Map(containerId, {
+            center: { lat: initialCenter.lat, lng: initialCenter.lng },
+            zoom: center ? 10 : 4,
+          });
+          mapInstance.current = map;
+        } catch (error) {
+          setErrorMessage(error instanceof Error ? error.message : 'Map initialization failed.');
+          setStatus('error');
+          return;
+        }
 
         let markedReady = false;
         const markReady = () => {
