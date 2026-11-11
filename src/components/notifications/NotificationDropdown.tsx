@@ -62,6 +62,8 @@ export const NotificationDropdown = () => {
           </Button>}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => { setIsOpen(false); navigate('/notifications'); }} className="cursor-pointer justify-center text-sm font-medium">View all notifications</DropdownMenuItem>
+        <DropdownMenuSeparator />
         {notificationsLoading ? (
           <div role="status" aria-live="polite" className="p-4 text-center text-muted-foreground text-sm">Loading notifications…</div>
         ) : notificationsError ? (
