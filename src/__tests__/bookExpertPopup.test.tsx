@@ -162,8 +162,8 @@ describe("BookExpert responsive reader controls", () => {
     fireEvent.click(screen.getByRole("button", { name: /open the sahadhyayi reading room/i }));
     const dialog = screen.getByRole("dialog", { name: /the reading room/i });
 
-    expect(dialog.className).toContain("h-[min(70dvh,600px)]");
-    expect(dialog.className).toContain("sm:h-[min(680px,calc(100dvh-3rem))]");
-    expect(dialog.className).toContain("sm:w-[min(420px,calc(100vw-3rem))]");
+    expect(dialog.className).toContain("h-[min(82dvh,780px)]");
+    expect(dialog.className).toContain("sm:w-[min(900px,calc(100vw-4rem))]");
+    expect(dialog.className).toContain("sm:w-[min(900px,calc(100vw-4rem))]");
   });
 });
