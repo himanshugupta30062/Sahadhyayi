@@ -27,6 +27,7 @@ export default function NotificationsPage() {
   const markAllAsRead = useMarkAllNotificationsAsRead();
   const unread = notifications.filter((n) => !n.read).length;
   const filtered = useMemo(() => notifications.filter((n) => filter === 'all' || (filter === 'unread' ? !n.read : n.read)), [notifications, filter]);
+  const categoryCounts = useMemo(() => ({ social: notifications.filter((n) => categoryForType(n.type) === 'social').length, groups: notifications.filter((n) => categoryForType(n.type) === 'groups').length, events: notifications.filter((n) => categoryForType(n.type) === 'events').length, system: notifications.filter((n) => categoryForType(n.type) === 'system').length }), [notifications]);
   const categorized = useMemo(() => filtered.filter((n) => category === 'all' || categoryForType(n.type) === category), [filtered, category]);
   const grouped = useMemo(() => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -55,7 +56,7 @@ export default function NotificationsPage() {
           <TabsList><TabsTrigger value="all">All ({notifications.length})</TabsTrigger><TabsTrigger value="unread">Unread ({unread})</TabsTrigger><TabsTrigger value="read">Read ({notifications.length - unread})</TabsTrigger></TabsList>
         </Tabs>
       </div>
-      <div className="mb-4"><Tabs value={category} onValueChange={(v) => setCategory(v as NotificationCategory)} aria-label="Notification categories"><TabsList className="flex h-auto flex-wrap"><TabsTrigger value="all">All types</TabsTrigger><TabsTrigger value="social">Social</TabsTrigger><TabsTrigger value="groups">Reading Groups</TabsTrigger><TabsTrigger value="events">Events</TabsTrigger><TabsTrigger value="system">System</TabsTrigger></TabsList></Tabs></div>
+      <div className="mb-4"><Tabs value={category} onValueChange={(v) => setCategory(v as NotificationCategory)} aria-label="Notification categories"><TabsList className="flex h-auto flex-wrap"><TabsTrigger value="all">All types</TabsTrigger><TabsTrigger value="social">Social ({categoryCounts.social})</TabsTrigger><TabsTrigger value="groups">Reading Groups ({categoryCounts.groups})</TabsTrigger><TabsTrigger value="events">Events ({categoryCounts.events})</TabsTrigger><TabsTrigger value="system">System ({categoryCounts.system})</TabsTrigger></TabsList></Tabs></div>
       {isLoading ? <Card><CardContent className="p-8 text-center text-muted-foreground">Loading notifications…</CardContent></Card>
         : isError ? <Card><CardContent className="p-8 text-center"><p className="mb-3 text-muted-foreground">Couldn’t load notifications.</p><Button variant="outline" onClick={() => void refetch()}>Try again</Button></CardContent></Card>
         : filtered.length === 0 ? <Card><CardContent className="p-10 text-center"><Bell className="mx-auto mb-3 h-8 w-8 text-muted-foreground"/><p className="font-medium">{filter === 'unread' ? 'No unread notifications' : filter === 'read' ? 'No read notifications yet' : 'You’re all caught up'}</p><p className="mt-1 text-sm text-muted-foreground">{filter === 'all' ? 'New activity will appear here.' : 'Switch filters to see other notifications.'}</p></CardContent></Card>
