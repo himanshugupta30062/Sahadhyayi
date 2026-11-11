@@ -23,15 +23,37 @@ export interface Notification {
 
 type NotificationRealtimeEntry = { channel: ReturnType<typeof supabase.channel>; refs: number };
 const notificationRealtimeChannels = new Map<string, NotificationRealtimeEntry>();
+const notificationBroadcastName = (userId: string) => `sahadhyayi-notifications-${userId}`;
 
 const invalidateNotificationQueries = (queryClient: ReturnType<typeof useQueryClient>, userId: string) => {
   void queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
   void queryClient.invalidateQueries({ queryKey: ['unread-notifications-count', userId] });
 };
 
+const broadcastNotificationChange = (userId: string) => {
+  if (typeof BroadcastChannel === 'undefined') return;
+  const channel = new BroadcastChannel(notificationBroadcastName(userId));
+  channel.postMessage({ type: 'notifications-changed', userId });
+  channel.close();
+};
+
 const useNotificationRealtimeSync = (userId: string | undefined, queryClient: ReturnType<typeof useQueryClient>) => {
   useEffect(() => {
     if (!userId) return;
+
+    // BroadcastChannel synchronizes notification state between tabs on this
+    // browser; the Supabase subscription remains the cross-device source.
+    const crossTabChannel = typeof BroadcastChannel !== 'undefined'
+      ? new BroadcastChannel(notificationBroadcastName(userId))
+      : null;
+    if (crossTabChannel) {
+      crossTabChannel.onmessage = (event: MessageEvent<{ type?: string; userId?: string }>) => {
+        if (event.data?.type === 'notifications-changed' && event.data.userId === userId) {
+          invalidateNotificationQueries(queryClient, userId);
+        }
+      };
+    }
+
     const existing = notificationRealtimeChannels.get(userId);
     if (existing) {
       existing.refs += 1;
@@ -43,15 +65,19 @@ const useNotificationRealtimeSync = (userId: string | undefined, queryClient: Re
           schema: 'public',
           table: 'notifications',
           filter: `user_id=eq.${userId}`,
-        }, () => invalidateNotificationQueries(queryClient, userId))
+        }, () => {
+          invalidateNotificationQueries(queryClient, userId);
+          broadcastNotificationChange(userId);
+        })
         .subscribe((status) => {
-          // Reconcile after initial connection and every successful reconnect;
-          // Realtime does not replay changes missed while offline.
+          // Reconcile after initial connection and every successful reconnect.
           if (status === 'SUBSCRIBED') invalidateNotificationQueries(queryClient, userId);
         });
       notificationRealtimeChannels.set(userId, { channel, refs: 1 });
     }
+
     return () => {
+      crossTabChannel?.close();
       const entry = notificationRealtimeChannels.get(userId);
       if (!entry) return;
       entry.refs -= 1;
@@ -114,7 +140,9 @@ export const useMarkNotificationAsRead = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      if (user?.id) invalidateNotificationQueries(queryClient, user.id);
+      if (!user?.id) return;
+      invalidateNotificationQueries(queryClient, user.id);
+      broadcastNotificationChange(user.id);
     },
   });
 };
@@ -130,7 +158,9 @@ export const useMarkAllNotificationsAsRead = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      if (user?.id) invalidateNotificationQueries(queryClient, user.id);
+      if (!user?.id) return;
+      invalidateNotificationQueries(queryClient, user.id);
+      broadcastNotificationChange(user.id);
     },
   });
 };
