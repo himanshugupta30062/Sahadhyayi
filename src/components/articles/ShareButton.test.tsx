@@ -122,6 +122,8 @@ describe('ShareButton', () => {
       fireEvent.click(screen.getByRole('menuitem', { name: 'Post on Sahadhyayi' }));
       await Promise.resolve();
       await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
     });
 
     expect(mocks.invoke).toHaveBeenCalledWith('generate-share-caption', expect.objectContaining({
