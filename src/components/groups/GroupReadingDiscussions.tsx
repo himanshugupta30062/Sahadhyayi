@@ -139,8 +139,8 @@ const DiscussionCard = ({
       toast.error('Write a reply first.');
       return;
     }
-    if (!Number.isInteger(spoilerChapter) || spoilerChapter < 0) {
-      toast.error('Enter a valid spoiler chapter, or use 0 for no spoilers.');
+    if (!Number.isInteger(spoilerChapter) || spoilerChapter < 0 || spoilerChapter > 10000) {
+      toast.error('Enter a spoiler chapter between 0 and 10,000, or use 0 for no spoilers.');
       return;
     }
 
