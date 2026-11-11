@@ -1,19 +1,43 @@
-create or replace function public.get_saved_group_reading_discussions(p_discussion_ids uuid[])
-returns table(id uuid,group_id uuid,title text,body text,book_title text,author_name text,topic_type text,chapter_number integer,spoiler_chapter integer,created_at timestamptz)
-language plpgsql security definer set search_path=public
-as $$
-begin
- if auth.uid() is null then raise exception 'Authentication required'; end if;
- return query
- select d.id,d.group_id,d.title,d.body,b.book_title,
- coalesce(p.display_name,p.username,'Reader')::text,d.topic_type::text,d.chapter_number,d.spoiler_chapter,d.created_at
- from public.group_reading_discussion_bookmarks bm
- join public.group_reading_discussions d on d.id=bm.discussion_id
- join public.group_reading_books b on b.id=d.group_reading_book_id
- left join public.profiles p on p.id=d.created_by
- join public.group_chat_members m on m.group_id=d.group_id and m.user_id=auth.uid() and m.status='active'
- where bm.user_id=auth.uid() and d.id=any(coalesce(p_discussion_ids,'{}'::uuid[]))
- and (d.spoiler_chapter=0 or exists(select 1 from public.group_reading_progress rp where rp.group_reading_book_id=d.group_reading_book_id and rp.user_id=auth.uid() and rp.current_chapter>=d.spoiler_chapter));
-end $$;
-revoke all on function public.get_saved_group_reading_discussions(uuid[]) from public,anon;
-grant execute on function public.get_saved_group_reading_discussions(uuid[]) to authenticated;
+-- Saved discussion details use the same progress and profile fields as the
+-- canonical chapter-discussion RPC. Never reveal spoiler content prematurely.
+CREATE OR REPLACE FUNCTION public.get_saved_group_reading_discussions(p_discussion_ids uuid[])
+RETURNS TABLE (
+  id uuid, group_id uuid, title text, body text, book_title text,
+  author_name text, topic_type text, chapter_number integer,
+  spoiler_chapter integer, created_at timestamptz
+)
+LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = ''
+AS $function$
+DECLARE v_actor uuid := auth.uid();
+BEGIN
+  IF v_actor IS NULL THEN
+    RAISE EXCEPTION 'Authentication required' USING ERRCODE = '28000';
+  END IF;
+
+  RETURN QUERY
+  SELECT d.id, d.group_id, d.title,
+    CASE WHEN d.created_by = v_actor OR d.spoiler_chapter = 0
+      OR COALESCE(progress.current_chapter, 0) >= d.spoiler_chapter
+      THEN d.body ELSE NULL END,
+    book.title,
+    COALESCE(profile.full_name, profile.name, 'Reader'),
+    d.topic_type, d.chapter_number, d.spoiler_chapter, d.created_at
+  FROM public.group_reading_discussion_bookmarks bm
+  JOIN public.group_reading_discussions d ON d.id = bm.discussion_id
+  JOIN public.group_reading_books grb ON grb.id = d.group_reading_book_id AND grb.group_id = d.group_id
+  JOIN public.books_library book ON book.id = grb.book_id
+  LEFT JOIN public.profiles profile ON profile.id = d.created_by
+  JOIN public.group_chat_members member ON member.group_id = d.group_id
+    AND member.user_id = v_actor AND member.status = 'active'
+  LEFT JOIN LATERAL (
+    SELECT COALESCE(max(rp.chapter_number), 0)::integer AS current_chapter
+    FROM public.detailed_reading_progress rp
+    WHERE rp.user_id = v_actor AND rp.book_id = grb.book_id
+      AND rp.completion_percentage >= 100
+  ) progress ON true
+  WHERE bm.user_id = v_actor
+    AND d.id = ANY(COALESCE(p_discussion_ids, '{}'::uuid[]));
+END;
+$function$;
+REVOKE ALL ON FUNCTION public.get_saved_group_reading_discussions(uuid[]) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.get_saved_group_reading_discussions(uuid[]) TO authenticated;
