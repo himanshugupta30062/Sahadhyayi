@@ -115,11 +115,14 @@ describe('article social hooks', () => {
     mocks.responses = { article_likes: [{ count: null, error: null }] };
     await expect(mocks.queries[0].queryFn()).resolves.toBe(0);
     const failure = new Error('likes unavailable');
-    mocks.responses = { article_likes: [{ count: null, error: failure }] };\n    mocks.tableCalls = {};
+    mocks.responses = { article_likes: [{ count: null, error: failure }] };
+    mocks.tableCalls = {};
+    mocks.tableCalls = {};
     await expect(mocks.queries[0].queryFn()).rejects.toBe(failure);
   });
 
   it('requires authentication and toggles article likes in both directions', async () => {
+    mocks.user = null;
     renderHook(() => useToggleArticleLike());
     await expect(mocks.mutation?.mutationFn({ articleId: 'a-1', hasLiked: false }))
       .rejects.toThrow('Sign in to like articles');
@@ -161,15 +164,19 @@ describe('article social hooks', () => {
     await expect(mocks.queries[0].queryFn()).resolves.toEqual([]);
     expect(mocks.from).toHaveBeenCalledTimes(1);
     const failure = new Error('comments unavailable');
-    mocks.responses = { article_comments: [{ data: null, error: failure }] };\n    mocks.tableCalls = {};
+    mocks.responses = { article_comments: [{ data: null, error: failure }] };
+    mocks.tableCalls = {};
+    mocks.tableCalls = {};
     await expect(mocks.queries[0].queryFn()).rejects.toBe(failure);
   });
 
   it('creates comments, rejects anonymous writes and invalidates the article comment cache', async () => {
+    mocks.user = null;
     renderHook(() => useCreateComment());
     await expect(mocks.mutation?.mutationFn({ articleId: 'a-1', content: 'Hello' }))
       .rejects.toThrow('Sign in to comment');
     mocks.user = { id: 'reader-1' };
+    renderHook(() => useCreateComment());
     const created = { id: 'c-1', article_id: 'a-1', content: 'Hello' };
     mocks.responses = { article_comments: [{ data: created, error: null }] };
     await expect(mocks.mutation?.mutationFn({ articleId: 'a-1', content: 'Hello', parentId: 'c-0' }))
@@ -217,6 +224,7 @@ describe('article social hooks', () => {
   });
 
   it('requires authentication to follow and supports unfollow, cache invalidation and errors', async () => {
+    mocks.user = null;
     renderHook(() => useToggleFollowAuthor());
     await expect(mocks.mutation?.mutationFn({ authorUserId: 'author-1', isFollowing: false }))
       .rejects.toThrow('Sign in to follow authors');
