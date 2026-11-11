@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { BookOpen, Lock, MessageCircle, Plus, Send, ShieldAlert, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
@@ -278,7 +278,10 @@ const DiscussionCard = ({
 };
 
 const GroupReadingDiscussions = ({ groupId, canModerate }: GroupReadingDiscussionsProps) => {
-  const { user } = useAuth();
+  const [searchText,setSearchText]=useState('');
+  const [topicFilter,setTopicFilter]=useState<'all'|GroupReadingDiscussionType>('all');
+  const [sortOrder,setSortOrder]=useState<'newest'|'replies'>('newest');
+  const { user } = useAuth();\n  const queryClient = useQueryClient();
   const { data: books = [], isLoading: booksLoading } = useGroupReadingBooks(groupId, true);
   const { data: discussions = [], isLoading, error } = useGroupReadingDiscussions(groupId, true);
   const createDiscussion = useCreateGroupReadingDiscussion();
@@ -497,7 +500,7 @@ const GroupReadingDiscussions = ({ groupId, canModerate }: GroupReadingDiscussio
           </div>
         ) : (
           <div className="space-y-3">
-            {discussions.map((discussion) => (
+            {visibleDiscussions.map((discussion) => (
               <DiscussionCard
                 key={discussion.id}
                 discussion={discussion}
