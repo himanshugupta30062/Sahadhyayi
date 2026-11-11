@@ -31,6 +31,7 @@ import GroupMessaging from '@/components/groups/GroupMessaging';
 import GroupReadingBoard from '@/components/groups/GroupReadingBoard';
 import GroupReadingDiscussions from '@/components/groups/GroupReadingDiscussions';
 import GroupEventsPanel from '@/components/groups/GroupEventsPanel';
+import GroupActivityFeed from '@/components/groups/GroupActivityFeed';
 import { toast } from 'sonner';
 
 const GroupDetails = () => {
@@ -319,7 +320,7 @@ const GroupDetails = () => {
               {/* Reader community navigation */}
               <nav aria-label="Reading group sections" className="flex flex-wrap gap-2 border-t border-border pt-4">
                 {[
-                  { href: '#reading-board', label: 'Books & progress' },
+                  { href: '#group-feed', label: 'Activity feed' },\n                  { href: '#reading-board', label: 'Books & progress' },
                   { href: '#discussions', label: 'Discussions' },
                   { href: '#group-events', label: 'Events & sessions' },
                   { href: '#group-members', label: 'Members' },
@@ -357,7 +358,7 @@ const GroupDetails = () => {
             </CardContent>
           </Card>
 
-          {isMember && <section id="reading-board" className="scroll-mt-24"><GroupReadingBoard groupId={group.id} canManage={canManageGroup} /></section>}
+          {isMember && <section id="group-feed" className="scroll-mt-24"><GroupActivityFeed groupId={group.id} canModerate={canManageGroup} /></section>}\n          {isMember && <section id="reading-board" className="scroll-mt-24"><GroupReadingBoard groupId={group.id} canManage={canManageGroup} /></section>}
           {isMember && <section id="discussions" className="scroll-mt-24"><GroupReadingDiscussions groupId={group.id} canModerate={canManageGroup} /></section>}
           {isMember && <section id="group-events" className="scroll-mt-24"><GroupEventsPanel groupId={group.id} userId={user?.id || ''} canManage={canManageGroup} /></section>}
 
