@@ -107,7 +107,7 @@ export function useReadingJournal(selectedBookId?: string) {
         location: q.location,
         text: q.text,
         note: q.note,
-        createdAt: new Date().toISOString(), // local quote fallback
+        createdAt: q.createdAt || new Date(0).toISOString(), // legacy quotes have no persisted timestamp
         rawItem: q,
       });
     });
