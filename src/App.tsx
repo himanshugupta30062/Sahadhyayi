@@ -62,6 +62,7 @@ const AuthorSlugPage = lazy(() => import('./pages/authors/[slug]'));
 const AuthorDetails = lazy(() => import('./pages/AuthorDetails'));
 const ReadingGroups = lazy(() => import('./pages/ReadingGroups'));
 const GroupDetails = lazy(() => import('./pages/GroupDetails'));
+const SavedGroupDiscussions = lazy(() => import('./components/groups/SavedGroupDiscussions'));
 const MapPage = lazy(() => import('./pages/Map'));
 const About = lazy(() => import('./pages/About'));
 const Blog = lazy(() => import('./pages/Blog'));
@@ -561,6 +562,7 @@ const App = memo(() => {
                             </ProtectedRoute>
                           }
                         />
+                        <Route path="/groups/saved-discussions" element={<ProtectedRoute><Suspense fallback={<LoadingFallback />}><SavedGroupDiscussions /></Suspense></ProtectedRoute>} />
                         <Route
                           path="/map"
                           element={
