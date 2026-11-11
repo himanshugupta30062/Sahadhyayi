@@ -65,7 +65,7 @@ import { toast } from 'sonner';
 
 type EditableGroup = Pick<Group, 'id' | 'name'> & { description: string };
 
-const getErrorMessage = (error: unknown, fallback: string) =>
+const READING_TOPICS = [\n  { id: 'all', label: 'All topics', terms: [] },\n  { id: 'fiction', label: 'Fiction', terms: ['fiction', 'novel', 'story', 'stories', 'fantasy', 'mystery', 'romance'] },\n  { id: 'philosophy', label: 'Philosophy', terms: ['philosophy', 'philosoph', 'ethics', 'existential', 'upanishad', 'vedanta'] },\n  { id: 'science', label: 'Science', terms: ['science', 'scientific', 'physics', 'biology', 'technology', 'research'] },\n  { id: 'history', label: 'History', terms: ['history', 'historical', 'civilization', 'culture', 'heritage'] },\n  { id: 'poetry', label: 'Poetry', terms: ['poetry', 'poet', 'verse', 'ghazal', 'literature'] },\n  { id: 'growth', label: 'Personal growth', terms: ['growth', 'self-help', 'self development', 'habits', 'mindfulness'] },\n] as const;\n\nconst getErrorMessage = (error: unknown, fallback: string) =>
   error instanceof Error && error.message ? error.message : fallback;
 
 const GroupSkeleton = () => (
@@ -152,7 +152,7 @@ const ReadingGroupsDirectory = () => {
     });
   }, [user?.id, inviteToken, redeemInvitation, setSearchParams]);
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');\n  const [activeTopic, setActiveTopic] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<'all' | 'mine'>('all');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newGroup, setNewGroup] = useState({ name: '', description: '', isPrivate: false });
@@ -303,7 +303,7 @@ const ReadingGroupsDirectory = () => {
         )}
       </div>
 
-      {/* ── Guest Members-Only Authentication Banner ── */}
+      {/* Topic discovery: lightweight categorization without inventing or storing group tags. */}\n      <section aria-label="Explore reading topics" className="space-y-2">\n        <p className="text-sm font-medium text-muted-foreground">Explore by reading interest</p>\n        <div className="flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Reading group topic filters">\n          {READING_TOPICS.map((topic) => (\n            <Button key={topic.id} type="button" size="sm" variant={activeTopic === topic.id ? 'default' : 'outline'} className="shrink-0 rounded-full" aria-pressed={activeTopic === topic.id} onClick={() => setActiveTopic(topic.id)}>\n              {topic.label}\n            </Button>\n          ))}\n        </div>\n      </section>\n\n      {/* ── Guest Members-Only Authentication Banner ── */}
       {!user && (
         <div className="rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50/70 via-white to-emerald-50/50 p-6 sm:p-8 dark:border-amber-900/40 dark:from-amber-950/20 dark:via-[#111614] dark:to-emerald-950/20 shadow-xs">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
