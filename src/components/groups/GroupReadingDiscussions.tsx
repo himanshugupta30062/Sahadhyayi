@@ -244,7 +244,8 @@ const DiscussionCard = ({
 
         {showReplies && (
           <div className="mt-3 space-y-3">
-\n        {isLoading ? (
+
+        {isLoading ? (
               <p className="text-sm text-muted-foreground">Loading replies…</p>
             ) : error ? (
               <p role="alert" className="text-sm text-destructive">Replies could not be loaded. Please try again.</p>
@@ -360,10 +361,14 @@ const DiscussionCard = ({
   );
 };
 
-const GroupReadingDiscussions = ({ groupId, canModerate }: GroupReadingDiscussionsProps) => {\n  const [searchText,setSearchText]=useState('');\n  const [topicFilter,setTopicFilter]=useState<'all'|GroupReadingDiscussionType>('all');\n  const [sortOrder,setSortOrder]=useState<'newest'|'replies'>('newest');
+const GroupReadingDiscussions = ({ groupId, canModerate }: GroupReadingDiscussionsProps) => {
+  const [searchText,setSearchText]=useState('');
+  const [topicFilter,setTopicFilter]=useState<'all'|GroupReadingDiscussionType>('all');
+  const [sortOrder,setSortOrder]=useState<'newest'|'replies'>('newest');
   const { user } = useAuth();
   const { data: books = [], isLoading: booksLoading } = useGroupReadingBooks(groupId, true);
-  const { data: discussions = [], isLoading, error } = useGroupReadingDiscussions(groupId, true);\n  const visibleDiscussions=useMemo(()=>discussions.filter(item=>(topicFilter==='all'||item.topic_type===topicFilter)&&(!searchText.trim()||[item.title,item.body,item.book_title,item.author_name].some(value=>value?.toLowerCase().includes(searchText.trim().toLowerCase())))).sort((a,b)=>sortOrder==='replies'?b.reply_count-a.reply_count:new Date(b.created_at).getTime()-new Date(a.created_at).getTime()),[discussions,topicFilter,searchText,sortOrder]);
+  const { data: discussions = [], isLoading, error } = useGroupReadingDiscussions(groupId, true);
+  const visibleDiscussions=useMemo(()=>discussions.filter(item=>(topicFilter==='all'||item.topic_type===topicFilter)&&(!searchText.trim()||[item.title,item.body,item.book_title,item.author_name].some(value=>value?.toLowerCase().includes(searchText.trim().toLowerCase())))).sort((a,b)=>sortOrder==='replies'?b.reply_count-a.reply_count:new Date(b.created_at).getTime()-new Date(a.created_at).getTime()),[discussions,topicFilter,searchText,sortOrder]);
   const createDiscussion = useCreateGroupReadingDiscussion();
   const [showComposer, setShowComposer] = useState(false);
   const [selectedBookId, setSelectedBookId] = useState('');
@@ -572,7 +577,8 @@ const GroupReadingDiscussions = ({ groupId, canModerate }: GroupReadingDiscussio
         )}
 
         {!isLoading && !error && discussions.length > 0 && <p className="text-xs text-muted-foreground" aria-live="polite">Showing {visibleDiscussions.length} of {discussions.length} discussions</p>}
-        {!isLoading && !error && discussions.length > 0 &&             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3"><div className="relative"><Input aria-label="Search discussions" placeholder="Search title, book or author…" value={searchText} onChange={event=>setSearchText(event.target.value)} className={searchText ? 'pr-16' : ''}/>{searchText && <Button type="button" variant="ghost" size="sm" className="absolute right-1 top-1 h-8 px-2" onClick={()=>setSearchText('')} aria-label="Clear discussion search">Clear</Button>}</div><select aria-label="Filter discussion topic" className="h-10 rounded-md border bg-background px-3 text-sm" value={topicFilter} onChange={event=>setTopicFilter(event.target.value as 'all'|GroupReadingDiscussionType)}><option value="all">All topics</option><option value="discussion">Discussion</option><option value="question">Question</option><option value="reflection">Reflection</option><option value="quote">Quote</option></select><select aria-label="Sort discussions" className="h-10 rounded-md border bg-background px-3 text-sm" value={sortOrder} onChange={event=>setSortOrder(event.target.value as 'newest'|'replies')}><option value="newest">Newest first</option><option value="replies">Most replies</option></select></div>}\n        {isLoading ? (
+        {!isLoading && !error && discussions.length > 0 &&             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3"><div className="relative"><Input aria-label="Search discussions" placeholder="Search title, book or author…" value={searchText} onChange={event=>setSearchText(event.target.value)} className={searchText ? 'pr-16' : ''}/>{searchText && <Button type="button" variant="ghost" size="sm" className="absolute right-1 top-1 h-8 px-2" onClick={()=>setSearchText('')} aria-label="Clear discussion search">Clear</Button>}</div><select aria-label="Filter discussion topic" className="h-10 rounded-md border bg-background px-3 text-sm" value={topicFilter} onChange={event=>setTopicFilter(event.target.value as 'all'|GroupReadingDiscussionType)}><option value="all">All topics</option><option value="discussion">Discussion</option><option value="question">Question</option><option value="reflection">Reflection</option><option value="quote">Quote</option></select><select aria-label="Sort discussions" className="h-10 rounded-md border bg-background px-3 text-sm" value={sortOrder} onChange={event=>setSortOrder(event.target.value as 'newest'|'replies')}><option value="newest">Newest first</option><option value="replies">Most replies</option></select></div>}
+        {isLoading ? (
           <div className="space-y-3" aria-label="Loading chapter discussions">
             <div className="h-28 animate-pulse rounded-xl bg-muted" />
             <div className="h-28 animate-pulse rounded-xl bg-muted" />
