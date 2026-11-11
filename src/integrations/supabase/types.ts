@@ -14,6 +14,7 @@ export type Database = {
   }
   public: {
     Tables: {
+      saved_quotes: {
       research_paper_bookmarks: {
         Row: { id: string; user_id: string; openalex_id: string; paper: Json; created_at: string }
         Insert: { id?: string; user_id: string; openalex_id: string; paper?: Json; created_at?: string }
