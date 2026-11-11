@@ -38,6 +38,14 @@ import {
   useStoryDetails,
   useStoryPart,
   useDeleteStory,
+  useUpdateStory,
+  useCreateStoryPart,
+  useUpdateStoryPart,
+  useDeleteStoryPart,
+  useReorderStoryParts,
+  useToggleStoryLike,
+  useToggleStoryBookmark,
+  useToggleStoryFollow,
   useSaveStoryProgress,
   useCreateStory,
   useStoryComments,
@@ -247,6 +255,117 @@ describe('useStories hooks', () => {
     await mocks.mutations[0].onSuccess(undefined, { storyId: 'story-1' });
     expect(mocks.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['continue-reading-stories'] });
     expect(mocks.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['story-details', 'story-1'] });
+  });
+
+
+  it('updates story metadata and invalidates the story feed and details', async () => {
+    renderHook(() => useUpdateStory());
+    const updated = story({ title: 'New title', status: 'published' });
+    configureResponses({ stories: [{ data: updated, error: null }] });
+    await expect(mocks.mutations[0].mutationFn({
+      storyId: 'story-1', title: ' New title ', description: '  ', cover_image_url: null,
+      genre: 'Drama', tags: ['new'], status: 'published', completion_status: 'completed',
+    })).resolves.toEqual(updated);
+    expect(mocks.calls).toContainEqual({ table: 'stories', method: 'update', args: [expect.objectContaining({
+      title: 'New title', description: null, cover_image_url: null, genre: 'Drama', tags: ['new'],
+      status: 'published', completion_status: 'completed', published_at: expect.any(String), updated_at: expect.any(String),
+    })] });
+    await mocks.mutations[0].onSuccess(undefined, { storyId: 'story-1' });
+    expect(mocks.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['stories'] });
+    expect(mocks.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['story-details', 'story-1'] });
+    expect(mocks.toastSuccess).toHaveBeenCalledWith('Story updated.');
+  });
+
+  it('creates a story part, recalculates reading time and updates story counters', async () => {
+    renderHook(() => useCreateStoryPart());
+    const words = Array.from({ length: 201 }, () => 'word').join(' ');
+    const inserted = { id: 'part-2', story_id: 'story-1', part_number: 2, title: 'Chapter 2', content: words, status: 'published' };
+    configureResponses({
+      story_parts: [{ data: inserted, error: null }, { data: [{ content: words }], error: null }],
+      stories: [{ data: null, error: null }],
+    });
+    await expect(mocks.mutations[0].mutationFn({
+      storyId: 'story-1', partNumber: 2, title: ' Chapter 2 ', content: ` ${words} `, status: 'published',
+    })).resolves.toEqual(inserted);
+    expect(mocks.calls).toContainEqual({ table: 'story_parts', method: 'insert', args: [expect.objectContaining({
+      title: 'Chapter 2', content: words, status: 'published', published_at: expect.any(String),
+    })] });
+    expect(mocks.calls).toContainEqual({ table: 'stories', method: 'update', args: [expect.objectContaining({ parts_count: 1, reading_time_minutes: 2 })] });
+    await mocks.mutations[0].onSuccess(undefined, { storyId: 'story-1' });
+    expect(mocks.toastSuccess).toHaveBeenCalledWith('Part added successfully!');
+  });
+
+  it('updates a part and recalculates reading time after publishing it', async () => {
+    renderHook(() => useUpdateStoryPart());
+    const updatedPart = { id: 'part-1', title: 'Updated chapter', content: 'one two three', status: 'published' };
+    configureResponses({
+      story_parts: [{ data: updatedPart, error: null }, { data: [{ content: 'one two three' }], error: null }],
+      stories: [{ data: null, error: null }],
+    });
+    await expect(mocks.mutations[0].mutationFn({
+      partId: 'part-1', storyId: 'story-1', title: ' Updated chapter ', content: ' one two three ', status: 'published',
+    })).resolves.toEqual(updatedPart);
+    expect(mocks.calls).toContainEqual({ table: 'story_parts', method: 'update', args: [expect.objectContaining({
+      title: 'Updated chapter', content: 'one two three', status: 'published', published_at: expect.any(String),
+    })] });
+    expect(mocks.calls).toContainEqual({ table: 'stories', method: 'update', args: [expect.objectContaining({ reading_time_minutes: 1 })] });
+    await mocks.mutations[0].onSuccess(undefined, { storyId: 'story-1' });
+    expect(mocks.toastSuccess).toHaveBeenCalledWith('Part updated successfully!');
+  });
+
+  it('deletes a part, recalculates story counters and invalidates reading views', async () => {
+    renderHook(() => useDeleteStoryPart());
+    configureResponses({
+      story_parts: [{ data: null, error: null }, { data: [{ content: 'one two' }], error: null }],
+      stories: [{ data: null, error: null }],
+    });
+    await mocks.mutations[0].mutationFn({ partId: 'part-2', storyId: 'story-1' });
+    expect(mocks.calls).toContainEqual({ table: 'story_parts', method: 'delete', args: [] });
+    expect(mocks.calls).toContainEqual({ table: 'stories', method: 'update', args: [expect.objectContaining({ parts_count: 1, reading_time_minutes: 1 })] });
+    await mocks.mutations[0].onSuccess(undefined, { storyId: 'story-1' });
+    expect(mocks.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['story-part', 'story-1'] });
+    expect(mocks.toastSuccess).toHaveBeenCalledWith('Chapter deleted.');
+  });
+
+  it('reorders chapter numbers and invalidates story reading views', async () => {
+    renderHook(() => useReorderStoryParts());
+    configureResponses({ story_parts: [{ data: null, error: null }, { data: null, error: null }] });
+    await mocks.mutations[0].mutationFn({ storyId: 'story-1', orderedPartIds: ['part-2', 'part-1'] });
+    expect(mocks.calls).toContainEqual({ table: 'story_parts', method: 'update', args: [{ part_number: 1, updated_at: expect.any(String) }] });
+    expect(mocks.calls).toContainEqual({ table: 'story_parts', method: 'update', args: [{ part_number: 2, updated_at: expect.any(String) }] });
+    await mocks.mutations[0].onSuccess(undefined, { storyId: 'story-1' });
+    expect(mocks.toastSuccess).toHaveBeenCalledWith('Chapter order updated successfully!');
+  });
+
+  it('syncs story like, bookmark and follow counts with the reader cache', async () => {
+    renderHook(() => useToggleStoryLike());
+    configureResponses({
+      story_likes: [{ data: null, error: null }, { count: 5, error: null }],
+      stories: [{ data: null, error: null }],
+    });
+    await expect(mocks.mutations[0].mutationFn({ storyId: 'story-1', isLiked: false })).resolves.toBe(true);
+    expect(mocks.calls).toContainEqual({ table: 'stories', method: 'update', args: [{ likes_count: 5 }] });
+    await mocks.mutations[0].onSuccess(undefined, { storyId: 'story-1' });
+
+    renderHook(() => useToggleStoryBookmark());
+    configureResponses({
+      story_bookmarks: [{ data: null, error: null }, { count: 3, error: null }],
+      stories: [{ data: null, error: null }],
+    });
+    await expect(mocks.mutations[1].mutationFn({ storyId: 'story-1', isBookmarked: false })).resolves.toBe(true);
+    expect(mocks.calls).toContainEqual({ table: 'stories', method: 'update', args: [{ bookmarks_count: 3 }] });
+    await mocks.mutations[1].onSuccess(true, { storyId: 'story-1' });
+    expect(mocks.toastSuccess).toHaveBeenCalledWith('Story bookmarked!');
+
+    renderHook(() => useToggleStoryFollow());
+    configureResponses({
+      story_follows: [{ data: null, error: null }, { count: 2, error: null }],
+      stories: [{ data: null, error: null }],
+    });
+    await expect(mocks.mutations[2].mutationFn({ storyId: 'story-1', isFollowing: false })).resolves.toBe(true);
+    expect(mocks.calls).toContainEqual({ table: 'stories', method: 'update', args: [{ follows_count: 2 }] });
+    await mocks.mutations[2].onSuccess(true, { storyId: 'story-1' });
+    expect(mocks.toastSuccess).toHaveBeenCalledWith('Following story for chapter updates!');
   });
 
 });
