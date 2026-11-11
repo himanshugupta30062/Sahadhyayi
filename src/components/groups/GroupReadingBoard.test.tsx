@@ -142,6 +142,8 @@ describe('GroupReadingBoard', () => {
     expect(screen.getByText(/44% average/)).toBeInTheDocument();
     expect(screen.getByRole('progressbar', { name: 'Shared progress for Current read' })).toHaveAttribute('aria-valuenow', '44');
     expect(screen.getByText('Based only on members who opted in to share.')).toBeInTheDocument();
+    expect(screen.getByText('✓ 25% milestone')).toBeInTheDocument();
+    expect(screen.getByText('50% milestone')).toBeInTheDocument();
     expect(screen.getByText('Unknown author')).toBeInTheDocument();
     expect(screen.getByText('Finished title')).toBeInTheDocument();
     expect(screen.getByText('Archived title')).toBeInTheDocument();
