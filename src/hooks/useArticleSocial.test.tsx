@@ -115,7 +115,7 @@ describe('article social hooks', () => {
     mocks.responses = { article_likes: [{ count: null, error: null }] };
     await expect(mocks.queries[0].queryFn()).resolves.toBe(0);
     const failure = new Error('likes unavailable');
-    mocks.responses = { article_likes: [{ count: null, error: failure }] };
+    mocks.responses = { article_likes: [{ count: null, error: failure }] };\n    mocks.tableCalls = {};
     await expect(mocks.queries[0].queryFn()).rejects.toBe(failure);
   });
 
@@ -161,7 +161,7 @@ describe('article social hooks', () => {
     await expect(mocks.queries[0].queryFn()).resolves.toEqual([]);
     expect(mocks.from).toHaveBeenCalledTimes(1);
     const failure = new Error('comments unavailable');
-    mocks.responses = { article_comments: [{ data: null, error: failure }] };
+    mocks.responses = { article_comments: [{ data: null, error: failure }] };\n    mocks.tableCalls = {};
     await expect(mocks.queries[0].queryFn()).rejects.toBe(failure);
   });
 
