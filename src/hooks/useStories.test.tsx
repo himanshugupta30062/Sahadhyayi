@@ -197,4 +197,55 @@ describe('useStories hooks', () => {
     await mocks.mutations[0].onSuccess('story-1');
     expect(mocks.toastSuccess).toHaveBeenCalledWith('Short story deleted.');
   });
+
+  it('hydrates database story details with published parts and reader interaction state', async () => {
+    const dbStory = story({ user_id: 'writer-1', views_count: 9 });
+    const publishedPart = { id: 'part-1', story_id: 'story-1', part_number: 1, title: 'Chapter', status: 'published' };
+    renderHook(() => useStoryDetails('story-1'));
+    configureResponses({
+      stories: [{ data: dbStory, error: null }, { data: null, error: null }],
+      story_parts: [{ data: [publishedPart], error: null }],
+      story_likes: [{ data: { id: 'like-1' }, error: null }],
+      story_bookmarks: [{ data: null, error: null }],
+      story_follows: [{ data: { id: 'follow-1' }, error: null }],
+      story_reading_progress: [{ data: { last_read_part_number: 3 }, error: null }],
+    });
+
+    const result = await mocks.queries[0].queryFn();
+    expect(result).toMatchObject({
+      story: { id: 'story-1', user_liked: true, user_bookmarked: false, user_following: true, last_read_part_number: 3 },
+      parts: [publishedPart],
+      isAuthor: false,
+    });
+    expect(mocks.calls).toContainEqual({ table: 'story_parts', method: 'eq', args: ['status', 'published'] });
+    expect(mocks.calls).toContainEqual({ table: 'stories', method: 'update', args: [{ views_count: 10 }] });
+  });
+
+  it('loads database story parts for authors without hiding drafts', async () => {
+    mocks.user = { id: 'writer-1', email: 'writer@example.com' };
+    const dbStory = story({ user_id: 'writer-1' });
+    const draftPart = { id: 'draft-1', part_number: 2, title: 'Draft', status: 'draft' };
+    renderHook(() => useStoryPart('story-1', 2));
+    configureResponses({
+      stories: [{ data: dbStory, error: null }],
+      story_parts: [{ data: draftPart, error: null }, { data: [draftPart], error: null }],
+    });
+
+    const result = await mocks.queries[0].queryFn();
+    expect(result).toMatchObject({ story: dbStory, part: draftPart, allParts: [draftPart], isAuthor: true });
+    expect(mocks.calls).not.toContainEqual({ table: 'story_parts', method: 'eq', args: ['status', 'published'] });
+  });
+
+  it('clamps reading progress and invalidates continue-reading and story detail caches', async () => {
+    renderHook(() => useSaveStoryProgress());
+    await mocks.mutations[0].mutationFn({ storyId: 'story-1', partId: 'part-2', partNumber: 2, percentage: 140 });
+    expect(mocks.calls).toContainEqual({
+      table: 'story_reading_progress', method: 'upsert',
+      args: [expect.objectContaining({ story_id: 'story-1', user_id: 'reader-1', last_read_part_number: 2, progress_percentage: 100 })],
+    });
+    await mocks.mutations[0].onSuccess(undefined, { storyId: 'story-1' });
+    expect(mocks.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['continue-reading-stories'] });
+    expect(mocks.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['story-details', 'story-1'] });
+  });
+
 });
