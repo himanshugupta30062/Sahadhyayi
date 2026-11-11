@@ -553,6 +553,7 @@ const GroupReadingDiscussions = ({ groupId, canModerate }: GroupReadingDiscussio
           </section>
         )}
 
+        {!isLoading && !error && discussions.length > 0 && <p className="text-xs text-muted-foreground" aria-live="polite">Showing {visibleDiscussions.length} of {discussions.length} discussions</p>}
         {!isLoading && !error && discussions.length > 0 &&             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3"><Input aria-label="Search discussions" placeholder="Search title, book or author…" value={searchText} onChange={event=>setSearchText(event.target.value)}/><select aria-label="Filter discussion topic" className="h-10 rounded-md border bg-background px-3 text-sm" value={topicFilter} onChange={event=>setTopicFilter(event.target.value as 'all'|GroupReadingDiscussionType)}><option value="all">All topics</option><option value="discussion">Discussion</option><option value="question">Question</option><option value="reflection">Reflection</option><option value="quote">Quote</option></select><select aria-label="Sort discussions" className="h-10 rounded-md border bg-background px-3 text-sm" value={sortOrder} onChange={event=>setSortOrder(event.target.value as 'newest'|'replies')}><option value="newest">Newest first</option><option value="replies">Most replies</option></select></div>}\n        {isLoading ? (
           <div className="space-y-3" aria-label="Loading chapter discussions">
             <div className="h-28 animate-pulse rounded-xl bg-muted" />
