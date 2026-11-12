@@ -68,7 +68,7 @@ const BookCard = ({ book, onDownloadPDF = () => {} }: BookCardProps) => {
       <div 
         className="aspect-[3/4] bg-gradient-primary relative overflow-hidden cursor-pointer"
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}\n        onClick={() => setIsHovered((visible) => !visible)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         {activeCoverUrl ? (
           <EnhancedLazyImage
