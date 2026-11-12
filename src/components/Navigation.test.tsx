@@ -149,6 +149,23 @@ describe('Primary Navigation (5 core sections)', () => {
     expect(readerMapLink).toHaveAttribute('href', '/map');
   });
 
+  it('keeps keyboard focus indicators on the Social trigger and submenu links', async () => {
+    const { fireEvent } = await import('@testing-library/react');
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Navigation />
+      </MemoryRouter>
+    );
+
+    const socialButton = screen.getByRole('button', { name: /social/i });
+    expect(socialButton).toHaveClass('focus-visible:ring-2');
+    fireEvent.mouseEnter(socialButton);
+
+    const friendsFeedLink = screen.getByRole('menuitem', { name: 'Friends Feed' });
+    expect(friendsFeedLink).toHaveClass('focus-visible:ring-2');
+    expect(friendsFeedLink).toHaveClass('focus-visible:outline-none');
+  });
+
   it('highlights the Reading Spaces group when a child route is active', async () => {
     const { fireEvent } = await import('@testing-library/react');
     render(
