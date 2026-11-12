@@ -140,3 +140,11 @@ This is a focused review of selected high-impact functions, not all 26 handlers.
 4. Implement cleanup as an explicit staged operation with failure handling; avoid claiming deletion success if dependent data cleanup fails.
 
 No production schema changes were made in this phase; these are verified FK blockers and cleanup gaps requiring policy decisions.
+
+
+## Phase 11 — Storage inventory and account cleanup follow-up (2026-11-12)
+
+- Live Storage inventory: 15 objects total (14 in `books`, 1 in `book-pdf-quarantine`); no objects with a non-null owner ID whose owner is absent from `auth.users` were found at audit time.
+- The profile upload helper in `src/hooks/useUserProfile.ts` uploads to bucket `avatars` and calls `getPublicUrl`, but live `storage.buckets` currently lists only `audio-summaries`, `book-pdf-quarantine`, `book-pdfs`, `books`, `news-covers`, and `research-paper-quarantine`. This indicates profile-photo upload may fail due to a missing bucket, or the helper's intended bucket is stale. Verify before provisioning or changing it.
+- Account deletion still has no explicit Storage cleanup. Do not bulk-delete `books` objects by user prefix until references to article cover URLs have been removed or deliberately anonymized; public content may outlive its author.
+- No production changes made in this phase.
