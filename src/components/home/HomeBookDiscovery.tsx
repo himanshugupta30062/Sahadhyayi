@@ -515,7 +515,7 @@ export const HomeBookDiscovery: React.FC = () => {
       {/* Continuously Moving Book Cover Ribbon Carousel */}
       {!isLoading && !isError && curatedBooks.length > 0 && (
         <div className="relative mt-2 space-y-5 py-4">
-          {[{ key: "upper", books: marqueeItems, reverse: false }, { key: "lower", books: [...marqueeItems].reverse(), reverse: true }].map((ribbon) => (
+          {[{ key: "upper", books: marqueeItems, reverse: true }, { key: "lower", books: [...marqueeItems].reverse(), reverse: false }].map((ribbon) => (
             <div key={ribbon.key} className="relative w-full overflow-hidden py-2">
           {/* Subtle editorial fade edges */}
           <div
