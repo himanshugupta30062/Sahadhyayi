@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-const sql=readFileSync(fileURLToPath(new URL('../../supabase/migrations/20261112120000_reading_group_daily_digest.sql',import.meta.url)),'utf8');
+const sql=readFileSync(resolve(process.cwd(), 'supabase/migrations/20261112120000_reading_group_daily_digest.sql'),'utf8');
 describe('Reading Group daily digest migration',()=>{
  it('deduplicates a digest per user and date and schedules daily',()=>{
   expect(sql).toMatch(/PRIMARY KEY\(user_id,digest_date\)/i);
