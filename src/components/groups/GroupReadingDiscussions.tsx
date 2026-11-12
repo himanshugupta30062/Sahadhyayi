@@ -392,6 +392,7 @@ const GroupReadingDiscussions = ({ groupId, canModerate }: GroupReadingDiscussio
   };
 
   const handleCreate = () => {
+    if (createDiscussion.isPending) return;
     const chapter = Number(chapterNumber);
     const spoiler = Number(spoilerChapter);
     if (!defaultBookId) {
@@ -454,7 +455,7 @@ const GroupReadingDiscussions = ({ groupId, canModerate }: GroupReadingDiscussio
           type="button"
           size="sm"
           onClick={() => showComposer ? requestCloseComposer() : setShowComposer(true)}
-          disabled={booksLoading || selectableBooks.length === 0}
+          disabled={booksLoading || createDiscussion.isPending || selectableBooks.length === 0}
         >
           <Plus className="mr-1.5 h-4 w-4" />
           Start discussion
@@ -559,7 +560,7 @@ const GroupReadingDiscussions = ({ groupId, canModerate }: GroupReadingDiscussio
             </label>
 
             <div className="flex flex-wrap justify-end gap-2">
-              <Button type="button" variant="outline" onClick={requestCloseComposer}>
+              <Button type="button" variant="outline" onClick={requestCloseComposer} disabled={createDiscussion.isPending}>
                 Cancel
               </Button>
               <Button
