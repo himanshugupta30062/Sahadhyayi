@@ -133,7 +133,7 @@ const Feedback = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-4xl sm:text-5xl font-serif font-bold text-gray-900 dark:text-foreground mb-4">Your voice shapes Sahadhyayi</h1>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-gray-600 dark:text-muted-foreground">
               Every thoughtful suggestion makes this reading community better. Tell us what is working, what is missing, or what we should build next.
             </p>
           </div>
@@ -143,8 +143,12 @@ const Feedback = () => {
             {feedbackTypes.map((type) => (
               <Card 
                 key={type.value} 
-                className={`cursor-pointer hover:shadow-lg transition-all ${
-                  formData.type === type.value ? 'ring-2 ring-orange-500 bg-orange-50' : ''
+                role="button"
+                tabIndex={0}
+                aria-pressed={formData.type === type.value}
+                onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setFormData(prev => ({ ...prev, type: type.value })); } }}
+                className={`cursor-pointer hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 transition-all dark:bg-card ${
+                  formData.type === type.value ? 'ring-2 ring-orange-500 bg-orange-50 dark:bg-orange-950/30' : ''
                 }`}
                 onClick={() => setFormData(prev => ({ ...prev, type: type.value }))}
               >
@@ -165,7 +169,7 @@ const Feedback = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="feedback-name" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="feedback-name" className="block text-sm font-medium text-gray-700 dark:text-foreground mb-1">
                       Name *
                     </label>
                     <Input
