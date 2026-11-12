@@ -498,7 +498,7 @@ const Navigation = () => {
             const items = visibleItems(section.items).filter((item) => group.names.includes(item.name));
             if (!items.length) return null;
             return (
-              <div key={group.title} className="py-1">
+              <div key={group.title} role="group" aria-label={group.title} className="py-1">
                 <p className={"px-3 pb-0.5 text-[11px] font-semibold uppercase tracking-wide " + (items.some(isNavigationEntryActive) ? "text-[hsl(var(--brand-primary))]" : "text-muted-foreground")}>{group.title}</p><p className="px-3 pb-1 text-[11px] leading-relaxed text-muted-foreground/75">{group.description}</p>
                 {items.map(renderDrawerLink)}
               </div>
@@ -569,7 +569,7 @@ const Navigation = () => {
               const items = section.items.filter((item) => group.names.includes(item.name) && (!item.authOnly || Boolean(user)));
               if (!items.length) return null;
               return (
-                <div key={group.title} className="py-1">
+                <div key={group.title} role="group" aria-label={group.title} className="py-1">
                   <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{group.title}</p>
                   <p className="px-3 pb-1 text-[11px] leading-relaxed text-muted-foreground/75">{group.description}</p>
                   {items.map((item) => renderPublicDrawerItem(item, disclosureKey))}
