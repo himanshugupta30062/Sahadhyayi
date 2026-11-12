@@ -4,6 +4,13 @@ import {
   BookOpen,
   ChevronDown,
   Info,
+  MapPin,
+  MessageSquare,
+  Bookmark,
+  BrainCircuit,
+  Star,
+  UsersRound,
+  BookOpenText,
   Menu,
   MessageCircle,
   Moon,
@@ -139,6 +146,19 @@ const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
   NAVIGATION_SECTIONS[3],
   NAVIGATION_SECTIONS[4],
 ];
+
+const SOCIAL_ITEM_ICONS: Record<string, React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>> = {
+  "Friends Feed": UsersRound,
+  "Discover Friends": Users,
+  "Reader Map": MapPin,
+  "Reading Groups": BookOpen,
+  "Reading Rooms": MessageCircle,
+  "Shared Marginalia": BookOpenText,
+  "Reading DNA": BrainCircuit,
+  "Book Discussions": MessageSquare,
+  "Book Reviews": Star,
+  "Saved Discussions": Bookmark,
+};
 
 const SOCIAL_MENU_GROUPS = [
   {
@@ -460,7 +480,7 @@ const Navigation = () => {
             if (!items.length) return null;
             return (
               <div key={group.title} className="py-1">
-                <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{group.title}</p>
+                <p className="px-3 pb-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{group.title}</p><p className="px-3 pb-1 text-[11px] leading-relaxed text-muted-foreground/75">{group.description}</p>
                 {items.map(renderDrawerLink)}
               </div>
             );
@@ -685,8 +705,8 @@ const Navigation = () => {
                               const items = socialItems.filter((item) => group.names.includes(item.name));
                               if (!items.length) return null;
                               return (
-                                <section key={group.title} className="min-w-0 px-2">
-                                  <h3 className="pb-1 text-xs font-semibold tracking-wide text-[hsl(var(--brand-primary))]">{group.title}</h3>
+                                <section key={group.title} className="min-w-0 rounded-lg border border-border/60 bg-card/50 p-2.5 transition-colors hover:border-[hsl(var(--brand-primary)/0.25)]">
+                                  <h3 className="pb-1 text-xs font-bold uppercase tracking-wider text-[hsl(var(--brand-primary))]">{group.title}</h3>
                                   <p className="pb-2 text-xs text-muted-foreground">{group.description}</p>
                                   <div className="space-y-1">
                                     {items.map((item) => {
@@ -698,7 +718,7 @@ const Navigation = () => {
                                             onClick={() => handleDesktopNavigationClick(item.href)}
                                             data-tour-target={item.tourTarget}
                                             aria-current={active ? "page" : undefined}
-                                            className={"flex min-h-10 items-center rounded-md px-2.5 py-2 text-sm transition-colors " + (active
+                                            className={"flex min-h-10 cursor-pointer items-center rounded-md px-2.5 py-2 text-sm transition-colors " + (active
                                               ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]"
                                               : "text-foreground hover:bg-muted")}
                                           >
