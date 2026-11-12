@@ -120,6 +120,7 @@ export const useSaveReadingProgress = () => {
         .single();
 
       if (error) throw error;
+      await recordReadingActivity(user.id, 'progress_save');
       return data as ReadingProgressItem;
     },
     onSuccess: () => {
