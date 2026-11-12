@@ -199,11 +199,11 @@ const SignIn = () => {
         canonical="https://sahadhyayi.com/signin"
         url="https://sahadhyayi.com/signin"
       />
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-amber-50 via-orange-50/60 to-yellow-50">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-amber-50 via-orange-50/60 to-yellow-50 dark:from-slate-950 dark:via-background dark:to-orange-950/20">
         {/* Decorative background elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-amber-200/20 blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-orange-200/20 blur-3xl" />
+          <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-amber-200/20 dark:bg-amber-500/10 blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-orange-200/20 dark:bg-orange-500/10 blur-3xl" />
         </div>
 
         <motion.div
