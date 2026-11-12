@@ -212,10 +212,10 @@ const SignUp = () => {
                 Join Sahadhyayi
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1.5">
-                Create your account and start reading together
+                A free account brings your reading life and community together.
               </p>
             </CardHeader>
-            <CardContent className="px-6 pb-8">
+            <CardContent className="px-6 pb-8"><div className="mb-5 grid grid-cols-3 gap-2 text-center text-xs text-muted-foreground"><span className="rounded-xl bg-amber-50 dark:bg-amber-950/30 p-2">📚 Discover</span><span className="rounded-xl bg-amber-50 dark:bg-amber-950/30 p-2">🤝 Connect</span><span className="rounded-xl bg-amber-50 dark:bg-amber-950/30 p-2">✍️ Share</span></div>
               <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (
                   <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
