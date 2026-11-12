@@ -53,7 +53,7 @@ const GroupDetails = () => {
   const cachedGroup = groups.find(g => g.id === id);
 
   const { data: directGroup, isLoading: directLoading } = useQuery({
-    queryKey: ['group-direct-detail', id],
+    queryKey: ['group-direct-detail', id, user?.id ?? 'public'],
     queryFn: async () => {
       if (!id) return null;
       if (user?.id) {
