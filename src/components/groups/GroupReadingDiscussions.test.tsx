@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
@@ -119,8 +120,14 @@ const makeComment = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
-const renderPanel = (canModerate = false) =>
-  render(<GroupReadingDiscussions groupId="group-1" canModerate={canModerate} />);
+const renderPanel = (canModerate = false) => {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <GroupReadingDiscussions groupId="group-1" canModerate={canModerate} />
+    </QueryClientProvider>,
+  );
+};
 
 describe('GroupReadingDiscussions', () => {
   beforeEach(() => {
