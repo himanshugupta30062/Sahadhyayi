@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const upsert = vi.fn();
-const from = vi.fn(() => ({ upsert }));
+const { upsert, from } = vi.hoisted(() => {
+  const upsert = vi.fn();
+  const from = vi.fn(() => ({ upsert }));
+  return { upsert, from };
+});
 
 vi.mock('@/integrations/supabase/client-universal', () => ({
   supabase: { from },
