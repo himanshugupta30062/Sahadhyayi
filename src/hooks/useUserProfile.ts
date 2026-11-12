@@ -250,16 +250,24 @@ export const useDeleteUserProfile = () => {
 export async function uploadProfilePicture(file: File, userId: string): Promise<string> {
   try {
     // Validate file type and size
-    if (!file.type.startsWith('image/')) {
-      throw new Error('Only image files are allowed');
+    const allowedTypes: Record<string, string> = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+    };
+    const fileExt = allowedTypes[file.type];
+    if (!fileExt) {
+      throw new Error('Profile pictures must be JPEG, PNG, or WebP');
     }
-    
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit
-      throw new Error('File size must be less than 5MB');
+
+    if (file.size === 0 || file.size > 5 * 1024 * 1024) {
+      throw new Error('Profile picture must be between 1 byte and 5MB');
     }
-    
+    if (!userId || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(userId)) {
+      throw new Error('A valid signed-in user is required');
+    }
+
     const bucket = 'avatars';
-    const fileExt = file.name.split('.').pop();
     const filePath = `${userId}/${Date.now()}.${fileExt}`;
     
     // Upload the file
