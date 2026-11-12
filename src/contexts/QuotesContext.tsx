@@ -80,9 +80,16 @@ const QuotesProvider = ({ children }: { children: React.ReactNode }) => {
 
   const removeQuote = (id: number | string) => {
     if (loadedStorageKey !== storageKey) return;
+    const removed = quotes.find(q => String(q.id) === String(id));
     setQuotes(prev => prev.filter(q => String(q.id) !== String(id)));
     if (user?.id) {
-      void supabase.from('saved_quotes').delete().eq('user_id', user.id).eq('client_id', String(id));
+      void supabase.from('saved_quotes').delete().eq('user_id', user.id).eq('client_id', String(id))
+        .then(({ error }) => {
+          // A failed cloud delete must not silently lose the user's quote locally.
+          if (error && removed) {
+            setQuotes(prev => prev.some(q => String(q.id) === String(id)) ? prev : [...prev, removed]);
+          }
+        });
     }
   };
 
