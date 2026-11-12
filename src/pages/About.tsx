@@ -843,16 +843,16 @@ const About = () => {
                   <BookOpen className="w-6 h-6 text-white" />
                 </div>
                 <h2 className="text-3xl sm:text-4xl font-serif font-bold">
-                  Become a Sahadhyayi Today
+                  Your next chapter starts here
                 </h2>
                 <p className="text-base sm:text-lg max-w-xl mx-auto text-white/90 leading-relaxed">
-                  Join fellow readers worldwide on a journey of deep reflection, shared notes, and intellectual companionship.
+                  Discover books, exchange ideas, and find your fellow readers. Sahadhyayi is a home for people who believe reading is better together.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
                   <Link to="/library">
                     <Button size="lg" variant="secondary" className="px-8 h-12 text-base font-semibold shadow-md">
                       <BookOpen className="w-5 h-5 mr-2" />
-                      Browse Free Books
+                      Discover Your Next Read
                     </Button>
                   </Link>
                   <Link to="/social">
@@ -862,7 +862,7 @@ const About = () => {
                       className="border-white/40 text-white hover:bg-white/10 px-8 h-12 text-base font-semibold"
                     >
                       <Users className="w-5 h-5 mr-2" />
-                      Join the Reading Hub
+                      Meet Fellow Readers
                     </Button>
                   </Link>
                 </div>

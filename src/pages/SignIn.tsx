@@ -226,7 +226,7 @@ const SignIn = () => {
                 Welcome Back
               </h1>
               <p className="mt-1.5 text-sm text-slate-700">
-                Sign in to continue your reading journey
+                Pick up where your curiosity left off—your books and fellow readers are waiting.
               </p>
             </CardHeader>
             <CardContent className="px-6 pb-8">

@@ -128,13 +128,13 @@ const Feedback = () => {
         title="Send Feedback - Sahadhyayi"
         description="Share your thoughts, suggestions, and feedback about Sahadhyayi. Help us improve your reading experience."
       />
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 dark:from-slate-950 dark:via-background dark:to-orange-950/20 py-8">
         <div className="max-w-2xl mx-auto px-4">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">Send Feedback</h1>
+            <h1 className="text-4xl sm:text-5xl font-serif font-bold text-gray-900 dark:text-foreground mb-4">Your voice shapes Sahadhyayi</h1>
             <p className="text-xl text-gray-600">
-              Your thoughts matter! Help us improve Sahadhyayi by sharing your experience and suggestions.
+              Every thoughtful suggestion makes this reading community better. Tell us what is working, what is missing, or what we should build next.
             </p>
           </div>
 
