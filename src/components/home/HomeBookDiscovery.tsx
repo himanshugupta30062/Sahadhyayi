@@ -450,7 +450,7 @@ export const HomeBookDiscovery: React.FC = () => {
         {isLoading && (
           <div className="flex gap-4 sm:gap-6 overflow-hidden py-2">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="w-36 sm:w-44 md:w-48 flex-shrink-0 space-y-3 animate-pulse">
+              <div key={i} className="w-[42vw] max-w-[180px] sm:w-44 md:w-48 flex-shrink-0 space-y-3 animate-pulse">
                 <div className="aspect-[2/3] w-full rounded-xl bg-[#E3EDE0] dark:bg-[#161D19] border border-[#D8E5D6] dark:border-[#29332D]" />
                 <div className="h-4 bg-[#E3EDE0] dark:bg-[#161D19] rounded w-3/4" />
                 <div className="h-3 bg-[#E3EDE0] dark:bg-[#161D19] rounded w-1/2" />
@@ -514,7 +514,9 @@ export const HomeBookDiscovery: React.FC = () => {
 
       {/* Continuously Moving Book Cover Ribbon Carousel */}
       {!isLoading && !isError && curatedBooks.length > 0 && (
-        <div className="relative w-full overflow-hidden mt-2 py-4">
+        <div className="relative mt-2 space-y-5 py-4">
+          {[{ key: "upper", books: marqueeItems, reverse: false }, { key: "lower", books: [...marqueeItems].reverse(), reverse: true }].map((ribbon) => (
+            <div key={ribbon.key} className="relative w-full overflow-hidden py-2">
           {/* Subtle editorial fade edges */}
           <div
             className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-20 bg-gradient-to-r from-[#F8F8F2] dark:from-[#0B0D0C] to-transparent z-10"
@@ -527,7 +529,7 @@ export const HomeBookDiscovery: React.FC = () => {
 
           <div
             className={`sahadhyayi-marquee-track flex gap-4 sm:gap-6 px-4 ${
-              isMarqueeActive ? 'sahadhyayi-marquee-animating' : 'overflow-x-auto scrollbar-none justify-center'
+              isMarqueeActive ? 'sahadhyayi-marquee-animating' + (ribbon.reverse ? ' sahadhyayi-marquee-reverse' : '') : 'overflow-x-auto scrollbar-none justify-center'
             }`}
             style={{
               animationPlayState: isPaused ? 'paused' : 'running',
@@ -535,11 +537,11 @@ export const HomeBookDiscovery: React.FC = () => {
           >
             {/* Primary Track Set A (Always accessible to screen readers & keyboard navigation) */}
             <div className="flex gap-4 sm:gap-6 flex-shrink-0">
-              {marqueeItems.map((book: Book, idx: number) => (
+              {ribbon.books.map((book: Book, idx: number) => (
                 <Link
                   key={`primary-${book.id}-${idx}`}
                   to={`/book/${book.id}`}
-                  className="group flex flex-col w-36 sm:w-44 md:w-48 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D] rounded-xl"
+                  className="group flex flex-col w-[42vw] max-w-[180px] sm:w-44 md:w-48 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D] rounded-xl"
                   title={`${book.title} by ${book.author || 'Unknown author'}`}
                   aria-label={`View details for ${book.title} by ${book.author || 'Unknown author'}`}
                 >
@@ -577,7 +579,7 @@ export const HomeBookDiscovery: React.FC = () => {
                     to={`/book/${book.id}`}
                     tabIndex={-1}
                     aria-hidden="true"
-                    className="group flex flex-col w-36 sm:w-44 md:w-48 flex-shrink-0 rounded-xl"
+                    className="group flex flex-col w-[42vw] max-w-[180px] sm:w-44 md:w-48 flex-shrink-0 rounded-xl"
                   >
                     {/* Book Cover Container with 2:3 aspect ratio */}
                     <div className="relative aspect-[2/3] w-full rounded-xl overflow-hidden bg-white dark:bg-[#141816] border border-[#D8E5D6] dark:border-[#26302A] shadow-[0_4px_16px_rgba(28,32,29,0.08)] dark:shadow-sm transition-all duration-300 group-hover:border-[#B68A35]/80 dark:group-hover:border-[#D5B16D]/70 group-hover:shadow-[0_12px_28px_rgba(28,32,29,0.14)] dark:group-hover:shadow-[0_12px_28px_rgba(0,0,0,0.65)] group-hover:-translate-y-1.5">
@@ -604,6 +606,7 @@ export const HomeBookDiscovery: React.FC = () => {
               </div>
             )}
           </div>
+          ))}
         </div>
       )}
     </section>
