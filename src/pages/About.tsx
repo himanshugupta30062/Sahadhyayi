@@ -674,6 +674,35 @@ const About = () => {
             </Card>
           </section>
 
+          {/* ── Guest access & account clarity ── */}
+          <section aria-labelledby="guest-access-title" className="rounded-2xl border border-border bg-card p-5 sm:p-7">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+              <div className="w-11 h-11 shrink-0 rounded-xl bg-brand-primary/10 text-brand-primary flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5" aria-hidden="true" />
+              </div>
+              <div className="space-y-4 flex-1">
+                <div className="space-y-1">
+                  <h2 id="guest-access-title" className="text-xl sm:text-2xl font-serif font-bold text-foreground">Curious? Explore before you join.</h2>
+                  <p className="text-sm text-muted-foreground leading-relaxed">You can look around first. Create an account when you’re ready to make Sahadhyayi your reading space.</p>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="rounded-xl border border-border bg-background p-4">
+                    <p className="text-sm font-semibold text-foreground mb-1">Explore as a visitor</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">Browse the library, open book details, learn about the community, and send feedback.</p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-background p-4">
+                    <p className="text-sm font-semibold text-foreground mb-1">Join when you’re ready</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">Sign in to access your personal dashboard and account-based reading and community actions.</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Link to="/library" className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm">Browse the library <ArrowRight className="w-4 h-4" aria-hidden="true"/></Link>
+                  <Link to="/signup" className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm">Create a free account <ArrowRight className="w-4 h-4" aria-hidden="true"/></Link>
+                </div>
+              </div>
+            </div>
+          </section>
+
           {/* ── Reader Journey: a simple first-visit path ── */}
           <section aria-labelledby="reader-journey-title" className="rounded-3xl border border-border bg-gradient-to-br from-brand-primary/5 via-card to-brand-secondary/5 p-5 sm:p-8 lg:p-10 space-y-5 sm:space-y-7">
             <div className="text-center max-w-2xl mx-auto space-y-2">
