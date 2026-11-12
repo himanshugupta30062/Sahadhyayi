@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";\nimport type { ComponentType } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   BookOpen,
@@ -147,7 +147,7 @@ const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
   NAVIGATION_SECTIONS[4],
 ];
 
-const SOCIAL_ITEM_ICONS: Record<string, React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>> = {
+const SOCIAL_ITEM_ICONS: Record<string, ComponentType<{ className?: string; "aria-hidden"?: boolean }>> = {
   "Friends Feed": UsersRound,
   "Discover Friends": Users,
   "Reader Map": MapPin,
