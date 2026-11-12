@@ -84,7 +84,7 @@ export const useSetGroupReadingBookStatus = () => {
       return data as string;
     },
     onSuccess: (_, variables) => {
-      void queryClient.invalidateQueries({ queryKey: groupReadingBooksKey(variables.groupId) });
+      void queryClient.invalidateQueries({ queryKey: groupReadingBooksKey(variables.groupId, userId) });
     },
   });
 };
