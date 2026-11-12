@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Heart, ThumbsUp, Lightbulb, Bookmark } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { BookOpen, Lock, MessageCircle, Plus, Send, ShieldAlert, Trash2 } from 'lucide-react';
@@ -18,6 +19,7 @@ import {
   useDeleteGroupReadingDiscussionComment,
   useGroupReadingDiscussions,
   useGroupReadingDiscussionComments,
+  useGroupReadingDiscussionBookmarks,
 } from '@/hooks/useGroupReadingDiscussions';
 import type {
   GroupReadingDiscussion,
@@ -82,29 +84,23 @@ const DiscussionReactions = ({ discussionId }: { discussionId: string }) => {
 };
 
 const DiscussionBookmark = ({ discussionId }: { discussionId: string }) => {
-  const [saved, setSaved] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const { data: bookmarks = [], isLoading, error } = useGroupReadingDiscussionBookmarks();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [busy, setBusy] = useState(false);
-  useEffect(() => {
-    let alive = true;
-    supabase.rpc('list_my_group_discussion_bookmarks').then(({ data, error }) => {
-      if (!alive) return;
-      if (error) toast.error('Could not load saved discussions.');
-      else setSaved((data || []).some((row: { discussion_id: string }) => row.discussion_id === discussionId));
-      setLoading(false);
-    });
-    return () => { alive = false; };
-  }, [discussionId]);
+  const saved = bookmarks.some((row) => row.discussion_id === discussionId);
+  useEffect(() => { if (error) toast.error('Could not load saved discussions.'); }, [error]);
   const toggle = async () => {
+    if (busy) return;
     setBusy(true);
-    const { data, error } = await supabase.rpc('toggle_group_reading_discussion_bookmark', { p_discussion_id: discussionId });
+    const { data, error: toggleError } = await supabase.rpc('toggle_group_reading_discussion_bookmark', { p_discussion_id: discussionId });
     setBusy(false);
-    if (error) { toast.error(error.message || 'Could not save discussion.'); return; }
-    setSaved(Boolean(data));
+    if (toggleError) { toast.error(toggleError.message || 'Could not save discussion.'); return; }
+    await queryClient.invalidateQueries({ queryKey: ['group-reading-discussion-bookmarks', user?.id ?? null] });
     toast.success(data ? 'Discussion saved.' : 'Removed from saved discussions.');
   };
   return <Button type="button" size="sm" variant={saved ? 'secondary' : 'outline'} aria-pressed={saved}
-    disabled={loading || busy} onClick={() => void toggle()} className="h-8 gap-1.5">
+    disabled={isLoading || busy || Boolean(error)} onClick={() => void toggle()} className="h-8 gap-1.5">
     <Bookmark className="h-3.5 w-3.5" />{saved ? 'Saved' : 'Save'}
   </Button>;
 };
