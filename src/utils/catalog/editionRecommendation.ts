@@ -35,11 +35,10 @@ export function recommendBestEditions(group: DuplicateGroup): DuplicateRecommend
     };
   });
 
-  // Sort candidates by quality score descending
-  ratedBooks.sort((a, b) => b.quality.score - a.quality.score);
-
-  // 2. Select Primary Book
+  // Keep the first record as the merge anchor (primary); rank only the remaining
+  // candidates. This lets metadata-poor canonical records be enriched safely.
   const primary = ratedBooks[0];
+  const remainingCandidates = ratedBooks.slice(1).sort((a, b) => b.quality.score - a.quality.score);
   const primaryBookId = primary.id;
 
   const reasonsForRecommendation: string[] = [];
@@ -57,8 +56,7 @@ export function recommendBestEditions(group: DuplicateGroup): DuplicateRecommend
   const archiveCandidateIds: string[] = [];
   const warnings: string[] = [];
 
-  for (let i = 1; i < ratedBooks.length; i++) {
-    const candidate = ratedBooks[i];
+  for (const candidate of remainingCandidates) {
     const isDistinctTranslation =
       candidate.identity.language !== primary.identity.language ||
       candidate.identity.isOriginalScript !== primary.identity.isOriginalScript;
@@ -99,7 +97,7 @@ export function recommendBestEditions(group: DuplicateGroup): DuplicateRecommend
   const proposedMergedMetadata: DuplicateRecommendation['proposedMergedMetadata'] = {};
   const primaryBook = primary.book;
 
-  for (const candidate of ratedBooks.slice(1)) {
+  for (const candidate of remainingCandidates) {
     const cBook = candidate.book;
     if (!primaryBook.description && cBook.description) {
       proposedMergedMetadata.description = cBook.description;

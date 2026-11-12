@@ -9,7 +9,7 @@ describe('Reading Group quiet-hours delivery safeguards', () => {
   it('keeps overdue event reminders eligible after quiet hours end while event is upcoming', () => {
     expect(reminder).toMatch(/now\(\)\s*-\s*interval\s*'24 hours'/i);
     expect(reminder).toMatch(/e\.starts_at\s*>\s*now\(\)/i);
-    expect(reminder).toMatch(/reading_group_event_reminder_deliveries/i);
+    expect(reminder).toMatch(/group_event_reminder_deliveries/i);
     expect(reminder).toMatch(/ON CONFLICT DO NOTHING/i);
   });
 

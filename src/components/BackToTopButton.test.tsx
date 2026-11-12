@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import BackToTopButton from "./BackToTopButton";
 
 describe("BackToTopButton", () => {
+  afterEach(() => cleanup());
   let scrollToMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {

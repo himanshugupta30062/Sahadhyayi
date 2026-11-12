@@ -127,10 +127,9 @@ describe('Primary Navigation (5 core sections)', () => {
     expect(socialButton).toBeInTheDocument();
     fireEvent.mouseEnter(socialButton);
 
-    expect(screen.getByText('Connect & Friends')).toBeInTheDocument();
-    expect(screen.getByText('Interactive Map')).toBeInTheDocument();
-    expect(screen.getByText('Live Circles')).toBeInTheDocument();
-    expect(screen.getByText('Discussions & Reviews')).toBeInTheDocument();
+    expect(screen.getByText('Connect')).toBeInTheDocument();
+    expect(screen.getByText('Reading Spaces')).toBeInTheDocument();
+    expect(screen.getByText('Book Talk')).toBeInTheDocument();
 
     const friendsFeedLink = screen.getByRole('menuitem', { name: 'Friends Feed' });
     expect(friendsFeedLink).toHaveAttribute('href', '/social');
