@@ -179,7 +179,12 @@ describe('Primary Navigation (5 core sections)', () => {
     fireEvent.keyDown(socialButton, { key: 'Enter', code: 'Enter' });
 
     expect(socialButton).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getByRole('menuitem', { name: 'Friends Feed' })).toBeInTheDocument();
+    const friendsFeedLink = screen.getByRole('menuitem', { name: 'Friends Feed' });
+    expect(friendsFeedLink).toBeInTheDocument();
+
+    // Opening via keyboard should move focus into the menu, not leave it on
+    // the trigger behind the overlay.
+    expect(friendsFeedLink).toHaveFocus();
 
     const socialMenu = screen.getByRole('menu');
     fireEvent.keyDown(socialMenu, { key: 'Escape', code: 'Escape' });
