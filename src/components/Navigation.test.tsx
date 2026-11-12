@@ -131,6 +131,11 @@ describe('Primary Navigation (5 core sections)', () => {
     expect(screen.getByText('Reading Spaces')).toBeInTheDocument();
     expect(screen.getByText('Book Talk')).toBeInTheDocument();
 
+    // Each Social category is exposed as a named group for assistive technology.
+    expect(screen.getByRole('group', { name: 'Connect' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Reading Spaces' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Book Talk' })).toBeInTheDocument();
+
     const friendsFeedLink = screen.getByRole('menuitem', { name: 'Friends Feed' });
     expect(friendsFeedLink).toHaveAttribute('href', '/social');
 
