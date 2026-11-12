@@ -122,3 +122,21 @@ Security Advisor reports: anonymous sign-ins enabled, OTP long expiry, leaked-pa
 - `save-selected-books`: guest-accessible and uses service role for catalog writes by design; batch limit 50 and book sanitization observed. Review duplicate/upsert semantics, source URL/PDF URL validation, and abuse/rate limiting before allowing unrestricted writes.
 
 This is a focused review of selected high-impact functions, not all 26 handlers. No new production changes were made in this continuation.
+
+
+## Phase 10 — Account deletion and retained data (2026-11-12)
+
+### Live database observations
+- `delete-account` Edge Function verifies the bearer token using `auth.getUser(token)`, requires exact destructive confirmation, and derives the deletion target exclusively from the verified user ID. It does not accept a client-supplied target ID.
+- Most personal user tables reviewed have `ON DELETE CASCADE` FKs to `auth.users`; several audit/retained-content references do not.
+- Potential account deletion blockers identified from live FK metadata: `groups.created_by`, `user_published_books.reviewed_by`, `role_permissions.updated_by`, `research_paper_submissions.moderator_id` (default NO ACTION); and explicit RESTRICT on `book_pdf_admin_audit.uploaded_by`, `news_articles.created_by`, `group_events.organizer_id`.
+- `news_articles`, group events, and PDF audit history can be legitimate retained records. They require a deliberate anonymize/retain policy, not blind cascade deletion.
+- Storage currently contains 14 objects across `books` and `book-pdf-quarantine`; none of the objects with owner IDs had an owner absent from `auth.users` at audit time. The account deletion handler does not explicitly remove user-owned Storage files; investigate cleanup semantics and ensure deleting one user's objects cannot remove public/shared assets.
+
+### Recommended remediation
+1. For retained editorial/event/audit rows, anonymize creator/reviewer/organizer references or use a stable deleted-account sentinel where semantics allow; avoid deleting public content/audit evidence.
+2. Review group ownership transfer before allowing deletion of group creators; do not silently orphan active groups.
+3. Add account-deletion integration tests covering a normal user, creator of retained news/event, moderator/audit uploader, and Storage ownership cleanup.
+4. Implement cleanup as an explicit staged operation with failure handling; avoid claiming deletion success if dependent data cleanup fails.
+
+No production schema changes were made in this phase; these are verified FK blockers and cleanup gaps requiring policy decisions.
