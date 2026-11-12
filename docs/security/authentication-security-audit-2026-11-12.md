@@ -145,6 +145,15 @@ No production schema changes were made in this phase; these are verified FK bloc
 ## Phase 11 — Storage inventory and account cleanup follow-up (2026-11-12)
 
 - Live Storage inventory: 15 objects total (14 in `books`, 1 in `book-pdf-quarantine`); no objects with a non-null owner ID whose owner is absent from `auth.users` were found at audit time.
-- The profile upload helper in `src/hooks/useUserProfile.ts` uploads to bucket `avatars` and calls `getPublicUrl`, but live `storage.buckets` currently lists only `audio-summaries`, `book-pdf-quarantine`, `book-pdfs`, `books`, `news-covers`, and `research-paper-quarantine`. This indicates profile-photo upload may fail due to a missing bucket, or the helper's intended bucket is stale. Verify before provisioning or changing it.
+- Confirmed profile avatar upload targeted a missing `avatars` bucket. This was remediated in Phase 12 with a public image-only bucket (5 MiB; JPEG/PNG/WebP) and per-user UUID-folder write policies.
 - Account deletion still has no explicit Storage cleanup. Do not bulk-delete `books` objects by user prefix until references to article cover URLs have been removed or deliberately anonymized; public content may outlive its author.
 - No production changes made in this phase.
+
+
+## Phase 12 — Profile avatar Storage repair (2026-11-12)
+
+- Verified `uploadProfilePicture` in `src/hooks/useUserProfile.ts` is used by `ProfileView.tsx` and writes to `avatars`; the bucket was absent in production. Two profiles have existing `profile_photo_url` values.
+- Provisioned production `avatars` bucket as public-read (required by existing `getPublicUrl` UX), with a 5 MiB limit and JPEG/PNG/WebP allowlist.
+- Added Storage RLS: public SELECT only for `avatars`; authenticated INSERT/UPDATE/DELETE restricted to the caller's first-level UUID folder. Nested paths are denied.
+- Hardened client validation to reject SVG/GIF/other image types, empty files, files above 5 MiB, and malformed user IDs; extension is selected from MIME type rather than trusted from filename.
+- Production migration applied successfully; matching migration committed to this audit branch. No avatar object deletion or URL rewriting performed.
