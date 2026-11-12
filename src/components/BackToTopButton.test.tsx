@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, act } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";\nimport "@testing-library/jest-dom/vitest";
 import BackToTopButton from "./BackToTopButton";
 
 describe("BackToTopButton", () => {
