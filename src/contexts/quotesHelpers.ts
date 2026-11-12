@@ -11,8 +11,12 @@ export interface Quote {
   createdAt?: string;
 }
 
+export type QuoteSyncStatus = 'local' | 'syncing' | 'synced' | 'error';
+
 interface QuotesContextType {
   quotes: Quote[];
+  syncStatus: QuoteSyncStatus;
+  retrySync: () => void;
   addQuote: (text: string, source?: string, note?: string, metadata?: { bookId?: string; page?: number; location?: string }) => void;
   removeQuote: (id: number | string) => void;
 }
