@@ -344,7 +344,7 @@ const About = () => {
       <div className="min-h-screen bg-background text-foreground py-10 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto space-y-12 sm:space-y-16 lg:space-y-20">
           {/* ── 1. Hero Section ── */}
-          <section className="text-center pt-2 sm:pt-8 max-w-4xl mx-auto">
+          <section id="mission" className="scroll-mt-28 text-center pt-2 sm:pt-8 max-w-4xl mx-auto">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-xs sm:text-sm font-medium text-brand-primary mb-6 shadow-xs">
               <Sparkles className="w-4 h-4" />
               <span>सहाध्यायी · Fellow Reader &amp; Study Companion</span>
@@ -382,6 +382,28 @@ const About = () => {
               </Link>
             </div>
           </section>
+
+          {/* Quick section navigation for long-form About content */}
+          <nav
+            aria-label="About page sections"
+            className="sticky top-16 z-20 -mx-1 flex gap-2 overflow-x-auto rounded-2xl border border-border/70 bg-background/90 px-3 py-2 shadow-sm backdrop-blur-md sm:mx-0 sm:flex-wrap sm:justify-center"
+          >
+            {[
+              { label: "Mission", href: "#mission" },
+              { label: "Founder", href: "#founder" },
+              { label: "Features", href: "#features" },
+              { label: "FAQs", href: "#faq" },
+              { label: "Contact", href: "#contact" },
+            ].map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="shrink-0 rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-brand-primary/40 hover:bg-brand-primary/5 hover:text-brand-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
 
           {/* ── 2. Sanskrit Roots & Etymology ── */}
           <section className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-brand-primary/8 via-card to-brand-secondary/8 p-5 sm:p-8 lg:p-12 shadow-sm">
@@ -454,7 +476,7 @@ const About = () => {
           </section>
 
           {/* ── 3. Meet the Founder (About Me) ── */}
-          <section id="founder" className="scroll-mt-16">
+          <section id="founder" className="scroll-mt-28">
             <Card className="border-border bg-card rounded-3xl overflow-hidden shadow-xs">
               <div className="bg-gradient-to-r from-brand-primary/10 via-brand-primary/5 to-transparent px-6 sm:px-10 py-6 border-b border-border">
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -543,7 +565,7 @@ const About = () => {
                 </div>
 
                 {/* ── Contact the Founder Directly Form ── */}
-                <div className="pt-8 border-t border-border">
+                <div id="contact" className="scroll-mt-28 pt-8 border-t border-border">
                   <div className="max-w-2xl mx-auto space-y-6">
                     <div className="text-center space-y-1">
                       <h4 className="text-lg font-bold text-foreground">Send a Message Directly to Himanshu</h4>
@@ -734,7 +756,7 @@ const About = () => {
           </section>
 
           {/* ── 4. The Sahadhyayi Experience (Living Features) ── */}
-          <section className="space-y-5 sm:space-y-8">
+          <section id="features" className="scroll-mt-28 space-y-5 sm:space-y-8">
             <div className="text-center max-w-2xl mx-auto space-y-2">
               <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-brand-primary">
                 <Compass className="w-4 h-4" />
@@ -869,7 +891,7 @@ const About = () => {
           </section>
 
           {/* ── 8. Collapsible FAQs ── */}
-          <section className="max-w-3xl mx-auto space-y-6">
+          <section id="faq" className="scroll-mt-28 max-w-3xl mx-auto space-y-6">
             <div className="text-center space-y-1">
               <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-brand-primary">
                 <Compass className="w-3.5 h-3.5" />
