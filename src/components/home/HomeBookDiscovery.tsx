@@ -341,6 +341,10 @@ export const HomeBookDiscovery: React.FC = () => {
         .sahadhyayi-marquee-animating {
           animation: sahadhyayi-marquee-scroll 48s linear infinite;
         }
+        .sahadhyayi-marquee-reverse {
+          animation-direction: reverse;
+          animation-duration: 58s;
+        }
         .sahadhyayi-marquee-animating:hover,
         .sahadhyayi-marquee-animating:focus-within {
           animation-play-state: paused !important;
@@ -573,7 +577,7 @@ export const HomeBookDiscovery: React.FC = () => {
             {/* Seamless Duplicate Track Set B (Only rendered when marquee is active for infinite loop) */}
             {isMarqueeActive && (
               <div className="flex gap-4 sm:gap-6 flex-shrink-0" aria-hidden="true">
-                {marqueeItems.map((book: Book, idx: number) => (
+                {ribbon.books.map((book: Book, idx: number) => (
                   <Link
                     key={`duplicate-${book.id}-${idx}`}
                     to={`/book/${book.id}`}
