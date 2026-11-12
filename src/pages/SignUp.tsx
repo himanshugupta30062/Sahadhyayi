@@ -185,11 +185,11 @@ const SignUp = () => {
         canonical="https://sahadhyayi.com/signup"
         url="https://sahadhyayi.com/signup"
       />
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-amber-50 via-orange-50/60 to-yellow-50">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-amber-50 via-orange-50/60 to-yellow-50 dark:from-slate-950 dark:via-background dark:to-orange-950/20">
         {/* Decorative background elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-amber-200/20 blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-orange-200/20 blur-3xl" />
+          <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-amber-200/20 dark:bg-amber-500/10 blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-orange-200/20 dark:bg-orange-500/10 blur-3xl" />
         </div>
 
         <motion.div
@@ -198,7 +198,7 @@ const SignUp = () => {
           transition={{ duration: 0.5, ease: 'easeOut' }}
           className="w-full max-w-md relative z-10"
         >
-          <Card className="border-none shadow-elevated bg-white/95 backdrop-blur-sm rounded-2xl overflow-hidden">
+          <Card className="border-none shadow-elevated bg-white/95 dark:bg-card/95 backdrop-blur-sm rounded-2xl overflow-hidden">
             <CardHeader className="text-center pb-2 pt-8">
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -215,7 +215,7 @@ const SignUp = () => {
                 A free account brings your reading life and community together.
               </p>
             </CardHeader>
-            <CardContent className="px-6 pb-8"><div className="mb-5 grid grid-cols-3 gap-2 text-center text-xs text-muted-foreground"><span className="rounded-xl bg-amber-50 dark:bg-amber-950/30 p-2">📚 Discover</span><span className="rounded-xl bg-amber-50 dark:bg-amber-950/30 p-2">🤝 Connect</span><span className="rounded-xl bg-amber-50 dark:bg-amber-950/30 p-2">✍️ Share</span></div>
+            <CardContent className="px-6 pb-8"><div className="mb-5 grid grid-cols-3 gap-2 text-center text-xs sm:text-sm text-muted-foreground"><span className="rounded-xl border border-amber-200/70 dark:border-amber-800/50 bg-amber-50/80 dark:bg-amber-950/30 p-2.5"><span className="block text-base mb-1" aria-hidden="true">📚</span>Discover books</span><span className="rounded-xl border border-amber-200/70 dark:border-amber-800/50 bg-amber-50/80 dark:bg-amber-950/30 p-2.5"><span className="block text-base mb-1" aria-hidden="true">🤝</span>Meet readers</span><span className="rounded-xl border border-amber-200/70 dark:border-amber-800/50 bg-amber-50/80 dark:bg-amber-950/30 p-2.5"><span className="block text-base mb-1" aria-hidden="true">✍️</span>Share ideas</span></div>
               <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (
                   <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
