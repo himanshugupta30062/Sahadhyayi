@@ -674,6 +674,36 @@ const About = () => {
             </Card>
           </section>
 
+          {/* ── Reader Journey: a simple first-visit path ── */}
+          <section aria-labelledby="reader-journey-title" className="rounded-3xl border border-border bg-gradient-to-br from-brand-primary/5 via-card to-brand-secondary/5 p-6 sm:p-10 space-y-7">
+            <div className="text-center max-w-2xl mx-auto space-y-2">
+              <Badge variant="secondary">Your first few minutes</Badge>
+              <h2 id="reader-journey-title" className="text-3xl sm:text-4xl font-serif font-bold text-foreground">A little reading. A lot more connection.</h2>
+              <p className="text-sm sm:text-base text-muted-foreground">Start wherever you are—Sahadhyayi grows with your reading, not the other way around.</p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                {n:"01",title:"Find a book",copy:"Browse classics, discover a new author, or search for a title.",icon:BookOpen,href:"/library",action:"Browse library"},
+                {n:"02",title:"Make it yours",copy:"Read at your pace and keep your place as you return.",icon:Compass,href:"/library",action:"Start reading"},
+                {n:"03",title:"Share a thought",copy:"Save a meaningful line or exchange chapter-safe ideas.",icon:Quote,href:"/social?tab=margins",action:"Explore margins"},
+                {n:"04",title:"Find your people",copy:"Join a reading circle or sit together in a quiet live room.",icon:Users,href:"/social?tab=groups",action:"Meet readers"},
+              ].map((step) => {
+                const Icon = step.icon;
+                return <Card key={step.n} className="bg-background/80 border-border flex flex-col">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between"><span className="text-xs font-bold tracking-widest text-brand-primary">{step.n}</span><Icon className="w-5 h-5 text-brand-primary" aria-hidden="true"/></div>
+                    <CardTitle className="text-lg">{step.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0 flex flex-1 flex-col gap-4">
+                    <p className="text-sm text-muted-foreground leading-relaxed flex-1">{step.copy}</p>
+                    <Link to={step.href} className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm">{step.action}<ArrowRight className="w-4 h-4" aria-hidden="true"/></Link>
+                  </CardContent>
+                </Card>;
+              })}
+            </div>
+            <p className="text-center text-xs text-muted-foreground">No perfect routine required. One page is a good beginning.</p>
+          </section>
+
           {/* ── 4. The Sahadhyayi Experience (Living Features) ── */}
           <section className="space-y-8">
             <div className="text-center max-w-2xl mx-auto space-y-2">
