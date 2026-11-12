@@ -448,7 +448,7 @@ const Navigation = () => {
             : "text-foreground hover:bg-muted hover:text-[hsl(var(--brand-primary))]")
         }
       >
-        {SocialItemIcon && <SocialItemIcon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
+        {SocialItemIcon && <SocialItemIcon className={"mr-2 h-4 w-4 shrink-0 " + (active ? "text-[hsl(var(--brand-primary))]" : "text-muted-foreground")} aria-hidden="true" />}
         <span className="min-w-0">{item.name}</span>
       </Link>
     );
