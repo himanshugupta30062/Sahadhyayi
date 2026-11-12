@@ -134,6 +134,7 @@ const DiscussionCard = ({
   const deleteComment = useDeleteGroupReadingDiscussionComment();
 
   const handleReply = () => {
+    if (createComment.isPending) return;
     const spoilerChapter = Number(replySpoilerChapter);
     if (!replyBody.trim()) {
       toast.error('Write a reply first.');
