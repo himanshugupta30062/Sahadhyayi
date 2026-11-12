@@ -715,6 +715,7 @@ const Navigation = () => {
                                   <div className="space-y-1">
                                     {items.map((item) => {
                                       const active = isCurrentRoute(item.href);
+                                      const SocialItemIcon = SOCIAL_ITEM_ICONS[item.name];
                                       return (
                                         <DropdownMenuItem key={item.name} asChild>
                                           <Link
