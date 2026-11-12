@@ -165,4 +165,14 @@ describe('useReadingGoal', () => {
       expect.any(Error),
     );
   });
+  
+  it.each([Number.NaN, Number.POSITIVE_INFINITY, 1.5, -1, 0])('ignores invalid goal value %s', async (invalidGoal) => {
+    mocks.user = { id: 'reader-1' };
+    const { result } = renderGoalHook();
+    await act(async () => { await result.current.setGoal(invalidGoal); });
+    expect(result.current.goal).toBe(12);
+    expect(localStorage.getItem(legacyKey)).toBeNull();
+    expect(mocks.updateUser).not.toHaveBeenCalled();
+    expect(result.current.isLoading).toBe(false);
+  });
 });

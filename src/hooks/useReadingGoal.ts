@@ -58,7 +58,7 @@ export const useReadingGoal = (): ReadingGoalData => {
 
   const setGoal = useCallback(
     async (newGoal: number) => {
-      if (newGoal <= 0) return;
+      if (!Number.isSafeInteger(newGoal) || newGoal <= 0) return;
       setIsLoading(true);
 
       // Instant optimistic UI update
