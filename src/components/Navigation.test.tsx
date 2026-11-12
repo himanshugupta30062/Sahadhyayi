@@ -149,6 +149,21 @@ describe('Primary Navigation (5 core sections)', () => {
     expect(readerMapLink).toHaveAttribute('href', '/map');
   });
 
+  it('highlights the Reading Spaces group when a child route is active', async () => {
+    const { fireEvent } = await import('@testing-library/react');
+    render(
+      <MemoryRouter initialEntries={['/groups']}>
+        <Navigation />
+      </MemoryRouter>
+    );
+
+    fireEvent.mouseEnter(screen.getByRole('button', { name: /social/i }));
+
+    const readingSpacesHeading = screen.getByText('Reading Spaces');
+    expect(readingSpacesHeading).toHaveClass('text-[hsl(var(--brand-primary))]');
+    expect(screen.getByRole('menuitem', { name: 'Reading Groups' })).toHaveAttribute('aria-current', 'page');
+  });
+
   it('renders Activity menu with interactive categories', async () => {
     const { fireEvent } = await import('@testing-library/react');
     render(
