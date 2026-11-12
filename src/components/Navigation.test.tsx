@@ -132,6 +132,12 @@ describe('Primary Navigation (5 core sections)', () => {
     expect(screen.getByRole('link', { name: 'Reading Groups' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Friends Feed' })).toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'Reading Spaces' })).toBeInTheDocument();
+
+    // Readers can collapse the expanded section without closing the drawer.
+    fireEvent.click(socialDisclosure);
+    expect(socialDisclosure).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('link', { name: 'Reading Groups' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Close navigation menu' })).toBeInTheDocument();
   });
 
   it('renders Social menu with Connect & Friends, Interactive Map, Live Circles, and Discussions', async () => {
