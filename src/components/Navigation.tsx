@@ -304,6 +304,21 @@ const Navigation = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
+  // Keep the relevant Social destinations visible when readers open navigation
+  // from a Social page, without expanding unrelated sections.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onSocialRoute =
+      location.pathname === "/social" ||
+      location.pathname.startsWith("/groups") ||
+      location.pathname === "/map";
+    if (!onSocialRoute) return;
+    const socialKey = user ? "signed-in.social" : "section.social";
+    setExpandedPublicSections((current) =>
+      current[socialKey] ? current : { ...current, [socialKey]: true }
+    );
+  }, [isOpen, location.pathname, user]);
+
   const userDisplayName =
     user?.user_metadata?.full_name ||
     user?.user_metadata?.name ||
