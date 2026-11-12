@@ -455,9 +455,16 @@ const Navigation = () => {
           () => setExpandedPublicSections((current) => ({ ...current, [disclosureKey]: !current[disclosureKey] })),
         )}
         <div id={panelId} hidden={!expanded} className="space-y-0.5 border-l-2 border-border py-1 pl-2">
-          {visibleItems(section.items)
-            .filter((item) => item.href !== section.href)
-            .map(renderDrawerLink)}
+          {section.name === "Social" ? SOCIAL_MENU_GROUPS.map((group) => {
+            const items = visibleItems(section.items).filter((item) => group.names.includes(item.name));
+            if (!items.length) return null;
+            return (
+              <div key={group.title} className="py-1">
+                <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{group.title}</p>
+                {items.map(renderDrawerLink)}
+              </div>
+            );
+          }) : visibleItems(section.items).filter((item) => item.href !== section.href).map(renderDrawerLink)}
         </div>
       </div>
     );
@@ -519,7 +526,16 @@ const Navigation = () => {
         )}
         <div id={panelId} hidden={!expanded} className="mt-1 max-h-96 overflow-y-auto rounded-md border-l-2 border-border bg-muted/20 py-1 pl-2">
           <div className="space-y-0.5">
-            {section.items.map((item) => renderPublicDrawerItem(item, disclosureKey))}
+            {section.name === "Social" ? SOCIAL_MENU_GROUPS.map((group) => {
+              const items = section.items.filter((item) => group.names.includes(item.name) && (!item.authOnly || Boolean(user)));
+              if (!items.length) return null;
+              return (
+                <div key={group.title} className="py-1">
+                  <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{group.title}</p>
+                  {items.map((item) => renderPublicDrawerItem(item, disclosureKey))}
+                </div>
+              );
+            }) : section.items.map((item) => renderPublicDrawerItem(item, disclosureKey))}
           </div>
         </div>
       </div>
