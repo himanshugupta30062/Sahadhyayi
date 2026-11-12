@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
+import { useAuth } from '@/contexts/authHelpers';
 
 export type GroupReadingBookStatus = 'current' | 'up_next' | 'completed' | 'archived';
 
@@ -22,11 +23,13 @@ export interface GroupReadingBook {
   average_progress: number | null;
 }
 
-const groupReadingBooksKey = (groupId: string) => ['group-reading-books', groupId] as const;
+const groupReadingBooksKey = (groupId: string, userId: string | null) => ['group-reading-books', groupId, userId] as const;
 
-export const useGroupReadingBooks = (groupId: string, enabled = false) =>
-  useQuery({
-    queryKey: groupReadingBooksKey(groupId),
+export const useGroupReadingBooks = (groupId: string, enabled = false) => {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  return useQuery({
+    queryKey: groupReadingBooksKey(groupId, userId),
     queryFn: async () => {
       const { data, error } = await supabase.rpc('list_reading_group_books', {
         p_group_id: groupId,
@@ -34,12 +37,15 @@ export const useGroupReadingBooks = (groupId: string, enabled = false) =>
       if (error) throw new Error(error.message || 'Could not load the group reading list.');
       return (data ?? []) as GroupReadingBook[];
     },
-    enabled: Boolean(groupId && enabled),
+    enabled: Boolean(groupId && userId && enabled),
     staleTime: 30_000,
   });
+};
 
 export const useAddGroupReadingBook = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
   return useMutation({
     mutationFn: async ({ groupId, bookId, targetDate }: {
       groupId: string;
@@ -55,13 +61,15 @@ export const useAddGroupReadingBook = () => {
       return data as string;
     },
     onSuccess: (_, variables) => {
-      void queryClient.invalidateQueries({ queryKey: groupReadingBooksKey(variables.groupId) });
+      void queryClient.invalidateQueries({ queryKey: groupReadingBooksKey(variables.groupId, userId) });
     },
   });
 };
 
 export const useSetGroupReadingBookStatus = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
   return useMutation({
     mutationFn: async ({ groupId, readingBookId, status }: {
       groupId: string;
@@ -76,13 +84,15 @@ export const useSetGroupReadingBookStatus = () => {
       return data as string;
     },
     onSuccess: (_, variables) => {
-      void queryClient.invalidateQueries({ queryKey: groupReadingBooksKey(variables.groupId) });
+      void queryClient.invalidateQueries({ queryKey: groupReadingBooksKey(variables.groupId, userId) });
     },
   });
 };
 
 export const useRemoveGroupReadingBook = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
   return useMutation({
     mutationFn: async ({ groupId, readingBookId }: { groupId: string; readingBookId: string }) => {
       const { error } = await supabase.rpc('remove_reading_group_book', {
@@ -98,6 +108,8 @@ export const useRemoveGroupReadingBook = () => {
 
 export const useSaveGroupReadingProgress = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
   return useMutation({
     mutationFn: async ({ groupId, readingBookId, currentPage, isShared }: {
       groupId: string;
