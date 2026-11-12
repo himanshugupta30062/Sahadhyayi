@@ -171,6 +171,27 @@ describe('Primary Navigation (5 core sections)', () => {
     expect(screen.getByRole('link', { name: 'Friends Feed' })).not.toHaveAttribute('aria-current', 'page');
   });
 
+  it('keeps keyboard focus on the mobile Social disclosure when toggled', async () => {
+    const { fireEvent } = await import('@testing-library/react');
+    vi.mocked(useIsMobile).mockReturnValue(true);
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Navigation />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open navigation menu' }));
+    const disclosure = screen.getByRole('button', { name: 'Social submenu' });
+    disclosure.focus();
+    fireEvent.keyDown(disclosure, { key: 'Enter', code: 'Enter' });
+
+    expect(disclosure).toHaveFocus();
+    expect(disclosure).toHaveAttribute('aria-expanded', 'true');
+    fireEvent.keyDown(disclosure, { key: 'Space', code: 'Space' });
+    expect(disclosure).toHaveFocus();
+    expect(disclosure).toHaveAttribute('aria-expanded', 'false');
+  });
+
   it('renders Social menu with Connect & Friends, Interactive Map, Live Circles, and Discussions', async () => {
     const { fireEvent } = await import('@testing-library/react');
     render(
