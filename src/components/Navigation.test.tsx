@@ -181,8 +181,10 @@ describe('Primary Navigation (5 core sections)', () => {
     expect(socialButton).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByRole('menuitem', { name: 'Friends Feed' })).toBeInTheDocument();
 
-    fireEvent.keyDown(socialButton, { key: 'Escape', code: 'Escape' });
+    const socialMenu = screen.getByRole('menu');
+    fireEvent.keyDown(socialMenu, { key: 'Escape', code: 'Escape' });
     expect(socialButton).toHaveAttribute('aria-expanded', 'false');
+    expect(socialButton).toHaveFocus();
   });
 
   it('highlights the Reading Spaces group when a child route is active', async () => {
