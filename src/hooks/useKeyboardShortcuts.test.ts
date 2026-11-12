@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
-import { act, renderHook } from '@testing-library/react';
+import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getSearchShortcutLabel, isApplePlatform, useGlobalSearchShortcut, useKeyboardShortcuts } from './useKeyboardShortcuts';
 
-afterEach(()=>vi.restoreAllMocks());
+afterEach(()=>{ cleanup(); vi.restoreAllMocks(); });
 describe('keyboard shortcut utilities',()=>{
  it('returns platform-specific search label',()=>{
   vi.spyOn(navigator,'platform','get').mockReturnValue('MacIntel');
