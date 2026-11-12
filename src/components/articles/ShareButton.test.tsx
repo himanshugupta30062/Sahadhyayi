@@ -155,7 +155,7 @@ describe('ShareButton', () => {
     mocks.insert.mockResolvedValueOnce({ error: { message: 'post rejected' } });
     fireEvent.click(screen.getByRole('menuitem', { name: 'Post on Sahadhyayi' }));
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith({
-      title: 'Failed to share', description: 'post rejected', variant: 'destructive',
+      title: 'AI caption failed', description: 'post rejected', variant: 'destructive',
     }));
   });
 });
