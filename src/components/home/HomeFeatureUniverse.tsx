@@ -1,16 +1,16 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  ArrowUpRight, BookOpen, Users, Feather, BrainCircuit, Compass, MapPin,
-  MessagesSquare, LibraryBig, Search, Sparkles, FileText, CalendarDays,
-  Trophy, Newspaper, PenLine, Network, Heart, BookMarked
+  ArrowUpRight, BookOpen, Users, Feather, BrainCircuit, Compass,
+  MessagesSquare, LibraryBig, Sparkles, CalendarDays,
+  Trophy, Newspaper, PenLine, Network, BookMarked
 } from "lucide-react";
 
 const pillars = [
   { title: "Discover", eyebrow: "Find your next idea", description: "Explore books, authors, research and recommendations.", icon: Compass, tone: "bg-[#EAF1E5] dark:bg-[#18231B]", ink: "text-[#315A3D] dark:text-[#B8D7B7]", links: [{ label: "Digital Library", to: "/library" }, { label: "Book Finder", to: "/discovery" }, { label: "Authors", to: "/authors" }, { label: "Research Papers", to: "/research-papers" }] },
-  { title: "Connect", eyebrow: "Read together", description: "Meet fellow readers, exchange thoughts and find your people.", icon: Users, tone: "bg-[#E9ECF8] dark:bg-[#191D2B]", ink: "text-[#485A9A] dark:text-[#BFCBF7]", links: [{ label: "Friends Feed", to: "/social" }, { label: "Reading Groups", to: "/groups" }, { label: "Readers Map", to: "/reader-map" }, { label: "Reading Rooms", to: "/reading-rooms" }] },
+  { title: "Connect", eyebrow: "Read together", description: "Meet fellow readers, exchange thoughts and find your people.", icon: Users, tone: "bg-[#E9ECF8] dark:bg-[#191D2B]", ink: "text-[#485A9A] dark:text-[#BFCBF7]", links: [{ label: "Friends Feed", to: "/social" }, { label: "Reading Groups", to: "/groups" }, { label: "Readers Map", to: "/reader-map" }, { label: "Activity & Rooms", to: "/activity" }] },
   { title: "Create", eyebrow: "Share what moves you", description: "Publish reflections, stories, reviews and original writing.", icon: Feather, tone: "bg-[#F6EBDD] dark:bg-[#2A2118]", ink: "text-[#94652C] dark:text-[#E6C79A]", links: [{ label: "Articles", to: "/articles" }, { label: "Short Stories", to: "/stories" }, { label: "Write an article", to: "/articles/write" }, { label: "Publish a book", to: "/publish" }] },
-  { title: "Grow", eyebrow: "Learn beyond the page", description: "Ask questions, challenge yourself and build a reading habit.", icon: BrainCircuit, tone: "bg-[#F1E8F3] dark:bg-[#281D2A]", ink: "text-[#86528D] dark:text-[#D9B7E0]", links: [{ label: "Book Expert AI", to: "/book-expert" }, { label: "Reading Challenges", to: "/games" }, { label: "Events", to: "/events" }, { label: "Reading Journal", to: "/journal" }] },
+  { title: "Grow", eyebrow: "Learn beyond the page", description: "Ask questions, challenge yourself and build a reading habit.", icon: BrainCircuit, tone: "bg-[#F1E8F3] dark:bg-[#281D2A]", ink: "text-[#86528D] dark:text-[#D9B7E0]", links: [{ label: "Book Expert AI", to: "/library" }, { label: "Reading Challenges", to: "/games" }, { label: "Events", to: "/events" }, { label: "Reading Journal", to: "/journal" }] },
 ];
 
 const moods = [
@@ -81,7 +81,7 @@ export default function HomeFeatureUniverse() {
             <h3 className="mt-3 font-serif text-2xl font-bold sm:text-3xl">Reading is only the beginning.</h3>
             <p className="mt-3 text-sm leading-6 text-white/70">A book can open a conversation, a new friendship, a question for AI or an idea worth writing down.</p>
             <div className="mt-6 grid grid-cols-2 gap-2">
-              {[["Read",BookOpen,"/library"],["Meet readers",Users,"/reader-map"],["Ask Book AI",BrainCircuit,"/book-expert"],["Share ideas",PenLine,"/articles"]].map(([label, Icon, to]: any) => <Link key={label} to={to} className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[.06] px-3 py-3 text-sm hover:bg-white/[.12]"><Icon size={16} className="text-[#D5B16D]"/>{label}</Link>)}
+              {[["Read",BookOpen,"/library"],["Meet readers",Users,"/reader-map"],["Explore AI & books",BrainCircuit,"/library"],["Share ideas",PenLine,"/articles"]].map(([label, Icon, to]: any) => <Link key={label} to={to} className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[.06] px-3 py-3 text-sm hover:bg-white/[.12]"><Icon size={16} className="text-[#D5B16D]"/>{label}</Link>)}
             </div>
           </div>
         </div>
