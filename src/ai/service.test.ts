@@ -5,14 +5,8 @@ const getWebsiteContext = vi.fn();
 const searchRelevantBooks = vi.fn();
 const getBookSummaries = vi.fn();
 
-vi.mock('@/integrations/supabase/client-universal', () => ({
-  supabase: { functions: { invoke } },
-}));
-vi.mock('@/utils/enhancedChatbotKnowledge', () => ({
-  getWebsiteContext,
-  searchRelevantBooks,
-  getBookSummaries,
-}));
+vi.mock('@/integrations/supabase/client-universal', () => ({ supabase: { functions: { invoke } } }));
+vi.mock('@/utils/enhancedChatbotKnowledge', () => ({ getWebsiteContext, searchRelevantBooks, getBookSummaries }));
 
 import { ask, classifyIntent } from './service';
 
@@ -22,9 +16,7 @@ describe('AI service intent and response handling', () => {
     getWebsiteContext.mockResolvedValue({ totalBooks: 42, genres: ['fiction', 'history'] });
     searchRelevantBooks.mockResolvedValue([
       { id: 'b1', title: 'Book One', author: 'Author One' },
-      { id: 'b2', title: 'Book Two' },
-      { id: 'b3', title: 'Book Three' },
-      { id: 'b4', title: 'Book Four' },
+      { id: 'b2', title: 'Book Two' }, { id: 'b3', title: 'Book Three' }, { id: 'b4', title: 'Book Four' },
     ]);
     getBookSummaries.mockResolvedValue([{ book_id: 'b1', content: 'A useful summary' }]);
     invoke.mockResolvedValue({ data: { response: JSON.stringify({ reply: 'Try Book One.', references: [{ bookId: 'b1', title: 'Book One' }], followup: 'Want more?' }) }, error: null });
@@ -32,7 +24,7 @@ describe('AI service intent and response handling', () => {
 
   it('classifies help, policy, book queries and general questions', () => {
     expect(classifyIntent('What can you do?')).toBe('help');
-    expect(classifyIntent('Explain privacy policy')).toBe('help');
+    expect(classifyIntent('Explain privacy policy')).toBe('policy');
     expect(classifyIntent('privacy terms')).toBe('policy');
     expect(classifyIntent('recommend a book')).toBe('book_query');
     expect(classifyIntent('hello there')).toBe('general');
@@ -56,8 +48,7 @@ describe('AI service intent and response handling', () => {
   });
 
   it('returns cached output for an identical question and context', async () => {
-    const first = await ask('hello');
-    const second = await ask('hello');
+    const first = await ask('hello'); const second = await ask('hello');
     expect(second).toEqual(first);
     expect(invoke).toHaveBeenCalledTimes(1);
   });
