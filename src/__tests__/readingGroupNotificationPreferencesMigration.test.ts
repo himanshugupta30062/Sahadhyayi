@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const migration = readFileSync(
-  fileURLToPath(new URL('../../supabase/migrations/20261111190000_reading_group_notification_preferences.sql', import.meta.url)),
+  resolve(process.cwd(), 'supabase/migrations/20261111190000_reading_group_notification_preferences.sql'),
   'utf8',
 );
 
