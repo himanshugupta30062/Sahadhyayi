@@ -342,9 +342,9 @@ const About = () => {
       />
 
       <div className="min-h-screen bg-background text-foreground py-10 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto space-y-20">
+        <div className="max-w-6xl mx-auto space-y-12 sm:space-y-16 lg:space-y-20">
           {/* ── 1. Hero Section ── */}
-          <section className="text-center pt-4 sm:pt-8 max-w-4xl mx-auto">
+          <section className="text-center pt-2 sm:pt-8 max-w-4xl mx-auto">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-xs sm:text-sm font-medium text-brand-primary mb-6 shadow-xs">
               <Sparkles className="w-4 h-4" />
               <span>सहाध्यायी · Fellow Reader &amp; Study Companion</span>
@@ -384,7 +384,7 @@ const About = () => {
           </section>
 
           {/* ── 2. Sanskrit Roots & Etymology ── */}
-          <section className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-brand-primary/8 via-card to-brand-secondary/8 p-8 sm:p-12 shadow-sm">
+          <section className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-brand-primary/8 via-card to-brand-secondary/8 p-5 sm:p-8 lg:p-12 shadow-sm">
             <div className="grid md:grid-cols-12 gap-8 items-center">
               <div className="md:col-span-7 space-y-4">
                 <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-brand-primary">
@@ -675,7 +675,7 @@ const About = () => {
           </section>
 
           {/* ── Reader Journey: a simple first-visit path ── */}
-          <section aria-labelledby="reader-journey-title" className="rounded-3xl border border-border bg-gradient-to-br from-brand-primary/5 via-card to-brand-secondary/5 p-6 sm:p-10 space-y-7">
+          <section aria-labelledby="reader-journey-title" className="rounded-3xl border border-border bg-gradient-to-br from-brand-primary/5 via-card to-brand-secondary/5 p-5 sm:p-8 lg:p-10 space-y-5 sm:space-y-7">
             <div className="text-center max-w-2xl mx-auto space-y-2">
               <Badge variant="secondary">Your first few minutes</Badge>
               <h2 id="reader-journey-title" className="text-3xl sm:text-4xl font-serif font-bold text-foreground">A little reading. A lot more connection.</h2>
@@ -705,7 +705,7 @@ const About = () => {
           </section>
 
           {/* ── 4. The Sahadhyayi Experience (Living Features) ── */}
-          <section className="space-y-8">
+          <section className="space-y-5 sm:space-y-8">
             <div className="text-center max-w-2xl mx-auto space-y-2">
               <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-brand-primary">
                 <Compass className="w-4 h-4" />
@@ -751,7 +751,7 @@ const About = () => {
           </section>
 
           {/* ── 5. Deep Reading vs Passive Content Comparison ── */}
-          <section className="rounded-3xl border border-border bg-card p-6 sm:p-10 shadow-xs space-y-8">
+          <section className="rounded-3xl border border-border bg-card p-5 sm:p-8 lg:p-10 shadow-xs space-y-6 sm:space-y-8">
             <div className="text-center max-w-xl mx-auto space-y-2">
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">
                 Why Deep Reading Matters Today
@@ -822,7 +822,7 @@ const About = () => {
           </section>
 
           {/* ── 7. Stats & Impact ── */}
-          <section className="rounded-3xl border border-border bg-card/60 p-8 sm:p-10">
+          <section className="rounded-3xl border border-border bg-card/60 p-5 sm:p-8 lg:p-10">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {stats.map((stat, index) => {
                 const Icon = stat.icon;
