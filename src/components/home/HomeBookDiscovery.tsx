@@ -606,6 +606,7 @@ export const HomeBookDiscovery: React.FC = () => {
               </div>
             )}
           </div>
+          ))}
         </div>
       )}
     </section>
