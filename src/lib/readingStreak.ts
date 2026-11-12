@@ -9,8 +9,9 @@ export const emptyStreak: ReadingStreak = { current: 0, best: 0, daysThisWeek: 0
 export const localDayKey = (date: Date): string => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
 const parseDayKey = (key: string): Date => { const [y,m,d]=key.split('-').map(Number); return new Date(y,m-1,d); };
 export const computeReadingStreak = (activityDates: string[], lastActiveAt: string|null, now = new Date()): ReadingStreak => {
- const set=new Set(activityDates); if(!set.size) return emptyStreak;
- const today=new Date(now); today.setHours(0,0,0,0); const yesterday=new Date(today); yesterday.setDate(yesterday.getDate()-1);
+ const today=new Date(now); today.setHours(0,0,0,0);
+ const todayKey=localDayKey(today);
+ const set=new Set(activityDates.filter((key)=>key<=todayKey)); if(!set.size) return emptyStreak; const yesterday=new Date(today); yesterday.setDate(yesterday.getDate()-1);
  let current=0; const cursor=new Date(set.has(localDayKey(today))?today:yesterday);
  while(set.has(localDayKey(cursor))){current++;cursor.setDate(cursor.getDate()-1);}
  const sorted=[...set].sort(); let best=1,run=1;
