@@ -2,13 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Flame } from 'lucide-react';
 import { useReadingStreak } from '@/hooks/useReadingStreak';
 
-const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-
 const ReadingStreakCard = () => {
   const { data, isLoading } = useReadingStreak();
   const current = data?.current ?? 0;
   const best = data?.best ?? 0;
-  const daysThisWeek = data?.daysThisWeek ?? 0;
+  const activeDays = new Set(data?.activeDays ?? []);
 
   // Build last-7-day dots: today is index 6
   const today = new Date();
@@ -33,9 +31,13 @@ const ReadingStreakCard = () => {
         </div>
 
         <div className="flex items-center justify-between gap-1">
-          {WEEKDAYS.map((label, idx) => {
-            // idx 6 = today, idx 0 = 6 days ago
-            const filled = idx >= 7 - daysThisWeek;
+          {Array.from({ length: 7 }, (_, idx) => {
+            const date = new Date();
+            date.setHours(0, 0, 0, 0);
+            date.setDate(date.getDate() - (6 - idx));
+            const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            const label = date.toLocaleDateString(undefined, { weekday: 'short' }).slice(0, 1);
+            const filled = activeDays.has(key);
             return (
               <div key={`${label}-${idx}`} className="flex flex-col items-center gap-1">
                 <div
