@@ -88,7 +88,10 @@ export const useSaveReadingProgress = () => {
       coverImageUrl?: string;
     }) => {
       if (!user?.id) throw new Error('Sign in to save reading progress');
-      if (!bookId.trim()) throw new Error('Book ID is required');
+      const normalizedBookId = bookId.trim();
+      if (!normalizedBookId) throw new Error('Book ID is required');
+      const normalizedBookTitle = bookTitle.trim();
+      if (!normalizedBookTitle) throw new Error('Book title is required');
       if (!Number.isFinite(totalPages) || totalPages < 1) {
         throw new Error('Total pages must be a positive number');
       }
@@ -103,8 +106,8 @@ export const useSaveReadingProgress = () => {
         .upsert(
           {
             user_id: user.id,
-            book_id: bookId,
-            book_title: bookTitle,
+            book_id: normalizedBookId,
+            book_title: normalizedBookTitle,
             current_page: safePage,
             total_pages: safeTotal,
             cover_image_url: coverImageUrl ?? null,
