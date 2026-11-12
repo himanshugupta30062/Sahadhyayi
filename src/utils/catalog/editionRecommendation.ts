@@ -35,10 +35,15 @@ export function recommendBestEditions(group: DuplicateGroup): DuplicateRecommend
     };
   });
 
-  // Keep the first record as the merge anchor (primary); rank only the remaining
-  // candidates. This lets metadata-poor canonical records be enriched safely.
-  const primary = ratedBooks[0];
-  const remainingCandidates = ratedBooks.slice(1).sort((a, b) => b.quality.score - a.quality.score);
+  // Select the strongest non-junk record as the primary edition. Keep the
+  // original input order as a deterministic tie-breaker for equal scores.
+  const rankedBooks = [...ratedBooks].sort((a, b) => {
+    const scoreDifference = b.quality.score - a.quality.score;
+    if (scoreDifference !== 0) return scoreDifference;
+    return ratedBooks.indexOf(a) - ratedBooks.indexOf(b);
+  });
+  const primary = rankedBooks[0];
+  const remainingCandidates = rankedBooks.slice(1);
   const primaryBookId = primary.id;
 
   const reasonsForRecommendation: string[] = [];
