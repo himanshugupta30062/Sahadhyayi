@@ -19,7 +19,10 @@ const SahadhyayiJourney = lazy(() =>
   import("@/components/home/journey/SahadhyayiJourney").then((m) => ({ default: m.SahadhyayiJourney }))
 );
 
-// Section 04: Final Join Sahadhyayi
+// NEW Section 04: Reading Universe feature discovery
+const HomeFeatureUniverse = lazy(() => import("@/components/home/HomeFeatureUniverse"));
+
+// Existing final join section
 const HomeFinalCtaSection = lazy(() => import("@/components/home/HomeFinalCtaSection"));
 
 const Index = () => {
@@ -106,7 +109,7 @@ const Index = () => {
           </ErrorBoundary>
         </DeferredSection>
 
-        {/* 03. The Sahadhyayi Bicycle Adventure Journey */}
+        {/* 03. The Sahadhyayi Bicycle Adventure Journey (LOCKED) */}
         <DeferredSection
           fallback={<div className="min-h-[800px] bg-background" aria-hidden="true" />}
           minHeightClassName="min-h-[800px]"
@@ -116,9 +119,19 @@ const Index = () => {
           </ErrorBoundary>
         </DeferredSection>
 
-        {/* 04. Final Join Sahadhyayi */}
+        {/* 04. NEW Reading Universe — all major features, with mood discovery */}
         <DeferredSection
-          fallback={<div className="min-h-[380px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          fallback={<div className="min-h-[1100px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          minHeightClassName="min-h-[1100px]"
+        >
+          <ErrorBoundary fallback={<div className="px-6 py-12 text-center text-sm text-muted-foreground">Explore all the ways to read, connect and create on Sahadhyayi.</div>}>
+            <HomeFeatureUniverse />
+          </ErrorBoundary>
+        </DeferredSection>
+
+        {/* 05. Existing Final Join Sahadhyayi */}
+        <DeferredSection
+          fallback={<div className="min-h-[380px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true />}
           minHeightClassName="min-h-[380px]"
         >
           <ErrorBoundary fallback={null}>
