@@ -430,7 +430,8 @@ const Navigation = () => {
             : "text-foreground hover:bg-muted hover:text-[hsl(var(--brand-primary))]")
         }
       >
-        {item.name}
+        {SOCIAL_ITEM_ICONS[item.name] && <SOCIAL_ITEM_ICONS[item.name] className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
+        <span className="min-w-0">{item.name}</span>
       </Link>
     );
   };
@@ -552,6 +553,7 @@ const Navigation = () => {
               return (
                 <div key={group.title} className="py-1">
                   <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{group.title}</p>
+                  <p className="px-3 pb-1 text-[11px] leading-relaxed text-muted-foreground/75">{group.description}</p>
                   {items.map((item) => renderPublicDrawerItem(item, disclosureKey))}
                 </div>
               );
@@ -722,7 +724,8 @@ const Navigation = () => {
                                               ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]"
                                               : "text-foreground hover:bg-muted")}
                                           >
-                                            {item.name}
+                                            {SOCIAL_ITEM_ICONS[item.name] && <SOCIAL_ITEM_ICONS[item.name] className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
+                                            <span>{item.name}</span>
                                           </Link>
                                         </DropdownMenuItem>
                                       );
