@@ -91,6 +91,7 @@ describe('useReadingStreak', () => {
       current: 2,
       best: 4,
       daysThisWeek: 4,
+      activeDays: expect.arrayContaining([expect.any(String)]),
       lastActiveAt: expect.any(String),
     });
     expect(mocks.from).toHaveBeenCalledWith('detailed_reading_progress');
@@ -110,6 +111,7 @@ describe('useReadingStreak', () => {
       current: 0,
       best: 0,
       daysThisWeek: 0,
+      activeDays: [],
       lastActiveAt: null,
     });
   });
