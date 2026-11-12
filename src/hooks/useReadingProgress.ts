@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
+import { recordReadingActivity } from '@/lib/readingActivity';
 
 export interface ReadingProgressItem {
   id: number;
@@ -61,6 +62,7 @@ export const useUpdateReadingProgress = () => {
         .single();
 
       if (error) throw error;
+      await recordReadingActivity(user.id, 'progress_save');
       return data as ReadingProgressItem;
     },
     onSuccess: () => {
