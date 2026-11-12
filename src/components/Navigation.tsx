@@ -442,7 +442,7 @@ const Navigation = () => {
         data-tour-target={item.tourTarget}
         aria-current={active ? "page" : undefined}
         className={
-          "flex min-h-[44px] items-center rounded-md px-3 py-2 text-sm transition-colors " +
+          "flex min-h-[44px] items-center rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 " +
           (active
             ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]"
             : "text-foreground hover:bg-muted hover:text-[hsl(var(--brand-primary))]")
