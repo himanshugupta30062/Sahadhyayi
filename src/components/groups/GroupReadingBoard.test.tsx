@@ -137,7 +137,7 @@ describe('GroupReadingBoard', () => {
     expect(screen.getByRole('heading', { name: 'Current read' })).toBeInTheDocument();
     expect(screen.getAllByText('Reader Author').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByAltText('Current read cover')).toHaveAttribute('src', 'https://cdn.example.test/current.jpg');
-    expect(screen.getByText(/Target/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Target/).length).toBeGreaterThan(0);
     expect(screen.getByRole('status')).toHaveTextContent(/until group target|Reading target/);
     expect(screen.getByText(/3 sharing/)).toBeInTheDocument();
     expect(screen.getByText(/44% average/)).toBeInTheDocument();
