@@ -8,4 +8,6 @@ describe('computeReadingStreak',()=>{
  it('breaks current streak but retains historic best',()=>{const r=computeReadingStreak(['2026-11-01','2026-11-02','2026-11-03','2026-11-10','2026-11-12'],null,now);expect(r.current).toBe(1);expect(r.best).toBe(3);});
  it('deduplicates repeated dates',()=>{const r=computeReadingStreak(['2026-11-12','2026-11-12','2026-11-11'],null,now);expect(r.current).toBe(2);expect(r.daysThisWeek).toBe(2);});
  it('counts rolling seven-day window',()=>{const r=computeReadingStreak(['2026-11-06','2026-11-08','2026-11-12'],null,now);expect(r.daysThisWeek).toBe(3);expect(r.activeDays).toEqual(['2026-11-06','2026-11-08','2026-11-12']);});
+ it('ignores future activity dates',()=>{const r=computeReadingStreak(['2026-11-12','2026-11-13','2026-11-14'],null,now);expect(r.current).toBe(1);expect(r.best).toBe(1);expect(r.daysThisWeek).toBe(1);expect(r.activeDays).toEqual(['2026-11-12']);});
+ it('handles month and year boundaries',()=>{const r=computeReadingStreak(['2026-12-31','2027-01-01','2027-01-02'],null,new Date(2027,0,2,12));expect(r.current).toBe(3);expect(r.best).toBe(3);});
 });
