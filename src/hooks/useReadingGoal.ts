@@ -82,11 +82,12 @@ export const useReadingGoal = (): ReadingGoalData => {
       // Persist to Supabase user metadata if authenticated
       if (user) {
         try {
-          await supabase.auth.updateUser({
+          const { error } = await supabase.auth.updateUser({
             data: {
               [`reading_goal_${currentYear}`]: newGoal,
             },
           });
+          if (error) throw error;
         } catch (error) {
           console.warn('Failed to sync reading goal to user profile metadata:', error);
         }

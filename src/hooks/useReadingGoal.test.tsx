@@ -146,4 +146,23 @@ describe('useReadingGoal', () => {
       expect.any(Error),
     );
   });
+  
+  it('handles Supabase metadata error responses without losing the local goal', async () => {
+    mocks.user = { id: 'reader-1' };
+    mocks.updateUser.mockResolvedValue({ data: { user: null }, error: new Error('Metadata rejected') });
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { result } = renderGoalHook();
+
+    await act(async () => {
+      await result.current.setGoal(25);
+    });
+
+    expect(result.current.goal).toBe(25);
+    expect(result.current.isLoading).toBe(false);
+    expect(localStorage.getItem(`sahadhyayi_goal_reader-1_${currentYear}`)).toBe('25');
+    expect(warning).toHaveBeenCalledWith(
+      'Failed to sync reading goal to user profile metadata:',
+      expect.any(Error),
+    );
+  });
 });
