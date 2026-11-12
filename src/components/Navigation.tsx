@@ -413,6 +413,7 @@ const Navigation = () => {
 
   const renderDrawerLink = (item: NavigationItem) => {
     const active = isCurrentRoute(item.href);
+    const SocialItemIcon = SOCIAL_ITEM_ICONS[item.name];
     return (
       <Link
         key={item.name}
@@ -431,7 +432,7 @@ const Navigation = () => {
             : "text-foreground hover:bg-muted hover:text-[hsl(var(--brand-primary))]")
         }
       >
-        {SOCIAL_ITEM_ICONS[item.name] && <SOCIAL_ITEM_ICONS[item.name] className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
+        {SocialItemIcon && <SocialItemIcon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
         <span className="min-w-0">{item.name}</span>
       </Link>
     );
