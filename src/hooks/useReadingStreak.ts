@@ -10,67 +10,64 @@ export interface ReadingStreak {
   lastActiveAt: string | null;
 }
 
-const toDayKey = (iso: string) => {
-  const d = new Date(iso);
-  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+const emptyStreak: ReadingStreak = {
+  current: 0,
+  best: 0,
+  daysThisWeek: 0,
+  activeDays: [],
+  lastActiveAt: null,
 };
 
-const computeStreak = (timestamps: string[]): ReadingStreak => {
-  if (!timestamps.length) {
-    return { current: 0, best: 0, daysThisWeek: 0, activeDays: [], lastActiveAt: null };
-  }
+const dayKey = (date: Date): string =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
-  const daySet = new Set(timestamps.map(toDayKey));
+const parseDayKey = (key: string): Date => {
+  const [year, month, day] = key.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
+const computeStreak = (activityDates: string[], lastActiveAt: string | null): ReadingStreak => {
+  const daySet = new Set(activityDates);
+  if (daySet.size === 0) return emptyStreak;
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const todayKey = dayKey(today);
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
 
   let current = 0;
-  const cursor = new Date(today);
-  if (!daySet.has(`${cursor.getFullYear()}-${cursor.getMonth() + 1}-${cursor.getDate()}`)) {
-    cursor.setDate(cursor.getDate() - 1);
-  }
-  while (daySet.has(`${cursor.getFullYear()}-${cursor.getMonth() + 1}-${cursor.getDate()}`)) {
+  const cursor = new Date(daySet.has(todayKey) ? today : yesterday);
+  while (daySet.has(dayKey(cursor))) {
     current += 1;
     cursor.setDate(cursor.getDate() - 1);
   }
 
-  const days = Array.from(daySet)
-    .map((k) => {
-      const [y, m, d] = k.split('-').map(Number);
-      return new Date(y, m - 1, d).getTime();
-    })
-    .sort((a, b) => a - b);
+  const sortedDays = [...daySet].sort();
   let best = 1;
   let run = 1;
-  for (let i = 1; i < days.length; i += 1) {
-    const diff = Math.round((days[i] - days[i - 1]) / 86400000);
-    if (diff === 1) {
+  for (let index = 1; index < sortedDays.length; index += 1) {
+    const previous = parseDayKey(sortedDays[index - 1]);
+    const next = parseDayKey(sortedDays[index]);
+    const difference = Math.round((next.getTime() - previous.getTime()) / 86400000);
+    if (difference === 1) {
       run += 1;
       best = Math.max(best, run);
-    } else if (diff > 1) {
+    } else {
       run = 1;
     }
   }
-  if (days.length === 0) best = 0;
-  best = Math.max(best, current);
 
-  const weekAgo = new Date(today);
-  weekAgo.setDate(weekAgo.getDate() - 6);
-  const daysThisWeek = days.filter((t) => t >= weekAgo.getTime()).length;
-  const activeDays = Array.from({ length: 7 }, (_, offset) => {
+  const weekStart = new Date(today);
+  weekStart.setDate(weekStart.getDate() - 6);
+  const daysThisWeek = sortedDays.filter((key) => parseDayKey(key) >= weekStart).length;
+  const activeDays = Array.from({ length: 7 }, (_, index) => {
     const date = new Date(today);
-    date.setDate(date.getDate() - (6 - offset));
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    date.setDate(date.getDate() - (6 - index));
+    return dayKey(date);
   }).filter((key) => daySet.has(key));
 
-  const sortedIso = [...timestamps].sort((a, b) => a.localeCompare(b));
-  return {
-    current,
-    best,
-    daysThisWeek,
-    activeDays,
-    lastActiveAt: sortedIso[sortedIso.length - 1] ?? null,
-  };
+  return { current, best: Math.max(best, current), daysThisWeek, activeDays, lastActiveAt };
 };
 
 export const useReadingStreak = () => {
@@ -80,19 +77,26 @@ export const useReadingStreak = () => {
     enabled: !!user,
     staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<ReadingStreak> => {
-      if (!user) return { current: 0, best: 0, daysThisWeek: 0, activeDays: [], lastActiveAt: null };
+      if (!user) return emptyStreak;
+
       const since = new Date();
       since.setDate(since.getDate() - 365);
       const { data, error } = await supabase
-        .from('detailed_reading_progress')
-        .select('updated_at')
+        .from('reading_activity_days')
+        .select('activity_date,last_activity_at')
         .eq('user_id', user.id)
-        .gte('updated_at', since.toISOString())
-        .order('updated_at', { ascending: false })
+        .gte('activity_date', dayKey(since))
+        .order('activity_date', { ascending: false })
         .limit(1000);
 
       if (error) throw error;
-      return computeStreak((data ?? []).map((r) => r.updated_at as string));
+      const rows = data ?? [];
+      const dates = rows.map((row) => String(row.activity_date));
+      const lastActiveAt = rows
+        .map((row) => row.last_activity_at as string | null)
+        .filter((value): value is string => Boolean(value))
+        .sort((a, b) => b.localeCompare(a))[0] ?? null;
+      return computeStreak(dates, lastActiveAt);
     },
   });
 };
