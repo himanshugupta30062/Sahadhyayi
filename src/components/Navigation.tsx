@@ -499,7 +499,7 @@ const Navigation = () => {
             if (!items.length) return null;
             return (
               <div key={group.title} className="py-1">
-                <p className="px-3 pb-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{group.title}</p><p className="px-3 pb-1 text-[11px] leading-relaxed text-muted-foreground/75">{group.description}</p>
+                <p className={"px-3 pb-0.5 text-[11px] font-semibold uppercase tracking-wide " + (items.some(isNavigationEntryActive) ? "text-[hsl(var(--brand-primary))]" : "text-muted-foreground")}>{group.title}</p><p className="px-3 pb-1 text-[11px] leading-relaxed text-muted-foreground/75">{group.description}</p>
                 {items.map(renderDrawerLink)}
               </div>
             );
