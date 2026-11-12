@@ -82,6 +82,21 @@ export const useGroupReadingDiscussionComments = (discussionId: string, enabled 
   });
 };
 
+export const useGroupReadingDiscussionBookmarks = () => {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  return useQuery({
+    queryKey: ['group-reading-discussion-bookmarks', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('list_my_group_discussion_bookmarks');
+      if (error) throw new Error(error.message || 'Could not load saved discussions.');
+      return (data ?? []) as Array<{ discussion_id: string }>;
+    },
+    enabled: Boolean(userId),
+    staleTime: 30_000,
+  });
+};
+
 export const useCreateGroupReadingDiscussion = () => {
   const { user } = useAuth();
   const userId = user?.id ?? null;
