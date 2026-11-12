@@ -131,7 +131,7 @@ const Index = () => {
 
         {/* 05. Existing Final Join Sahadhyayi */}
         <DeferredSection
-          fallback={<div className="min-h-[380px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true />}
+          fallback={<div className="min-h-[380px] bg-[#FAFAF8] dark:bg-[#0B0D0C]" aria-hidden="true" />}
           minHeightClassName="min-h-[380px]"
         >
           <ErrorBoundary fallback={null}>
