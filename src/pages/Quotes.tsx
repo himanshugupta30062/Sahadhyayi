@@ -57,7 +57,7 @@ const QuotesPage = () => {
   const [curatedSearch, setCuratedSearch] = useState<string>('');
   const [copiedQuoteId, setCopiedQuoteId] = useState<string | number | null>(null);
 
-  const { quotes, addQuote, removeQuote } = useQuotes();
+  const { quotes, addQuote, removeQuote, syncStatus, retrySync } = useQuotes();
   const { data: highlights = [], isLoading: highlightsLoading } = useReaderHighlights();
   const deleteHighlight = useDeleteReaderHighlight();
   const { bookSummaries, entries } = useReadingJournal();
@@ -197,6 +197,12 @@ const QuotesPage = () => {
 
             {/* TAB 1: SAVED & CURATED QUOTES */}
             <TabsContent value="quotes" className="space-y-6">
+              {syncStatus !== 'local' && (
+                <div role="status" aria-live="polite" className="flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm">
+                  <span>{syncStatus === 'syncing' ? 'Syncing your saved quotes…' : syncStatus === 'synced' ? 'Your quotes are backed up across devices.' : 'Quote sync failed. Your local quotes are safe and available.'}</span>
+                  {syncStatus === 'error' && <Button size="sm" variant="outline" onClick={retrySync}>Retry sync</Button>}
+                </div>
+              )}
               {/* Add Custom Quote Box */}
               <Card className="border border-border shadow-xs">
                 <CardHeader className="pb-3">
