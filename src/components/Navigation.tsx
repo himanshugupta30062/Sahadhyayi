@@ -427,7 +427,8 @@ const Navigation = () => {
   );
 
   const renderDrawerLink = (item: NavigationItem) => {
-    const active = isCurrentRoute(item.href);
+    const section = NAVIGATION_SECTIONS.find((entry) => entry.name === item.name);
+    const active = isCurrentRoute(item.href) || Boolean(section?.items.some(isNavigationEntryActive));
     const SocialItemIcon = SOCIAL_ITEM_ICONS[item.name];
     return (
       <Link
