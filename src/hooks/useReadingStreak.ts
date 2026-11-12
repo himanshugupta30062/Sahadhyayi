@@ -6,6 +6,7 @@ export interface ReadingStreak {
   current: number;
   best: number;
   daysThisWeek: number;
+  activeDays: string[];
   lastActiveAt: string | null;
 }
 
@@ -16,7 +17,7 @@ const toDayKey = (iso: string) => {
 
 const computeStreak = (timestamps: string[]): ReadingStreak => {
   if (!timestamps.length) {
-    return { current: 0, best: 0, daysThisWeek: 0, lastActiveAt: null };
+    return { current: 0, best: 0, daysThisWeek: 0, activeDays: [], lastActiveAt: null };
   }
 
   const daySet = new Set(timestamps.map(toDayKey));
@@ -56,12 +57,18 @@ const computeStreak = (timestamps: string[]): ReadingStreak => {
   const weekAgo = new Date(today);
   weekAgo.setDate(weekAgo.getDate() - 6);
   const daysThisWeek = days.filter((t) => t >= weekAgo.getTime()).length;
+  const activeDays = Array.from({ length: 7 }, (_, offset) => {
+    const date = new Date(today);
+    date.setDate(date.getDate() - (6 - offset));
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }).filter((key) => daySet.has(key));
 
   const sortedIso = [...timestamps].sort((a, b) => a.localeCompare(b));
   return {
     current,
     best,
     daysThisWeek,
+    activeDays,
     lastActiveAt: sortedIso[sortedIso.length - 1] ?? null,
   };
 };
@@ -73,7 +80,7 @@ export const useReadingStreak = () => {
     enabled: !!user,
     staleTime: 5 * 60 * 1000,
     queryFn: async (): Promise<ReadingStreak> => {
-      if (!user) return { current: 0, best: 0, daysThisWeek: 0, lastActiveAt: null };
+      if (!user) return { current: 0, best: 0, daysThisWeek: 0, activeDays: [], lastActiveAt: null };
       const since = new Date();
       since.setDate(since.getDate() - 365);
       const { data, error } = await supabase
