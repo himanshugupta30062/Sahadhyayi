@@ -24,7 +24,7 @@ describe('NavOnboardingModal', () => {
   it('shows navigation choices and marks popular defaults', () => {
     render(<NavOnboardingModal open onSave={vi.fn()} />);
     expect(screen.getByText('Customize Your Navigation')).toBeInTheDocument();
-    expect(screen.getByText(/Selected .* of .* sections/)).toBeInTheDocument();
+    expect(screen.getByText(/Selected \\d+ of \\d+ • Unselected tabs will be in "More" menu/)).toBeInTheDocument();
     expect(screen.getAllByText('Popular').length).toBeGreaterThan(0);
   });
 
