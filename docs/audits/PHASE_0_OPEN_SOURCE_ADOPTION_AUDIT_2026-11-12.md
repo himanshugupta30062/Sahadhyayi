@@ -110,3 +110,23 @@ Missing from the live migration inventory/table inventory at audit time:
 ## Next step
 
 Phase 0 is complete as a **remote/source + live-schema audit snapshot**. Remaining checklist items require a checkout/browser test run and staging database validation. Begin the first implementation PR only after the baseline CI status and exact reader save/resume path are captured.
+
+
+## Follow-up source discovery (2026-11-12)
+
+Additional searches refined these classifications:
+
+| Capability | New evidence | Updated assessment |
+|---|---|---|
+| Reading Passport | `src/components/social/ReadingPassportCard.tsx` is present and used in SocialMedia | UI exists; validate opt-in/public fields, source accuracy and privacy before calling complete |
+| Goodreads | `src/hooks/useGoodreadsIntegration.ts`, `docs/ExternalIntegrations.md` (OAuth/API flow) exist | Integration code exists; production backend endpoints, OAuth secrets/callback and import/export end-to-end are not verified |
+| Reading DNA matching | `src/lib/readingDna.ts` implements weighted genre/mood/theme/pace match; panel and compare components exist | Matching implementation exists; explanation, consent and privacy still require validation |
+| Book Expert RAG | `book-expert-gemini`, ingest function, RAG migration/docs and evaluation script exist | Implemented architecture; current retrieval corpus, evaluation pass rate and grounding/spoiler behavior not independently run in this audit |
+| Social blocking | `blocked_users` live table exists | Schema evidence only; enforcement across feed, comments, messaging and profiles must be tested |
+| Smart shelves | No complete smart-shelf implementation established by search | Not confirmed; design/implementation candidate |
+
+### Refined audit boundaries
+
+The live schema inventory confirms `saved_quotes`, `reading_dna`, `reading_challenges`, `user_challenges`, `reading_badges`, `user_reading_badges`, `reading_rooms`, `group_events`, notification preference/mute tables, and social post/comment tables. This strengthens **schema present** classifications only; it does not certify application flows, row-level authorization, scheduled delivery, or user-visible success.
+
+The following checks remain unavailable in this connector-only pass: executing npm build/tests from a checkout, real browser/mobile workflows, multi-account authorization tests, and staging migrations for Reading Groups Phase 6/7. Do not label the audit as full end-to-end certification.
