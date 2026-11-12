@@ -63,6 +63,14 @@ const QuotesProvider = ({ children }: { children: React.ReactNode }) => {
       if (pending.length) {
         const { error: uploadError } = await supabase.from('saved_quotes').upsert(pending, { onConflict: 'user_id,client_id' });
         if (uploadError) { if (!cancelled && generation === syncGeneration.current) setSyncStatus('error'); return; }
+        // A deletion can race with an upload that was already in flight. Re-apply
+        // tombstones after upsert so that stale pending rows cannot be resurrected.
+        const deletedIds = [...deletedQuoteIds.current];
+        if (deletedIds.length) {
+          const { error: cleanupError } = await supabase.from('saved_quotes').delete()
+            .eq('user_id', user.id).in('client_id', deletedIds);
+          if (cleanupError) { if (!cancelled && generation === syncGeneration.current) setSyncStatus('error'); return; }
+        }
       }
       const { data, error } = await supabase.from('saved_quotes')
         .select('client_id,quote_text,source,note,book_id,page,location,created_at')
