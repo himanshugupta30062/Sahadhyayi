@@ -87,3 +87,17 @@ Ten anon-executable SECURITY DEFINER functions were sampled. They expose public 
 
 ### Production Auth configuration warnings (still outstanding)
 Security Advisor reports: anonymous sign-ins enabled, OTP long expiry, leaked-password protection disabled. These are project Auth settings, not safely changeable through the database migration; must be adjusted in Supabase Auth dashboard/API with staged validation and explicit confirmation.
+
+
+### SECURITY DEFINER review — privileged RPCs and user data (continued)
+
+- Reviewed administrator RPCs: `admin_set_user_role`, `admin_set_role_permission`, `admin_list_user_roles`, `admin_list_role_permissions`, `get_admin_recent_actions`, `get_admin_recent_visits`, and `get_admin_website_analytics`. All sampled functions check `public.is_admin()` (or authentication plus admin) before returning sensitive data or changing roles/permissions. Role and permission values are allowlisted. No admin escalation was identified in this sample.
+- `public.is_admin()` checks the caller's `auth.uid()` against `public.user_roles`; no client-supplied role is trusted.
+- Reviewed group/friend/invitation RPCs: `are_friends` only returns true to a participant; `get_friend_profile_info` limits non-friend profile lookup and gates location; `get_friend_locations` requires both location-sharing and consent; `create_reading_group_invitation` requires active owner/admin/moderator and stores SHA-256 token hash; `redeem_reading_group_invitation` authenticates, validates expiry/revocation/usage, locks invitation, and inserts the redeemer as member; `moderate_reading_group_member` and `set_reading_group_member_role` check group moderator/owner permissions and protect owner role.
+- `user_chapter_progress` ignores the supplied user UUID and scopes results to `auth.uid()`; `is_group_member` similarly requires requested user to equal caller.
+- Catalog check: all public-schema SECURITY DEFINER functions reviewed have a configured `search_path`; no unset search_path was found.
+- These are targeted source/definition reviews, not exhaustive review of all ~70 functions or adversarial testing. Continue with remaining write RPCs, storage policies, Edge Function authorization, and test coverage.
+
+### Advisor findings remaining
+- SECURITY DEFINER execute warnings (60 authenticated / 10 anon functions) are not themselves proof of a vulnerability. Maintain per-function grants and authorization review; do not blanket revoke because public functions and triggers have legitimate use.
+- Keep outstanding Auth dashboard controls (anonymous sign-in decision, OTP expiry, leaked-password protection) tracked separately from database migrations.
