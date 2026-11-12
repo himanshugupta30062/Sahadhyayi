@@ -726,7 +726,7 @@ const Navigation = () => {
                                               ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]"
                                               : "text-foreground hover:bg-muted")}
                                           >
-                                            {SOCIAL_ITEM_ICONS[item.name] && <SOCIAL_ITEM_ICONS[item.name] className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
+                                            {SocialItemIcon && <SocialItemIcon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
                                             <span>{item.name}</span>
                                           </Link>
                                         </DropdownMenuItem>
