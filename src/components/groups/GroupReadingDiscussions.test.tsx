@@ -39,6 +39,7 @@ vi.mock('@/hooks/useGroupReadingBoard', () => ({
 }));
 
 vi.mock('@/hooks/useGroupReadingDiscussions', () => ({
+  useGroupReadingDiscussionBookmarks: () => ({ data: [], isLoading: false, error: null }),
   useGroupReadingDiscussions: () => ({
     data: mocks.discussions,
     isLoading: mocks.discussionsLoading,
