@@ -560,6 +560,15 @@ const About = () => {
                       <p>
                         Whether you read 10 pages a day or finish a book a week, you belong here. I read every message sent to this platform personally — please reach out below if you have thoughts, ideas, or book recommendations!
                       </p>
+                      <div className="rounded-xl border border-brand-primary/20 bg-brand-primary/5 p-4 space-y-2">
+                        <p className="text-sm font-semibold text-foreground">A reader-first project, shaped with its community</p>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          Sahadhyayi is an evolving independent project. The goal is simple: make it easier to return to books, think deeply, and find people to learn alongside. Your feedback helps decide what we build next.
+                        </p>
+                        <Link to="/feedback" className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm">
+                          Share feedback <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                        </Link>
+                      </div>
                     </div>
 
                     <div className="pt-2 flex items-center gap-3">
