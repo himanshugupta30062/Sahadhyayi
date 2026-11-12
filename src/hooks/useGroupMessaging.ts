@@ -55,7 +55,7 @@ export const useGroupMessages = (groupId: string) => {
             if (error) throw error;
             if (!newMessage) return;
 
-            queryClient.setQueryData<GroupMessage[]>(['group-messages', groupId], (old = []) => {
+            queryClient.setQueryData<GroupMessage[]>(['group-messages', groupId, user.id], (old = []) => {
               // Check if message already exists to avoid duplicates.
               if (old.some((msg) => msg.id === newMessage.id)) return old;
               return [...old, newMessage];
@@ -87,7 +87,7 @@ export const useGroupMessages = (groupId: string) => {
   }, [groupId, user?.id, queryClient, toast]);
 
   return useQuery({
-    queryKey: ['group-messages', groupId],
+    queryKey: ['group-messages', groupId, user?.id],
     queryFn: async () => {
       if (!groupId) return [];
       
@@ -104,7 +104,7 @@ export const useGroupMessages = (groupId: string) => {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!groupId,
+    enabled: !!groupId && !!user?.id,
   });
 };
 
