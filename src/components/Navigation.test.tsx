@@ -156,6 +156,21 @@ describe('Primary Navigation (5 core sections)', () => {
     expect(screen.getByRole('button', { name: 'Open navigation menu' })).toBeInTheDocument();
   });
 
+  it('marks the current Social destination as the active mobile drawer link', async () => {
+    const { fireEvent } = await import('@testing-library/react');
+    vi.mocked(useIsMobile).mockReturnValue(true);
+    render(
+      <MemoryRouter initialEntries={['/groups']}>
+        <Navigation />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open navigation menu' }));
+    const readingGroupsLink = screen.getByRole('link', { name: 'Reading Groups' });
+    expect(readingGroupsLink).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Friends Feed' })).not.toHaveAttribute('aria-current', 'page');
+  });
+
   it('renders Social menu with Connect & Friends, Interactive Map, Live Circles, and Discussions', async () => {
     const { fireEvent } = await import('@testing-library/react');
     render(
