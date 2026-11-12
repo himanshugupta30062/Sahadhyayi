@@ -117,6 +117,7 @@ describe('Primary Navigation (5 core sections)', () => {
   });
 
   it('auto-expands Social destinations in the mobile drawer on a Social route', async () => {
+    const { fireEvent } = await import('@testing-library/react');
     vi.mocked(useIsMobile).mockReturnValue(true);
     render(
       <MemoryRouter initialEntries={['/groups']}>
