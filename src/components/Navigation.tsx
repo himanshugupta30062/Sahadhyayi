@@ -696,7 +696,8 @@ const Navigation = () => {
                               );
                             })}
                           </div>
-                                              })() : key === "activity" ? (() => {
+                        );
+                      })() : key === "activity" ? (() => {
                         const activityItems = visibleItems(section.items);
                         const groups = [
                           { title: "Hub & Gatherings", description: "Central home and local meetups", names: ["Activity Hub", "Reader Meetups"] },
