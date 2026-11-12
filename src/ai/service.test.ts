@@ -42,19 +42,19 @@ describe('AI service intent and response handling', () => {
 
   it('falls back to a bounded plain-text reply when model output is invalid JSON', async () => {
     mocks.invoke.mockResolvedValue({ data: { response: 'x'.repeat(1400) }, error: null });
-    const result = await ask('hello');
+    const result = await ask('hello invalid JSON');
     expect(result.reply).toHaveLength(1200);
     expect(result.references).toEqual([]);
   });
 
   it('returns cached output for an identical question and context', async () => {
-    const first = await ask('hello'); const second = await ask('hello');
+    const first = await ask('cache me'); const second = await ask('cache me');
     expect(second).toEqual(first);
     expect(mocks.invoke).toHaveBeenCalledTimes(1);
   });
 
   it('surfaces model invocation errors with a useful prefix', async () => {
     mocks.invoke.mockResolvedValue({ data: null, error: { message: 'edge unavailable' } });
-    await expect(ask('hello')).rejects.toThrow('AI HTTP edge unavailable');
+    await expect(ask('trigger model error')).rejects.toThrow('AI HTTP edge unavailable');
   });
 });
