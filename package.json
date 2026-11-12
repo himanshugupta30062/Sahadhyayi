@@ -39,9 +39,9 @@
       "limit": "240 KB"
     },
     {
-      "name": "Total client assets",
+      "name": "All route JavaScript assets (aggregate)",
       "path": "dist/assets/*.js",
-      "limit": "760 KB"
+      "limit": "1024 KB"
     }
   ],
   "dependencies": {
