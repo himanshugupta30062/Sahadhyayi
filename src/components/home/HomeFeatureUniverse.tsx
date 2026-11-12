@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowUpRight, BookOpen, Users, Feather, BrainCircuit, Compass,
@@ -43,9 +43,9 @@ export default function HomeFeatureUniverse() {
   }, [mood]);
 
   return (
-    <section className="relative overflow-hidden bg-[#FAFAF8] text-[#1C201D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
+    <section ref={sectionRef} className="home-feature-universe relative overflow-hidden bg-[#FAFAF8] text-[#1C201D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">\n      <style>{".home-feature-universe [data-home-reveal]{opacity:0;transform:translateY(18px);transition:opacity 650ms ease,transform 650ms cubic-bezier(.2,.7,.2,1)}.home-feature-universe [data-home-reveal].home-revealed{opacity:1;transform:translateY(0)}.home-feature-universe .home-feature-card{transition:transform 280ms ease,box-shadow 280ms ease,border-color 280ms ease}.home-feature-universe .home-feature-card:hover{transform:translateY(-5px);box-shadow:0 16px 36px rgba(20,35,24,.08)}.home-feature-universe .home-feature-link{transition:background-color 180ms ease,padding 180ms ease}.home-feature-universe .home-feature-link:hover{padding-left:14px}@media(prefers-reduced-motion:reduce){.home-feature-universe [data-home-reveal],.home-feature-universe .home-feature-card,.home-feature-universe .home-feature-link{transition:none!important;transform:none!important}}"} </style>
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-        <div className="mb-10 max-w-3xl">
+        <div data-home-reveal className="mb-10 max-w-3xl">
           <p className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[.22em] text-[#718071] dark:text-[#D5B16D]"><span className="h-px w-7 bg-[#B68A35]"/>Beyond the book</p>
           <h2 className="font-serif text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">A reading universe, <span className="text-[#54765B] dark:text-[#D5B16D]">made for you.</span></h2>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-[#636B65] dark:text-[#A5ADA6] sm:text-base">Discover a book. Meet someone reading it. Share an idea. Follow your curiosity. Every part of Sahadhyayi connects back to the joy of reading.</p>
@@ -53,19 +53,19 @@ export default function HomeFeatureUniverse() {
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {pillars.map(({ title, eyebrow, description, icon: Icon, tone, ink, links }) => (
-            <article key={title} className={`group flex min-w-0 flex-col rounded-3xl border border-black/[.05] p-5 transition-transform duration-300 hover:-translate-y-1 dark:border-white/[.08] sm:p-6 ${tone}`}>
+            <article key={title} data-home-reveal className={`home-feature-card group flex min-w-0 flex-col rounded-3xl border border-black/[.05] p-5 transition-transform duration-300 hover:-translate-y-1 dark:border-white/[.08] sm:p-6 ${tone}`}>
               <div className={`mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/75 dark:bg-black/20 ${ink}`}><Icon size={23}/></div>
               <p className={`text-[10px] font-bold uppercase tracking-[.16em] ${ink}`}>{eyebrow}</p>
               <h3 className="mt-1 font-serif text-2xl font-bold">{title}</h3>
               <p className="mt-2 min-h-[48px] text-sm leading-6 text-[#5D665F] dark:text-[#B0B7B1]">{description}</p>
               <div className="mt-5 grid gap-1.5">
-                {links.map((link) => <Link key={link.label} to={link.to} className="flex items-center justify-between rounded-xl px-3 py-2 text-sm font-medium transition-colors hover:bg-white/70 dark:hover:bg-white/[.06]">{link.label}<ArrowUpRight size={14} className="opacity-50"/></Link>)}
+                {links.map((link) => <Link key={link.label} to={link.to} className="home-feature-link flex items-center justify-between rounded-xl px-3 py-2 text-sm font-medium transition-colors hover:bg-white/70 dark:hover:bg-white/[.06]">{link.label}<ArrowUpRight size={14} className="opacity-50"/></Link>)}
               </div>
             </article>
           ))}
         </div>
 
-        <div className="mt-12 grid gap-5 lg:grid-cols-[1.15fr_.85fr]">
+        <div data-home-reveal className="mt-12 grid gap-5 lg:grid-cols-[1.15fr_.85fr]">
           <div className="rounded-3xl border border-[#E4E6DE] bg-white p-6 dark:border-[#29332D] dark:bg-[#111614] sm:p-8">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-[#718071] dark:text-[#D5B16D]"><Sparkles size={15}/> Reading Radar</div>
             <h3 className="mt-3 font-serif text-2xl font-bold sm:text-3xl">What are you in the mood to read?</h3>
@@ -93,7 +93,7 @@ export default function HomeFeatureUniverse() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-4 rounded-2xl border border-[#E4E6DE] bg-[#F3F5EF] p-5 dark:border-[#29332D] dark:bg-[#121815] sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <div data-home-reveal className="mt-12 flex flex-col gap-4 rounded-2xl border border-[#E4E6DE] bg-[#F3F5EF] p-5 dark:border-[#29332D] dark:bg-[#121815] sm:flex-row sm:items-center sm:justify-between sm:p-6">
           <div><p className="font-semibold">Stay curious, together.</p><p className="mt-1 text-sm text-[#636B65] dark:text-[#A5ADA6]">Find upcoming literary events and challenges to keep your reading alive.</p></div>
           <div className="flex flex-wrap gap-2"><Link to="/events" className="inline-flex items-center gap-2 rounded-full border border-[#D5DDD1] bg-white px-4 py-2.5 text-sm font-semibold hover:bg-[#EAF2E8] dark:border-[#29332D] dark:bg-[#171C19] dark:hover:bg-[#202820]"><CalendarDays size={15}/> Events</Link><Link to="/games" className="inline-flex items-center gap-2 rounded-full bg-[#1C442D] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#255438] dark:bg-[#D5B16D] dark:text-[#101510]"><Trophy size={15}/> Challenges</Link></div>
         </div>
