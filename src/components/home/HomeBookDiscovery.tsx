@@ -514,7 +514,7 @@ export const HomeBookDiscovery: React.FC = () => {
 
       {/* Continuously Moving Book Cover Ribbon Carousel */}
       {!isLoading && !isError && curatedBooks.length > 0 && (
-        <div className="relative w-full overflow-hidden mt-2 py-4">
+        <div className="relative mt-2 space-y-5 py-4">\n          {[{ key: "upper", books: marqueeItems, reverse: false }, { key: "lower", books: [...marqueeItems].reverse(), reverse: true }].map((ribbon) => (\n            <div key={ribbon.key} className="relative w-full overflow-hidden py-2">
           {/* Subtle editorial fade edges */}
           <div
             className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-20 bg-gradient-to-r from-[#F8F8F2] dark:from-[#0B0D0C] to-transparent z-10"
@@ -527,7 +527,7 @@ export const HomeBookDiscovery: React.FC = () => {
 
           <div
             className={`sahadhyayi-marquee-track flex gap-4 sm:gap-6 px-4 ${
-              isMarqueeActive ? 'sahadhyayi-marquee-animating' : 'overflow-x-auto scrollbar-none justify-center'
+              isMarqueeActive ? 'sahadhyayi-marquee-animating' + (ribbon.reverse ? ' sahadhyayi-marquee-reverse' : '') : 'overflow-x-auto scrollbar-none justify-center'
             }`}
             style={{
               animationPlayState: isPaused ? 'paused' : 'running',
@@ -535,7 +535,7 @@ export const HomeBookDiscovery: React.FC = () => {
           >
             {/* Primary Track Set A (Always accessible to screen readers & keyboard navigation) */}
             <div className="flex gap-4 sm:gap-6 flex-shrink-0">
-              {marqueeItems.map((book: Book, idx: number) => (
+              {ribbon.books.map((book: Book, idx: number) => (
                 <Link
                   key={`primary-${book.id}-${idx}`}
                   to={`/book/${book.id}`}
