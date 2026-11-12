@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Navigation from './Navigation';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const authState = vi.hoisted(() => ({
   user: null as null | { id: string; email?: string; user_metadata?: Record<string, unknown> },
@@ -25,7 +26,7 @@ vi.mock('@/contexts/ThemeContext', () => ({
 }));
 
 vi.mock('@/hooks/use-mobile', () => ({
-  useIsMobile: () => false,
+  useIsMobile: vi.fn(() => false),
 }));
 
 vi.mock('@/components/EnhancedGlobalSearch', () => ({
@@ -113,6 +114,24 @@ describe('Primary Navigation (5 core sections)', () => {
 
     // 5. Activity
     expect(screen.getByRole('button', { name: /activity/i })).toBeInTheDocument();
+  });
+
+  it('auto-expands Social destinations in the mobile drawer on a Social route', async () => {
+    const { fireEvent } = await import('@testing-library/react');
+    vi.mocked(useIsMobile).mockReturnValue(true);
+    render(
+      <MemoryRouter initialEntries={['/groups']}>
+        <Navigation />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open navigation menu' }));
+
+    const socialDisclosure = screen.getByRole('button', { name: 'Social submenu' });
+    expect(socialDisclosure).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('link', { name: 'Reading Groups' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Friends Feed' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Reading Spaces' })).toBeInTheDocument();
   });
 
   it('renders Social menu with Connect & Friends, Interactive Map, Live Circles, and Discussions', async () => {
