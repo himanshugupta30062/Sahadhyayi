@@ -140,6 +140,22 @@ describe('Primary Navigation (5 core sections)', () => {
     expect(screen.getByRole('button', { name: 'Close navigation menu' })).toBeInTheDocument();
   });
 
+  it('closes the mobile drawer after navigating from a Social submenu link', async () => {
+    const { fireEvent } = await import('@testing-library/react');
+    vi.mocked(useIsMobile).mockReturnValue(true);
+    render(
+      <MemoryRouter initialEntries={['/groups']}>
+        <Navigation />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open navigation menu' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Reading Groups' }));
+
+    expect(screen.queryByRole('button', { name: 'Close navigation menu' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open navigation menu' })).toBeInTheDocument();
+  });
+
   it('renders Social menu with Connect & Friends, Interactive Map, Live Circles, and Discussions', async () => {
     const { fireEvent } = await import('@testing-library/react');
     render(
