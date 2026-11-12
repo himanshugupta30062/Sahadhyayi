@@ -99,7 +99,7 @@ describe('HomeBookDiscovery component', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText('The Bhagavad Gita')).toBeInTheDocument();
+    expect(screen.getAllByText('The Bhagavad Gita')).toHaveLength(2);
     expect(screen.getByText('Vyasa')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /the bhagavad gita by vyasa/i })).toHaveAttribute(
       'href',
