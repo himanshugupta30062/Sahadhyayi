@@ -26,6 +26,8 @@ const QuotesProvider = ({ children }: { children: React.ReactNode }) => {
   const storageKey = getStorageKey(user?.id);
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loadedStorageKey, setLoadedStorageKey] = useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = useState<'local' | 'syncing' | 'synced' | 'error'>('local');
+  const [syncAttempt, setSyncAttempt] = useState(0);
 
   useEffect(() => {
     setLoadedStorageKey(null);
@@ -49,28 +51,29 @@ const QuotesProvider = ({ children }: { children: React.ReactNode }) => {
   // uploaded first (upsert by stable client_id), then the merged cloud collection
   // becomes the canonical in-memory list. Guests remain local-only.
   useEffect(() => {
-    if (!user?.id || loadedStorageKey !== storageKey) return;
+    if (!user?.id || loadedStorageKey !== storageKey) { setSyncStatus('local'); return; }
+    setSyncStatus('syncing');
     let cancelled = false;
     const sync = async () => {
       const local = quotes;
       const pending = local.map(q => toCloud(q, user.id));
       if (pending.length) {
         const { error: uploadError } = await supabase.from('saved_quotes').upsert(pending, { onConflict: 'user_id,client_id' });
-        if (uploadError) return; // local data remains safe; retry on next change/session
+        if (uploadError) { if (!cancelled) setSyncStatus('error'); return; }
       }
       const { data, error } = await supabase.from('saved_quotes')
         .select('client_id,quote_text,source,note,book_id,page,location,created_at')
         .eq('user_id', user.id).order('created_at', { ascending: false });
-      if (error || !data || cancelled) return;
+      if (error || !data || cancelled) { if (!cancelled) setSyncStatus('error'); return; }
       const cloud = (data as unknown as CloudQuote[]).map(fromCloud);
       const cloudIds = new Set(cloud.map(q => String(q.id)));
       const merged = [...cloud, ...local.filter(q => !cloudIds.has(String(q.id)))];
-      if (!cancelled) setQuotes(previous => JSON.stringify(previous) === JSON.stringify(merged) ? previous : merged);
+      if (!cancelled) { setQuotes(previous => JSON.stringify(previous) === JSON.stringify(merged) ? previous : merged); setSyncStatus('synced'); }
     };
     void sync();
     return () => { cancelled = true; };
   // quotes changes trigger sync so newly added quotes are uploaded.
-  }, [user?.id, loadedStorageKey, storageKey, quotes]);
+  }, [user?.id, loadedStorageKey, storageKey, quotes, syncAttempt]);
 
   const addQuote = (text: string, source?: string, note?: string, metadata?: { bookId?: string; page?: number; location?: string }) => {
     if (!text.trim() || loadedStorageKey !== storageKey) return;
@@ -87,13 +90,16 @@ const QuotesProvider = ({ children }: { children: React.ReactNode }) => {
         .then(({ error }) => {
           // A failed cloud delete must not silently lose the user's quote locally.
           if (error && removed) {
+            setSyncStatus('error');
             setQuotes(prev => prev.some(q => String(q.id) === String(id)) ? prev : [...prev, removed]);
           }
         });
     }
   };
 
-  return <QuotesContext.Provider value={{ quotes, addQuote, removeQuote }}>{children}</QuotesContext.Provider>;
+  const retrySync = () => setSyncAttempt(attempt => attempt + 1);
+
+  return <QuotesContext.Provider value={{ quotes, addQuote, removeQuote, syncStatus, retrySync }}>{children}</QuotesContext.Provider>;
 };
 
 export default QuotesProvider;
