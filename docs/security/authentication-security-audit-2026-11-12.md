@@ -101,3 +101,24 @@ Security Advisor reports: anonymous sign-ins enabled, OTP long expiry, leaked-pa
 ### Advisor findings remaining
 - SECURITY DEFINER execute warnings (60 authenticated / 10 anon functions) are not themselves proof of a vulnerability. Maintain per-function grants and authorization review; do not blanket revoke because public functions and triggers have legitimate use.
 - Keep outstanding Auth dashboard controls (anonymous sign-in decision, OTP expiry, leaked-password protection) tracked separately from database migrations.
+
+
+### Storage and Edge Function review (2026-11-12)
+
+#### Storage policy observations
+- `book-pdf-quarantine` and `research-paper-quarantine` are private buckets. Book PDF quarantine upload is constrained to the caller's UID folder and `source.pdf`; read is caller-folder only. Research quarantine read is submitter-folder or admin; uploads/deletes are caller-folder scoped.
+- `book-pdfs`, `books`, `audio-summaries`, and `news-covers` are configured public. Public SELECT policies align with intended public assets. Catalog PDF/news cover writes are admin/editor permission-gated; audio summary upload policy is admin-only.
+- `books` has a public SELECT policy for the `user-uploads` prefix and users can upload/update/delete under their own UID folder. This makes those uploaded objects publicly readable (bucket is public). Confirm that this is intentional for all user-uploaded content; if user uploads can contain private manuscripts or personal files, split them into a private bucket and remove public reads. No policy change made because current product use/compatibility is not yet established.
+
+#### Edge Function inventory and checks
+- Supabase reports 26 active functions; most have platform `verify_jwt=false`, so handler-level authentication/authorization must be explicit. `delete-account`, `enrich-authors`, and `submit-research-paper` have `verify_jwt=true`.
+- `delete-account`: independently verifies access token with `auth.getUser(token)`, requires explicit DELETE confirmation, and derives target user ID from verified identity (not request body). No IDOR found in reviewed path.
+- `verify-book-pdf`: despite `verify_jwt=false`, validates bearer token via `auth.getUser(token)`; restricts submission to submitter or DB admin, checks rights attestation and state transitions before scanning.
+- `review-book-pdf`: validates caller JWT and explicitly checks admin role from `user_roles` before preview/review/publish actions. Signed preview URL TTL is 180 seconds.
+- `submit-research-paper`: `verify_jwt=true` plus `auth.getUser()`; checks file path UID prefix and storage existence for publish submissions. Continue reviewing DB constraints/duplicate DOI races and upload size/content validation.
+- `generate-reading-dna`: explicitly validates user token, derives user ID from auth, applies a per-user rate limit, and reads that user's bookshelf via caller-scoped client.
+- `book-ratings`: POST calls `getUser()` before upsert and uses verified user ID; GET uses service role but returns only aggregate rating/count, not individual ratings. Add strict numeric bounds/UUID validation and pagination/aggregate SQL if rating volume grows; ensure client cannot spoof user_id.
+- `send-contact-email`: public endpoint, input validation/HTML escaping and length caps observed; still susceptible to email abuse without server-side rate limiting/CAPTCHA and strict subject/from controls. Add abuse controls before treating as production-safe.
+- `save-selected-books`: guest-accessible and uses service role for catalog writes by design; batch limit 50 and book sanitization observed. Review duplicate/upsert semantics, source URL/PDF URL validation, and abuse/rate limiting before allowing unrestricted writes.
+
+This is a focused review of selected high-impact functions, not all 26 handlers. No new production changes were made in this continuation.
