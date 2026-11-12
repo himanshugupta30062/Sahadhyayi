@@ -134,21 +134,28 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
 
 const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
   NAVIGATION_SECTIONS[0],
-  {
-    ...NAVIGATION_SECTIONS[1],
-    items: NAVIGATION_SECTIONS[1].items
-      .filter((item) => !["Book Discussions", "Reading Rooms", "Shared Marginalia", "Reading DNA"].includes(item.name))
-      .concat({
-        name: "Book Discussion",
-        href: "/social?tab=threads",
-        children: NAVIGATION_SECTIONS[1].items.filter((item) =>
-          ["Book Discussions", "Reading Rooms", "Shared Marginalia", "Reading DNA"].includes(item.name)
-        ),
-      }),
-  },
+  NAVIGATION_SECTIONS[1],
   NAVIGATION_SECTIONS[2],
   NAVIGATION_SECTIONS[3],
   NAVIGATION_SECTIONS[4],
+];
+
+const SOCIAL_MENU_GROUPS = [
+  {
+    title: "Connect",
+    description: "Your reader network",
+    names: ["Friends Feed", "Discover Friends", "Reader Map"],
+  },
+  {
+    title: "Reading Spaces",
+    description: "Read together",
+    names: ["Reading Groups", "Reading Rooms", "Shared Marginalia", "Reading DNA"],
+  },
+  {
+    title: "Book Talk",
+    description: "Exchange ideas",
+    names: ["Book Discussions", "Book Reviews", "Saved Discussions"],
+  },
 ];
 
 const PEOPLE_AND_MORE: NavigationItem[] = [
@@ -655,25 +662,17 @@ const Navigation = () => {
                         </p>
                       </div>
                       {key === "social" || key === "social-media" ? (() => {
-                        const socialItems = visibleItems(section.items).flatMap((item) =>
-                          item.children?.length ? item.children : [item]
-                        );
-                        const groups = [
-                          { title: "Connect & Friends", description: "Your reader network and book clubs", names: ["Friends Feed", "Discover Friends", "Reading Groups"] },
-                          { title: "Interactive Map", description: "Snapchat-style live readers map", names: ["Reader Map"] },
-                          { title: "Live Circles", description: "Shared reading rooms and marginalia", names: ["Reading Rooms", "Shared Marginalia", "Reading DNA"] },
-                          { title: "Discussions & Reviews", description: "Chapter discussions and book critiques", names: ["Book Discussions", "Book Reviews", "Book Discussion"] },
-                        ];
+                        const socialItems = visibleItems(section.items);
                         return (
-                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                            {groups.map((group) => {
+                          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4">
+                            {SOCIAL_MENU_GROUPS.map((group) => {
                               const items = socialItems.filter((item) => group.names.includes(item.name));
                               if (!items.length) return null;
                               return (
-                                <section key={group.title} className="min-w-0 rounded-lg border border-border/70 bg-card/70 p-2.5 shadow-sm transition-colors hover:border-[hsl(var(--brand-primary)/0.28)]">
-                                  <h3 className="px-1 pb-1 text-xs font-bold uppercase tracking-wider text-[hsl(var(--brand-primary))]">{group.title}</h3>
-                                  <p className="px-1 pb-2 text-xs leading-relaxed text-muted-foreground/80">{group.description}</p>
-                                  <div className="space-y-0.5">
+                                <section key={group.title} className="min-w-0 px-2">
+                                  <h3 className="pb-1 text-xs font-semibold tracking-wide text-[hsl(var(--brand-primary))]">{group.title}</h3>
+                                  <p className="pb-2 text-xs text-muted-foreground">{group.description}</p>
+                                  <div className="space-y-1">
                                     {items.map((item) => {
                                       const active = isCurrentRoute(item.href);
                                       return (
@@ -683,12 +682,9 @@ const Navigation = () => {
                                             onClick={() => handleDesktopNavigationClick(item.href)}
                                             data-tour-target={item.tourTarget}
                                             aria-current={active ? "page" : undefined}
-                                            className={
-                                              "flex min-h-10 cursor-pointer items-center rounded-lg px-2 py-2 text-sm transition-colors " +
-                                              (active
-                                                ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]"
-                                                : "text-foreground hover:bg-muted")
-                                            }
+                                            className={"flex min-h-10 items-center rounded-md px-2.5 py-2 text-sm transition-colors " + (active
+                                              ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]"
+                                              : "text-foreground hover:bg-muted")}
                                           >
                                             {item.name}
                                           </Link>
@@ -700,8 +696,7 @@ const Navigation = () => {
                               );
                             })}
                           </div>
-                        );
-                      })() : key === "activity" ? (() => {
+                                              })() : key === "activity" ? (() => {
                         const activityItems = visibleItems(section.items);
                         const groups = [
                           { title: "Hub & Gatherings", description: "Central home and local meetups", names: ["Activity Hub", "Reader Meetups"] },
