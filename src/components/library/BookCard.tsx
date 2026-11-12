@@ -68,7 +68,7 @@ const BookCard = ({ book, onDownloadPDF = () => {} }: BookCardProps) => {
       <div 
         className="aspect-[3/4] bg-gradient-primary relative overflow-hidden cursor-pointer"
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseLeave={() => setIsHovered(false)}\n        onClick={() => setIsHovered((visible) => !visible)}
       >
         {activeCoverUrl ? (
           <EnhancedLazyImage
@@ -107,7 +107,7 @@ const BookCard = ({ book, onDownloadPDF = () => {} }: BookCardProps) => {
         {/* Enhanced Action Buttons Overlay - Icon Only with Hover Text */}
         <div
           className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-all duration-300 ${
-            'opacity-100 md:opacity-0' + (isHovered ? ' md:opacity-100' : '')
+            'opacity-0 md:group-hover:opacity-100' + (isHovered ? ' opacity-100' : '')
           } 
           flex items-center justify-center gap-4`}
         >
@@ -178,7 +178,7 @@ const BookCard = ({ book, onDownloadPDF = () => {} }: BookCardProps) => {
           ) : hasOnlineReader ? (
             <Link
               to={`/book/${book.id}`}
-              onClick={() => void trackBookOpened(book.id, book.title)}
+              onClick={(e) => { e.stopPropagation(); void trackBookOpened(book.id, book.title); }}
               className="group/btn relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 transform hover:scale-110 active:scale-95 shadow-lg hover:shadow-xl backdrop-blur-sm bg-amber-600 text-white hover:bg-amber-500"
               title="Read Online"
               aria-label={`Read Online: ${book.title}`}
