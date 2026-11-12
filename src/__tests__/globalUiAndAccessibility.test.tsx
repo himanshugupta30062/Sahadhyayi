@@ -333,11 +333,12 @@ describe('Global UI Foundation and Accessibility (Phase 1)', () => {
       expect(screen.getByText('Connect')).toBeInTheDocument();
       expect(screen.getByText('Reading Spaces')).toBeInTheDocument();
       expect(screen.getByText('Book Talk')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /^book discussion$/i })).not.toBeInTheDocument();
       expect(screen.getByRole('link', { name: /book discussions/i })).toHaveAttribute('href', '/social?tab=threads');
       expect(screen.getByRole('link', { name: /reading rooms/i })).toHaveAttribute('href', '/social?tab=rooms');
       expect(screen.getByRole('link', { name: /shared marginalia/i })).toHaveAttribute('href', '/social?tab=margins');
       expect(screen.getByRole('link', { name: /reading dna/i })).toHaveAttribute('href', '/social?tab=dna');
-    });;
+    });
   });
 
   describe('Shared Interactive Elements (Buttons, Inputs, Textareas)', () => {
