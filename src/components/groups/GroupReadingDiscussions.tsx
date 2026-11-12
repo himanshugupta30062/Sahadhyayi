@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Heart, ThumbsUp, Lightbulb, Bookmark } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -55,6 +55,7 @@ const DiscussionReactions = ({ discussionId }: { discussionId: string }) => {
     heart: { count: 0, mine: false }, like: { count: 0, mine: false }, insightful: { count: 0, mine: false },
   });
   const [busy, setBusy] = useState<ReactionKind | null>(null);
+  const toggleLock = useRef(false);
   const refresh = async () => {
     const { data, error } = await supabase.rpc('list_group_reading_discussion_reactions', { p_discussion_id: discussionId });
     if (error) { toast.error('Could not load reactions.'); return; }
@@ -66,11 +67,18 @@ const DiscussionReactions = ({ discussionId }: { discussionId: string }) => {
   };
   useEffect(() => { void refresh(); }, [discussionId]);
   const toggle = async (kind: ReactionKind) => {
+    // Lock synchronously before React can re-render and disable the buttons.
+    if (toggleLock.current) return;
+    toggleLock.current = true;
     setBusy(kind);
-    const { error } = await supabase.rpc('toggle_group_reading_discussion_reaction', { p_discussion_id: discussionId, p_reaction: kind });
-    setBusy(null);
-    if (error) { toast.error(error.message || 'Reaction failed.'); return; }
-    await refresh();
+    try {
+      const { error } = await supabase.rpc('toggle_group_reading_discussion_reaction', { p_discussion_id: discussionId, p_reaction: kind });
+      if (error) { toast.error(error.message || 'Reaction failed.'); return; }
+      await refresh();
+    } finally {
+      toggleLock.current = false;
+      setBusy(null);
+    }
   };
   return <div className="mt-3 flex flex-wrap gap-2" aria-label="Discussion reactions">
     {(Object.keys(reactionMeta) as ReactionKind[]).map(kind => {
