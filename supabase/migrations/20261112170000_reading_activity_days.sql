@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS public.reading_activity_days (
   timezone TEXT NOT NULL DEFAULT 'UTC',
   first_activity_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   last_activity_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  activity_count INTEGER NOT NULL DEFAULT 1 CHECK (activity_count > 0),
   source TEXT NOT NULL DEFAULT 'progress_save'
     CHECK (source IN ('progress_save', 'chapter_complete')),
   PRIMARY KEY (user_id, activity_date)
