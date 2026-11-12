@@ -166,6 +166,25 @@ describe('Primary Navigation (5 core sections)', () => {
     expect(friendsFeedLink).toHaveClass('focus-visible:outline-none');
   });
 
+  it('opens Social with Enter and dismisses its menu with Escape', async () => {
+    const { fireEvent } = await import('@testing-library/react');
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Navigation />
+      </MemoryRouter>
+    );
+
+    const socialButton = screen.getByRole('button', { name: /social/i });
+    socialButton.focus();
+    fireEvent.keyDown(socialButton, { key: 'Enter', code: 'Enter' });
+
+    expect(socialButton).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('menuitem', { name: 'Friends Feed' })).toBeInTheDocument();
+
+    fireEvent.keyDown(socialButton, { key: 'Escape', code: 'Escape' });
+    expect(socialButton).toHaveAttribute('aria-expanded', 'false');
+  });
+
   it('highlights the Reading Spaces group when a child route is active', async () => {
     const { fireEvent } = await import('@testing-library/react');
     render(
