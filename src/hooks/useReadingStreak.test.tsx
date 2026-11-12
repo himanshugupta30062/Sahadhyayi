@@ -36,6 +36,13 @@ const dayAtOffset = (offset: number) => {
   return date.toISOString();
 };
 
+const dayKeyAtOffset = (offset: number) => {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  date.setDate(date.getDate() - offset);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
 const renderStreakHook = () => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -91,7 +98,7 @@ describe('useReadingStreak', () => {
       current: 2,
       best: 4,
       daysThisWeek: 4,
-      activeDays: expect.arrayContaining([expect.any(String)]),
+      activeDays: [dayKeyAtOffset(6), dayKeyAtOffset(5), dayKeyAtOffset(1), dayKeyAtOffset(0)],
       lastActiveAt: expect.any(String),
     });
     expect(mocks.from).toHaveBeenCalledWith('detailed_reading_progress');
