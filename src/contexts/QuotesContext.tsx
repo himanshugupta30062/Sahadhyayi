@@ -63,8 +63,7 @@ const QuotesProvider = ({ children }: { children: React.ReactNode }) => {
         .eq('user_id', user.id).order('created_at', { ascending: false });
       if (error || !data || cancelled) return;
       const cloud = (data as unknown as CloudQuote[]).map(fromCloud);
-      const cloudIds = new Set(cloud.map(q => String(q.id)));
-      const merged = [...cloud, ...local.filter(q => !cloudIds.has(String(q.id)))];
+      const merged = mergeQuotes(cloud, local);
       if (!cancelled) setQuotes(previous => JSON.stringify(previous) === JSON.stringify(merged) ? previous : merged);
     };
     void sync();
