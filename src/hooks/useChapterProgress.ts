@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
+import { recordReadingActivity } from '@/lib/readingActivity';
 
 export interface ChapterProgress {
   id: string;
@@ -56,6 +57,7 @@ export const useMarkChapterAsRead = (bookId: string) => {
         .single();
 
       if (error) throw error;
+      await recordReadingActivity(user.id, 'chapter_complete');
       return data as ChapterProgress;
     },
     onSuccess: () => {
