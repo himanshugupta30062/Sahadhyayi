@@ -127,27 +127,32 @@ const About = () => {
     {
       question: "What does Sahadhyayi mean?",
       answer:
-        "Sahadhyayi (सहाध्यायी) is an ancient Sanskrit word meaning 'fellow reader' or 'study companion.' It is formed by joining 'saha' (together) and 'adhyayi' (one who reads or studies). In classical Indian scholastic tradition, a Sahadhyayi was someone who learned alongside you, shared insights, and enriched your understanding of the text.",
+        "Sahadhyayi (सहाध्यायी) means a fellow reader or study companion—a person who learns alongside you, shares insights, and helps make reading a shared pursuit.",
+    },
+    {
+      question: "Can I explore Sahadhyayi without creating an account?",
+      answer:
+        "Yes. You can browse the public library, open book details, read about the community, and send feedback as a visitor. You can create an account whenever you want to use personal or account-based reading and community features.",
+    },
+    {
+      question: "Is Sahadhyayi free to use?",
+      answer:
+        "You can explore Sahadhyayi and its public library for free. Some reading and community actions require signing in. Book availability and access can vary by title and its rights or format.",
     },
     {
       question: "How is Sahadhyayi different from other reading platforms?",
       answer:
-        "Most reading apps treat books as solitary digital files or push algorithmic feeds. Sahadhyayi weaves books directly into a living community: synchronous silent reading rooms, public marginalia on shared pages, spoiler-protected chapter threads, and taste-matching literary DNA.",
+        "Sahadhyayi brings reading and reader connection together: a focused reading experience, shared margin notes, chapter discussions, reading groups, and quiet co-reading rooms—all designed to keep the book at the center.",
     },
     {
-      question: "Is Sahadhyayi completely free to use?",
+      question: "Do I need an account to join reading groups or reading rooms?",
       answer:
-        "Yes! Sahadhyayi is free to explore, read, annotate, and connect. Our curated library of 12,500+ public-domain and indie books, distraction-free web reader, and community social hub are open to all readers.",
+        "You can discover Sahadhyayi as a visitor, but joining groups and participating in account-based community activities requires signing in. Create a free account to take part and keep your activity connected to your profile.",
     },
     {
-      question: "How does Sahadhyayi help me read more consistently?",
+      question: "How can I contact the Sahadhyayi team?",
       answer:
-        "Through social accountability and habit mechanics: synchronized silent sprints, progress tracking that saves on every page change, community reading circles, and reader matching that keeps you motivated to finish what you start.",
-    },
-    {
-      question: "Can I connect directly with authors on Sahadhyayi?",
-      answer:
-        "Yes! Authors on Sahadhyayi can publish books, host reading rooms, answer questions in chapter threads, and connect with their most engaged readers directly without algorithmic gatekeeping.",
+        "Use the contact form on this page to share a question, suggestion, or book recommendation. You can also email gyan@sahadhyayi.com directly.",
     },
   ];
 
