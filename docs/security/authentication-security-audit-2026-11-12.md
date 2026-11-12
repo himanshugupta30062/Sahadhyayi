@@ -63,3 +63,27 @@ Scope: repository source inspection only. This is not a live penetration test or
 - Run negative authorization tests (anonymous, user A accessing user B, ordinary user accessing admin routes).
 - Do not brute-force real accounts, enumerate production users, or test reset links belonging to real users.
 - Read production settings only; require explicit approval before changing them.
+
+
+## Live database review (2026-11-12 continuation)
+
+### Confirmed hardening applied
+- Dropped `public.group_chat_members` policy `Group creators can add members`, which allowed self-insertion and creator insertions without requiring role=`member` or group privacy constraints.
+- Preserved the narrower policies: authenticated self-join to non-encrypted groups as `member`; admin/creator adds with role checks enforced by policy context.
+- Verified remaining INSERT policies after the change.
+- Matching migration: `supabase/migrations/20261112150000_harden_group_chat_members_insert_policy.sql`.
+
+### Six RLS-enabled tables with no policies: exposure review
+These tables have no client table privileges for `anon` or `authenticated`; grants are limited to `postgres` and `service_role`. Thus RLS policy absence does not currently expose them through normal PostgREST client roles:
+- `group_event_reminder_deliveries`
+- `group_invitations` (contains invitation token hashes; table comment confirms hashes, not raw tokens)
+- `owner_test_analytics` (contains IP/user/event metadata; service-role only)
+- `owner_test_ip_allowlist` (service-role only)
+- `reading_group_digest_deliveries`
+- `role_permissions` (read/write via guarded admin RPCs; service-role only direct table grants)
+
+### Anonymous SECURITY DEFINER review
+Ten anon-executable SECURITY DEFINER functions were sampled. They expose public aggregates/counts or mutate only published article view counters; no direct secret/token return was identified in this sample. These functions still require abuse controls (rate limits, bounds) and routine review. Examples: public author data, follower/like counts, public group member counts, leaderboard, total profile count, published article views.
+
+### Production Auth configuration warnings (still outstanding)
+Security Advisor reports: anonymous sign-ins enabled, OTP long expiry, leaked-password protection disabled. These are project Auth settings, not safely changeable through the database migration; must be adjusted in Supabase Auth dashboard/API with staged validation and explicit confirmation.
