@@ -7,17 +7,14 @@ import path from 'node:path';
  * environment directive is missed by a runner or wrapper.
  */
 export default defineConfig({
-  esbuild: {
-    jsx: 'automatic',
-  },
+  esbuild: { jsx: 'automatic' },
   resolve: {
-    alias: {
-      '@': path.resolve(process.cwd(), 'src'),
-    },
+    alias: { '@': path.resolve(process.cwd(), 'src') },
     dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
   },
   test: {
     environment: 'jsdom',
+    setupFiles: ['./src/testSetup.ts'],
     clearMocks: true,
     restoreMocks: true,
     unstubEnvs: true,
@@ -34,6 +31,7 @@ export default defineConfig({
         'src/**/*.d.ts',
         'src/**/*.{test,spec}.{ts,tsx}',
         'src/**/__tests__/**',
+        'src/testSetup.ts',
         'src/integrations/supabase/types.ts',
         'archive/**',
         '**/* 2.*',
