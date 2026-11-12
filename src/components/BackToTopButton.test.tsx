@@ -1,10 +1,9 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen, act } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, act } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import BackToTopButton from "./BackToTopButton";
 
 describe("BackToTopButton", () => {
-  afterEach(() => cleanup());
   let scrollToMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
