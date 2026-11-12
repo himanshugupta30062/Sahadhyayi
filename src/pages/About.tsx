@@ -391,7 +391,7 @@ const About = () => {
           {/* Quick section navigation for long-form About content */}
           <nav
             aria-label="About page sections"
-            className="sticky top-16 z-20 -mx-1 flex gap-2 overflow-x-auto rounded-2xl border border-border/70 bg-background/90 px-3 py-2 shadow-sm backdrop-blur-md sm:mx-0 sm:flex-wrap sm:justify-center"
+            className="sticky top-14 sm:top-16 z-20 -mx-4 sm:mx-0 flex gap-2 overflow-x-auto overscroll-x-contain rounded-none sm:rounded-2xl border-y sm:border border-border/70 bg-background/95 px-4 sm:px-3 py-2 shadow-sm backdrop-blur-md sm:flex-wrap sm:justify-center [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {[
               { label: "Mission", href: "#mission" },
@@ -496,21 +496,21 @@ const About = () => {
               </div>
 
               <CardContent className="p-6 sm:p-10 space-y-10">
-                <div className="grid lg:grid-cols-12 gap-8 items-start">
+                <div className="grid lg:grid-cols-12 gap-6 sm:gap-8 items-start">
                   {/* Left: Founder Profile Card */}
-                  <div className="lg:col-span-5 flex flex-col items-center sm:items-start gap-4">
+                  <div className="lg:col-span-5 flex flex-col items-center sm:items-start gap-4 min-w-0">
                     <div className="relative group">
                       <img
                         src="/lovable-uploads/sahadhyayi-founder-photo.png"
                         alt="Himanshu Gupta - Founder of Sahadhyayi"
-                        className="rounded-2xl shadow-lg w-44 h-44 sm:w-48 sm:h-48 object-cover border-4 border-card ring-2 ring-brand-primary/30"
+                        className="rounded-2xl shadow-lg w-36 h-36 sm:w-48 sm:h-48 object-cover border-4 border-card ring-2 ring-brand-primary/30"
                       />
                       <div className="absolute -bottom-2 -right-2 bg-emerald-500 text-white rounded-full p-1.5 shadow-md" title="Active Founder">
                         <ShieldCheck className="w-4 h-4" />
                       </div>
                     </div>
 
-                    <div className="space-y-2 text-center sm:text-left w-full">
+                    <div className="space-y-2 text-center sm:text-left w-full min-w-0">
                       <h3 className="font-serif text-2xl font-bold text-foreground">Himanshu Gupta</h3>
                       <p className="text-sm text-brand-primary font-medium">Founder &amp; Chief Bibliophile, Sahadhyayi</p>
                       <p className="text-xs text-muted-foreground leading-relaxed">
@@ -518,7 +518,7 @@ const About = () => {
                       </p>
 
                       <div className="pt-3 space-y-2 text-xs text-muted-foreground border-t border-border">
-                        <div className="flex items-center gap-2 justify-center sm:justify-start">
+                        <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start">
                           <Mail className="w-3.5 h-3.5 text-brand-primary shrink-0" />
                           <span>Direct Email:</span>
                           <a href="mailto:gyan@sahadhyayi.com" className="text-foreground hover:text-brand-primary font-medium underline decoration-dotted">
@@ -570,8 +570,8 @@ const About = () => {
                 </div>
 
                 {/* ── Contact the Founder Directly Form ── */}
-                <div id="contact" className="scroll-mt-28 pt-8 border-t border-border">
-                  <div className="max-w-2xl mx-auto space-y-6">
+                <div id="contact" className="scroll-mt-32 sm:scroll-mt-28 pt-6 sm:pt-8 border-t border-border">
+                  <div className="max-w-2xl mx-auto space-y-5 sm:space-y-6">
                     <div className="text-center space-y-1">
                       <h4 className="text-lg font-bold text-foreground">Send a Message Directly to Himanshu</h4>
                       <p className="text-xs text-muted-foreground">
@@ -580,7 +580,7 @@ const About = () => {
                     </div>
 
                     <form className="space-y-4" onSubmit={form.handleSubmit(handleContactSubmit)}>
-                      <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label htmlFor="contact_name" className="block text-xs font-medium text-foreground mb-1">
                             Your Name <span className="text-destructive" aria-hidden="true">*</span>
@@ -645,7 +645,7 @@ const About = () => {
                         )}
                       </div>
 
-                      <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                      <div className="flex flex-col sm:flex-row gap-3 pt-2 [&>button]:w-full sm:[&>button]:w-auto">
                         <Button
                           type="submit"
                           className="flex-1 bg-brand-primary hover:bg-brand-primary/90 text-white font-medium"
