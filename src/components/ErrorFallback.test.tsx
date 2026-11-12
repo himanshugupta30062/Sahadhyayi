@@ -2,6 +2,7 @@
 import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen, cleanup } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+afterEach(() => cleanup());
 import { ErrorFallback } from "./ErrorFallback";
 
 describe("ErrorFallback", () => {
