@@ -189,6 +189,7 @@ export const useAddToBookshelf = () => {
 
 export const useUpdateBookshelfItem = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<BookshelfItem> }) => {
@@ -211,6 +212,18 @@ export const useUpdateBookshelfItem = () => {
         .single();
 
       if (error) throw error;
+
+      // Progress saves and meaningful reading-status transitions count as reading activity.
+      const recordsActivity = updates.progress !== undefined || updates.status === 'reading' || updates.status === 'completed';
+      if (recordsActivity && user?.id) {
+        const now = new Date();
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+        const parts = new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now);
+        const get = (type: string) => parts.find((part) => part.type === type)?.value;
+        const activityDate = `${get('year')}-${get('month')}-${get('day')}`;
+        const { error: activityError } = await supabase.from('reading_activity_days').upsert({ user_id: user.id, activity_date: activityDate, timezone, first_activity_at: now.toISOString(), last_activity_at: now.toISOString(), source: updates.progress !== undefined ? 'progress_save' : 'bookshelf_status' }, { onConflict: 'user_id,activity_date', ignoreDuplicates: true });
+        if (activityError) console.warn('Bookshelf updated, but activity day was not recorded:', activityError);
+      }
       return data;
     },
     onSuccess: () => {
