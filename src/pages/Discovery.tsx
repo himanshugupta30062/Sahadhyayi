@@ -134,6 +134,22 @@ const Discovery = () => {
             </Select>
           </div>
 
+          <div className="space-y-2">
+            <p className="text-sm font-medium">What are you in the mood to read?</p>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Reading mood">
+              {moodPresets.map((mood) => (
+                <Button key={mood.id} type="button" size="sm" variant={readingMood === mood.id ? 'default' : 'outline'} aria-pressed={readingMood === mood.id}
+                  onClick={() => {
+                    setReadingMood(readingMood === mood.id ? null : mood.id);
+                    void trackUiEvent('discovery_filter_changed', { filter: 'reading_mood', value: readingMood === mood.id ? 'all' : mood.id });
+                  }}>
+                  {mood.label}
+                </Button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">Choose a vibe to narrow the library—or tap it again to show every book.</p>
+          </div>
+
           <div className="grid md:grid-cols-3 gap-3">
             <Select value={languageFilter} onValueChange={(value) => {
               setLanguageFilter(value);
