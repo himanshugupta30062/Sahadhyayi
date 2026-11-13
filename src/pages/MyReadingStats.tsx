@@ -19,9 +19,9 @@ const StatsPage = () => {
  const favoriteAuthors=Object.entries(authorCounts).sort((a,b)=>b[1]-a[1]).slice(0,3);
  const topGenre=genres[0]?.[0];
  const tasteLabel=completed.length<3?'Your taste is taking shape':topGenre?topGenre+' enthusiast':'Curious reader';
- const ratingStyle=rated.length<3?'Rate a few more books to reveal your rating style':Number(avg)>=4?'You tend to love the books you finish':Number(avg)>=3?'You’re a balanced reviewer':'You’re a thoughtful, selective reviewer';
  const rated=completed.filter(x=>typeof x.rating==='number'&&x.rating>0);
  const avg=rated.length? (rated.reduce((s,x)=>s+(x.rating||0),0)/rated.length).toFixed(1):'—';
+ const ratingStyle=rated.length<3?'Rate a few more books to reveal your rating style':Number(avg)>=4?'You tend to love the books you finish':Number(avg)>=3?'You’re a balanced reviewer':'You’re a thoughtful, selective reviewer';
  const totalPages=completed.reduce((s,x)=>s+(x.books_library?.description?.match(/(?:pages|page count)\s*:?\s*(\d+)/i)?.[1]?Number(x.books_library.description.match(/(?:pages|page count)\s*:?\s*(\d+)/i)?.[1]):0),0);
  const achievements=[
   {emoji:'🌱',name:'First Chapter',description:'Finish your first book',unlocked:completed.length>=1},
