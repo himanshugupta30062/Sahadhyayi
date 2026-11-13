@@ -1,4 +1,7 @@
 import SEO from "@/components/SEO";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { BookOpen } from "lucide-react";
 import ReadingGroupsDirectory from "@/components/groups/ReadingGroupsDirectory";
 
 const ReadingGroups = () => {
@@ -21,6 +24,7 @@ const ReadingGroups = () => {
           </div>
         </section>
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-4"><div><h2 className="font-semibold">Read a book side by side</h2><p className="text-sm text-muted-foreground">Start a shared reading plan with friends outside a formal group.</p></div><Button asChild><Link to="/buddy-reads"><BookOpen className="mr-2 h-4 w-4" />Explore Buddy Reads</Link></Button></div>
           <ReadingGroupsDirectory />
         </div>
       </div>

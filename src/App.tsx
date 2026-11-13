@@ -67,6 +67,7 @@ const Publishers = lazy(() => import('./pages/Publishers'));
 const AuthorSlugPage = lazy(() => import('./pages/authors/[slug]'));
 const AuthorDetails = lazy(() => import('./pages/AuthorDetails'));
 const ReadingGroups = lazy(() => import('./pages/ReadingGroups'));
+const BuddyReads = lazy(() => import('./pages/BuddyReads'));
 const GroupDetails = lazy(() => import('./pages/GroupDetails'));
 const SavedGroupDiscussions = lazy(() => import('./components/groups/SavedGroupDiscussions'));
 const SavedBookReels = lazy(() => import('./pages/SavedBookReels'));
