@@ -155,9 +155,19 @@ const Discovery = () => {
               <Link key={book.id} to={`/book/${book.id}`} className="block">
                 <Card className="h-full border-border hover:border-brand-primary/50 transition-colors">
                   <CardContent className="p-4">
-                    <p className="text-xs text-brand-primary font-medium mb-2">Based on your bookshelf</p>
-                    <h3 className="font-semibold line-clamp-2">{book.title}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{book.author || 'Unknown author'}</p>
+                    <div className="flex gap-3">
+                      {book.cover_image_url ? (
+                        <img src={book.cover_image_url} alt="" loading="lazy" className="h-24 w-16 shrink-0 rounded-md object-cover" />
+                      ) : (
+                        <div className="flex h-24 w-16 shrink-0 items-center justify-center rounded-md bg-muted"><BookOpen className="w-6 h-6 text-muted-foreground" /></div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs text-brand-primary font-medium mb-2">Based on your bookshelf</p>
+                        <h3 className="font-semibold line-clamp-2">{book.title}</h3>
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{book.author || 'Unknown author'}</p>
+                        {book.genre && <Badge variant="outline" className="mt-2 text-xs">{book.genre}</Badge>}
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </Link>
