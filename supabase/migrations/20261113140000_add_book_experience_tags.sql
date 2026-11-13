@@ -40,7 +40,7 @@ CREATE POLICY "Readers manage own experience tags"
   FOR ALL
   TO authenticated
   USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id;
+  WITH CHECK (auth.uid() = user_id);
 
 COMMENT ON TABLE public.book_experience_tags IS
   'Private reader mood, pacing, and content-warning selections for a book. Aggregates require a separate privacy-safe RPC.';
