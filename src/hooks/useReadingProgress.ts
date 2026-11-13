@@ -1,7 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
-import { recordReadingActivity } from '@/lib/readingActivity';
+import {
+  getNextRequestSequence,
+  isLatestRequestSequence,
+  normalizeProgressValues,
+  syncReadingProgressToSupabase,
+  type ProgressSyncInput,
+  type ReadingStatus,
+} from '@/services/readingProgressSync';
 
 export interface ReadingProgressItem {
   id: number;
@@ -15,39 +22,25 @@ export interface ReadingProgressItem {
   completed_at?: string | null;
 }
 
-
-// Keep the legacy bookshelf percentage in sync with the canonical page progress.
-// DNF is intentionally preserved; completion is driven by reaching the final page.
-async function syncBookshelfProgress(userId: string, bookId: string, currentPage: number, totalPages: number) {
-  const progress = Math.round((currentPage / totalPages) * 100);
-  const { data: shelf, error: lookupError } = await supabase
-    .from('user_bookshelf')
-    .select('id,status')
-    .eq('user_id', userId)
-    .eq('book_id', bookId)
-    .maybeSingle();
-  if (lookupError) throw lookupError;
-  if (!shelf) return;
-
-  const status = shelf.status === 'dnf'
-    ? 'dnf'
-    : currentPage >= totalPages
-      ? 'completed'
-      : shelf.status === 'want_to_read' || shelf.status === 'completed'
-        ? 'reading'
-        : shelf.status;
-  const updates: Record<string, unknown> = { progress, status };
-  if (status === 'reading') updates.started_at = new Date().toISOString();
-  if (status === 'completed') updates.completed_at = new Date().toISOString();
-  const { error } = await supabase
-    .from('user_bookshelf')
-    .update(updates)
-    .eq('id', shelf.id)
-    .eq('user_id', userId);
-  if (error) throw error;
+export interface SaveReadingProgressParams {
+  bookId: string;
+  bookTitle?: string;
+  currentPage?: number;
+  totalPages?: number;
+  percentage?: number;
+  status?: ReadingStatus;
+  coverImageUrl?: string;
 }
 
-const progressRequestSequence = new Map<number, number>();
+export interface UpdateReadingProgressParams {
+  id?: number;
+  bookId?: string;
+  current_page?: number;
+  currentPage?: number;
+  totalPages?: number;
+  percentage?: number;
+  status?: ReadingStatus;
+}
 
 export const useReadingProgress = (options: { enabled?: boolean } = {}) => {
   const { user } = useAuth();
@@ -74,71 +67,26 @@ export const useReadingProgress = (options: { enabled?: boolean } = {}) => {
   });
 };
 
-export const useUpdateReadingProgress = () => {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
+const notifyProgressChanged = (queryClient: ReturnType<typeof useQueryClient>, userId?: string) => {
+  if (userId) {
+    void queryClient.invalidateQueries({ queryKey: ['reading-progress', userId] });
+    void queryClient.invalidateQueries({ queryKey: ['user-bookshelf', userId] });
+    void queryClient.invalidateQueries({ queryKey: ['user-bookshelf-stats', userId] });
+    void queryClient.invalidateQueries({ queryKey: ['reading-stats', userId] });
+    void queryClient.invalidateQueries({ queryKey: ['reading-activity-days', userId] });
+  } else {
+    void queryClient.invalidateQueries({ queryKey: ['reading-progress'] });
+    void queryClient.invalidateQueries({ queryKey: ['user-bookshelf'] });
+  }
 
-  return useMutation({
-    mutationFn: async ({ id, current_page }: { id: number; current_page: number }) => {
-      const requestSequence = (progressRequestSequence.get(id) ?? 0) + 1;
-      progressRequestSequence.set(id, requestSequence);
-      const isLatestRequest = () => progressRequestSequence.get(id) === requestSequence;
-      if (!user?.id) throw new Error('Sign in to update reading progress');
-      if (!Number.isSafeInteger(id) || id <= 0) {
-        throw new Error('Invalid reading progress record');
-      }
-      if (!Number.isSafeInteger(current_page) || current_page < 1) {
-        throw new Error('Page number must be a positive integer');
-      }
-
-      // Scope writes to the authenticated owner as well as relying on database RLS.
-      const { data, error } = await supabase
-        .from('reading_progress')
-        .update({ current_page, completed_at: null })
-        .eq('id', id)
-        .eq('user_id', user.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      // Ignore an older response when a newer save for this record has already started.
-      if (!isLatestRequest()) return data as ReadingProgressItem;
-      const saved = data as ReadingProgressItem;
-      if (saved.book_id && saved.total_pages > 0) await syncBookshelfProgress(user.id, saved.book_id, saved.current_page, saved.total_pages);
-      if (isLatestRequest()) await recordReadingActivity(user.id, 'progress_save');
-      return saved;
-    },
-    onMutate: async ({ id, current_page }) => {
-      if (!user?.id) return undefined;
-      await Promise.all([
-        queryClient.cancelQueries({ queryKey: ['reading-progress', user.id] }),
-        queryClient.cancelQueries({ queryKey: ['user-bookshelf', user.id] }),
-      ]);
-      const previousProgress = queryClient.getQueryData<ReadingProgressItem[]>(['reading-progress', user.id]);
-      const previousShelf = queryClient.getQueryData<any[]>(['user-bookshelf', user.id]);
-      queryClient.setQueryData<ReadingProgressItem[]>(['reading-progress', user.id], (items = []) =>
-        items.map((item) => item.id === id ? { ...item, current_page, completed_at: null } : item));
-      const record = previousProgress?.find((item) => item.id === id);
-      if (record?.book_id && record.total_pages > 0) {
-        const percentage = Math.round(Math.min(record.total_pages, current_page) / record.total_pages * 100);
-        queryClient.setQueryData<any[]>(['user-bookshelf', user.id], (items = []) => items.map((item) =>
-          item.book_id !== record.book_id || item.status === 'dnf' ? item : {
-            ...item, progress: percentage,
-            status: current_page >= record.total_pages ? 'completed' : item.status === 'want_to_read' || item.status === 'completed' ? 'reading' : item.status,
-          }));
-      }
-      return { previousProgress, previousShelf };
-    },
-    onError: (_error, _variables, context) => {
-      if (!user?.id || !context) return;
-      queryClient.setQueryData(['reading-progress', user.id], context.previousProgress);
-      queryClient.setQueryData(['user-bookshelf', user.id], context.previousShelf);
-    },
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: ['reading-progress', user?.id] });
-      void queryClient.invalidateQueries({ queryKey: ['user-bookshelf', user?.id] });
-    },
-  });
+  window.dispatchEvent(new Event('shelfUpdated'));
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem('sahadhyayi_shelf_sync', Date.now().toString());
+    }
+  } catch {
+    // ignore in restricted environments
+  }
 };
 
 export const useSaveReadingProgress = () => {
@@ -146,71 +94,206 @@ export const useSaveReadingProgress = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      bookId,
-      bookTitle,
-      currentPage,
-      totalPages,
-      coverImageUrl,
-    }: {
-      bookId: string;
-      bookTitle: string;
-      currentPage: number;
-      totalPages: number;
-      coverImageUrl?: string;
-    }) => {
-      if (!user?.id) throw new Error('Sign in to save reading progress');
-      const normalizedBookId = bookId.trim();
-      if (!normalizedBookId) throw new Error('Book ID is required');
-      const normalizedBookTitle = bookTitle.trim();
-      if (!normalizedBookTitle) throw new Error('Book title is required');
-      if (!Number.isFinite(totalPages) || totalPages < 1) {
-        throw new Error('Total pages must be a positive number');
-      }
-      if (!Number.isFinite(currentPage) || currentPage < 1) {
-        throw new Error('Current page must be a positive number');
+    mutationFn: async (params: SaveReadingProgressParams) => {
+      // Allow dynamic user resolution if auth changed
+      const activeUser = user || (await supabase.auth.getUser()).data.user;
+      if (!activeUser?.id) {
+        throw new Error('Sign in to save reading progress');
       }
 
-      const safeTotal = Math.max(1, Math.floor(totalPages));
-      const safePage = Math.min(safeTotal, Math.max(1, Math.floor(currentPage)));
+      const normalizedBookId = (params.bookId || '').trim();
+      if (!normalizedBookId) {
+        throw new Error('Book ID is required');
+      }
 
-      // Preserve the original start/completion timestamps when saving the same book again.
-      const { data: existingProgress, error: lookupError } = await supabase
-        .from('reading_progress')
-        .select('started_at, completed_at')
-        .eq('user_id', user.id)
-        .eq('book_id', normalizedBookId)
-        .maybeSingle();
-      if (lookupError) throw lookupError;
-      const { data, error } = await supabase
-        .from('reading_progress')
-        .upsert(
-          {
-            user_id: user.id,
-            book_id: normalizedBookId,
-            book_title: normalizedBookTitle,
-            current_page: safePage,
-            total_pages: safeTotal,
-            cover_image_url: coverImageUrl ?? null,
-            started_at: existingProgress?.started_at ?? new Date().toISOString(),
-            completed_at: safePage >= safeTotal
-              ? existingProgress?.completed_at ?? new Date().toISOString()
-              : null,
-          },
-          { onConflict: 'user_id,book_id' },
-        )
-        .select()
-        .single();
+      const sequence = getNextRequestSequence(normalizedBookId);
 
-      if (error) throw error;
-      const saved = data as ReadingProgressItem;
-      await syncBookshelfProgress(user.id, normalizedBookId, safePage, safeTotal);
-      await recordReadingActivity(user.id, 'progress_save');
-      return saved;
+      const result = await syncReadingProgressToSupabase(activeUser.id, {
+        bookId: normalizedBookId,
+        bookTitle: params.bookTitle,
+        currentPage: params.currentPage,
+        totalPages: params.totalPages,
+        percentage: params.percentage,
+        status: params.status,
+        coverImageUrl: params.coverImageUrl,
+      });
+
+      // Ignore older responses if a newer request has already started
+      if (!isLatestRequestSequence(normalizedBookId, sequence)) {
+        return null;
+      }
+
+      return result;
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['reading-progress', user?.id] });
-      void queryClient.invalidateQueries({ queryKey: ['user-bookshelf', user?.id] });
+    onMutate: async (params: SaveReadingProgressParams) => {
+      const activeUserId = user?.id;
+      if (!activeUserId) return undefined;
+
+      const normalizedBookId = (params.bookId || '').trim();
+      if (!normalizedBookId) return undefined;
+
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: ['reading-progress', activeUserId] }),
+        queryClient.cancelQueries({ queryKey: ['user-bookshelf', activeUserId] }),
+      ]);
+
+      const previousProgress = queryClient.getQueryData<ReadingProgressItem[]>(['reading-progress', activeUserId]);
+      const previousShelf = queryClient.getQueryData<any[]>(['user-bookshelf', activeUserId]);
+
+      const existingProgress = previousProgress?.find(p => p.book_id === normalizedBookId);
+      const existingShelf = previousShelf?.find(s => s.book_id === normalizedBookId);
+
+      try {
+        const preview = normalizeProgressValues(
+          {
+            bookId: normalizedBookId,
+            bookTitle: params.bookTitle,
+            currentPage: params.currentPage,
+            totalPages: params.totalPages,
+            percentage: params.percentage,
+            status: params.status,
+            coverImageUrl: params.coverImageUrl,
+          },
+          {
+            current_page: existingProgress?.current_page,
+            total_pages: existingProgress?.total_pages,
+            status: existingShelf?.status,
+            cover_image_url: existingProgress?.cover_image_url,
+            book_title: existingProgress?.book_title,
+          },
+        );
+
+        // Optimistically update reading_progress cache
+        queryClient.setQueryData<ReadingProgressItem[]>(['reading-progress', activeUserId], (items = []) => {
+          const index = items.findIndex(p => p.book_id === normalizedBookId);
+          const updatedItem: ReadingProgressItem = {
+            id: existingProgress?.id || Date.now(),
+            book_id: normalizedBookId,
+            book_title: preview.bookTitle,
+            current_page: preview.currentPage,
+            total_pages: preview.totalPages,
+            cover_image_url: preview.coverImageUrl || undefined,
+            user_id: activeUserId,
+            started_at: preview.startedAt,
+            completed_at: preview.completedAt,
+          };
+
+          if (index >= 0) {
+            const next = [...items];
+            next[index] = updatedItem;
+            return next;
+          }
+          return [updatedItem, ...items];
+        });
+
+        // Optimistically update user_bookshelf cache
+        queryClient.setQueryData<any[]>(['user-bookshelf', activeUserId], (items = []) => {
+          return items.map(item => {
+            if (item.book_id !== normalizedBookId || item.status === 'dnf') return item;
+            return {
+              ...item,
+              progress: preview.percentage,
+              status: preview.status,
+              completed_at: preview.completedAt,
+              started_at: preview.startedAt,
+            };
+          });
+        });
+      } catch {
+        // If normalization fails, proceed with mutation to handle rejection
+      }
+
+      return { previousProgress, previousShelf, bookId: normalizedBookId };
+    },
+    onError: (_error, _variables, context) => {
+      const activeUserId = user?.id;
+      if (!activeUserId || !context) return;
+      if (context.previousProgress) {
+        queryClient.setQueryData(['reading-progress', activeUserId], context.previousProgress);
+      }
+      if (context.previousShelf) {
+        queryClient.setQueryData(['user-bookshelf', activeUserId], context.previousShelf);
+      }
+    },
+    onSettled: () => {
+      notifyProgressChanged(queryClient, user?.id);
+    },
+  });
+};
+
+export const useUpdateReadingProgress = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const saveProgress = useSaveReadingProgress();
+
+  return useMutation({
+    mutationFn: async (params: UpdateReadingProgressParams) => {
+      const activeUser = user || (await supabase.auth.getUser()).data.user;
+      if (!activeUser?.id) {
+        throw new Error('Sign in to update reading progress');
+      }
+
+      // If bookId is directly supplied
+      if (params.bookId) {
+        const page = params.currentPage !== undefined ? params.currentPage : params.current_page;
+        return saveProgress.mutateAsync({
+          bookId: params.bookId,
+          currentPage: page,
+          totalPages: params.totalPages,
+          percentage: params.percentage,
+          status: params.status,
+        });
+      }
+
+      // If id is supplied (record ID in reading_progress)
+      if (params.id) {
+        if (!Number.isSafeInteger(params.id) || params.id <= 0) {
+          throw new Error('Invalid reading progress record');
+        }
+
+        const page = params.currentPage !== undefined ? params.currentPage : params.current_page;
+        if (page === undefined || !Number.isFinite(page) || page < 1) {
+          throw new Error('Page number must be a positive integer');
+        }
+
+        const cachedProgress = queryClient.getQueryData<ReadingProgressItem[]>(['reading-progress', activeUser.id]);
+        const record = cachedProgress?.find(p => p.id === params.id);
+
+        if (record?.book_id) {
+          return saveProgress.mutateAsync({
+            bookId: record.book_id,
+            bookTitle: record.book_title,
+            currentPage: Math.round(page),
+            totalPages: record.total_pages,
+            coverImageUrl: record.cover_image_url,
+          });
+        }
+
+        // Direct database lookup if not in cache
+        const { data: dbRecord, error: lookupError } = await supabase
+          .from('reading_progress')
+          .select('*')
+          .eq('id', params.id)
+          .eq('user_id', activeUser.id)
+          .single();
+
+        if (lookupError || !dbRecord) {
+          throw lookupError || new Error('Reading progress record not found');
+        }
+
+        return saveProgress.mutateAsync({
+          bookId: dbRecord.book_id || `book-${dbRecord.id}`,
+          bookTitle: dbRecord.book_title,
+          currentPage: Math.round(page),
+          totalPages: dbRecord.total_pages,
+          coverImageUrl: dbRecord.cover_image_url,
+        });
+      }
+
+      throw new Error('Either bookId or progress id is required');
+    },
+    onSettled: () => {
+      notifyProgressChanged(queryClient, user?.id);
     },
   });
 };

@@ -8,6 +8,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 const mocks = vi.hoisted(() => ({
   user: { id: 'reader-1' } as null | { id: string },
   upsert: vi.fn(),
+  insert: vi.fn(),
+  update: vi.fn(),
   select: vi.fn(),
   single: vi.fn(),
   maybeSingle: vi.fn(),
@@ -18,7 +20,10 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/contexts/authHelpers', () => ({ useAuth: () => ({ user: mocks.user }) }));
 vi.mock('@/integrations/supabase/client-universal', () => ({
-  supabase: { from: (...args: unknown[]) => mocks.from(...args) },
+  supabase: {
+    from: (...args: unknown[]) => mocks.from(...args),
+    auth: { getUser: vi.fn().mockImplementation(async () => ({ data: { user: mocks.user } })) },
+  },
 }));
 
 import { useSaveReadingProgress } from './useReadingProgress';
@@ -40,7 +45,14 @@ describe('useSaveReadingProgress', () => {
     mocks.lookupSelect.mockReset().mockReturnValue({ eq: mocks.lookupEq });
     mocks.select.mockReset().mockReturnValue({ single: mocks.single });
     mocks.upsert.mockReset().mockReturnValue({ select: mocks.select });
-    mocks.from.mockReset().mockImplementation(() => ({ upsert: mocks.upsert, select: mocks.lookupSelect }));
+    mocks.insert.mockReset().mockResolvedValue({ error: null });
+    mocks.update.mockReset().mockReturnValue({ eq: mocks.lookupEq, error: null });
+    mocks.from.mockReset().mockImplementation(() => ({
+      upsert: mocks.upsert,
+      insert: mocks.insert,
+      update: mocks.update,
+      select: mocks.lookupSelect,
+    }));
   });
 
   afterEach(() => { cleanup(); vi.restoreAllMocks(); });
@@ -89,7 +101,8 @@ describe('useSaveReadingProgress', () => {
       bookId: 'book-1', bookTitle: 'Book', currentPage: Number.NaN, totalPages: 10,
     })).rejects.toThrow('Current page must be a positive number');
     mocks.user = null;
-    await expect(result.current.mutateAsync({
+    const { result: unauthResult } = renderProgressHook();
+    await expect(unauthResult.current.mutateAsync({
       bookId: 'book-1', bookTitle: 'Book', currentPage: 1, totalPages: 10,
     })).rejects.toThrow('Sign in to save reading progress');
     expect(mocks.upsert).not.toHaveBeenCalled();

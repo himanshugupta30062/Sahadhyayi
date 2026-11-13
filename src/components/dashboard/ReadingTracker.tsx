@@ -1,54 +1,23 @@
 
-import React, { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client-universal";
+import React from "react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Plus, Minus } from "lucide-react";
+import { useReadingProgress, useUpdateReadingProgress } from "@/hooks/useReadingProgress";
 
 type ReadingTrackerProps = {
-  userId: string;
+  userId?: string;
 };
 
-type ProgressItem = {
-  id: number;
-  book_title: string;
-  total_pages: number;
-  current_page: number;
-  cover_image_url?: string;
-};
+const ReadingTracker: React.FC<ReadingTrackerProps> = () => {
+  const { data: items = [], isLoading: loading } = useReadingProgress();
+  const updateProgress = useUpdateReadingProgress();
 
-const ReadingTracker: React.FC<ReadingTrackerProps> = ({ userId }) => {
-  const [items, setItems] = useState<ProgressItem[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchProgress() {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("reading_progress")
-        .select("id, book_title, total_pages, current_page, cover_image_url")
-        .eq("user_id", userId);
-      if (!error && data) setItems(data);
-      setLoading(false);
-    }
-    void fetchProgress();
-  }, [userId]);
-
-  const handleUpdate = async (id: number, newPage: number) => {
+  const handleUpdate = (id: number, newPage: number) => {
     if (Number.isNaN(newPage) || newPage < 1) return;
     const found = items.find((item) => item.id === id);
     if (found && newPage > found.total_pages) return;
-    const { error } = await supabase
-      .from("reading_progress")
-      .update({ current_page: newPage })
-      .eq("id", id);
-    if (!error) {
-      setItems((prev) =>
-        prev.map((i) =>
-          i.id === id ? { ...i, current_page: newPage } : i
-        )
-      );
-    }
+    updateProgress.mutate({ id, current_page: newPage });
   };
 
   return (
