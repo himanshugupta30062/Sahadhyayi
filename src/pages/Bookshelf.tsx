@@ -53,7 +53,8 @@ const Bookshelf = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { data: bookshelfData, isLoading, error } = useUserBookshelf();
-  const { data: dbProgress = [] } = useReadingProgress();\n  const updateProgress = useUpdateReadingProgress();
+  const { data: dbProgress = [] } = useReadingProgress();
+  const updateProgress = useUpdateReadingProgress();
   const updateBookshelf = useUpdateBookshelfItem();
   const removeFromBookshelf = useRemoveFromBookshelf();
   
@@ -187,7 +188,8 @@ const Bookshelf = () => {
       ]),
     ];
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(r => r.join(',')).join('\n');
+    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(r => r.join(',')).join('
+');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
@@ -515,7 +517,9 @@ const Bookshelf = () => {
 
                 const isReading = item.status === 'reading';
                 const isCompleted = item.status === 'completed';
-                const isWantToRead = item.status === 'want_to_read';\n                const progressRecord = dbProgress.find(p => p.book_id === item.book_id);\n                const canQuickLog = isReading && !!progressRecord && progressRecord.current_page < progressRecord.total_pages;
+                const isWantToRead = item.status === 'want_to_read';
+                const progressRecord = dbProgress.find(p => p.book_id === item.book_id);
+                const canQuickLog = isReading && !!progressRecord && progressRecord.current_page < progressRecord.total_pages;
 
                 return (
                   <Card 
