@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const mocks = vi.hoisted(() => ({
   user: { id: 'reader-1' } as null | { id: string },
-  rows: [] as Array<{ updated_at: string }>,
+  rows: [] as Array<{ activity_date: string; last_activity_at: string | null }>,
   error: null as unknown,
   from: vi.fn(),
   select: vi.fn(),
@@ -90,7 +90,7 @@ describe('useReadingStreak', () => {
   });
 
   it('computes the current streak, best streak, and active days in the last week', async () => {
-    mocks.rows = [0, 1, 5, 6, 7, 8].map((offset) => ({ updated_at: dayAtOffset(offset) }));
+    mocks.rows = [0, 1, 5, 6, 7, 8].map((offset) => ({ activity_date: dayKeyAtOffset(offset), last_activity_at: dayAtOffset(offset) }));
     const { result } = renderStreakHook();
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -101,11 +101,11 @@ describe('useReadingStreak', () => {
       activeDays: [dayKeyAtOffset(6), dayKeyAtOffset(5), dayKeyAtOffset(1), dayKeyAtOffset(0)],
       lastActiveAt: expect.any(String),
     });
-    expect(mocks.from).toHaveBeenCalledWith('detailed_reading_progress');
-    expect(mocks.select).toHaveBeenCalledWith('updated_at');
+    expect(mocks.from).toHaveBeenCalledWith('reading_activity_days');
+    expect(mocks.select).toHaveBeenCalledWith('activity_date,last_activity_at');
     expect(mocks.eq).toHaveBeenCalledWith('user_id', 'reader-1');
-    expect(mocks.gte).toHaveBeenCalledWith('updated_at', expect.any(String));
-    expect(mocks.order).toHaveBeenCalledWith('updated_at', { ascending: false });
+    expect(mocks.gte).toHaveBeenCalledWith('activity_date', expect.any(String));
+    expect(mocks.order).toHaveBeenCalledWith('activity_date', { ascending: false });
     expect(mocks.limit).toHaveBeenCalledWith(1000);
   });
 
