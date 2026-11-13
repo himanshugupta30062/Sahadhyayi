@@ -25,6 +25,7 @@ const Discovery = () => {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
   const [publicationPeriodFilter, setPublicationPeriodFilter] = useState('all');
+  const [minimumRatingFilter, setMinimumRatingFilter] = useState('all');
   const [sortBy, setSortBy] = useState<'relevance' | 'newest' | 'title_asc' | 'quality' | 'rating' | 'author_asc'>('relevance');
   const [visibleCount, setVisibleCount] = useState(24);
 
@@ -43,6 +44,10 @@ const Discovery = () => {
     if (languageFilter !== 'all') list = list.filter((book) => book.language === languageFilter);
     if (selectedGenres.length > 0) list = list.filter((book) => selectedGenres.includes(book.genre ?? ''));
     if (availabilityFilter === 'readable') list = list.filter((book) => Boolean(book.pdf_url));
+    if (minimumRatingFilter !== 'all') {
+      const minimumRating = Number(minimumRatingFilter);
+      list = list.filter((book) => typeof book.rating === 'number' && book.rating >= minimumRating);
+    }
     if (publicationPeriodFilter !== 'all') {
       list = list.filter((book) => {
         const year = Number(book.publication_year);
@@ -62,22 +67,23 @@ const Discovery = () => {
     if (sortBy === 'quality' || sortBy === 'relevance') list.sort((a, b) => (b.qualityScore ?? 0) - (a.qualityScore ?? 0) || (b.rating ?? 0) - (a.rating ?? 0) || new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     return list;
-  }, [availabilityFilter, books, selectedGenres, languageFilter, publicationPeriodFilter, searchQuery, sortBy]);
+  }, [availabilityFilter, books, selectedGenres, languageFilter, minimumRatingFilter, publicationPeriodFilter, searchQuery, sortBy]);
 
-  useEffect(() => { setVisibleCount(24); }, [searchQuery, languageFilter, selectedGenres, availabilityFilter, publicationPeriodFilter, sortBy]);
+  useEffect(() => { setVisibleCount(24); }, [searchQuery, languageFilter, selectedGenres, availabilityFilter, minimumRatingFilter, publicationPeriodFilter, sortBy]);
   const visibleBooks = filteredTrendingBooks.slice(0, visibleCount);
 
   const genres = useMemo(
     () => [...new Set(books.map((book) => book.genre).filter(Boolean))].sort((a, b) => (a ?? '').localeCompare(b ?? '')),
     [books],
   );
-  const hasActiveFilters = Boolean(searchQuery.trim()) || languageFilter !== 'all' || selectedGenres.length > 0 || availabilityFilter !== 'all' || publicationPeriodFilter !== 'all' || sortBy !== 'relevance';
+  const hasActiveFilters = Boolean(searchQuery.trim()) || languageFilter !== 'all' || selectedGenres.length > 0 || availabilityFilter !== 'all' || publicationPeriodFilter !== 'all' || minimumRatingFilter !== 'all' || sortBy !== 'relevance';
   const clearFilters = () => {
     setSearchQuery('');
     setLanguageFilter('all');
     setSelectedGenres([]);
     setAvailabilityFilter('all');
     setPublicationPeriodFilter('all');
+    setMinimumRatingFilter('all');
     setSortBy('relevance');
     void trackUiEvent('discovery_filters_reset');
   };
@@ -179,6 +185,19 @@ const Discovery = () => {
                 <SelectItem value="2010s">2010–2019</SelectItem>
                 <SelectItem value="2020s">2020–2029</SelectItem>
                 <SelectItem value="unknown">Year not listed</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={minimumRatingFilter} onValueChange={(value) => {
+              setMinimumRatingFilter(value);
+              void trackUiEvent('discovery_filter_changed', { filter: 'minimum_rating', value });
+            }}>
+              <SelectTrigger><SelectValue placeholder="Minimum rating" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Any rating</SelectItem>
+                <SelectItem value="3">3+ stars</SelectItem>
+                <SelectItem value="3.5">3.5+ stars</SelectItem>
+                <SelectItem value="4">4+ stars</SelectItem>
+                <SelectItem value="4.5">4.5+ stars</SelectItem>
               </SelectContent>
             </Select>
           </div>
