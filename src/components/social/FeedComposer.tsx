@@ -228,14 +228,44 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
                 <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#1C442D] dark:text-[#D5B16D]">
                   <Quote className="h-4 w-4" /> A passage worth keeping
                 </div>
-                <Textarea value={quoteText} onChange={(event) => setQuoteText(event.target.value.slice(0, 500))} maxLength={500} aria-label="Quote text" placeholder="Add a short quote that stayed with you…" className="min-h-[110px] resize-y border-0 bg-transparent p-0 font-serif text-lg leading-relaxed text-[#1C201D] shadow-none placeholder:text-[#636B65]/60 focus-visible:ring-0 dark:text-[#F3F0E7]" />
+                <Textarea
+                  value={quoteText}
+                  onChange={(event) => setQuoteText(event.target.value.slice(0, 500))}
+                  maxLength={500}
+                  aria-label="Quote text"
+                  placeholder="Add a short quote that stayed with you…"
+                  onKeyDown={(e) => {
+                    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                      e.preventDefault();
+                      if (quoteText.trim() && !isPosting && !createPost.isPending) {
+                        void handlePost();
+                      }
+                    }
+                  }}
+                  className="min-h-[110px] resize-y border-0 bg-transparent p-0 font-serif text-lg leading-relaxed text-[#1C201D] shadow-none placeholder:text-[#636B65]/60 focus-visible:ring-0 dark:text-[#F3F0E7]"
+                />
                 <div className="mt-2 flex justify-end text-[10px] text-[#636B65] dark:text-[#A5ADA6]">{quoteText.length}/500</div>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
                   <input value={quoteAuthor} onChange={(event) => setQuoteAuthor(event.target.value.slice(0, 120))} maxLength={120} aria-label="Quote author" placeholder="Author / speaker (optional)" className="min-w-0 rounded-lg border border-[#D9DFD5] bg-white/70 px-3 py-2 text-xs text-[#1C201D] outline-none focus:ring-2 focus:ring-[#1C442D] dark:border-[#315C43] dark:bg-[#0B0D0C]/70 dark:text-[#F3F0E7] dark:focus:ring-[#D5B16D]" />
                   <input value={quoteSource} onChange={(event) => setQuoteSource(event.target.value.slice(0, 160))} maxLength={160} aria-label="Quote source" placeholder="Book / source / page (optional)" className="min-w-0 rounded-lg border border-[#D9DFD5] bg-white/70 px-3 py-2 text-xs text-[#1C201D] outline-none focus:ring-2 focus:ring-[#1C442D] dark:border-[#315C43] dark:bg-[#0B0D0C]/70 dark:text-[#F3F0E7] dark:focus:ring-[#D5B16D]" />
                 </div>
               </div>
-              <Textarea value={quoteContext} onChange={(event) => setQuoteContext(event.target.value.slice(0, 1000))} maxLength={1000} aria-label="Why this quote matters" placeholder="Why does it matter to you? What person, memory, or situation does it remind you of? (optional)" className="min-h-[72px] resize-y rounded-xl border-[#E8E2D9] bg-[#FAF7F2] text-sm dark:border-[#29332D] dark:bg-[#0B0D0C]/70" />
+              <Textarea
+                value={quoteContext}
+                onChange={(event) => setQuoteContext(event.target.value.slice(0, 1000))}
+                maxLength={1000}
+                aria-label="Why this quote matters"
+                placeholder="Why does it matter to you? What person, memory, or situation does it remind you of? (optional)"
+                onKeyDown={(e) => {
+                  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    if (quoteText.trim() && !isPosting && !createPost.isPending) {
+                      void handlePost();
+                    }
+                  }
+                }}
+                className="min-h-[72px] resize-y rounded-xl border-[#E8E2D9] bg-[#FAF7F2] text-sm dark:border-[#29332D] dark:bg-[#0B0D0C]/70"
+              />
               <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6]">Add attribution when known. Your reflection gives the quote personal meaning; you can link it to a book below.</p>
             </div>
           ) : null}
