@@ -12,6 +12,7 @@ import SEO from '@/components/SEO';
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import CurrentReads from '@/components/dashboard/CurrentReads';
 import ReadingGoalDialog from '@/components/dashboard/ReadingGoalDialog';
+import ReadingGoalMilestones from '@/components/dashboard/ReadingGoalMilestones';
 import ReadingGoalModal from '@/components/dashboard/ReadingGoalModal';
 import BookRecommendations from '@/components/dashboard/BookRecommendations';
 import ReadingStreakCard from '@/components/dashboard/ReadingStreakCard';
@@ -254,67 +255,7 @@ const DashboardContent = () => {
 
             {/* Sidebar */}
             <div className="space-y-6">
-              {/* Reading Goal - Clean Circular Progress */}
-              <Card className="border-border overflow-hidden">
-                <CardHeader className="pb-2">
-                  <CardTitle as="h2" className="text-base font-semibold flex items-center gap-2">
-                    <Flame className="w-4 h-4 text-[hsl(var(--brand-primary))]" />
-                    {currentYear} Reading Goal
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Circular Progress */}
-                  <div className="flex justify-center py-4">
-                    <div className="relative w-32 h-32">
-                      <svg className="w-full h-full transform -rotate-90">
-                        <circle
-                          cx="64"
-                          cy="64"
-                          r="56"
-                          stroke="currentColor"
-                          strokeWidth="12"
-                          fill="none"
-                          className="text-muted"
-                        />
-                        <circle
-                          cx="64"
-                          cy="64"
-                          r="56"
-                          stroke="currentColor"
-                          strokeWidth="12"
-                          fill="none"
-                          strokeLinecap="round"
-                          strokeDasharray={`${2 * Math.PI * 56}`}
-                          strokeDashoffset={`${2 * Math.PI * 56 * (1 - progressPercentage / 100)}`}
-                          className="text-[hsl(var(--brand-primary))] transition-all duration-500"
-                        />
-                      </svg>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-2xl font-bold text-foreground">{completedBooks}</span>
-                        <span className="text-xs text-muted-foreground">of {readingGoal}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Stats Row */}
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="p-2 rounded-lg bg-muted/50">
-                      <div className="text-sm font-semibold text-foreground">{currentlyReading}</div>
-                      <div className="text-[10px] text-muted-foreground">Reading</div>
-                    </div>
-                    <div className="p-2 rounded-lg bg-muted/50">
-                      <div className="text-sm font-semibold text-foreground">{completedBooks}</div>
-                      <div className="text-[10px] text-muted-foreground">Finished</div>
-                    </div>
-                    <div className="p-2 rounded-lg bg-muted/50">
-                      <div className="text-sm font-semibold text-foreground">{wantToRead}</div>
-                      <div className="text-[10px] text-muted-foreground">To Read</div>
-                    </div>
-                  </div>
-
-                  <ReadingGoalDialog onGoalUpdate={handleGoalUpdate} />
-                </CardContent>
-              </Card>
+              <ReadingGoalMilestones completedBooks={completedBooks} goal={readingGoal} year={currentYear} />
 
               {/* Community Pulse: Live rooms, groups & co-readers */}
               <DashboardCommunityPulse />
