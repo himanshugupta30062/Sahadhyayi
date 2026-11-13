@@ -53,6 +53,7 @@ const Profile = lazy(() => import('./pages/Profile'));
 const SocialMedia = lazy(() => import('./pages/SocialMedia'));
 const BookReelSharePage = lazy(() => import('./pages/BookReelSharePage'));
 const BookReelInsights = lazy(() => import('./pages/BookReelInsights'));
+const BookReelDetailInsights = lazy(() => import('./pages/BookReelDetailInsights'));
 const BookReelCreatorProfile = lazy(() => import('./pages/BookReelCreatorProfile'));
 const Stories = lazy(() => import('./pages/Stories'));
 const Authors = lazy(() => import('./pages/Authors'));
@@ -889,6 +890,7 @@ const App = memo(() => {
                         <Route path="/dmca-policy" element={<Navigate to="/dmca" replace />} />
                         <Route path="/open-source-licenses" element={<Suspense fallback={<LoadingFallback />}><OpenSourceLicenses /></Suspense>} />
                         <Route path="/social/reels/insights" element={<ProtectedRoute><Suspense fallback={<LoadingFallback message="Loading reel insights..." />}><BookReelInsights /></Suspense></ProtectedRoute>} />
+                        <Route path="/social/reels/insights/:reelId" element={<ProtectedRoute><Suspense fallback={<LoadingFallback message="Loading Reel detail..." />}><BookReelDetailInsights /></Suspense></ProtectedRoute>} />
                         <Route path="/social/reels/saved" element={<ProtectedRoute><Suspense fallback={<LoadingFallback message="Loading saved reels..." />}><SavedBookReels /></Suspense></ProtectedRoute>} />
                         <Route path="/social/reel/:reelId" element={<Suspense fallback={<LoadingFallback message="Loading Book Reel..." />}><BookReelSharePage /></Suspense>} />
                         <Route path="*" element={<NotFound />} />
