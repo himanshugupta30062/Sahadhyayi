@@ -111,7 +111,6 @@ const Index = () => {
         </DeferredSection>
 
         {/* Reader Map is Sahadhyayi’s signature connection feature: surface it immediately after discovery. */}
-        {/* Reader Map is Sahadhyayi’s signature connection feature: surface it immediately after discovery. */}
         <DeferredSection fallback={<div className="min-h-[700px] bg-[#F4F3EF] dark:bg-[#0B0D0C]" aria-hidden="true" />} minHeightClassName="min-h-[700px]">
           <ErrorBoundary fallback={null}><HomeReadingPeopleSection /></ErrorBoundary>
         </DeferredSection>
