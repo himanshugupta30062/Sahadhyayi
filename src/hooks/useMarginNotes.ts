@@ -201,7 +201,7 @@ export const useDeleteMarginNote = () => {
   return useMutation({
     mutationFn: async (noteId: string) => {
       if (!user) throw new Error("Sign in first.");
-      const { error } = await supabase.from("margin_notes").delete().eq("id", noteId).eq("user_id", user.id);
+      const { error } = await supabase.from("margin_notes").delete().eq("id", noteId).eq("user_id", user.id).eq("visibility", "private");
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["margin-notes"] }),
