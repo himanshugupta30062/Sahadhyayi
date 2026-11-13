@@ -130,7 +130,7 @@ function isUsableWork(value: unknown): value is OpenAlexWork {
 const ResearchPapers = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
-  const [activeTopic, setActiveTopic] = useState('');
+  const [activeTopic, setActiveTopic] = useState(searchParams.get('topic') || '');
   const [year, setYear] = useState(searchParams.get('year') || 'all');
   const [category, setCategory] = useState(searchParams.get('category') || 'all');
   const [sort, setSort] = useState(searchParams.get('sort') || 'cited_by_count');
@@ -247,11 +247,15 @@ const ResearchPapers = () => {
       else next.delete('year');
       if (category !== 'all') next.set('category', category);
       else next.delete('category');
+      if (sort !== 'cited_by_count') next.set('sort', sort);
+      else next.delete('sort');
+      if (activeTopic) next.set('topic', activeTopic);
+      else next.delete('topic');
       if (page > 1) next.set('page', String(page));
       else next.delete('page');
       return next.toString() === currentParams.toString() ? currentParams : next;
     }, { replace: true });
-  }, [searchQuery, year, category, sort, page, setSearchParams]);
+  }, [searchQuery, year, category, sort, page, activeTopic, setSearchParams]);
 
   useEffect(() => {
     let active = true;
@@ -315,7 +319,7 @@ const ResearchPapers = () => {
 
   const resetFilters = () => {
     setSearchQuery('');
-    setActiveTopic('All research');
+    setActiveTopic('');
     setYear('all');
     setCategory('all');
     setPage(1);
