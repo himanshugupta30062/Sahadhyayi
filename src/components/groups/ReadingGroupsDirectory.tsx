@@ -154,6 +154,7 @@ const ReadingGroupsDirectory = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'mine'>('all');
+  const [groupSort, setGroupSort] = useState<'popular' | 'newest' | 'name'>('popular');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newGroup, setNewGroup] = useState({ name: '', description: '', isPrivate: false });
   const [editGroup, setEditGroup] = useState<EditableGroup | null>(null);
@@ -182,13 +183,17 @@ const ReadingGroupsDirectory = () => {
           return status === 'active' || status === 'pending';
         })
       : allGroups;
-    if (!normalizedSearch) return base;
-    return base.filter(
+    const matching = !normalizedSearch ? base : base.filter(
       (g) =>
         g.name.toLowerCase().includes(normalizedSearch) ||
         (g.description ?? '').toLowerCase().includes(normalizedSearch),
     );
-  }, [allGroups, activeTab, membershipByGroup, normalizedSearch]);
+    return [...matching].sort((a, b) => groupSort === 'name'
+      ? a.name.localeCompare(b.name)
+      : groupSort === 'newest'
+        ? new Date((b as any).created_at ?? 0).getTime() - new Date((a as any).created_at ?? 0).getTime()
+        : (b.group_members?.[0]?.count ?? 0) - (a.group_members?.[0]?.count ?? 0) || a.name.localeCompare(b.name));
+  }, [allGroups, activeTab, membershipByGroup, normalizedSearch, groupSort]);
 
   const myGroupsCount = useMemo(
     () => allGroups.filter((g) => {
@@ -390,6 +395,12 @@ const ReadingGroupsDirectory = () => {
             className="pl-10"
           />
         </div>
+
+        <select aria-label="Sort reading groups" value={groupSort} onChange={(e) => setGroupSort(e.target.value as typeof groupSort)} className="h-10 rounded-md border bg-background px-3 text-sm">
+          <option value="popular">Most members</option>
+          <option value="newest">Newest</option>
+          <option value="name">Name A–Z</option>
+        </select>
 
         {user && (
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'all' | 'mine')} className="w-auto">
