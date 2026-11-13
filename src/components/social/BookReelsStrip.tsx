@@ -11,6 +11,7 @@ import {
   Flame,
   Coffee,
   Bookmark,
+  Share2,
   X,
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
