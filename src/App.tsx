@@ -42,7 +42,7 @@ const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const ConfirmEmail = lazy(() => import('./pages/ConfirmEmail'));
 const AuthCallback = lazy(() => import('./pages/AuthCallback'));
 const BookDetails = lazy(() => import('./pages/BookDetails'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));\nconst MyReadingStats = lazy(() => import('./pages/MyReadingStats'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
 const BookExpert = lazy(() => import('./components/book-expert/BookExpert'));
 const WhatsAppCallCenterFab = lazy(() => import('./components/support/WhatsAppCallCenterFab'));
 const StructuredFooter = lazy(() => import("./components/footer/StructuredFooter"));
@@ -51,8 +51,6 @@ const WebsiteTour = lazy(() => import("./components/onboarding/WebsiteTour"));
 // Secondary pages (can be loaded later)
 const Profile = lazy(() => import('./pages/Profile'));
 const SocialMedia = lazy(() => import('./pages/SocialMedia'));
-const BookReelSharePage = lazy(() => import('./pages/BookReelSharePage'));
-const BookReelCreatorProfile = lazy(() => import('./pages/BookReelCreatorProfile'));
 const Stories = lazy(() => import('./pages/Stories'));
 const Authors = lazy(() => import('./pages/Authors'));
 const Scientists = lazy(() => import('./pages/Scientists'));
@@ -65,7 +63,6 @@ const AuthorDetails = lazy(() => import('./pages/AuthorDetails'));
 const ReadingGroups = lazy(() => import('./pages/ReadingGroups'));
 const GroupDetails = lazy(() => import('./pages/GroupDetails'));
 const SavedGroupDiscussions = lazy(() => import('./components/groups/SavedGroupDiscussions'));
-const SavedBookReels = lazy(() => import('./pages/SavedBookReels'));
 const MapPage = lazy(() => import('./pages/Map'));
 const About = lazy(() => import('./pages/About'));
 const Blog = lazy(() => import('./pages/Blog'));
@@ -404,7 +401,7 @@ const App = memo(() => {
                           }
                         />
                         <Route
-                          path="/reading-stats"\n                          element={<ProtectedRoute><Suspense fallback={<LoadingFallback />}><MyReadingStats /></Suspense></ProtectedRoute>}\n                        />\n                        <Route\n                          path="/dashboard"
+                          path="/dashboard"
                           element={
                             <ProtectedRoute>
                               <Suspense fallback={<LoadingFallback message="Loading dashboard..." />}>
@@ -441,7 +438,6 @@ const App = memo(() => {
                             </ProtectedRoute>
                           }
                         />
-                        <Route path="/social/reels/:userId" element={<Suspense fallback={<LoadingFallback message="Loading reader Reels..." />}><BookReelCreatorProfile /></Suspense>} />
                         <Route
                           path="/social"
                           element={
@@ -887,8 +883,6 @@ const App = memo(() => {
                         <Route path="/dmca" element={<Suspense fallback={<LoadingFallback />}><DmcaPolicy /></Suspense>} />
                         <Route path="/dmca-policy" element={<Navigate to="/dmca" replace />} />
                         <Route path="/open-source-licenses" element={<Suspense fallback={<LoadingFallback />}><OpenSourceLicenses /></Suspense>} />
-                        <Route path="/social/reels/saved" element={<ProtectedRoute><Suspense fallback={<LoadingFallback message="Loading saved reels..." />}><SavedBookReels /></Suspense></ProtectedRoute>} />
-                        <Route path="/social/reel/:reelId" element={<Suspense fallback={<LoadingFallback message="Loading Book Reel..." />}><BookReelSharePage /></Suspense>} />
                         <Route path="*" element={<NotFound />} />
                         </Routes>
                       </RouteErrorBoundary>
