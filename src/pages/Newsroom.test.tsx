@@ -36,26 +36,16 @@ const mockNews = [
   },
 ];
 
+import { useQuery } from '@tanstack/react-query';
+import { FALLBACK_NEWS_ARTICLES } from '@/data/fallbackNews';
+
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: vi.fn(() => ({
-    data: mockNews,
-    isLoading: false,
-    error: null,
-    refetch: vi.fn(),
-  })),
+  useQuery: vi.fn(),
 }));
 
 vi.mock('@/integrations/supabase/client-universal', () => ({
   supabase: {
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          order: () => ({
-            limit: async () => ({ data: mockNews, error: null }),
-          }),
-        }),
-      }),
-    }),
+    from: vi.fn(),
   },
 }));
 
@@ -66,6 +56,12 @@ vi.mock('@/components/SEO', () => ({
 describe('Newsroom Page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(useQuery).mockReturnValue({
+      data: mockNews,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    } as any);
   });
 
   afterEach(() => {
@@ -99,5 +95,64 @@ describe('Newsroom Page', () => {
 
     // In authors category, news-2 is the first item (not in secondary aside)
     expect(screen.getByText(/Press Trust/i)).toBeInTheDocument();
+  });
+
+  it('gracefully renders curated fallback news when database query returns empty or errors', () => {
+    vi.mocked(useQuery).mockReturnValue({
+      data: [],
+      isLoading: false,
+      error: new Error('permission denied for function is_admin'),
+      refetch: vi.fn(),
+    } as any);
+
+    render(
+      <MemoryRouter initialEntries={['/news']}>
+        <Newsroom />
+      </MemoryRouter>
+    );
+
+    // Verify that curated fallback news is rendered rather than a crash or error screen
+    expect(screen.queryByText(/News is temporarily unavailable/i)).not.toBeInTheDocument();
+    expect(screen.getByText(FALLBACK_NEWS_ARTICLES[0].title)).toBeInTheDocument();
+    expect(screen.getByText(FALLBACK_NEWS_ARTICLES[1].title)).toBeInTheDocument();
+  });
+
+  it('queryFn handles Supabase 42501 error and returns fallback news seamlessly', async () => {
+    let capturedQueryFn: any;
+    vi.mocked(useQuery).mockImplementation(((options: any) => {
+      capturedQueryFn = options.queryFn;
+      return {
+        data: FALLBACK_NEWS_ARTICLES,
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      };
+    }) as any);
+
+    render(
+      <MemoryRouter initialEntries={['/news']}>
+        <Newsroom />
+      </MemoryRouter>
+    );
+
+    expect(typeof capturedQueryFn).toBe('function');
+
+    // Test queryFn execution when supabase returns 42501 error
+    const { supabase } = await import('@/integrations/supabase/client-universal');
+    vi.mocked(supabase.from).mockReturnValue({
+      select: () => ({
+        eq: () => ({
+          order: () => ({
+            limit: async () => ({
+              data: null,
+              error: { code: '42501', message: 'permission denied for function is_admin' },
+            }),
+          }),
+        }),
+      }),
+    } as any);
+
+    const result = await capturedQueryFn();
+    expect(result).toEqual(FALLBACK_NEWS_ARTICLES);
   });
 });

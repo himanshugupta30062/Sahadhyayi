@@ -9,13 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import SEO from "@/components/SEO";
 import BookFlipLoader from "@/components/ui/BookFlipLoader";
 import { format } from "date-fns";
+import { FALLBACK_NEWS_ARTICLES, type NewsCategory, type NewsItem } from "@/data/fallbackNews";
 
-type NewsCategory = "books" | "authors" | "education" | "research" | "events" | "platform";
-type NewsItem = {
-  id: string; title: string; slug: string; summary: string | null;
-  cover_image_url: string | null; image_credit: string | null; image_source_url: string | null; category: NewsCategory; source_name: string | null;
-  source_url: string | null; published_at: string;
-};
+export type { NewsCategory, NewsItem };
 
 const categories: { value: NewsCategory | "all"; label: string; icon: typeof Newspaper }[] = [
   { value: "all", label: "Top stories", icon: Newspaper },
@@ -92,14 +88,31 @@ export default function Newsroom() {
   const newsQuery = useQuery({
     queryKey: ["newsroom", "published"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any).from("news_articles")
-        .select("id,title,slug,summary,cover_image_url,image_credit,image_source_url,category,source_name,source_url,published_at")
-        .eq("status", "published").order("published_at", { ascending: false }).limit(500);
-      if (error) throw error;
-      return (data || []) as NewsItem[];
+      try {
+        const { data, error } = await (supabase as any).from("news_articles")
+          .select("id,title,slug,summary,cover_image_url,image_credit,image_source_url,category,source_name,source_url,published_at")
+          .eq("status", "published").order("published_at", { ascending: false }).limit(500);
+        if (error) {
+          console.warn("Could not load news from database; falling back to curated news:", error.message || error);
+          return FALLBACK_NEWS_ARTICLES;
+        }
+        if (!data || data.length === 0) {
+          return FALLBACK_NEWS_ARTICLES;
+        }
+        return data as NewsItem[];
+      } catch (err) {
+        console.warn("Exception loading news articles; falling back to curated news:", err);
+        return FALLBACK_NEWS_ARTICLES;
+      }
     },
+    staleTime: 5 * 60 * 1000,
   });
-  const items = useMemo(() => newsQuery.data || [], [newsQuery.data]);
+  const items = useMemo(() => {
+    if (newsQuery.data && newsQuery.data.length > 0) {
+      return newsQuery.data;
+    }
+    return FALLBACK_NEWS_ARTICLES;
+  }, [newsQuery.data]);
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return items.filter((item) => (category === "all" || item.category === category) &&
@@ -110,8 +123,8 @@ export default function Newsroom() {
   const rest = lead ? filtered.slice(4) : filtered;
   const visibleRest = rest.slice(0, visibleCount);
 
-  if (newsQuery.isLoading) return <div className="flex min-h-[60vh] items-center justify-center"><BookFlipLoader size="md" text="Loading news..." /></div>;
-  if (newsQuery.error) return <main className="mx-auto max-w-4xl px-4 py-20 text-center"><h1 className="text-2xl font-semibold">News is temporarily unavailable</h1><p className="mt-2 text-muted-foreground">Please try again shortly.</p><Button className="mt-5" variant="outline" onClick={() => newsQuery.refetch()}>Try again</Button></main>;
+  if (newsQuery.isLoading && !newsQuery.data) return <div className="flex min-h-[60vh] items-center justify-center"><BookFlipLoader size="md" text="Loading news..." /></div>;
+  if (items.length === 0 && newsQuery.error) return <main className="mx-auto max-w-4xl px-4 py-20 text-center"><h1 className="text-2xl font-semibold">News is temporarily unavailable</h1><p className="mt-2 text-muted-foreground">Please try again shortly.</p><Button className="mt-5" variant="outline" onClick={() => newsQuery.refetch()}>Try again</Button></main>;
 
   return <>
     <SEO title="News | Books, Authors, Education & Research | Sahadhyayi" description="Latest headlines and concise updates on books, authors, education, research, science and events." canonical="https://sahadhyayi.com/news" />
