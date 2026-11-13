@@ -21,6 +21,7 @@ export interface BookshelfItem {
     author?: string;
   };
   is_favorite?: boolean;
+  is_owned?: boolean;
   books_library?: {
     id: string;
     title: string;
