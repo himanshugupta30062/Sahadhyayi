@@ -1,0 +1,18 @@
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowLeft, Eye, Users, Heart, MessageCircle, TrendingUp } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client-universal';
+
+type Analytics = { reel_id:string; book_title:string; created_at:string; view_count:number; unique_viewers:number; reaction_count:number; comment_count:number };
+const Metric = ({icon:Icon,label,value}:{icon:React.ElementType;label:string;value:number}) => <div className="rounded-xl border bg-card p-3"><div className="flex items-center gap-2 text-xs text-muted-foreground"><Icon className="h-4 w-4"/>{label}</div><p className="mt-2 text-xl font-semibold tabular-nums">{value.toLocaleString()}</p></div>;
+
+export default function BookReelInsights(){
+ const [rows,setRows]=useState<Analytics[]>([]);const [loading,setLoading]=useState(true);const [error,setError]=useState('');
+ useEffect(()=>{let alive=true;(async()=>{const {data,error}=await supabase.rpc('get_my_book_reel_analytics');if(!alive)return;if(error)setError('Analytics are not available yet. Apply the Book Reel analytics migration, then reload.');else setRows((data||[]) as Analytics[]);setLoading(false);})();return()=>{alive=false;};},[]);
+ const totals=rows.reduce((a,r)=>({views:a.views+Number(r.view_count||0),audience:a.audience+Number(r.unique_viewers||0),reactions:a.reactions+Number(r.reaction_count||0),comments:a.comments+Number(r.comment_count||0)}),{views:0,audience:0,reactions:0,comments:0});
+ return <main className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6"><Link to="/social" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4"/>Back to Social</Link><header><div className="flex items-center gap-2 text-primary"><TrendingUp className="h-5 w-5"/><span className="text-sm font-medium">Creator studio</span></div><h1 className="mt-2 font-serif text-3xl font-bold">Book Reel insights</h1><p className="mt-1 text-muted-foreground">Understand how your reader moments reach the community.</p></header>
+ {loading?<p className="py-12 text-center text-muted-foreground">Loading insights…</p>:error?<div role="alert" className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">{error}</div>:<>
+ <section className="grid grid-cols-2 gap-3 md:grid-cols-4"><Metric icon={Eye} label="Plays / views" value={totals.views}/><Metric icon={Users} label="Known viewers" value={totals.audience}/><Metric icon={Heart} label="Reactions" value={totals.reactions}/><Metric icon={MessageCircle} label="Comments" value={totals.comments}/></section>
+ <section className="overflow-hidden rounded-2xl border bg-card"><div className="border-b p-4"><h2 className="font-semibold">Your reels</h2><p className="text-sm text-muted-foreground">All-time totals · anonymous plays count toward views, not known viewers</p></div>{rows.length? <div className="divide-y">{rows.map(r=><div key={r.reel_id} className="grid gap-3 p-4 sm:grid-cols-[1fr_auto] sm:items-center"><div className="min-w-0"><p className="truncate font-medium">{r.book_title}</p><time className="text-xs text-muted-foreground" dateTime={r.created_at}>{new Date(r.created_at).toLocaleDateString()}</time><p className="mt-1 text-xs text-muted-foreground">{r.view_count} views · {r.unique_viewers} signed-in viewers · {r.reaction_count} reactions · {r.comment_count} comments</p></div><Link to={`/social/reel/${r.reel_id}`} className="text-sm font-medium text-primary hover:underline">View reel →</Link></div>)}</div>:<p className="p-8 text-center text-sm text-muted-foreground">Publish a Book Reel to see insights here.</p>}</section></>}
+ </main>;
+}
