@@ -220,9 +220,12 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
                 >
                   {reel.tag}
                 </span>
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-black/40 text-white/80 backdrop-blur-xs">
-                  <Volume2 className="h-3 w-3" />
-                </span>
+                <div className="flex items-center gap-1.5">
+                  {reel.durationSeconds != null && <span className="rounded-full bg-black/55 px-1.5 py-0.5 text-[10px] font-semibold text-white backdrop-blur-md">{Number(reel.durationSeconds).toFixed(1)}s</span>}
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-black/40 text-white/80 backdrop-blur-xs">
+                    <Volume2 className="h-3 w-3" />
+                  </span>
+                </div>
               </div>
 
               {/* Bottom: Hook + Reader details */}
