@@ -81,6 +81,34 @@ export const useCreateReadingLog = () => {
         journal_note: journalNote,
       }).select().single();
       if (error) throw error;
+
+      // Persist a deduplicated activity day only after an explicit reading log is saved.
+      // Use the reader's local calendar date (and timezone), not UTC midnight.
+      const loggedAt = new Date(data.logged_at ?? new Date().toISOString());
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+      const dateParts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: timezone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).formatToParts(loggedAt);
+      const part = (type: string) => dateParts.find((item) => item.type === type)?.value;
+      const activityDate = `${part('year')}-${part('month')}-${part('day')}`;
+      const activityTimestamp = loggedAt.toISOString();
+      const { error: activityError } = await supabase.from('reading_activity_days').upsert(
+        {
+          user_id: user.id,
+          activity_date: activityDate,
+          timezone,
+          first_activity_at: activityTimestamp,
+          last_activity_at: activityTimestamp,
+          source: 'reading_log',
+        },
+        { onConflict: 'user_id,activity_date', ignoreDuplicates: true },
+      );
+      // A reading log is already saved; do not report the primary action as failed
+      // if activity-day tracking is temporarily unavailable.
+      if (activityError) console.warn('Reading log saved, but activity day was not recorded:', activityError);
       return data as ReadingLogEntry;
     },
     onSuccess: (entry) => {
