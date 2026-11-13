@@ -4,6 +4,7 @@ import '@testing-library/jest-dom/vitest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import BookDetails from './BookDetails';
 import * as bookByIdHook from '@/hooks/useBookById';
 import * as ratingsHook from '@/hooks/useBookRatings';
@@ -49,6 +50,18 @@ vi.mock('@/components/books/BookEditionTransparency', () => ({
   BookEditionTransparency: () => null,
 }));
 
+vi.mock('@/components/books/BookSeriesSection', () => ({
+  BookSeriesSection: () => null,
+}));
+
+vi.mock('@/components/books/BookEditionPicker', () => ({
+  BookEditionPicker: () => null,
+}));
+
+vi.mock('@/components/books/BookExperienceTags', () => ({
+  default: () => null,
+}));
+
 vi.mock('@/components/books/BookReviews', () => ({
   default: () => null,
 }));
@@ -83,6 +96,13 @@ describe('BookDetails', () => {
     cleanup();
   });
 
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+
+  const renderWithProviders = (ui: React.ReactElement) =>
+    render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+
   it('renders loading state while book is loading', () => {
     vi.spyOn(bookByIdHook, 'useBookById').mockReturnValue({
       data: null,
@@ -90,7 +110,7 @@ describe('BookDetails', () => {
       error: null,
     } as any);
 
-    render(
+    renderWithProviders(
       <MemoryRouter initialEntries={['/books/book-123']}>
         <Routes>
           <Route path="/books/:id" element={<BookDetails />} />
@@ -108,7 +128,7 @@ describe('BookDetails', () => {
       error: null,
     } as any);
 
-    render(
+    renderWithProviders(
       <MemoryRouter initialEntries={['/books/missing-book']}>
         <Routes>
           <Route path="/books/:id" element={<BookDetails />} />
@@ -136,7 +156,7 @@ describe('BookDetails', () => {
       error: null,
     } as any);
 
-    render(
+    renderWithProviders(
       <MemoryRouter initialEntries={['/books/book-123']}>
         <Routes>
           <Route path="/books/:id" element={<BookDetails />} />
