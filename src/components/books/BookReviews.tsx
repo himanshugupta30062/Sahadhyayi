@@ -75,6 +75,24 @@ export default function BookReviews({ bookId }: { bookId: string }) {
           <span className="text-sm text-gray-500">({reviews.length})</span>
         </div>
 
+        {reviews.length > 0 && (() => {
+          const rated = reviews.filter(review => typeof review.overall_rating === 'number' && review.overall_rating > 0);
+          const average = rated.length ? rated.reduce((sum, review) => sum + (review.overall_rating || 0), 0) / rated.length : null;
+          const dimensionAverages = REVIEW_DIMENSIONS.map(dimension => {
+            const scores = reviews.flatMap(review => (review.dimensions || []).filter(item => item.dimension === dimension).map(item => item.score));
+            return { dimension, average: scores.length ? scores.reduce((sum, score) => sum + score, 0) / scores.length : null, count: scores.length };
+          }).filter(item => item.average !== null);
+          const reactions = reviews.reduce<Record<string, number>>((counts, review) => {
+            if (review.reader_reaction) counts[review.reader_reaction] = (counts[review.reader_reaction] || 0) + 1;
+            return counts;
+          }, {});
+          const topReaction = Object.entries(reactions).sort((a, b) => b[1] - a[1])[0];
+          return <section aria-label="Review analytics" className="rounded-xl border bg-muted/20 p-4 space-y-3">
+            <div className="flex flex-wrap items-baseline gap-2"><h3 className="font-semibold">Community snapshot</h3><span className="text-xs text-muted-foreground">From {reviews.length} reviews loaded</span></div>
+            <div className="flex items-center gap-2"><span className="text-2xl font-semibold tabular-nums">{average === null ? '—' : average.toFixed(1)}</span><span className="text-amber-600">★</span><span className="text-sm text-muted-foreground">/ 5 · {rated.length} ratings</span>{topReaction && <span className="ml-auto rounded-full bg-primary/10 px-2 py-1 text-xs capitalize">{topReaction[0]} · {topReaction[1]}</span>}</div>
+            {dimensionAverages.length > 0 && <div className="space-y-2">{dimensionAverages.map(item => <div key={item.dimension} className="grid grid-cols-[90px_1fr_34px] items-center gap-2 text-xs"><span className="capitalize">{item.dimension}</span><div className="h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-emerald-600" style={{ width: ((item.average || 0) / 5 * 100) + '%' }} /></div><span className="text-right tabular-nums">{item.average?.toFixed(1)}</span></div>)}</div>}
+          </section>;
+        })()}
         {user ? (
           <div className="rounded-xl border border-emerald-100 bg-emerald-50/40 p-4 space-y-3">
             <h3 className="font-medium">{myReview && !editing ? 'Your review' : myReview ? 'Edit your review' : 'Share your thoughts'}</h3>
