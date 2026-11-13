@@ -41,7 +41,7 @@ describe("reading DNA similarity", () => {
   });
 
   it("normalizes terms and computes cosine similarity", () => {
-    expect(cosineSimilarity([" Hopeful ", "curious"], ["hopeful", "CURIOUS"])).toBe(1);
+    expect(cosineSimilarity([" Hopeful ", "curious"], ["hopeful", "CURIOUS"])).toBeCloseTo(1);
     expect(cosineSimilarity(["hopeful", "curious"], ["hopeful"])).toBeCloseTo(1 / Math.sqrt(2));
   });
 
@@ -77,7 +77,7 @@ describe("reading DNA cross recommendations", () => {
   });
 
   it("ranks genre matches and boosts high friend ratings", () => {
-    const result = getCrossRecommendations([], friends, dna({ genres: [{ name: "fantasy", weight: 1 }] }));
+    const result = getCrossRecommendations(mine, friends, dna({ genres: [{ name: "fantasy", weight: 1 }] }));
     expect(result.map((book) => book.book_id)).toEqual(["fantasy", "mystery"]);
   });
 

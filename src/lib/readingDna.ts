@@ -61,8 +61,9 @@ export const cosineSimilarity = (a: string[], b: string[]): number => {
     magA += vecA[i] * vecA[i];
     magB += vecB[i] * vecB[i];
   }
-  const magnitude = Math.sqrt(magA) * Math.sqrt(magB);
-  return magnitude === 0 ? 0 : dotProduct / magnitude;
+  const magnitude = Math.sqrt(magA * magB);
+  if (magnitude === 0) return 0;
+  return Math.min(1, Math.max(0, dotProduct / magnitude));
 };
 
 /**

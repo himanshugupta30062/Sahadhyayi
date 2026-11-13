@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, BookOpen, BookMarked, Clock3, TrendingUp, Award, BarChart3, TrendingUp } from 'lucide-react';
+import { ArrowLeft, BookOpen, BookMarked, Clock3, TrendingUp, Award, BarChart3 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
@@ -20,6 +20,8 @@ const StatsPage = () => {
  const [monthlyTarget,setMonthlyTarget]=useState(100);
  const [goalSaving,setGoalSaving]=useState(false);
  const [goalMessage,setGoalMessage]=useState('');
+ const [trendRange, setTrendRange] = useState<'month'|'year'>('month');
+ const [recapCopied,setRecapCopied]=useState(false);
  useEffect(()=>{if(!user?.id)return;let active=true;supabase.from('reading_goals').select('monthly_page_target').eq('user_id',user.id).maybeSingle().then(({data,error})=>{if(active&&!error&&data)setMonthlyTarget(data.monthly_page_target);});return()=>{active=false;};},[user?.id]);
  const weekStart = new Date(); weekStart.setHours(0,0,0,0); weekStart.setDate(weekStart.getDate()-((weekStart.getDay()+6)%7));
  const weekLogs = logs.filter(log => new Date(log.logged_at) >= weekStart);
@@ -37,16 +39,23 @@ const StatsPage = () => {
  const challengeProgress=Math.min(100,Math.round(challengeDays/7*100));
  const weekdayTotals=logs.reduce((acc,log)=>{const day=new Date(log.logged_at).toLocaleDateString(undefined,{weekday:'long'});acc[day]=(acc[day]||0)+(log.pages_read||0);return acc;},{} as Record<string,number>); const bestReadingDay=Object.entries(weekdayTotals).sort((a,b)=>b[1]-a[1])[0]; const pagesPerActiveDay=activeCalendarDays?Math.round(calendarDays.reduce((sum,day)=>sum+day.pages,0)/activeCalendarDays):0; const monthTotals=logs.reduce((acc,log)=>{const key=log.logged_at?.slice(0,7)||'';acc[key]=(acc[key]||0)+(log.pages_read||0);return acc;},{} as Record<string,number>); const bestMonth=Object.entries(monthTotals).sort((a,b)=>b[1]-a[1])[0];
  const completed=shelf.filter(x=>x.status==='completed');
+ const reading=shelf.filter(x=>x.status==='reading');
+ const want=shelf.filter(x=>x.status==='want_to_read');
+ const dnf=shelf.filter(x=>x.status==='dnf');
+ const genreCounts=completed.reduce<Record<string,number>>((acc,x)=>{const g=x.books_library?.genre?.trim()||'Uncategorized';acc[g]=(acc[g]||0)+1;return acc;},{});
+ const genres=Object.entries(genreCounts).sort((a,b)=>b[1]-a[1]).slice(0,8);
+ const topGenre=genres[0]?.[0];
+ const genreVariety=Object.keys(genreCounts).filter(g=>g!=='Uncategorized').length;
+ const readerType=completed.length>=10?'Seasoned reader':completed.length>=3?'Growing reader':'Curious beginner';
+ const tasteType=genreVariety>=5?'Genre explorer':genreVariety>=2?'Varied taste':'Finding your niche';
+ const rated=completed.filter(x=>typeof x.rating==='number'&&x.rating>0);
+ const avg=rated.length? (rated.reduce((s,x)=>s+(x.rating||0),0)/rated.length).toFixed(1):'—';
  const monthStart=new Date();monthStart.setDate(1);monthStart.setHours(0,0,0,0);
  const monthPages=logs.filter(log=>new Date(log.logged_at)>=monthStart).reduce((sum,log)=>sum+(log.pages_read||0),0);
  const saveGoals=async()=>{if(!user?.id)return;setGoalSaving(true);setGoalMessage('');const {error}=await supabase.from('reading_goals').upsert({user_id:user.id,annual_book_target:goal,monthly_page_target:monthlyTarget,updated_at:new Date().toISOString()},{onConflict:'user_id'});await setGoal(goal);setGoalSaving(false);setGoalMessage(error?'Annual goal saved locally; monthly goal could not be saved.':'Goals saved!');};
  const completedThisYear=completed.filter(item=>item.completed_at&&new Date(item.completed_at).getFullYear()===currentYear).length;
- const yearLogs=logs.filter(log=>new Date(log.logged_at).getFullYear()===currentYear); const yearPages=yearLogs.reduce((sum,log)=>sum+(log.pages_read||0),0); const yearMinutes=yearLogs.reduce((sum,log)=>sum+(log.minutes_read||0),0); const yearActiveDays=new Set(yearLogs.map(log=>new Date(log.logged_at).toDateString())).size; const recapText='My '+currentYear+' reading recap 📚\nBooks completed: '+completedThisYear+'\nPages logged: '+yearPages.toLocaleString()+'\nReading time: '+Math.round(yearMinutes/60*10)/10+' hours\nActive reading days: '+yearActiveDays+'\nTop genre: '+(topGenre||'Still discovering')+'\nAverage rating: '+avg+'/5\n\nReading with Sahadhyayi'; const [recapCopied,setRecapCopied]=useState(false); const copyRecap=async()=>{try{await navigator.clipboard.writeText(recapText);setRecapCopied(true);window.setTimeout(()=>setRecapCopied(false),2500);}catch{setRecapCopied(false);}};
+ const yearLogs=logs.filter(log=>new Date(log.logged_at).getFullYear()===currentYear); const yearPages=yearLogs.reduce((sum,log)=>sum+(log.pages_read||0),0); const yearMinutes=yearLogs.reduce((sum,log)=>sum+(log.minutes_read||0),0); const yearActiveDays=new Set(yearLogs.map(log=>new Date(log.logged_at).toDateString())).size; const recapText='My '+currentYear+' reading recap 📚\nBooks completed: '+completedThisYear+'\nPages logged: '+yearPages.toLocaleString()+'\nReading time: '+Math.round(yearMinutes/60*10)/10+' hours\nActive reading days: '+yearActiveDays+'\nTop genre: '+(topGenre||'Still discovering')+'\nAverage rating: '+avg+'/5\n\nReading with Sahadhyayi'; const copyRecap=async()=>{try{await navigator.clipboard.writeText(recapText);setRecapCopied(true);window.setTimeout(()=>setRecapCopied(false),2500);}catch{setRecapCopied(false);}};
  const goalProgress=Math.min(100,Math.round(completedThisYear/goal*100));
- const reading=shelf.filter(x=>x.status==='reading');
- const want=shelf.filter(x=>x.status==='want_to_read');
- const dnf=shelf.filter(x=>x.status==='dnf');
- const [trendRange, setTrendRange] = useState<'month'|'year'>('month');
  const trendBuckets = Array.from({length:trendRange==='month'?6:12},(_,i)=>{
   const date=new Date(); date.setDate(1); date.setMonth(date.getMonth()-(trendRange==='month'?5-i:11-i));
   const key=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
@@ -57,14 +66,6 @@ const StatsPage = () => {
  });
  const trendMax=Math.max(1,...trendBuckets.map(x=>x.pages));
  const completionMax=Math.max(1,...trendBuckets.map(x=>x.books));
- const genreCounts=completed.reduce<Record<string,number>>((acc,x)=>{const g=x.books_library?.genre?.trim()||'Uncategorized';acc[g]=(acc[g]||0)+1;return acc;},{});
- const genres=Object.entries(genreCounts).sort((a,b)=>b[1]-a[1]).slice(0,8);
- const topGenre=genres[0]?.[0];
- const genreVariety=Object.keys(genreCounts).filter(g=>g!=='Uncategorized').length;
- const readerType=completed.length>=10?'Seasoned reader':completed.length>=3?'Growing reader':'Curious beginner';
- const tasteType=genreVariety>=5?'Genre explorer':genreVariety>=2?'Varied taste':'Finding your niche';
- const rated=completed.filter(x=>typeof x.rating==='number'&&x.rating>0);
- const avg=rated.length? (rated.reduce((s,x)=>s+(x.rating||0),0)/rated.length).toFixed(1):'—';
  const totalPages=completed.reduce((s,x)=>s+(x.books_library?.description?.match(/(?:pages|page count)\s*:?\s*(\d+)/i)?.[1]?Number(x.books_library.description.match(/(?:pages|page count)\s*:?\s*(\d+)/i)?.[1]):0),0);
  const achievements=[
   {emoji:'🌱',name:'First Chapter',description:'Finish your first book',unlocked:completed.length>=1},

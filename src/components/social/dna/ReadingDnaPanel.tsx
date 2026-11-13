@@ -80,7 +80,10 @@ const FriendMatchesList: React.FC<{ myDna: ReadingDna }> = ({ myDna }) => {
               <Button size="sm" variant={matchFilter === "strong" ? "default" : "outline"} onClick={() => setMatchFilter("strong")}>60%+ match</Button>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">Showing {visibleMatches.length} of {scored.length} readers · ranked by compatibility</p>
+          <div className="flex items-center justify-between text-xs text-muted-foreground flex-wrap gap-1">
+            <span>Showing {visibleMatches.length} of {scored.length} readers · ranked by compatibility</span>
+            <span className="italic">Compatibility is estimated from shared reading interests, genres, and reading pace.</span>
+          </div>
           {visibleMatches.map(({ profile, score, dna }) => {
             const hue = Math.min(130, Math.max(0, score * 1.3));
             const friendName = profile?.full_name ?? "Reader";

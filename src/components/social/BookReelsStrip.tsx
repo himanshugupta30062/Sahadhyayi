@@ -55,7 +55,10 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
       const { data: reactions } = await supabase.from('book_reel_reactions').select('reel_id,user_id,emoji').in('reel_id', data.map((item: any) => item.id));
       if (!active) return;
       const currentUser = (await supabase.auth.getUser()).data.user?.id;
-      setActiveReaction(Object.fromEntries((reactions || []).filter((reaction: any) => reaction.user_id === currentUser).map((reaction: any) => [reaction.reel_id, reaction.emoji])));
+      setActiveReaction((prev) => ({
+        ...Object.fromEntries((reactions || []).filter((reaction: any) => reaction.user_id === currentUser).map((reaction: any) => [reaction.reel_id, reaction.emoji])),
+        ...prev,
+      }));
       if (currentUser) { const { data: saves } = await supabase.from('book_reel_saves').select('reel_id').eq('user_id', currentUser); if (active) setSavedReels(Object.fromEntries((saves || []).map((save: any) => [save.reel_id, true]))); }
       setCommunityReels(data.map((item: any) => { const profile: any = profileMap.get(item.user_id); const count = (reactions || []).filter((reaction: any) => reaction.reel_id === item.id).length; return { id: item.id, creatorId: item.user_id, tag: '📚 COMMUNITY REEL', tagColor: 'bg-emerald-700/80 text-white', readerName: profile?.full_name || profile?.username || 'Sahadhyayi Reader', readerHandle: profile?.username || 'reader', readerAvatar: profile?.profile_photo_url || '', bookTitle: item.book_title || 'A reader moment', bookAuthor: item.book_author || '', hook: item.caption, fullQuote: item.caption, moodAudio: 'Community video', imageUrl: '', videoUrl: item.video_url, durationSeconds: item.duration_seconds == null ? null : Number(item.duration_seconds), likesCount: count, commentsCount: 0 }; }));
 
