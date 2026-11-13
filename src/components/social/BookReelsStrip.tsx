@@ -188,6 +188,7 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
           </Button>
         </div>
       </div>
+      </div>
 
       {/* Horizontal Carousel */}
       <div
@@ -377,7 +378,7 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
 
                 <div className="flex items-center justify-between rounded-xl bg-white/10 px-3 py-2 backdrop-blur-md">
                   <span className="text-xs font-medium text-white/80">React with readers:</span>
-                  <div className="flex items-center gap-2"><button type="button" onClick={() => void handleSaveReel(activeReel.id)} aria-label={savedReels[activeReel.id] ? 'Remove saved reel' : 'Save reel'} className={`flex h-8 items-center gap-1 rounded-full border px-2.5 text-xs transition-colors ${savedReels[activeReel.id] ? 'border-amber-400 bg-amber-400 text-black' : 'border-white/20 bg-white/5 text-white hover:bg-white/20'}><Bookmark className="h-4 w-4"/><span>{savedReels[activeReel.id] ? 'Saved' : 'Save'}</span></button>
+                  <div className="flex items-center gap-2"><button type="button" onClick={() => void handleSaveReel(activeReel.id)} aria-label={savedReels[activeReel.id] ? 'Remove saved reel' : 'Save reel'} className={`flex h-8 items-center gap-1 rounded-full border px-2.5 text-xs transition-colors ${savedReels[activeReel.id] ? 'border-amber-400 bg-amber-400 text-black' : 'border-white/20 bg-white/5 text-white hover:bg-white/20'}`}><Bookmark className="h-4 w-4"/><span>{savedReels[activeReel.id] ? 'Saved' : 'Save'}</span></button>
                     {[
                       { emoji: '❤️', label: 'Love', icon: Heart },
                       { emoji: '😭', label: 'Tears', text: '😭' },
