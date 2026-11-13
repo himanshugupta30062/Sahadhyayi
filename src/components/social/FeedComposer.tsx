@@ -431,6 +431,9 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
                 <span>Feeling</span>
               </Button>
             </div>
+            <span className="hidden sm:inline text-[10px] text-[#636B65] dark:text-[#A5ADA6] mr-2" aria-label="Keyboard shortcut: Control or Command plus Enter">
+              <kbd className="rounded border border-[#D9DFD5] dark:border-[#29332D] px-1 py-0.5 font-mono">Ctrl/⌘ + Enter</kbd> to post
+            </span>
             <Button
               onClick={handlePost}
               disabled={(postKind === 'quote' ? !quoteText.trim() : (!postText.trim() && !selectedImage && !selectedBook && !selectedFeeling)) || isPosting || createPost.isPending}
