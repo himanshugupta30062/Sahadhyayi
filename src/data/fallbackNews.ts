@@ -172,3 +172,4 @@ export const FALLBACK_NEWS_ARTICLES: NewsItem[] = [
     published_at: "2026-10-18T09:00:00Z",
   },
 ];
+
