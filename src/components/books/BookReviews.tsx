@@ -27,6 +27,16 @@ export default function BookReviews({ bookId }: { bookId: string }) {
   const [dimensionScores, setDimensionScores] = useState<Record<ReviewDimension, number>>({ writing: 0, characters: 0, plot: 0, pacing: 0, worldbuilding: 0, originality: 0 });
   const [showSpoilers, setShowSpoilers] = useState<Record<string, boolean>>({});
   const [editing, setEditing] = useState(false);
+  const [reviewOrder, setReviewOrder] = useState<'newest' | 'oldest' | 'highest'>('newest');
+  const [spoilerFilter, setSpoilerFilter] = useState<'all' | 'clean'>('all');
+  const otherReviews = reviews.filter((review) => review.user_id !== user?.id);
+  const visibleReviews = [...otherReviews]
+    .filter((review) => spoilerFilter === 'all' || !review.contains_spoilers)
+    .sort((a, b) => reviewOrder === 'oldest'
+      ? new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      : reviewOrder === 'highest'
+        ? (b.overall_rating || 0) - (a.overall_rating || 0) || new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        : new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   useEffect(() => {
     setReviewText(myReview?.review_text || '');
@@ -144,9 +154,10 @@ export default function BookReviews({ bookId }: { bookId: string }) {
 
         {isLoading ? <p className="text-sm text-gray-500">Loading reviews…</p> : null}
         {error ? <p className="text-sm text-red-600">Reviews could not be loaded. Please try again.</p> : null}
-        {!isLoading && !error && reviews.filter((review) => review.user_id !== user?.id).length === 0 && <p className="text-sm text-gray-500">No other reviews yet. Be the first to share a thoughtful take.</p>}
+        {!isLoading && !error && visibleReviews.length === 0 && <p className="text-sm text-gray-500">No other reviews yet. Be the first to share a thoughtful take.</p>}
         <div className="space-y-4">
-          {reviews.filter((review) => review.user_id !== user?.id).map((review) => {
+          {!isLoading && !error && otherReviews.length > 0 && <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3"><span className="text-sm text-muted-foreground">{visibleReviews.length} of {otherReviews.length} reviews</span><div className="flex gap-2"><select aria-label="Sort reviews" className="h-9 rounded-md border bg-background px-2 text-sm" value={reviewOrder} onChange={(event)=>setReviewOrder(event.target.value as typeof reviewOrder)}><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="highest">Highest rated</option></select><select aria-label="Filter reviews" className="h-9 rounded-md border bg-background px-2 text-sm" value={spoilerFilter} onChange={(event)=>setSpoilerFilter(event.target.value as typeof spoilerFilter)}><option value="all">All reviews</option><option value="clean">Hide spoilers</option></select></div></div>}
+          {visibleReviews.map((review) => {
             const revealed = showSpoilers[review.id] === true;
             const name = review.reviewer?.full_name || (review.reviewer?.username ? `@${review.reviewer.username}` : 'Reader');
             return (
