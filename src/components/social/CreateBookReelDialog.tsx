@@ -44,7 +44,7 @@ export function CreateBookReelDialog({ onPublished }: CreateBookReelDialogProps)
         await supabase.storage.from('book-reels').remove([path]);
         throw insertError;
       }
-      toast.success('Your book reel is published!');
+      toast.success('Your book reel is published!');\n      window.dispatchEvent(new Event('book-reel-published'));
       reset(); setOpen(false); onPublished?.();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Could not publish reel. Please try again.');
