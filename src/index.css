@@ -904,6 +904,11 @@ mark.search-highlight {
   animation: reading-room-panel-enter 280ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   transform-origin: bottom right;
 }
+@media (min-width: 640px) {
+  .reader-room-panel-enter {
+    transform-origin: center;
+  }
+}
 .reader-room-backdrop-enter {
   animation: reading-room-backdrop-enter 180ms ease-out both;
 }

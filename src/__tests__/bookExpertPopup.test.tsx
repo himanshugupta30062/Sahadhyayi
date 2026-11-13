@@ -157,13 +157,38 @@ describe("BookExpert responsive reader controls", () => {
     expect(screen.getByText("Remember this conversation")).toBeInTheDocument();
   });
 
-  it("uses compact height and width constraints for mobile and desktop", () => {
+  it("uses compact height, width, and centered viewport constraints for desktop", () => {
     render(<BookExpert />);
     fireEvent.click(screen.getByRole("button", { name: /open the sahadhyayi reading room/i }));
     const dialog = screen.getByRole("dialog", { name: /the reading room/i });
 
     expect(dialog.className).toContain("h-[min(82dvh,780px)]");
     expect(dialog.className).toContain("sm:w-[min(900px,calc(100vw-4rem))]");
-    expect(dialog.className).toContain("sm:w-[min(900px,calc(100vw-4rem))]");
+    expect(dialog.className).toContain("sm:inset-0");
+    expect(dialog.className).toContain("sm:m-auto");
+  });
+
+  it("restores document body overflow and interactive state when minimized and re-locks on restore", () => {
+    render(
+      <>
+        <main data-testid="page-background">Page content</main>
+        <BookExpert />
+      </>
+    );
+    fireEvent.click(screen.getByRole("button", { name: /open the sahadhyayi reading room/i }));
+    expect(document.body.style.overflow).toBe("hidden");
+    expect(screen.getByTestId("page-background")).toHaveAttribute("inert");
+
+    // Minimize
+    const dialog = screen.getByRole("dialog", { name: /the reading room/i });
+    fireEvent.click(within(dialog).getByRole("button", { name: /minimize reading room to floating icon/i }));
+    expect(document.body.style.overflow).not.toBe("hidden");
+    expect(screen.getByTestId("page-background")).not.toHaveAttribute("inert");
+
+    // Restore
+    const restoreBtn = screen.getByRole("button", { name: /restore reading room ai/i });
+    fireEvent.click(restoreBtn);
+    expect(document.body.style.overflow).toBe("hidden");
+    expect(screen.getByTestId("page-background")).toHaveAttribute("inert");
   });
 });
