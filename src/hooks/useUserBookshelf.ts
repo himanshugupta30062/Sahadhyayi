@@ -10,7 +10,7 @@ export interface BookshelfItem {
   id: string;
   user_id: string;
   book_id: string;
-  status: 'want_to_read' | 'reading' | 'completed' | 'did_not_finish';
+  status: 'want_to_read' | 'reading' | 'completed' | 'dnf';
   up_next_rank?: number | null;
   added_at: string;
   notes?: string;
@@ -22,6 +22,7 @@ export interface BookshelfItem {
     author?: string;
   };
   is_favorite?: boolean;
+  is_owned?: boolean;
   books_library?: {
     id: string;
     title: string;
@@ -130,7 +131,7 @@ export const useAddToBookshelf = () => {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ bookId, status = 'reading' }: { bookId: string; status?: 'want_to_read' | 'reading' | 'completed' }) => {
+    mutationFn: async ({ bookId, status = 'reading' }: { bookId: string; status?: 'want_to_read' | 'reading' | 'completed' | 'dnf' }) => {
       if (!user) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
