@@ -72,13 +72,13 @@ export const WhatsAppCallCenterFab: React.FC = () => {
         aria-haspopup="dialog"
         data-testid="whatsapp-callcenter-fab"
         className={cn(
-          'group fixed z-40 flex items-center justify-center rounded-full shadow-2xl transition-all duration-300 hover:-translate-y-0.5 hover:scale-105 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D] focus-visible:ring-offset-2',
+          'group fixed z-40 flex items-center justify-center rounded-full shadow-lg shadow-[#25D366]/30 transition-all duration-300 hover:-translate-y-0.5 hover:scale-105 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2',
           // Exactly matching Book Reader launcher dimensions: 48px (w-12 h-12) on mobile, 56px (sm:w-14 sm:h-14) on sm+
           'w-12 h-12 sm:w-14 sm:h-14',
           // Positioned directly above Book Reader: right-4 sm:right-5 lg:right-6 (vertically aligned)
           'bottom-[76px] right-4 sm:bottom-[88px] sm:right-5 lg:bottom-[96px] lg:right-6',
           // Deep emerald & radiant gold styling
-          'bg-[#1C442D] text-[#D5B16D] border border-[#D5B16D]/50 hover:bg-[#153422] hover:border-[#D5B16D]'
+          'bg-[#25D366] text-white border-2 border-white/90 hover:bg-[#20BA5A]'
         )}
       >
         {/* Radar ping ring */}
@@ -87,7 +87,7 @@ export const WhatsAppCallCenterFab: React.FC = () => {
           aria-hidden="true"
         />
         {/* Support / Help Icon matching Book Reader icon scale */}
-        <LifeBuoy className="relative h-6 w-6 sm:h-7 sm:w-7 transition-transform group-hover:scale-110" aria-hidden="true" />
+        <WhatsAppIcon className="relative h-7 w-7 sm:h-8 sm:w-8 transition-transform group-hover:scale-110" />\n        <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-[#16A34A]" aria-hidden="true" />
 
         {/* Desktop Tooltip */}
         <span
