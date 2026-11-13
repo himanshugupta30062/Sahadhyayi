@@ -27,17 +27,15 @@ export const SahadhyayiJourney: React.FC = () => {
     ((activeDestination.index - 1) / (JOURNEY_DESTINATIONS.length - 1)) * 100
   );
 
-  const scrollToDestination = useCallback((targetIndex: number) => {
+  const scrollToDestination = useCallback((targetIndex: number, scrollIntoDetail = false) => {
     const safeIndex = Math.min(JOURNEY_DESTINATIONS.length, Math.max(1, targetIndex));
     setActiveStopIndex(safeIndex);
 
-    const element = document.getElementById('journey-node-' + safeIndex);
-    if (element) {
-      isUserInteractingRef.current = true;
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      window.setTimeout(() => {
-        isUserInteractingRef.current = false;
-      }, 900);
+    if (scrollIntoDetail) {
+      const detailElement = document.getElementById('journey-detail-section') || document.getElementById('journey-detail-' + safeIndex);
+      if (detailElement) {
+        detailElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
     }
   }, []);
 
@@ -82,37 +80,6 @@ export const SahadhyayiJourney: React.FC = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleNextStop, handlePrevStop]);
-
-  useEffect(() => {
-    if (typeof IntersectionObserver === 'undefined') return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (isUserInteractingRef.current) return;
-
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          const match = entry.target.id.match(/journey-node-(\d+)/);
-          const index = match?.[1] ? Number.parseInt(match[1], 10) : NaN;
-          if (Number.isFinite(index) && index >= 1 && index <= JOURNEY_DESTINATIONS.length) {
-            setActiveStopIndex(index);
-          }
-        });
-      },
-      {
-        root: null,
-        rootMargin: '-42% 0px -42% 0px',
-        threshold: 0.15,
-      }
-    );
-
-    JOURNEY_DESTINATIONS.forEach((destination) => {
-      const element = document.getElementById('journey-node-' + destination.index);
-      if (element) observer.observe(element);
-    });
-
-    return () => observer.disconnect();
-  }, []);
 
   return (
     <section
@@ -275,11 +242,11 @@ export const SahadhyayiJourney: React.FC = () => {
         />
 
         <div
-          id={'journey-detail-' + activeDestination.index}
-          className="mt-10 sm:mt-12 scroll-mt-36"
+          id="journey-detail-section"
+          className="mt-10 sm:mt-12 scroll-mt-28"
           aria-live="polite"
         >
-          <div className="flex items-center justify-between gap-3 mb-4 px-1">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 px-1">
             <div>
               <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[.16em] text-[hsl(var(--brand-primary))]">
                 Explore this destination
@@ -289,15 +256,47 @@ export const SahadhyayiJourney: React.FC = () => {
               </h2>
             </div>
             <span className="text-xs text-muted-foreground whitespace-nowrap">
-              Stop {activeDestination.index} / 8
+              Stop {activeDestination.index} / {JOURNEY_DESTINATIONS.length}
             </span>
           </div>
-          <JourneyDestinationNode
-            destination={activeDestination}
-            isActive={true}
-            isPassed={false}
-            onSelect={scrollToDestination}
-          />
+
+          {/* Quick Destination Switcher Tabs directly in the detail card */}
+          <div
+            className="flex items-center gap-1.5 overflow-x-auto pb-3 mb-4 scrollbar-none"
+            role="tablist"
+            aria-label="Destination switcher tabs"
+          >
+            {JOURNEY_DESTINATIONS.map((destination) => {
+              const isSelected = destination.index === activeStopIndex;
+              return (
+                <button
+                  key={destination.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={isSelected}
+                  onClick={() => scrollToDestination(destination.index, false)}
+                  className={
+                    'shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all cursor-pointer ' +
+                    (isSelected
+                      ? 'bg-[hsl(var(--brand-primary))] text-white font-bold shadow-sm'
+                      : 'bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60')
+                  }
+                >
+                  <span className="font-semibold">{destination.index}.</span>
+                  <span className="truncate max-w-[130px]">{destination.title}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div id={'journey-detail-' + activeDestination.index}>
+            <JourneyDestinationNode
+              destination={activeDestination}
+              isActive={true}
+              isPassed={false}
+              onSelect={scrollToDestination}
+            />
+          </div>
         </div>
 
         <div className="mt-16 sm:mt-20 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-muted/60 via-card to-muted/40 border border-border text-center">
@@ -314,7 +313,7 @@ export const SahadhyayiJourney: React.FC = () => {
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button
               type="button"
-              onClick={() => scrollToDestination(1)}
+              onClick={() => scrollToDestination(1, true)}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-background hover:bg-muted border border-border text-foreground text-xs sm:text-sm font-semibold transition-all cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -322,11 +321,15 @@ export const SahadhyayiJourney: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => scrollToDestination(8)}
+              onClick={() => scrollToDestination(activeStopIndex < JOURNEY_DESTINATIONS.length ? activeStopIndex + 1 : 1, true)}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[hsl(var(--brand-primary))] hover:opacity-90 text-white text-xs sm:text-sm font-semibold shadow-md transition-all cursor-pointer"
             >
               <Compass className="w-3.5 h-3.5" />
-              <span>Ascend to AI Knowledge Station</span>
+              <span>
+                {activeStopIndex < JOURNEY_DESTINATIONS.length
+                  ? `Next: ${JOURNEY_DESTINATIONS[activeStopIndex].title}`
+                  : 'Start Again: Library City'}
+              </span>
             </button>
           </div>
         </div>

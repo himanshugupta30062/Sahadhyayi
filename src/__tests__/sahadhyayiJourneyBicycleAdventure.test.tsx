@@ -274,5 +274,30 @@ describe('Sahadhyayi Bicycle Adventure Journey', () => {
       fireEvent.click(screen.getByRole('button', { name: /pause bicycle tour/i }));
       expect(screen.getByText('Auto Ride')).toBeInTheDocument();
     });
+
+    it('allows switching destinations via the detail switcher tabs and retains selection', () => {
+      render(
+        <MemoryRouter>
+          <SahadhyayiJourney />
+        </MemoryRouter>
+      );
+
+      // Default is Stop 1: Library City
+      expect(screen.getAllByRole('heading', { name: 'Library City' }).length).toBeGreaterThan(0);
+
+      // Click Stop 3 in destination switcher tabs
+      const tab3 = screen.getByRole('tab', { name: /3\.\s*Reader Village/i });
+      fireEvent.click(tab3);
+
+      expect(screen.getAllByRole('heading', { name: 'Reader Village' }).length).toBeGreaterThan(0);
+      expect(screen.getByRole('tab', { name: /3\.\s*Reader Village/i })).toHaveAttribute('aria-selected', 'true');
+
+      // Click Stop 5 in destination switcher tabs
+      const tab5 = screen.getByRole('tab', { name: /5\.\s*Storytelling Forest/i });
+      fireEvent.click(tab5);
+
+      expect(screen.getAllByRole('heading', { name: 'Storytelling Forest' }).length).toBeGreaterThan(0);
+      expect(screen.getByRole('tab', { name: /5\.\s*Storytelling Forest/i })).toHaveAttribute('aria-selected', 'true');
+    });
   });
 });
