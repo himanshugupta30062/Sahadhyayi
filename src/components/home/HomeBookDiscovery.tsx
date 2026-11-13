@@ -321,7 +321,7 @@ export const HomeBookDiscovery: React.FC = () => {
 
   return (
     <section
-      className="home-book-discovery relative isolate py-16 sm:py-20 lg:py-24 bg-[#FAFAF8] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden transition-colors duration-300"
+      className="home-book-discovery relative isolate py-16 sm:py-20 lg:py-24 bg-[#FAF9F5] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden transition-colors duration-300"
       aria-label="Book Discovery"
     >
       <style>{`
@@ -360,8 +360,8 @@ export const HomeBookDiscovery: React.FC = () => {
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8 sm:mb-10">
           <div className="max-w-xl">
-            <div className="flex items-center gap-2.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.22em] text-[#6E7B6F] dark:text-[#D5B16D] mb-3">
-              <span aria-hidden="true" className="h-px w-7 bg-[#B68A35] dark:bg-[#D5B16D]" />
+            <div className="flex items-center gap-2.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.24em] text-[#8F681C] dark:text-[#D5B16D] mb-3">
+              <span aria-hidden="true" className="h-px w-7 bg-[#8F681C] dark:bg-[#D5B16D]" />
               <span>01 / The library</span>
             </div>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] tracking-tight">
@@ -378,12 +378,12 @@ export const HomeBookDiscovery: React.FC = () => {
                 type="button"
                 onClick={() => setIsPaused((prev) => !prev)}
                 aria-label={isPaused ? 'Resume book carousel animation' : 'Pause book carousel animation'}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium text-[#2E3430] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] bg-white hover:bg-[#EAF2E8] dark:bg-[#161D19] dark:hover:bg-[#1E2621] border border-[#D8E5D6] dark:border-[#29332D] shadow-2xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D]"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium text-[#2E3430] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] bg-white hover:bg-[#F2EFE8] dark:bg-[#131715] dark:hover:bg-[#1C241E] border border-[#E5E0D8] dark:border-[#242E28] shadow-2xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:focus-visible:ring-[#D5B16D]"
               >
                 {isPaused ? (
-                  <Play className="w-3.5 h-3.5 text-[#B68A35] dark:text-[#D5B16D]" aria-hidden="true" />
+                  <Play className="w-3.5 h-3.5 text-[#8F681C] dark:text-[#D5B16D]" aria-hidden="true" />
                 ) : (
-                  <Pause className="w-3.5 h-3.5 text-[#B68A35] dark:text-[#D5B16D]" aria-hidden="true" />
+                  <Pause className="w-3.5 h-3.5 text-[#8F681C] dark:text-[#D5B16D]" aria-hidden="true" />
                 )}
                 <span>{isPaused ? 'Resume' : 'Pause'}</span>
               </button>
@@ -408,7 +408,7 @@ export const HomeBookDiscovery: React.FC = () => {
                 type="button"
                 onClick={() => scrollGenres('left')}
                 aria-label="Scroll genres left"
-                className="hidden sm:flex absolute -left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full items-center justify-center bg-white/95 dark:bg-[#161D19]/95 text-[#2E3430] dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7] border border-[#D8E5D6] dark:border-[#29332D] shadow-md backdrop-blur-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35]"
+                className="hidden sm:flex absolute -left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full items-center justify-center bg-white/95 dark:bg-[#131715]/95 text-[#2E3430] dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7] border border-[#E5E0D8] dark:border-[#242E28] shadow-md backdrop-blur-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C]"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -418,7 +418,7 @@ export const HomeBookDiscovery: React.FC = () => {
                 type="button"
                 onClick={() => scrollGenres('right')}
                 aria-label="Scroll genres right"
-                className="hidden sm:flex absolute -right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full items-center justify-center bg-white/95 dark:bg-[#161D19]/95 text-[#2E3430] dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7] border border-[#D8E5D6] dark:border-[#29332D] shadow-md backdrop-blur-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35]"
+                className="hidden sm:flex absolute -right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full items-center justify-center bg-white/95 dark:bg-[#131715]/95 text-[#2E3430] dark:text-[#A5ADA6] hover:text-[#1C201D] dark:hover:text-[#F3F0E7] border border-[#E5E0D8] dark:border-[#242E28] shadow-md backdrop-blur-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C]"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -436,10 +436,10 @@ export const HomeBookDiscovery: React.FC = () => {
                     type="button"
                     aria-pressed={isSelected}
                     onClick={() => setSelectedGenre(genre)}
-                    className={`px-4 py-2 min-h-[38px] rounded-full text-xs font-medium whitespace-nowrap transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D] ${
+                    className={`px-4 py-2 min-h-[38px] rounded-full text-xs font-medium whitespace-nowrap transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:focus-visible:ring-[#D5B16D] ${
                       isSelected
-                        ? 'bg-[#1C442D] text-white font-semibold shadow-xs dark:bg-[#D5B16D] dark:text-black'
-                        : 'bg-white text-[#636B65] hover:text-[#1C201D] hover:bg-[#EAF2E8] border border-[#D8E5D6] dark:bg-[#111413] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] dark:hover:bg-[#181C1A] dark:border-[#26302A]'
+                        ? 'bg-[#1C442D] text-white font-semibold shadow-xs dark:bg-[#D5B16D] dark:text-stone-950'
+                        : 'bg-white/95 text-[#636B65] hover:text-[#1C201D] hover:bg-[#F2EFE8] border border-[#E5E0D8] dark:bg-[#131715] dark:text-[#A5ADA6] dark:hover:text-[#F3F0E7] dark:hover:bg-[#1A211D] dark:border-[#242E28]'
                     }`}
                   >
                     {genre}
@@ -455,9 +455,9 @@ export const HomeBookDiscovery: React.FC = () => {
           <div className="flex gap-4 sm:gap-6 overflow-hidden py-2">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="w-[42vw] max-w-[180px] sm:w-44 md:w-48 flex-shrink-0 space-y-3 animate-pulse">
-                <div className="aspect-[2/3] w-full rounded-xl bg-[#E3EDE0] dark:bg-[#161D19] border border-[#D8E5D6] dark:border-[#29332D]" />
-                <div className="h-4 bg-[#E3EDE0] dark:bg-[#161D19] rounded w-3/4" />
-                <div className="h-3 bg-[#E3EDE0] dark:bg-[#161D19] rounded w-1/2" />
+                <div className="aspect-[2/3] w-full rounded-2xl bg-[#EBE5DB] dark:bg-[#18211C] border border-[#E5E0D8] dark:border-[#242E28]" />
+                <div className="h-4 bg-[#EBE5DB] dark:bg-[#18211C] rounded w-3/4" />
+                <div className="h-3 bg-[#EBE5DB] dark:bg-[#18211C] rounded w-1/2" />
               </div>
             ))}
           </div>
@@ -465,7 +465,7 @@ export const HomeBookDiscovery: React.FC = () => {
 
         {/* Error State */}
         {isError && (
-          <div className="rounded-2xl border border-[#D8E5D6] dark:border-[#29332D] bg-white dark:bg-[#111614] p-8 text-center max-w-lg mx-auto shadow-sm">
+          <div className="rounded-2xl border border-[#E5E0D8] dark:border-[#242E28] bg-white dark:bg-[#131715] p-8 text-center max-w-lg mx-auto shadow-sm">
             <BookOpen className="w-8 h-8 text-[#636B65] dark:text-[#A5ADA6] mx-auto mb-3" />
             <h3 className="text-base font-semibold text-[#1C201D] dark:text-[#F3F0E7]">Unable to load library books</h3>
             <p className="text-xs text-[#636B65] dark:text-[#A5ADA6] mt-1 mb-5">
@@ -476,12 +476,12 @@ export const HomeBookDiscovery: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => refetch()}
-                className="border-[#D8E5D6] dark:border-[#29332D] bg-white dark:bg-[#161D19] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#EAF2E8] dark:hover:bg-[#1B241E]"
+                className="border-[#E5E0D8] dark:border-[#242E28] bg-white dark:bg-[#161D19] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#F2EFE8] dark:hover:bg-[#1B241E]"
               >
                 Try Again
               </Button>
               <Link to="/library">
-                <Button size="sm" className="bg-[#1C442D] hover:bg-[#255438] text-white border border-[#1C442D] dark:bg-[#1C3024] dark:hover:bg-[#254231] dark:text-[#F3F0E7] dark:border-[#315C43]">
+                <Button size="sm" className="bg-[#1C442D] hover:bg-[#255438] text-white border border-[#1C442D] dark:bg-[#D5B16D] dark:hover:bg-[#E4C688] dark:text-stone-950 dark:border-[#D5B16D]">
                   Open Full Library
                 </Button>
               </Link>
@@ -491,7 +491,7 @@ export const HomeBookDiscovery: React.FC = () => {
 
         {/* Empty State */}
         {!isLoading && !isError && curatedBooks.length === 0 && (
-          <div className="rounded-2xl border border-[#D8E5D6] dark:border-[#29332D] bg-white dark:bg-[#111614] p-8 text-center max-w-lg mx-auto shadow-sm">
+          <div className="rounded-2xl border border-[#E5E0D8] dark:border-[#242E28] bg-white dark:bg-[#131715] p-8 text-center max-w-lg mx-auto shadow-sm">
             <BookOpen className="w-8 h-8 text-[#636B65] dark:text-[#A5ADA6] mx-auto mb-3" />
             <h3 className="text-base font-semibold text-[#1C201D] dark:text-[#F3F0E7]">No real covers available in this category yet</h3>
             <p className="text-xs text-[#636B65] dark:text-[#A5ADA6] mt-1 mb-5">
@@ -502,12 +502,12 @@ export const HomeBookDiscovery: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => setSelectedGenre('All')}
-                className="border-[#D8E5D6] dark:border-[#29332D] bg-white dark:bg-[#161D19] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#EAF2E8] dark:hover:bg-[#1B241E]"
+                className="border-[#E5E0D8] dark:border-[#242E28] bg-white dark:bg-[#161D19] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#F2EFE8] dark:hover:bg-[#1B241E]"
               >
                 Reset Filter
               </Button>
               <Link to="/library">
-                <Button size="sm" className="bg-[#1C442D] hover:bg-[#255438] text-white border border-[#1C442D] dark:bg-[#1C3024] dark:hover:bg-[#254231] dark:text-[#F3F0E7] dark:border-[#315C43]">
+                <Button size="sm" className="bg-[#1C442D] hover:bg-[#255438] text-white border border-[#1C442D] dark:bg-[#D5B16D] dark:hover:bg-[#E4C688] dark:text-stone-950 dark:border-[#D5B16D]">
                   Browse Library
                 </Button>
               </Link>
@@ -523,11 +523,11 @@ export const HomeBookDiscovery: React.FC = () => {
             <div key={ribbon.key} className="relative w-full overflow-hidden py-2">
           {/* Subtle editorial fade edges */}
           <div
-            className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-20 bg-gradient-to-r from-[#F8F8F2] dark:from-[#0B0D0C] to-transparent z-10"
+            className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-20 bg-gradient-to-r from-[#FAF9F5] dark:from-[#0B0D0C] to-transparent z-10"
             aria-hidden="true"
           />
           <div
-            className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-20 bg-gradient-to-l from-[#F2F7F0] dark:from-[#0B0D0C] to-transparent z-10"
+            className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-20 bg-gradient-to-l from-[#FAF9F5] dark:from-[#0B0D0C] to-transparent z-10"
             aria-hidden="true"
           />
 
@@ -545,12 +545,12 @@ export const HomeBookDiscovery: React.FC = () => {
                 <Link
                   key={`primary-${book.id}-${idx}`}
                   to={`/book/${book.id}`}
-                  className="group flex flex-col w-[42vw] max-w-[180px] sm:w-44 md:w-48 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B68A35] dark:focus-visible:ring-[#D5B16D] rounded-xl"
+                  className="group flex flex-col w-[42vw] max-w-[180px] sm:w-44 md:w-48 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:focus-visible:ring-[#D5B16D] rounded-xl"
                   title={`${book.title} by ${book.author || 'Unknown author'}`}
                   aria-label={`View details for ${book.title} by ${book.author || 'Unknown author'}`}
                 >
                   {/* Book Cover Container with 2:3 aspect ratio */}
-                  <div className="relative aspect-[2/3] w-full rounded-xl overflow-hidden bg-white dark:bg-[#141816] border border-[#D8E5D6] dark:border-[#26302A] shadow-[0_4px_16px_rgba(28,32,29,0.08)] dark:shadow-sm transition-all duration-300 group-hover:border-[#B68A35]/80 dark:group-hover:border-[#D5B16D]/70 group-hover:shadow-[0_12px_28px_rgba(28,32,29,0.14)] dark:group-hover:shadow-[0_12px_28px_rgba(0,0,0,0.65)] group-hover:-translate-y-1.5">
+                  <div className="relative aspect-[2/3] w-full rounded-2xl overflow-hidden bg-white dark:bg-[#141816] border border-[#E5E0D8] dark:border-[#242E28] shadow-[0_4px_16px_rgba(28,32,29,0.06)] dark:shadow-sm transition-all duration-300 group-hover:border-[#8F681C]/80 dark:group-hover:border-[#D5B16D]/70 group-hover:shadow-[0_12px_28px_rgba(28,32,29,0.12)] dark:group-hover:shadow-[0_12px_28px_rgba(0,0,0,0.65)] group-hover:-translate-y-1.5">
                     <DiscoveryBookCover book={book} />
                     {/* Subtle Vignette on Hover */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 dark:from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
@@ -558,14 +558,14 @@ export const HomeBookDiscovery: React.FC = () => {
 
                   {/* Metadata */}
                   <div className="mt-2.5 min-w-0">
-                    <h3 className="text-xs sm:text-sm font-medium text-[#1C201D] dark:text-[#F3F0E7] truncate group-hover:text-[#B68A35] dark:group-hover:text-[#D5B16D] transition-colors leading-snug">
+                    <h3 className="font-serif text-xs sm:text-sm font-semibold text-[#1C201D] dark:text-[#F3F0E7] truncate group-hover:text-[#8F681C] dark:group-hover:text-[#D5B16D] transition-colors leading-snug">
                       {book.title}
                     </h3>
                     <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6] truncate mt-0.5">
                       {book.author || 'Unknown author'}
                     </p>
                     {book.genre && (
-                      <span className="inline-block mt-0.5 text-[10px] text-[#1C442D] dark:text-[#D5B16D]/80 font-medium truncate">
+                      <span className="inline-block mt-0.5 text-[10px] text-[#1C442D] dark:text-[#D5B16D] font-medium truncate">
                         {book.genre}
                       </span>
                     )}
@@ -586,21 +586,21 @@ export const HomeBookDiscovery: React.FC = () => {
                     className="group flex flex-col w-[42vw] max-w-[180px] sm:w-44 md:w-48 flex-shrink-0 rounded-xl"
                   >
                     {/* Book Cover Container with 2:3 aspect ratio */}
-                    <div className="relative aspect-[2/3] w-full rounded-xl overflow-hidden bg-white dark:bg-[#141816] border border-[#D8E5D6] dark:border-[#26302A] shadow-[0_4px_16px_rgba(28,32,29,0.08)] dark:shadow-sm transition-all duration-300 group-hover:border-[#B68A35]/80 dark:group-hover:border-[#D5B16D]/70 group-hover:shadow-[0_12px_28px_rgba(28,32,29,0.14)] dark:group-hover:shadow-[0_12px_28px_rgba(0,0,0,0.65)] group-hover:-translate-y-1.5">
+                    <div className="relative aspect-[2/3] w-full rounded-2xl overflow-hidden bg-white dark:bg-[#141816] border border-[#E5E0D8] dark:border-[#242E28] shadow-[0_4px_16px_rgba(28,32,29,0.06)] dark:shadow-sm transition-all duration-300 group-hover:border-[#8F681C]/80 dark:group-hover:border-[#D5B16D]/70 group-hover:shadow-[0_12px_28px_rgba(28,32,29,0.12)] dark:group-hover:shadow-[0_12px_28px_rgba(0,0,0,0.65)] group-hover:-translate-y-1.5">
                       <DiscoveryBookCover book={book} />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 dark:from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
                     </div>
 
                     {/* Metadata */}
                     <div className="mt-2.5 min-w-0">
-                      <h3 className="text-xs sm:text-sm font-medium text-[#1C201D] dark:text-[#F3F0E7] truncate group-hover:text-[#B68A35] dark:group-hover:text-[#D5B16D] transition-colors leading-snug">
+                      <h3 className="font-serif text-xs sm:text-sm font-semibold text-[#1C201D] dark:text-[#F3F0E7] truncate group-hover:text-[#8F681C] dark:group-hover:text-[#D5B16D] transition-colors leading-snug">
                         {book.title}
                       </h3>
                       <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6] truncate mt-0.5">
                         {book.author || 'Unknown author'}
                       </p>
                       {book.genre && (
-                        <span className="inline-block mt-0.5 text-[10px] text-[#1C442D] dark:text-[#D5B16D]/80 font-medium truncate">
+                        <span className="inline-block mt-0.5 text-[10px] text-[#1C442D] dark:text-[#D5B16D] font-medium truncate">
                           {book.genre}
                         </span>
                       )}

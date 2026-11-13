@@ -29,7 +29,7 @@ const CurrentReads: React.FC = () => {
   // Unauthenticated fallback
   if (!user) {
     return (
-      <Card className="rounded-2xl border border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] text-[#1C201D] dark:text-[#F3F0E7] shadow-[0_2px_8px_rgba(28,32,29,0.04)]">
+      <Card className="rounded-2xl border border-[#E5E0D8] dark:border-[#242E28] bg-white dark:bg-[#131715] text-[#1C201D] dark:text-[#F3F0E7] shadow-[0_2px_10px_rgba(28,32,29,0.04)]">
         <CardContent className="p-8 text-center space-y-4">
           <BookOpen className="w-8 h-8 text-[#1C442D] dark:text-[#D5B16D] mx-auto mb-2" />
           <h3 className="text-base font-semibold text-[#1C201D] dark:text-[#F3F0E7]">Your Current Reads</h3>
@@ -47,12 +47,12 @@ const CurrentReads: React.FC = () => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="p-4 rounded-xl bg-white dark:bg-[#111614] border border-[#E8E2D9] dark:border-[#29332D] animate-pulse flex gap-4 shadow-[0_2px_8px_rgba(28,32,29,0.04)]">
-            <div className="w-14 h-20 sm:w-16 sm:h-24 bg-[#E8E2D9] dark:bg-[#161D19] rounded-lg border border-[#E8E2D9] dark:border-[#29332D]" />
+          <div key={i} className="p-4 rounded-2xl bg-white dark:bg-[#131715] border border-[#E5E0D8] dark:border-[#242E28] animate-pulse flex gap-4 shadow-[0_2px_10px_rgba(28,32,29,0.04)]">
+            <div className="w-14 h-20 sm:w-16 sm:h-24 bg-[#EBE5DB] dark:bg-[#1A221E] rounded-xl border border-[#E5E0D8] dark:border-[#242E28]" />
             <div className="flex-1 space-y-2.5 py-1">
-              <div className="h-4 bg-[#E8E2D9] dark:bg-[#161D19] rounded w-3/4" />
-              <div className="h-3 bg-[#E8E2D9] dark:bg-[#161D19] rounded w-1/2" />
-              <div className="h-2 bg-[#E8E2D9] dark:bg-[#161D19] rounded w-full mt-3" />
+              <div className="h-4 bg-[#EBE5DB] dark:bg-[#1A221E] rounded w-3/4" />
+              <div className="h-3 bg-[#EBE5DB] dark:bg-[#1A221E] rounded w-1/2" />
+              <div className="h-2 bg-[#EBE5DB] dark:bg-[#1A221E] rounded w-full mt-3" />
             </div>
           </div>
         ))}
@@ -63,7 +63,7 @@ const CurrentReads: React.FC = () => {
   // Error state
   if (error) {
     return (
-      <Card className="rounded-2xl border border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] text-[#1C201D] dark:text-[#F3F0E7] shadow-[0_2px_8px_rgba(28,32,29,0.04)]">
+      <Card className="rounded-2xl border border-[#E5E0D8] dark:border-[#242E28] bg-white dark:bg-[#131715] text-[#1C201D] dark:text-[#F3F0E7] shadow-[0_2px_10px_rgba(28,32,29,0.04)]">
         <CardContent className="p-8 text-center space-y-3">
           <BookOpen className="w-8 h-8 text-[#636B65] dark:text-[#A5ADA6] mx-auto" />
           <h3 className="text-base font-semibold text-[#1C201D] dark:text-[#F3F0E7]">Unable to load reading progress</h3>
@@ -72,7 +72,7 @@ const CurrentReads: React.FC = () => {
             size="sm"
             variant="outline"
             onClick={() => window.location.reload()}
-            className="border-[#E8E2D9] dark:border-[#29332D] bg-[#F4EFEA] dark:bg-[#161D19] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#EBF2EC] dark:hover:bg-[#1C2620]"
+            className="border-[#E5E0D8] dark:border-[#242E28] bg-[#F7F4EE] dark:bg-[#1A211D] text-[#1C201D] dark:text-[#F3F0E7] hover:bg-[#EBF2EC] dark:hover:bg-[#1E2721]"
           >
             Retry
           </Button>
@@ -84,7 +84,7 @@ const CurrentReads: React.FC = () => {
   // Empty state
   if (!books || books.length === 0) {
     return (
-      <Card className="rounded-2xl border border-[#E8E2D9] dark:border-[#29332D] bg-white dark:bg-[#111614] text-[#1C201D] dark:text-[#F3F0E7] shadow-[0_2px_8px_rgba(28,32,29,0.04)]">
+      <Card className="rounded-2xl border border-[#E5E0D8] dark:border-[#242E28] bg-white dark:bg-[#131715] text-[#1C201D] dark:text-[#F3F0E7] shadow-[0_2px_10px_rgba(28,32,29,0.04)]">
         <CardContent className="p-8 text-center space-y-4">
           <BookOpen className="w-8 h-8 text-[#1C442D] dark:text-[#D5B16D] mx-auto mb-1" />
           <h3 className="text-base font-semibold text-[#1C201D] dark:text-[#F3F0E7]">No books in progress</h3>
@@ -118,10 +118,10 @@ const CurrentReads: React.FC = () => {
                 void handleOpen(item);
               }
             }}
-            className="w-full text-left group relative flex gap-3.5 p-4 rounded-xl bg-white dark:bg-[#111614] hover:bg-[#F4EFEA] dark:hover:bg-[#161D19] border border-[#E8E2D9] dark:border-[#29332D] hover:border-[#1C442D]/40 dark:hover:border-[#315C43] transition-all duration-200 cursor-pointer shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"
+            className="w-full text-left group relative flex gap-3.5 p-4 rounded-2xl bg-white dark:bg-[#131715] hover:bg-[#F8F5EE] dark:hover:bg-[#18201B] border border-[#E5E0D8] dark:border-[#242E28] hover:border-[#1C442D]/40 dark:hover:border-[#D5B16D]/40 transition-all duration-200 cursor-pointer shadow-[0_2px_10px_rgba(28,32,29,0.04)] dark:shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"
           >
-            {/* Book Cover */}
-            <div className="w-14 h-20 sm:w-16 sm:h-24 shrink-0 rounded-lg overflow-hidden bg-[#F4EFEA] dark:bg-[#161D19] border border-[#E8E2D9] dark:border-[#29332D] relative shadow-xs">
+            {/* Book Cover with subtle spine depth */}
+            <div className="w-14 h-20 sm:w-16 sm:h-24 shrink-0 rounded-xl overflow-hidden bg-[#F0EDE6] dark:bg-[#161D19] border border-[#E5E0D8] dark:border-[#242E28] relative shadow-xs">
               {coverImage ? (
                 <img
                   src={coverImage}
@@ -148,7 +148,7 @@ const CurrentReads: React.FC = () => {
               <div>
                 {/* Progress Bar & Percentage */}
                 <div className="space-y-1.5">
-                  <div className="w-full h-1.5 rounded-full bg-[#E8E2D9] dark:bg-[#1F2922] overflow-hidden">
+                  <div className="w-full h-1.5 rounded-full bg-[#EAE5DC] dark:bg-[#1F2922] overflow-hidden">
                     <div
                       className="h-full bg-[#1C442D] dark:bg-[#D5B16D] rounded-full transition-all duration-300"
                       style={{ width: `${Math.min(100, Math.max(0, progressVal))}%` }}
@@ -170,7 +170,7 @@ const CurrentReads: React.FC = () => {
       {/* "Add a book / Track your reading" card (Image 2 reference) */}
       <Link
         to="/library"
-        className="group flex flex-col items-center justify-center p-6 rounded-xl border border-dashed border-[#E8E2D9] dark:border-[#29332D] hover:border-[#1C442D]/40 dark:hover:border-[#315C43] bg-white/70 dark:bg-[#161D19]/40 hover:bg-[#F4EFEA] dark:hover:bg-[#161D19] transition-all text-center min-h-[110px]"
+        className="group flex flex-col items-center justify-center p-6 rounded-2xl border border-dashed border-[#E5E0D8] dark:border-[#242E28] hover:border-[#1C442D]/50 dark:hover:border-[#D5B16D]/50 bg-white/70 dark:bg-[#131715]/50 hover:bg-[#F8F5EE] dark:hover:bg-[#18201B] transition-all text-center min-h-[110px]"
       >
         <div className="w-8 h-8 rounded-full bg-[#EBF2EC] dark:bg-[#1F2922] group-hover:bg-[#D9E6DC] dark:group-hover:bg-[#25362A] text-[#1C442D] dark:text-[#D5B16D] flex items-center justify-center mb-2 transition-colors">
           <Plus className="w-4 h-4" />
