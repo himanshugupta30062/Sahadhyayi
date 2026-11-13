@@ -234,21 +234,21 @@ export default function Activity() {
                   key={id}
                   type="button"
                   onClick={() => handleTabChange(id as ActivityCategory)}
-                  className={`flex flex-col text-left rounded-2xl border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${
+                  className={`group flex flex-col text-left rounded-2xl border p-4 sm:p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg ${
                     isSelected
                       ? 'border-[#1C442D] bg-[#FAF7F2] shadow-sm dark:border-[#D5B16D] dark:bg-[#161D19]'
                       : 'border-[#E8E2D9] bg-white dark:border-[#29332D] dark:bg-[#111614]'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#EBF2EC] text-[#1C442D] dark:bg-[#1C3024] dark:text-[#D5B16D]">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#EBF2EC] text-[#1C442D] transition-transform group-hover:scale-110 dark:bg-[#1C3024] dark:text-[#D5B16D]">
                       <Icon className="h-4 w-4" />
                     </span>
                     <Badge variant="secondary" className="text-[10px] font-mono">
                       {count}
                     </Badge>
                   </div>
-                  <h3 className="font-serif text-sm font-bold text-[#1C201D] dark:text-[#F3F0E7]">
+                  <h3 className="font-serif text-base font-bold text-[#1C201D] dark:text-[#F3F0E7]">
                     {title}
                   </h3>
                   <p className="mt-1 text-[11px] text-[#636B65] dark:text-[#A5ADA6] line-clamp-1">
@@ -385,6 +385,13 @@ export default function Activity() {
                   </Link>
                 </div>
 
+                <div className="relative overflow-hidden rounded-2xl border border-amber-200/70 bg-gradient-to-r from-amber-50 via-orange-50/70 to-white p-4 sm:p-5 dark:border-amber-900/40 dark:from-amber-950/25 dark:via-orange-950/15 dark:to-[#111614]">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"><Flame className="h-5 w-5" /></div>
+                    <div className="min-w-0 flex-1"><p className="text-sm font-semibold text-foreground">Small goals. Meaningful momentum.</p><p className="mt-0.5 text-xs text-muted-foreground">Choose a pace that fits your life, then celebrate every book finished.</p></div>
+                    <Badge variant="outline" className="hidden sm:inline-flex border-amber-300/70 text-amber-800 dark:text-amber-300">Your next milestone</Badge>
+                  </div>
+                </div>
                 {isLoadingChallenges ? (
                   <div className="py-8 text-center text-xs text-muted-foreground">Loading challenges…</div>
                 ) : challenges.length === 0 ? (
@@ -548,7 +555,7 @@ export default function Activity() {
                       {activeCategory === 'meetups' ? 'Reader Meetups & Gatherings' : 'Literary Events & Meetups'}
                     </h2>
                     <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">
-                      Attend book fairs, writing workshops, author talks, and city reading meetups.
+                      Find your next bookish gathering—online or in your city—and meet readers beyond the page.
                     </p>
                   </div>
                   <Link to="/events">
