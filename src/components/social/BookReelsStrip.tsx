@@ -170,6 +170,7 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
+        </div>
       </div>
 
       {/* Horizontal Carousel */}
