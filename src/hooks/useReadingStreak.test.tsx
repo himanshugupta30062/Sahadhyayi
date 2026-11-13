@@ -4,17 +4,15 @@ import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { READING_ACTIVITY_CUTOVER_DATE } from '@/lib/readingStreak';
 
 const mocks = vi.hoisted(() => ({
   user: { id: 'reader-1' } as null | { id: string },
-  rows: [] as Array<{ activity_date: string; last_activity_at: string | null }>,
-  error: null as unknown,
+  durableRows: [] as Array<{ activity_date: string; last_activity_at: string | null }>,
+  durableError: null as unknown,
+  legacyRows: [] as Array<{ updated_at: string | null }>,
+  legacyError: null as unknown,
   from: vi.fn(),
-  select: vi.fn(),
-  eq: vi.fn(),
-  gte: vi.fn(),
-  order: vi.fn(),
-  limit: vi.fn(),
 }));
 
 vi.mock('@/integrations/supabase/client', () => ({
@@ -56,24 +54,45 @@ const renderStreakHook = () => {
 describe('useReadingStreak', () => {
   beforeEach(() => {
     mocks.user = { id: 'reader-1' };
-    mocks.rows = [];
-    mocks.error = null;
-    const builder = {
-      select: mocks.select,
-      eq: mocks.eq,
-      gte: mocks.gte,
-      order: mocks.order,
-      limit: mocks.limit,
-    };
-    mocks.from.mockReset().mockReturnValue(builder);
-    mocks.select.mockReset().mockReturnValue(builder);
-    mocks.eq.mockReset().mockReturnValue(builder);
-    mocks.gte.mockReset().mockReturnValue(builder);
-    mocks.order.mockReset().mockReturnValue(builder);
-    mocks.limit.mockReset().mockImplementation(async () => ({
-      data: mocks.rows,
-      error: mocks.error,
-    }));
+    mocks.durableRows = [];
+    mocks.durableError = null;
+    mocks.legacyRows = [];
+    mocks.legacyError = null;
+
+    mocks.from.mockImplementation((table: string) => {
+      if (table === 'reading_activity_days') {
+        const chain: Record<string, any> = {};
+        chain.select = vi.fn().mockReturnValue(chain);
+        chain.eq = vi.fn().mockReturnValue(chain);
+        chain.order = vi.fn().mockReturnValue(chain);
+        chain.then = (resolve: any) =>
+          resolve({
+            data: mocks.durableRows,
+            error: mocks.durableError,
+          });
+        return chain;
+      }
+
+      if (table === 'detailed_reading_progress') {
+        const chain: Record<string, any> = {};
+        chain.select = vi.fn().mockReturnValue(chain);
+        chain.eq = vi.fn().mockReturnValue(chain);
+        chain.lt = vi.fn().mockReturnValue(chain);
+        chain.order = vi.fn().mockReturnValue(chain);
+        chain.then = (resolve: any) =>
+          resolve({
+            data: mocks.legacyRows,
+            error: mocks.legacyError,
+          });
+        return chain;
+      }
+
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        then: (resolve: any) => resolve({ data: [], error: null }),
+      };
+    });
   });
 
   afterEach(() => {
@@ -89,8 +108,11 @@ describe('useReadingStreak', () => {
     expect(mocks.from).not.toHaveBeenCalled();
   });
 
-  it('computes the current streak, best streak, and active days in the last week', async () => {
-    mocks.rows = [0, 1, 5, 6, 7, 8].map((offset) => ({ activity_date: dayKeyAtOffset(offset), last_activity_at: dayAtOffset(offset) }));
+  it('computes the current streak, best streak, and active days in the last week without 365-day query limit', async () => {
+    mocks.durableRows = [0, 1, 5, 6, 7, 8].map((offset) => ({
+      activity_date: dayKeyAtOffset(offset),
+      last_activity_at: dayAtOffset(offset),
+    }));
     const { result } = renderStreakHook();
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -100,17 +122,14 @@ describe('useReadingStreak', () => {
       daysThisWeek: 4,
       activeDays: [dayKeyAtOffset(6), dayKeyAtOffset(5), dayKeyAtOffset(1), dayKeyAtOffset(0)],
       lastActiveAt: expect.any(String),
+      cutoverDate: READING_ACTIVITY_CUTOVER_DATE,
+      hasLegacyFallback: false,
     });
     expect(mocks.from).toHaveBeenCalledWith('reading_activity_days');
-    expect(mocks.select).toHaveBeenCalledWith('activity_date,last_activity_at');
-    expect(mocks.eq).toHaveBeenCalledWith('user_id', 'reader-1');
-    expect(mocks.gte).toHaveBeenCalledWith('activity_date', expect.any(String));
-    expect(mocks.order).toHaveBeenCalledWith('activity_date', { ascending: false });
-    expect(mocks.limit).toHaveBeenCalledWith(1000);
   });
 
   it('returns zeroed streak data when there is no reading history', async () => {
-    mocks.rows = [];
+    mocks.durableRows = [];
     const { result } = renderStreakHook();
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -120,14 +139,44 @@ describe('useReadingStreak', () => {
       daysThisWeek: 0,
       activeDays: [],
       lastActiveAt: null,
+      cutoverDate: READING_ACTIVITY_CUTOVER_DATE,
+      hasLegacyFallback: false,
     });
   });
 
-  it('rejects the query when the reading-history request fails', async () => {
-    mocks.error = new Error('Reading history unavailable');
+  it('rejects the query when the durable reading-history request fails', async () => {
+    mocks.durableError = new Error('Reading history unavailable');
     const { result } = renderStreakHook();
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error).toEqual(new Error('Reading history unavailable'));
+  });
+
+  it('merges legacy progress timestamps before cutover date as fallback when durable records are absent', async () => {
+    mocks.durableRows = [];
+    mocks.legacyRows = [
+      { updated_at: '2026-11-09T10:00:00Z' },
+      { updated_at: '2026-11-10T12:00:00Z' },
+    ];
+
+    const { result } = renderStreakHook();
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.hasLegacyFallback).toBe(true);
+    expect(result.current.data?.best).toBe(2);
+  });
+
+  it('ignores legacy timestamps after cutover date to protect post-cutover durable tracking', async () => {
+    mocks.durableRows = [];
+    mocks.legacyRows = [
+      { updated_at: '2026-11-13T10:00:00Z' }, // after cutover date 2026-11-12
+    ];
+
+    const { result } = renderStreakHook();
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.hasLegacyFallback).toBe(false);
+    expect(result.current.data?.current).toBe(0);
+    expect(result.current.data?.best).toBe(0);
   });
 });

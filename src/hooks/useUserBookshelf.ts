@@ -140,6 +140,7 @@ export const useUserBookshelf = () => {
 const notifyShelfChanged = (queryClient: ReturnType<typeof useQueryClient>) => {
   void queryClient.invalidateQueries({ queryKey: ['user-bookshelf'] });
   void queryClient.invalidateQueries({ queryKey: ['reading-progress'] });
+  void queryClient.invalidateQueries({ queryKey: ['reading-streak'] });
   // The database trigger updates challenge progress and awards badges on shelf changes.
   void queryClient.invalidateQueries({ queryKey: ['user-challenges'] });
   void queryClient.invalidateQueries({ queryKey: ['user-badges'] });

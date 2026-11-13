@@ -57,12 +57,18 @@ export const useMarkChapterAsRead = (bookId: string) => {
         .single();
 
       if (error) throw error;
-      await recordReadingActivity(user.id, 'chapter_complete');
+      await recordReadingActivity(user.id, 'chapter_complete', { bookId });
       return data as ChapterProgress;
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: ['chapter-progress', user?.id, bookId],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ['reading-streak', user?.id],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ['reading-activity-days', user?.id],
       });
     },
   });

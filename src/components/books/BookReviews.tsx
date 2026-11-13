@@ -52,7 +52,18 @@ export default function BookReviews({ bookId }: { bookId: string }) {
     setReaderReaction(myReview?.reader_reaction || '');
     setDimensionScores({ writing: 0, characters: 0, plot: 0, pacing: 0, worldbuilding: 0, originality: 0, ...(myReview?.dimensions || []).reduce((acc, item) => ({ ...acc, [item.dimension]: item.score }), {}) });
     setEditing(false);
-  }, [myReview?.id, myReview?.updated_at, myReview?.review_text, myReview?.contains_spoilers]);
+  }, [
+    myReview?.id,
+    myReview?.updated_at,
+    myReview?.review_text,
+    myReview?.contains_spoilers,
+    myReview?.overall_rating,
+    myReview?.plot_rating,
+    myReview?.characters_rating,
+    myReview?.writing_rating,
+    myReview?.reader_reaction,
+    myReview?.dimensions,
+  ]);
 
   const handleSave = async () => {
     try {
