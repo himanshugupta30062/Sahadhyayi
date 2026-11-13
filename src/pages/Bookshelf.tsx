@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/authHelpers';
 import { useUserBookshelf, useUpdateBookshelfItem, useRemoveFromBookshelf } from '@/hooks/useUserBookshelf';
-import { useReadingProgress } from '@/hooks/useReadingProgress';
+import { useReadingProgress, useUpdateReadingProgress } from '@/hooks/useReadingProgress';
 import { loadProgressLocally } from '@/utils/readingProgressStorage';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -53,7 +53,7 @@ const Bookshelf = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { data: bookshelfData, isLoading, error } = useUserBookshelf();
-  const { data: dbProgress = [] } = useReadingProgress();
+  const { data: dbProgress = [] } = useReadingProgress();\n  const updateProgress = useUpdateReadingProgress();
   const updateBookshelf = useUpdateBookshelfItem();
   const removeFromBookshelf = useRemoveFromBookshelf();
   
@@ -515,7 +515,7 @@ const Bookshelf = () => {
 
                 const isReading = item.status === 'reading';
                 const isCompleted = item.status === 'completed';
-                const isWantToRead = item.status === 'want_to_read';
+                const isWantToRead = item.status === 'want_to_read';\n                const progressRecord = dbProgress.find(p => p.book_id === item.book_id);\n                const canQuickLog = isReading && !!progressRecord && progressRecord.current_page < progressRecord.total_pages;
 
                 return (
                   <Card 
@@ -555,7 +555,9 @@ const Bookshelf = () => {
                           <Star className={`h-4 w-4 ${item.is_favorite ? "fill-amber-300 text-amber-300" : ""}`} />
                         </button>
 
-                        {/* Progress Badge on Cover */}
+                        {canQuickLog && progressRecord && <div className="absolute bottom-2 left-2 right-2 z-30"><Button size="sm" className="w-full h-8 text-xs shadow" disabled={updateProgress.isPending} onClick={(event)=>{event.preventDefault();event.stopPropagation();updateProgress.mutate({id:progressRecord.id,current_page:Math.min(progressRecord.total_pages,progressRecord.current_page+5)});}}><BookOpen className="mr-1.5 h-3.5 w-3.5"/>+5 pages</Button></div>}
+
+                      {/* Progress Badge on Cover */}
                         {isReading && item.progressPercent > 0 && (
                           <div className="absolute top-2 right-12 z-10 bg-black/80 backdrop-blur-xs text-white text-[10px] font-semibold px-1.5 py-0.5 rounded shadow-xs">
                             {item.progressPercent}%
