@@ -7,6 +7,7 @@ import { LazyImage } from '@/components/ui/LazyImage';
 import { toast } from '@/hooks/use-toast';
 import { AddMarginNoteDialog } from '@/components/social/margins/AddMarginNoteDialog';
 import { useResolvedBookCover } from '@/utils/catalog/bookCoverResolver';
+import { BookshelfStatusPicker } from '@/components/books/BookshelfStatusPicker';
 
 interface BookCoverProps {
   title: string;
@@ -80,6 +81,12 @@ const BookCover = ({ title, coverImageUrl, price, bookId, description, pdfUrl, o
         )}
         
         <div className="space-y-3">
+          {/* Bookshelf Status & Up Next Picker */}
+          <BookshelfStatusPicker
+            bookId={bookId}
+            bookTitle={title}
+          />
+
           {/* PDF Button */}
           <Button 
             onClick={handleDownloadPDF}

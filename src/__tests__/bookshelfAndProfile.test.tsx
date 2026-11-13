@@ -61,6 +61,26 @@ vi.mock('@/hooks/useUserBookshelf', () => ({
   useRemoveFromBookshelf: () => ({
     mutate: vi.fn(),
   }),
+  useUpNextQueue: () => ({
+    addToUpNext: { mutate: vi.fn() },
+    removeFromUpNext: { mutate: vi.fn() },
+    reorderUpNext: { mutate: vi.fn() },
+    startReadingFromQueue: { mutate: vi.fn() },
+  }),
+  useResumeFromDnf: () => ({
+    mutate: vi.fn(),
+  }),
+  useMarkAsDnf: () => ({
+    mutate: vi.fn(),
+  }),
+  DNF_REASON_LABELS: {
+    pacing_too_slow: 'Pacing too slow',
+    writing_style: 'Writing style / prose',
+    not_what_expected: 'Not what I expected',
+    content_trigger: 'Content / Trigger warnings',
+    lost_interest: 'Lost interest',
+    other: 'Other / No specific reason',
+  },
 }));
 
 vi.mock('@/hooks/useReadingProgress', () => ({
