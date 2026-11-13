@@ -77,12 +77,15 @@ Deno.serve(async (req: Request) => {
     // Keep compatibility with previously deployed frontends that still send "type".
     const requestedCategory = input.category ?? input.type;
     const category = typeof requestedCategory === "string" ? requestedCategory.trim() : "all";
+    const requestedSort = typeof input.sort === "string" ? input.sort : "cited_by_count";
+    const sortOptions: Record<string, string> = { cited_by_count: "cited_by_count:desc", publication_date: "publication_date:desc", relevance_score: "relevance_score:desc" };
+    const sort = sortOptions[requestedSort] ?? sortOptions.cited_by_count;
 
     if (page < 1 || page > 10000) return jsonResponse({ error: "Page must be between 1 and 10,000." }, 400);
     if (perPage < 1 || perPage > 25) return jsonResponse({ error: "Page size must be between 1 and 25." }, 400);
     if (year !== "all" && !/^\d{4}$/.test(year)) return jsonResponse({ error: "Publication year is invalid." }, 400);
 
-    const cacheKey = JSON.stringify({ query, page, perPage, year, category });
+    const cacheKey = JSON.stringify({ query, page, perPage, year, category, sort });
     const cached = responseCache.get(cacheKey);
     if (cached) stalePayload = cached.payload;
     if (cached && cached.expiresAt > Date.now()) {
@@ -107,7 +110,7 @@ Deno.serve(async (req: Request) => {
     const params = new URLSearchParams({
       per_page: String(perPage),
       page: String(page),
-      sort: "cited_by_count:desc",
+      sort,
       filter: filters.join(","),
       select: SELECT_FIELDS,
     });
