@@ -54,7 +54,7 @@ export const ReadingMomentumWidget: React.FC<ReadingMomentumWidgetProps> = ({
             </div>
           </div>
           <Link
-            to="/stats"
+            to="/reading-stats"
             className="text-xs font-medium text-primary hover:underline"
           >
             Full Analytics →

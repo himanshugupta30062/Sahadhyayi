@@ -179,7 +179,7 @@ const GlobalFooter = () => {
                   <h4 className="text-sm font-semibold text-[#1C201D] dark:text-white">Support</h4>
                   <ul className="mt-4 space-y-3">
                     {[
-                      { label: "Help Center", href: "/help" },
+                      { label: "Help Center", href: "/help-center" },
                       { label: "Community Guidelines", href: "/community-guidelines" },
                     ].map((i) => (
                       <li key={i.label}>
@@ -223,9 +223,9 @@ const GlobalFooter = () => {
                   <ul className="mt-4 space-y-3">
                     {[
                       { label: "About Us", href: "/about" },
-                      { label: "Privacy Policy", href: "/privacy" },
-                      { label: "Terms of Service", href: "/terms" },
-                      { label: "Cookie Policy", href: "/cookies" },
+                      { label: "Privacy Policy", href: "/privacy-policy" },
+                      { label: "Terms of Service", href: "/terms-of-service" },
+                      { label: "Cookie Policy", href: "/cookie-policy" },
                       { label: "DMCA Policy", href: "/dmca" },
                       { label: "Open Source Licenses", href: "/open-source-licenses" },
                     ].map((i) => (

@@ -74,7 +74,8 @@ type NavigationSection = {
   items: NavigationItem[];
 };
 
-const NAVIGATION_SECTIONS: NavigationSection[] = [
+// eslint-disable-next-line react-refresh/only-export-components
+export const NAVIGATION_SECTIONS: NavigationSection[] = [
   {
     name: "Library",
     href: "/library",
@@ -141,7 +142,8 @@ const NAVIGATION_SECTIONS: NavigationSection[] = [
   },
 ];
 
-const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
+// eslint-disable-next-line react-refresh/only-export-components
+export const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
   NAVIGATION_SECTIONS[0],
   NAVIGATION_SECTIONS[1],
   NAVIGATION_SECTIONS[2],

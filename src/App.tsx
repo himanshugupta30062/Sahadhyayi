@@ -16,6 +16,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { useAuth } from "./contexts/authHelpers";
 import QuotesProvider from "./contexts/QuotesContext";
 import BookExpertProvider from "./contexts/BookExpertContext";
+import { BookExpertContext } from "./contexts/book-expert.utils";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
 // UI component imports
@@ -52,6 +53,8 @@ const WebsiteTour = lazy(() => import("./components/onboarding/WebsiteTour"));
 
 // Secondary pages (can be loaded later)
 const Profile = lazy(() => import('./pages/Profile'));
+const NotificationsPage = lazy(() => import('./pages/Notifications'));
+const MessagesPage = lazy(() => import('./pages/Messages'));
 const SocialMedia = lazy(() => import('./pages/SocialMedia'));
 const BookReelSharePage = lazy(() => import('./pages/BookReelSharePage'));
 const BookReelInsights = lazy(() => import('./pages/BookReelInsights'));
@@ -241,6 +244,16 @@ const StoryPartRedirect = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.toString();
   return <Navigate to={storyId ? `/stories/${storyId}/part/${partNumber || 1}${query ? `?${query}` : ''}` : '/stories'} replace />;
+};
+
+const BookExpertRedirect = () => {
+  const expertContext = React.useContext(BookExpertContext);
+  React.useEffect(() => {
+    if (expertContext && !expertContext.isOpen) {
+      expertContext.toggleChat();
+    }
+  }, [expertContext]);
+  return <Navigate to="/library" replace />;
 };
 
 const PageTracker = () => {
@@ -878,6 +891,16 @@ const App = memo(() => {
                         <Route path="/author-connect" element={<Suspense fallback={<LoadingFallback />}><AuthorConnect /></Suspense>} />
                         <Route path="/author-profile/:authorName" element={<Suspense fallback={<LoadingFallback />}><AuthorProfilePage /></Suspense>} />
                         <Route
+                          path="/reader-map"
+                          element={
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading reader map..." />}>
+                                <ReaderMap />
+                              </Suspense>
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
                           path="/reader-map/:bookId?"
                           element={
                             <ProtectedRoute>
@@ -900,6 +923,50 @@ const App = memo(() => {
                         <Route path="/social/reels/insights/:reelId" element={<ProtectedRoute><Suspense fallback={<LoadingFallback message="Loading Reel detail..." />}><BookReelDetailInsights /></Suspense></ProtectedRoute>} />
                         <Route path="/social/reels/saved" element={<ProtectedRoute><Suspense fallback={<LoadingFallback message="Loading saved reels..." />}><SavedBookReels /></Suspense></ProtectedRoute>} />
                         <Route path="/social/reel/:reelId" element={<Suspense fallback={<LoadingFallback message="Loading Book Reel..." />}><BookReelSharePage /></Suspense>} />
+                        <Route
+                          path="/notifications"
+                          element={
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading notifications..." />}>
+                                <NotificationsPage />
+                              </Suspense>
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/messages"
+                          element={
+                            <ProtectedRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading messages..." />}>
+                                <MessagesPage />
+                              </Suspense>
+                            </ProtectedRoute>
+                          }
+                        />
+                        <Route
+                          path="/buddy-reads"
+                          element={
+                            <Suspense fallback={<LoadingFallback message="Loading buddy reads..." />}>
+                              <BuddyReads />
+                            </Suspense>
+                          }
+                        />
+                        <Route
+                          path="/life-stories"
+                          element={
+                            <Suspense fallback={<LoadingFallback message="Loading life stories..." />}>
+                              <LifeStories />
+                            </Suspense>
+                          }
+                        />
+                        <Route path="/publish-book" element={<Navigate to="/publish" replace />} />
+                        <Route path="/book-expert" element={<BookExpertRedirect />} />
+                        <Route path="/stats" element={<Navigate to="/reading-stats" replace />} />
+                        <Route path="/privacy" element={<Navigate to="/privacy-policy" replace />} />
+                        <Route path="/terms" element={<Navigate to="/terms-of-service" replace />} />
+                        <Route path="/cookies" element={<Navigate to="/cookie-policy" replace />} />
+                        <Route path="/help" element={<Navigate to="/help-center" replace />} />
+                        <Route path="/settings" element={<Navigate to="/profile" replace />} />
                         <Route path="*" element={<NotFound />} />
                         </Routes>
                       </RouteErrorBoundary>

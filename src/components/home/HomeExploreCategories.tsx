@@ -42,7 +42,7 @@ const categories: FeatureCategory[] = [
     shortcuts: [
       { label: "Digital Library", href: "/library" },
       { label: "My Bookshelf", href: "/bookshelf" },
-      { label: "Publish a Book", href: "/publish-book" },
+      { label: "Publish a Book", href: "/publish" },
     ],
   },
   {
