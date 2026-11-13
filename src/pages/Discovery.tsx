@@ -270,7 +270,11 @@ const Discovery = () => {
                   <p className="text-sm text-muted-foreground truncate mt-1">{book.author}</p>
                   <div className="flex flex-wrap gap-1 mt-2">
                     {book.genre && <Badge variant="outline" className="text-xs">{book.genre}</Badge>}
+                    {book.publication_year && <Badge variant="outline" className="text-xs">{book.publication_year}</Badge>}
+                    {typeof book.rating === 'number' && <Badge variant="secondary" className="text-xs" aria-label={`Rating ${book.rating} out of 5`}>★ {book.rating.toFixed(1)}</Badge>}
+                    {typeof book.pages === 'number' && book.pages > 0 && <Badge variant="outline" className="text-xs">{book.pages} pages</Badge>}
                     {book.pdf_url && <Badge variant="secondary" className="text-xs">Read online</Badge>}
+                    {(book.qualityScore ?? 0) >= 9000 && <Badge className="text-xs">Featured catalog</Badge>}
                   </div>
                   {user ? (
                     <Button size="sm" variant="ghost" className="mt-2 px-0 text-brand-primary" disabled={addToShelf.isPending} onClick={() => addToShelf.mutate({ bookId: book.id, status: 'want_to_read' })}>
