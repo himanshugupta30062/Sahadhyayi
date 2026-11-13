@@ -14,6 +14,19 @@ export const WhatsAppIcon = ({ className = 'w-6 h-6' }: { className?: string }) 
   </svg>
 );
 
+const SupportAgentIcon = ({ className = 'h-7 w-7' }: { className?: string }) => (
+  <svg viewBox="0 0 32 32" className={className} fill="none" aria-hidden="true">
+    <path d="M6.5 15v-1.2a9.5 9.5 0 0 1 19 0V15" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
+    <path d="M6.5 14.5H9a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H7.5a3 3 0 0 1-3-3v-2a3 3 0 0 1 2-3Z" fill="currentColor" fillOpacity=".18" stroke="currentColor" strokeWidth="1.8"/>
+    <path d="M25.5 14.5H23a2 2 0 0 0-2 2v4a2 2 0 0 0 2h1.5a3 3 0 0 0 3-3v-2a3 3 0 0 0-2-3Z" fill="currentColor" fillOpacity=".18" stroke="currentColor" strokeWidth="1.8"/>
+    <path d="M11 13.5a5 5 0 0 1 10 0v4a5 5 0 0 1-10 0v-4Z" fill="currentColor" fillOpacity=".95"/>
+    <path d="M13.2 18.3h.1m5.4 0h.1" stroke="#172333" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M14 21.1c1.3.9 2.7.9 4 0" stroke="#172333" strokeWidth="1.3" strokeLinecap="round"/>
+    <path d="M21 22.2v2.2a3.3 3.3 0 0 1-3.3 3.3H15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+    <circle cx="13.5" cy="27.7" r="1.6" fill="#34D399"/>
+  </svg>
+);
+
 export const WhatsAppCallCenterFab: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -87,7 +100,7 @@ export const WhatsAppCallCenterFab: React.FC = () => {
           aria-hidden="true"
         />
         {/* Support / Help Icon matching Book Reader icon scale */}
-        <span className="pointer-events-none absolute inset-[3px] rounded-full border border-white/[0.07]" aria-hidden="true" />\n        <PhoneCall className="relative h-6 w-6 sm:h-7 sm:w-7 stroke-[1.8] transition-transform duration-300 group-hover:scale-105" aria-hidden="true" />\n        <span className="absolute bottom-[2px] right-[2px] flex h-[17px] w-[17px] items-center justify-center rounded-full border-[2.5px] border-[#172333] bg-emerald-500" aria-hidden="true"><span className="h-1.5 w-1.5 rounded-full bg-white" /></span>
+        <span className="pointer-events-none absolute inset-[3px] rounded-full border border-white/[0.07]" aria-hidden="true" />\n        <SupportAgentIcon className="relative h-7 w-7 sm:h-8 sm:w-8 transition-transform duration-300 group-hover:scale-105" />\n        <span className="absolute bottom-[2px] right-[2px] flex h-[17px] w-[17px] items-center justify-center rounded-full border-[2.5px] border-[#172333] bg-emerald-500" aria-hidden="true"><span className="h-1.5 w-1.5 rounded-full bg-white" /></span>
 
         {/* Desktop Tooltip */}
         <span
@@ -96,7 +109,7 @@ export const WhatsAppCallCenterFab: React.FC = () => {
             showTooltip && !isOpen ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'
           )}
         >
-          Call Center & WhatsApp Support
+          Chat with a Support Agent
         </span>
       </button>
 
