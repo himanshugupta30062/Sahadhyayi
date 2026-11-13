@@ -24,7 +24,7 @@ const Discovery = () => {
   const [languageFilter, setLanguageFilter] = useState('all');
   const [genreFilter, setGenreFilter] = useState('all');
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
-  const [sortBy, setSortBy] = useState<'relevance' | 'newest' | 'title_asc'>('relevance');
+  const [sortBy, setSortBy] = useState<'relevance' | 'newest' | 'title_asc' | 'quality' | 'rating' | 'author_asc'>('relevance');
   const [visibleCount, setVisibleCount] = useState(24);
 
   const filteredTrendingBooks = useMemo(() => {
@@ -45,6 +45,9 @@ const Discovery = () => {
 
     if (sortBy === 'newest') list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     if (sortBy === 'title_asc') list.sort((a, b) => a.title.localeCompare(b.title));
+    if (sortBy === 'author_asc') list.sort((a, b) => (a.author || '').localeCompare(b.author || ''));
+    if (sortBy === 'rating') list.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+    if (sortBy === 'quality' || sortBy === 'relevance') list.sort((a, b) => (b.qualityScore ?? 0) - (a.qualityScore ?? 0) || (b.rating ?? 0) - (a.rating ?? 0) || new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     return list;
   }, [availabilityFilter, books, genreFilter, languageFilter, searchQuery, sortBy]);
@@ -95,7 +98,7 @@ const Discovery = () => {
                 void trackUiEvent('discovery_filter_changed', { filter: 'search' });
               }}
             />
-            <Select value={sortBy} onValueChange={(value: 'relevance' | 'newest' | 'title_asc') => {
+            <Select value={sortBy} onValueChange={(value: 'relevance' | 'newest' | 'title_asc' | 'quality' | 'rating' | 'author_asc') => {
               setSortBy(value);
               void trackUiEvent('discovery_filter_changed', { filter: 'sort', value });
             }}>
@@ -103,7 +106,10 @@ const Discovery = () => {
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="relevance">Sort: Relevance</SelectItem>
+                <SelectItem value="relevance">Sort: Recommended</SelectItem>
+                <SelectItem value="quality">Sort: Catalog quality</SelectItem>
+                <SelectItem value="rating">Sort: Rating</SelectItem>
+                <SelectItem value="author_asc">Sort: Author A-Z</SelectItem>
                 <SelectItem value="newest">Sort: Newest added</SelectItem>
                 <SelectItem value="title_asc">Sort: Title A-Z</SelectItem>
               </SelectContent>
