@@ -17,19 +17,19 @@ export default function BookReviews({ bookId }: { bookId: string }) {
   const deleteReview = useDeleteBookReview(bookId);
   const myReview = reviews.find((review) => review.user_id === user?.id);
   const [reviewText, setReviewText] = useState('');
-  const [containsSpoilers, setContainsSpoilers] = useState(false);
+  const [containsSpoilers, setContainsSpoilers] = useState(false);\n  const [overallRating, setOverallRating] = useState(0);\n  const [plotRating, setPlotRating] = useState(0);\n  const [charactersRating, setCharactersRating] = useState(0);\n  const [writingRating, setWritingRating] = useState(0);
   const [showSpoilers, setShowSpoilers] = useState<Record<string, boolean>>({});
   const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     setReviewText(myReview?.review_text || '');
-    setContainsSpoilers(myReview?.contains_spoilers || false);
+    setContainsSpoilers(myReview?.contains_spoilers || false);\n    setOverallRating(myReview?.overall_rating || 0);\n    setPlotRating(myReview?.plot_rating || 0);\n    setCharactersRating(myReview?.characters_rating || 0);\n    setWritingRating(myReview?.writing_rating || 0);
     setEditing(false);
   }, [myReview?.id, myReview?.updated_at, myReview?.review_text, myReview?.contains_spoilers]);
 
   const handleSave = async () => {
     try {
-      await saveReview.mutateAsync({ reviewText, containsSpoilers });
+      if (overallRating < 1 || overallRating > 5) throw new Error('Please choose an overall rating from 1 to 5.');\n      await saveReview.mutateAsync({ reviewText, containsSpoilers, overallRating, plotRating: plotRating || null, charactersRating: charactersRating || null, writingRating: writingRating || null });
       setEditing(false);
       toast({ title: 'Review saved', description: 'Your review is now available to signed-in readers.' });
     } catch (err) {
@@ -65,7 +65,7 @@ export default function BookReviews({ bookId }: { bookId: string }) {
             {myReview && !editing ? (
               <>
                 <p className="whitespace-pre-wrap text-sm text-gray-700">{myReview.review_text}</p>
-                {myReview.contains_spoilers && <p className="text-xs text-amber-800">Marked as containing spoilers</p>}
+                <p className="text-sm text-amber-700">★ {myReview.overall_rating || '—'}/5 overall{myReview.plot_rating ? ` · Plot ${myReview.plot_rating}/5` : ''}{myReview.characters_rating ? ` · Characters ${myReview.characters_rating}/5` : ''}{myReview.writing_rating ? ` · Writing ${myReview.writing_rating}/5` : ''}</p>\n                {myReview.contains_spoilers && <p className="text-xs text-amber-800">Marked as containing spoilers</p>}
                 <div className="flex flex-wrap gap-2">
                   <Button variant="outline" size="sm" onClick={() => setEditing(true)}><Pencil className="h-4 w-4 mr-1" /> Edit review</Button>
                   <Button variant="ghost" size="sm" onClick={handleDelete} disabled={deleteReview.isPending}><Trash2 className="h-4 w-4 mr-1" /> Delete</Button>
@@ -73,7 +73,7 @@ export default function BookReviews({ bookId }: { bookId: string }) {
               </>
             ) : (
               <>
-                <Textarea value={reviewText} onChange={(event) => setReviewText(event.target.value)} rows={4} maxLength={5000} placeholder="What stayed with you after reading this book?" aria-label="Your book review" />
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">\n                  {[['Overall',overallRating,setOverallRating],['Plot',plotRating,setPlotRating],['Characters',charactersRating,setCharactersRating],['Writing',writingRating,setWritingRating]].map(([label,value,setter]) => (\n                    <label key={label as string} className="text-xs font-medium text-gray-700">{label as string}{label === 'Overall' && <span className="text-red-500"> *</span>}\n                      <select className="mt-1 w-full rounded-md border border-emerald-200 bg-white px-2 py-2 text-sm" value={value as number} onChange={(event) => (setter as (v:number)=>void)(Number(event.target.value))} aria-label={`${label as string} rating`}>\n                        <option value={0}>Rate…</option>{[1,2,3,4,5].map((n)=><option key={n} value={n}>{n} ★</option>)}\n                      </select>\n                    </label>\n                  ))}\n                </div>\n                <Textarea value={reviewText} onChange={(event) => setReviewText(event.target.value)} rows={4} maxLength={5000} placeholder="What stayed with you after reading this book?" aria-label="Your book review" />
                 <div className="flex items-center gap-2">
                   <Checkbox checked={containsSpoilers} onCheckedChange={(checked) => setContainsSpoilers(checked === true)} />
                   <span className="text-sm text-gray-600">This review contains spoilers</span>
@@ -81,8 +81,8 @@ export default function BookReviews({ bookId }: { bookId: string }) {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <span className="text-xs text-gray-500">{reviewText.trim().length}/5000</span>
                   <div className="flex gap-2">
-                    {editing && <Button variant="outline" onClick={() => { setEditing(false); setReviewText(myReview?.review_text || ''); setContainsSpoilers(myReview?.contains_spoilers || false); }}>Cancel</Button>}
-                    <Button onClick={handleSave} disabled={saveReview.isPending || !reviewText.trim() || reviewText.trim().length > 5000}>{saveReview.isPending ? 'Saving…' : 'Publish review'}</Button>
+                    {editing && <Button variant="outline" onClick={() => { setEditing(false); setReviewText(myReview?.review_text || ''); setContainsSpoilers(myReview?.contains_spoilers || false); setOverallRating(myReview?.overall_rating || 0); setPlotRating(myReview?.plot_rating || 0); setCharactersRating(myReview?.characters_rating || 0); setWritingRating(myReview?.writing_rating || 0); }}>Cancel</Button>}
+                    <Button onClick={handleSave} disabled={saveReview.isPending || !reviewText.trim() || reviewText.trim().length > 5000 || overallRating < 1}>{saveReview.isPending ? 'Saving…' : 'Publish review'}</Button>
                   </div>
                 </div>
               </>

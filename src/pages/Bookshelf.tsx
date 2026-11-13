@@ -44,7 +44,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import SEO from '@/components/SEO';
 import { trackUiEvent } from '@/lib/analytics';
 
-type StatusFilter = 'all' | 'reading' | 'completed' | 'want_to_read';
+type StatusFilter = 'all' | 'reading' | 'completed' | 'want_to_read' | 'dnf';
 type SortOption = 'recent' | 'progress' | 'title' | 'author';
 
 const Bookshelf = () => {
@@ -63,12 +63,13 @@ const Bookshelf = () => {
 
   // Stats
   const stats = useMemo(() => {
-    if (!bookshelfData) return { all: 0, reading: 0, completed: 0, want_to_read: 0 };
+    if (!bookshelfData) return { all: 0, reading: 0, completed: 0, want_to_read: 0, dnf: 0 };
     return {
       all: bookshelfData.length,
       reading: bookshelfData.filter(b => b.status === 'reading').length,
       completed: bookshelfData.filter(b => b.status === 'completed').length,
       want_to_read: bookshelfData.filter(b => b.status === 'want_to_read').length,
+      dnf: bookshelfData.filter(b => b.status === 'dnf').length,
     };
   }, [bookshelfData]);
 
@@ -140,7 +141,7 @@ const Bookshelf = () => {
     return filtered;
   }, [booksWithProgress, activeFilter, searchQuery, sortBy, favoritesOnly]);
 
-  const handleStatusChange = (itemId: string, newStatus: 'reading' | 'completed' | 'want_to_read') => {
+  const handleStatusChange = (itemId: string, newStatus: 'reading' | 'completed' | 'want_to_read' | 'dnf') => {
     updateBookshelf.mutate({ id: itemId, updates: { status: newStatus } });
   };
 
@@ -222,6 +223,7 @@ const Bookshelf = () => {
         label: 'Completed', 
         bg: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
       },
+      dnf: { icon: BookOpen, label: 'Did Not Finish', bg: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20' },
       want_to_read: { 
         icon: BookMarked, 
         label: 'Want to Read', 
@@ -341,6 +343,7 @@ const Bookshelf = () => {
               { key: 'reading', label: 'Reading Now', icon: Clock, color: 'text-blue-500 dark:text-blue-400', bg: 'bg-blue-500/10' },
               { key: 'completed', label: 'Completed', icon: CheckCircle, color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-emerald-500/10' },
               { key: 'want_to_read', label: 'Want to Read', icon: BookMarked, color: 'text-amber-500 dark:text-amber-400', bg: 'bg-amber-500/10' },
+              { key: 'dnf', label: 'Did Not Finish', icon: BookOpen, color: 'text-rose-500 dark:text-rose-400', bg: 'bg-rose-500/10' },
             ].map(({ key, label, icon: Icon, color, bg }) => (
               <Card 
                 key={key} 
@@ -408,11 +411,12 @@ const Bookshelf = () => {
             </div>
 
             <Tabs value={activeFilter} onValueChange={(v) => setActiveFilter(v as StatusFilter)} className="w-full md:w-auto">
-              <TabsList className="grid grid-cols-4 w-full md:w-auto h-9">
+              <TabsList className="grid grid-cols-5 w-full md:w-auto h-9">
                 <TabsTrigger value="all" className="text-xs">All ({stats.all})</TabsTrigger>
                 <TabsTrigger value="reading" className="text-xs">Reading ({stats.reading})</TabsTrigger>
                 <TabsTrigger value="completed" className="text-xs">Done ({stats.completed})</TabsTrigger>
                 <TabsTrigger value="want_to_read" className="text-xs">To Read ({stats.want_to_read})</TabsTrigger>
+                <TabsTrigger value="dnf" className="text-xs">DNF ({stats.dnf})</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
@@ -602,6 +606,10 @@ const Bookshelf = () => {
                               >
                                 <BookMarked className="w-4 h-4 mr-2" />
                                 Want to Read
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleStatusChange(item.id, 'dnf')} disabled={item.status === 'dnf'}>
+                                <BookOpen className="w-4 h-4 mr-2" />
+                                Did Not Finish
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
