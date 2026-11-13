@@ -26,6 +26,7 @@ const Discovery = () => {
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
   const [publicationPeriodFilter, setPublicationPeriodFilter] = useState('all');
   const [minimumRatingFilter, setMinimumRatingFilter] = useState('all');
+  const [bookLengthFilter, setBookLengthFilter] = useState('all');
   const [sortBy, setSortBy] = useState<'relevance' | 'newest' | 'title_asc' | 'quality' | 'rating' | 'author_asc'>('relevance');
   const [visibleCount, setVisibleCount] = useState(24);
 
@@ -44,6 +45,16 @@ const Discovery = () => {
     if (languageFilter !== 'all') list = list.filter((book) => book.language === languageFilter);
     if (selectedGenres.length > 0) list = list.filter((book) => selectedGenres.includes(book.genre ?? ''));
     if (availabilityFilter === 'readable') list = list.filter((book) => Boolean(book.pdf_url));
+    if (bookLengthFilter !== 'all') {
+      list = list.filter((book) => {
+        const pages = Number(book.pages);
+        if (!Number.isFinite(pages) || pages <= 0) return bookLengthFilter === 'unknown';
+        if (bookLengthFilter === 'short') return pages <= 200;
+        if (bookLengthFilter === 'medium') return pages > 200 && pages <= 400;
+        if (bookLengthFilter === 'long') return pages > 400;
+        return false;
+      });
+    }
     if (minimumRatingFilter !== 'all') {
       const minimumRating = Number(minimumRatingFilter);
       list = list.filter((book) => typeof book.rating === 'number' && book.rating >= minimumRating);
@@ -67,16 +78,16 @@ const Discovery = () => {
     if (sortBy === 'quality' || sortBy === 'relevance') list.sort((a, b) => (b.qualityScore ?? 0) - (a.qualityScore ?? 0) || (b.rating ?? 0) - (a.rating ?? 0) || new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     return list;
-  }, [availabilityFilter, books, selectedGenres, languageFilter, minimumRatingFilter, publicationPeriodFilter, searchQuery, sortBy]);
+  }, [availabilityFilter, books, selectedGenres, languageFilter, minimumRatingFilter, bookLengthFilter, publicationPeriodFilter, searchQuery, sortBy]);
 
-  useEffect(() => { setVisibleCount(24); }, [searchQuery, languageFilter, selectedGenres, availabilityFilter, minimumRatingFilter, publicationPeriodFilter, sortBy]);
+  useEffect(() => { setVisibleCount(24); }, [searchQuery, languageFilter, selectedGenres, availabilityFilter, minimumRatingFilter, bookLengthFilter, publicationPeriodFilter, sortBy]);
   const visibleBooks = filteredTrendingBooks.slice(0, visibleCount);
 
   const genres = useMemo(
     () => [...new Set(books.map((book) => book.genre).filter(Boolean))].sort((a, b) => (a ?? '').localeCompare(b ?? '')),
     [books],
   );
-  const hasActiveFilters = Boolean(searchQuery.trim()) || languageFilter !== 'all' || selectedGenres.length > 0 || availabilityFilter !== 'all' || publicationPeriodFilter !== 'all' || minimumRatingFilter !== 'all' || sortBy !== 'relevance';
+  const hasActiveFilters = Boolean(searchQuery.trim()) || languageFilter !== 'all' || selectedGenres.length > 0 || availabilityFilter !== 'all' || publicationPeriodFilter !== 'all' || minimumRatingFilter !== 'all' || bookLengthFilter !== 'all' || sortBy !== 'relevance';
   const clearFilters = () => {
     setSearchQuery('');
     setLanguageFilter('all');
@@ -84,6 +95,7 @@ const Discovery = () => {
     setAvailabilityFilter('all');
     setPublicationPeriodFilter('all');
     setMinimumRatingFilter('all');
+    setBookLengthFilter('all');
     setSortBy('relevance');
     void trackUiEvent('discovery_filters_reset');
   };
@@ -185,6 +197,19 @@ const Discovery = () => {
                 <SelectItem value="2010s">2010–2019</SelectItem>
                 <SelectItem value="2020s">2020–2029</SelectItem>
                 <SelectItem value="unknown">Year not listed</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={bookLengthFilter} onValueChange={(value) => {
+              setBookLengthFilter(value);
+              void trackUiEvent('discovery_filter_changed', { filter: 'book_length', value });
+            }}>
+              <SelectTrigger><SelectValue placeholder="Book length" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Any book length</SelectItem>
+                <SelectItem value="short">Short · up to 200 pages</SelectItem>
+                <SelectItem value="medium">Medium · 201–400 pages</SelectItem>
+                <SelectItem value="long">Long · over 400 pages</SelectItem>
+                <SelectItem value="unknown">Pages not listed</SelectItem>
               </SelectContent>
             </Select>
             <Select value={minimumRatingFilter} onValueChange={(value) => {
