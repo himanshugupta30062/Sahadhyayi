@@ -62,7 +62,7 @@ describe('Primary Navigation (5 core sections)', () => {
     cleanup();
   });
 
-  it('renders the 5 primary navigation items for visitors: Home, Library, Authors, Social, Activity', () => {
+  it('renders Home and all five primary navigation sections for visitors', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <Navigation />
@@ -78,17 +78,20 @@ describe('Primary Navigation (5 core sections)', () => {
     // 2. Library
     expect(screen.getByRole('button', { name: /library/i })).toBeInTheDocument();
 
-    // 3. Authors
+    // 3. Read & Write
+    expect(screen.getByRole('button', { name: /read & write/i })).toBeInTheDocument();
+
+    // 4. Authors
     expect(screen.getByRole('button', { name: /authors/i })).toBeInTheDocument();
 
-    // 4. Social
+    // 5. Social
     expect(screen.getByRole('button', { name: /social/i })).toBeInTheDocument();
 
-    // 5. Activity
+    // 6. Activity
     expect(screen.getByRole('button', { name: /activity/i })).toBeInTheDocument();
   });
 
-  it('renders Dashboard as Home for authenticated readers alongside Library, Authors, Social, Activity', () => {
+  it('renders Dashboard as Home for authenticated readers alongside all five navigation sections', () => {
     authState.user = { id: 'u1', email: 'reader@example.com', user_metadata: { full_name: 'Test Reader' } };
 
     render(
@@ -106,7 +109,10 @@ describe('Primary Navigation (5 core sections)', () => {
     // 2. Library
     expect(screen.getByRole('button', { name: /library/i })).toBeInTheDocument();
 
-    // 3. Authors
+    // 3. Read & Write
+    expect(screen.getByRole('button', { name: /read & write/i })).toBeInTheDocument();
+
+    // 4. Authors
     expect(screen.getByRole('button', { name: /authors/i })).toBeInTheDocument();
 
     // 4. Social
