@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { SAMPLE_BOOK_REELS, BookReelItem } from '@/data/sampleSocialPosts';
 import { CreateBookReelDialog } from './CreateBookReelDialog';
 import { supabase } from '@/integrations/supabase/client-universal';
+import { toast } from 'sonner';
 
 interface BookReelsStripProps {
   reels?: BookReelItem[];
