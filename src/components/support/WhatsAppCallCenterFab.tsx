@@ -15,15 +15,19 @@ export const WhatsAppIcon = ({ className = 'w-6 h-6' }: { className?: string }) 
 );
 
 const SupportAgentIcon = ({ className = 'h-7 w-7' }: { className?: string }) => (
-  <svg viewBox="0 0 32 32" className={className} fill="none" aria-hidden="true">
-    <path d="M6.5 15v-1.2a9.5 9.5 0 0 1 19 0V15" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
-    <path d="M6.5 14.5H9a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H7.5a3 3 0 0 1-3-3v-2a3 3 0 0 1 2-3Z" fill="currentColor" fillOpacity=".18" stroke="currentColor" strokeWidth="1.8"/>
-    <path d="M25.5 14.5H23a2 2 0 0 0-2 2v4a2 2 0 0 0 2h1.5a3 3 0 0 0 3-3v-2a3 3 0 0 0-2-3Z" fill="currentColor" fillOpacity=".18" stroke="currentColor" strokeWidth="1.8"/>
-    <path d="M11 13.5a5 5 0 0 1 10 0v4a5 5 0 0 1-10 0v-4Z" fill="currentColor" fillOpacity=".95"/>
-    <path d="M13.2 18.3h.1m5.4 0h.1" stroke="#172333" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M14 21.1c1.3.9 2.7.9 4 0" stroke="#172333" strokeWidth="1.3" strokeLinecap="round"/>
-    <path d="M21 22.2v2.2a3.3 3.3 0 0 1-3.3 3.3H15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-    <circle cx="13.5" cy="27.7" r="1.6" fill="#34D399"/>
+  <svg viewBox="0 0 42 32" className={className} fill="none" aria-hidden="true">
+    {/* Headband and ear cups */}
+    <path d="M4.5 15v-1.2a9.5 9.5 0 0 1 19 0V15" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
+    <rect x="2.5" y="13.5" width="6" height="10" rx="2.8" fill="currentColor" fillOpacity=".22" stroke="currentColor" strokeWidth="1.6"/>
+    <rect x="20" y="13.5" width="6" height="10" rx="2.8" fill="currentColor" fillOpacity=".22" stroke="currentColor" strokeWidth="1.6"/>
+    {/* Friendly agent face */}
+    <path d="M8.5 13.5a5.5 5.5 0 0 1 11 0v4a5.5 5.5 0 0 1-11 0v-4Z" fill="currentColor" fillOpacity=".96"/>
+    <path d="M11.2 17h.1m4.9 0h.1" stroke="#172333" strokeWidth="1.8" strokeLinecap="round"/>
+    <path d="M12 19.4c1.2.8 2.4.8 3.6 0" stroke="#172333" strokeWidth="1.2" strokeLinecap="round"/>
+    {/* Boom deliberately extends beyond the circular button edge */}
+    <path d="M23.5 20.5c2.5 2.4 5.1 2.8 7.7 2.1 1.5-.4 2.3-1.4 3-2.8" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"/>
+    <rect x="32.2" y="16.5" width="8.2" height="5.3" rx="2.65" fill="#102235" stroke="currentColor" strokeWidth="1.5" transform="rotate(-18 32.2 16.5)"/>
+    <path d="M35 17.9l.8 2.2m1.7-2.7.8 2.2" stroke="#34D399" strokeWidth="1.2" strokeLinecap="round"/>
   </svg>
 );
 
