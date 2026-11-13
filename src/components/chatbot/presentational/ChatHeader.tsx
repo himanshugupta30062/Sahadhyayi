@@ -37,7 +37,7 @@ export function ChatHeader({ title, subtitle }: { title: string; subtitle?: stri
           {consent ? <ShieldCheck className="w-3 h-3 text-emerald-600" /> : <Shield className="w-3 h-3 text-muted-foreground" />}
           <span>{consent ? 'AI Training: On' : 'Private Mode'}</span>
         </button>
-        <Link to="/privacy#ai-training" className="text-muted-foreground hover:underline text-[9px]">
+        <Link to="/privacy-policy#ai-training" className="text-muted-foreground hover:underline text-[9px]">
           Privacy
         </Link>
       </div>

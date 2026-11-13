@@ -106,7 +106,7 @@ const UserDropdownMenu = () => {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/settings" className="flex items-center px-4 py-2 hover:bg-gray-50">
+              <Link to="/profile" className="flex items-center px-4 py-2 hover:bg-gray-50">
                 <Settings className="mr-3 h-4 w-4 text-gray-500" />
                 <span>Account Settings</span>
               </Link>
