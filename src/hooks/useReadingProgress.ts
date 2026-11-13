@@ -47,6 +47,8 @@ async function syncBookshelfProgress(userId: string, bookId: string, currentPage
   if (error) throw error;
 }
 
+const progressRequestSequence = new Map<number, number>();
+
 export const useReadingProgress = (options: { enabled?: boolean } = {}) => {
   const { user } = useAuth();
 
@@ -78,6 +80,9 @@ export const useUpdateReadingProgress = () => {
 
   return useMutation({
     mutationFn: async ({ id, current_page }: { id: number; current_page: number }) => {
+      const requestSequence = (progressRequestSequence.get(id) ?? 0) + 1;
+      progressRequestSequence.set(id, requestSequence);
+      const isLatestRequest = () => progressRequestSequence.get(id) === requestSequence;
       if (!user?.id) throw new Error('Sign in to update reading progress');
       if (!Number.isSafeInteger(id) || id <= 0) {
         throw new Error('Invalid reading progress record');
@@ -96,16 +101,43 @@ export const useUpdateReadingProgress = () => {
         .single();
 
       if (error) throw error;
+      // Ignore an older response when a newer save for this record has already started.
+      if (!isLatestRequest()) return data as ReadingProgressItem;
       const saved = data as ReadingProgressItem;
       if (saved.book_id && saved.total_pages > 0) await syncBookshelfProgress(user.id, saved.book_id, saved.current_page, saved.total_pages);
-      await recordReadingActivity(user.id, 'progress_save');
+      if (isLatestRequest()) await recordReadingActivity(user.id, 'progress_save');
       return saved;
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['reading-progress'] });
+    onMutate: async ({ id, current_page }) => {
+      if (!user?.id) return undefined;
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: ['reading-progress', user.id] }),
+        queryClient.cancelQueries({ queryKey: ['user-bookshelf', user.id] }),
+      ]);
+      const previousProgress = queryClient.getQueryData<ReadingProgressItem[]>(['reading-progress', user.id]);
+      const previousShelf = queryClient.getQueryData<any[]>(['user-bookshelf', user.id]);
+      queryClient.setQueryData<ReadingProgressItem[]>(['reading-progress', user.id], (items = []) =>
+        items.map((item) => item.id === id ? { ...item, current_page, completed_at: null } : item));
+      const record = previousProgress?.find((item) => item.id === id);
+      if (record?.book_id && record.total_pages > 0) {
+        const percentage = Math.round(Math.min(record.total_pages, current_page) / record.total_pages * 100);
+        queryClient.setQueryData<any[]>(['user-bookshelf', user.id], (items = []) => items.map((item) =>
+          item.book_id !== record.book_id || item.status === 'dnf' ? item : {
+            ...item, progress: percentage,
+            status: current_page >= record.total_pages ? 'completed' : item.status === 'want_to_read' || item.status === 'completed' ? 'reading' : item.status,
+          }));
+      }
+      return { previousProgress, previousShelf };
+    },
+    onError: (_error, _variables, context) => {
+      if (!user?.id || !context) return;
+      queryClient.setQueryData(['reading-progress', user.id], context.previousProgress);
+      queryClient.setQueryData(['user-bookshelf', user.id], context.previousShelf);
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: ['reading-progress', user?.id] });
       void queryClient.invalidateQueries({ queryKey: ['user-bookshelf', user?.id] });
     },
-  });
 };
 
 export const useSaveReadingProgress = () => {
