@@ -61,6 +61,7 @@ const Bookshelf = () => {
   const [activeFilter, setActiveFilter] = useState<StatusFilter>('all');
   const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [ownedOnly, setOwnedOnly] = useState(false);
 
   // Stats
   const stats = useMemo(() => {
@@ -124,6 +125,8 @@ const Bookshelf = () => {
       filtered = filtered.filter((book) => book.is_favorite === true);
     }
 
+    if (ownedOnly) filtered = filtered.filter((book) => book.is_owned === true);
+
     // Sort
     filtered.sort((a, b) => {
       if (sortBy === 'progress') {
@@ -140,7 +143,7 @@ const Bookshelf = () => {
     });
     
     return filtered;
-  }, [booksWithProgress, activeFilter, searchQuery, sortBy, favoritesOnly]);
+  }, [booksWithProgress, activeFilter, searchQuery, sortBy, favoritesOnly, ownedOnly]);
 
   const handleStatusChange = (itemId: string, newStatus: 'reading' | 'completed' | 'want_to_read' | 'dnf') => {
     updateBookshelf.mutate({ id: itemId, updates: { status: newStatus } });
@@ -411,12 +414,16 @@ const Bookshelf = () => {
               </div>
             </div>
 
-            {(searchQuery.trim() || activeFilter !== 'all' || favoritesOnly) && (
+            <Button type="button" size="sm" variant={ownedOnly ? "default" : "outline"} aria-pressed={ownedOnly} aria-label="Owned books only" onClick={() => setOwnedOnly((current) => !current)} className="h-9 shrink-0 gap-1.5 border-border">
+              <BookMarked className="w-3.5 h-3.5" /> Owned ({booksWithProgress.filter((book) => book.is_owned === true).length})
+            </Button>
+
+            {(searchQuery.trim() || activeFilter !== 'all' || favoritesOnly || ownedOnly) && (
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => { setSearchQuery(''); setActiveFilter('all'); setFavoritesOnly(false); }}
+                onClick={() => { setSearchQuery(''); setActiveFilter('all'); setFavoritesOnly(false); setOwnedOnly(false); }}
                 className="h-9 shrink-0 gap-1.5 text-xs"
                 aria-label="Clear bookshelf search and filters"
               >
@@ -625,9 +632,13 @@ const Bookshelf = () => {
                                 <BookOpen className="w-4 h-4 mr-2" />
                                 Did Not Finish
                               </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => updateBookshelf.mutate({ id: item.id, updates: { is_owned: !item.is_owned } })}>
+                                <BookMarked className="w-4 h-4 mr-2" />
+                                {item.is_owned ? 'Remove Owned Mark' : 'Mark as Owned'}
+                              </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
-                                onClick={() => handleRemove(item.id)}
+                                onClick={() => handleRemove(item.id)
                                 className="text-destructive focus:text-destructive"
                               >
                                 <Trash2 className="w-4 h-4 mr-2" />
@@ -660,6 +671,8 @@ const Bookshelf = () => {
                             </div>
                           </div>
                         )}
+
+                        {item.is_owned && <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-400"><BookMarked className="w-3 h-3" /> Owned</span>}
 
                         {/* Genre Tag */}
                         {book.genre && (
