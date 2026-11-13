@@ -100,16 +100,7 @@ function getAbstract(index?: Record<string, number[]> | null): string {
   return words.filter((word): word is string => typeof word === 'string').join(' ');
 }
 
-function getAuthors(authorships?: OpenAlexAuthor[] | null): string {
-  if (!Array.isArray(authorships)) return '';
-  const names = authorships
-    .filter((item): item is Exclude<OpenAlexAuthor, null> => item !== null && typeof item === 'object')
-    .map((item) => item.author?.display_name)
-    .filter((name): name is string => typeof name === 'string' && name.trim().length > 0);
-  if (names.length <= 3) return names.join(', ');
-  return `${names.slice(0, 3).join(', ')} and ${names.length - 3} more`;
-}
-
+function getAuthorLinks(authorships?: OpenAlexAuthor[] | null): { name: string; url: string }[] {\n  if (!Array.isArray(authorships)) return [];\n  return authorships\n    .filter((item): item is Exclude<OpenAlexAuthor, null> => item !== null && typeof item === 'object')\n    .map((item) => ({ name: item.author?.display_name || '', url: safeHttpUrl(item.author?.id) }))\n    .filter((author) => author.name.trim().length > 0);\n}\n
 function safeHttpUrl(value?: string | null): string {
   if (typeof value !== 'string') return '';
   try {
