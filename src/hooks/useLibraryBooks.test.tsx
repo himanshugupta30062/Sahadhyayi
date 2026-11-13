@@ -456,4 +456,92 @@ describe('useLibraryBooks React Query Hooks', () => {
     expect(result.current.data?.length).toBe(2);
     expect(result.current.data?.map((g) => g.name)).toEqual(['Fiction', 'Philosophy']);
   });
+
+  it('useAllLibraryBooks continues pagination after a full 500-book batch', async () => {
+    const firstPage = Array.from({ length: 500 }, (_, index) => ({
+      id: `batch-${index}`,
+      title: `Book ${index}`,
+      author: `Author ${index}`,
+      created_at: '2026-01-01',
+    }));
+    const secondPage = [{ id: 'last-book', title: 'Last Book', author: 'Last Author', created_at: '2026-01-02' }];
+    const rangeMock = vi.fn()
+      .mockResolvedValueOnce({ data: firstPage, error: null })
+      .mockResolvedValueOnce({ data: secondPage, error: null });
+    const queryMock = { range: rangeMock };
+
+    (supabase.from as any).mockReturnValue({
+      select: vi.fn().mockReturnValue(queryMock),
+    });
+
+    const { result } = renderHook(() => useAllLibraryBooks(), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(result.current.data).toHaveLength(501);
+    expect(rangeMock).toHaveBeenNthCalledWith(1, 0, 499);
+    expect(rangeMock).toHaveBeenNthCalledWith(2, 500, 999);
+  });
+
+  it('useLibraryBooks falls back to baseline columns after the preferred query fails', async () => {
+    const fallbackBooks = [{
+      id: 'fallback-1',
+      title: 'Fallback Book',
+      author: 'Fallback Author',
+      genre: 'Fiction',
+      created_at: '2026-01-01',
+    }];
+    const initialQuery: any = {
+      limit: vi.fn().mockReturnThis(),
+      then: (resolve: any, reject?: any) =>
+        Promise.resolve({ data: null, error: { message: 'column mismatch' } }).then(resolve, reject),
+    };
+    const fallbackQuery: any = {
+      limit: vi.fn().mockReturnThis(),
+      then: (resolve: any, reject?: any) =>
+        Promise.resolve({ data: fallbackBooks, error: null }).then(resolve, reject),
+    };
+    const selectMock = vi.fn()
+      .mockReturnValueOnce(initialQuery)
+      .mockReturnValueOnce(fallbackQuery);
+    (supabase.from as any).mockReturnValue({ select: selectMock });
+
+    const { result } = renderHook(() => useLibraryBooks('fallback', 5), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(result.current.data?.[0]).toMatchObject({
+      id: 'fallback-1',
+      title: 'Fallback Book',
+      author: 'Fallback Author',
+    });
+    expect(selectMock).toHaveBeenNthCalledWith(
+      2,
+      'id,title,author,genre,cover_image_url,description,pdf_url,created_at'
+    );
+  });
+
+  it('useBooksByGenre retries with core columns and preserves the genre filter', async () => {
+    const fallbackBooks = [{ id: 'genre-1', title: 'Godaan', author: 'Premchand', genre: 'Fiction', created_at: '2026-01-01' }];
+    const initialQuery: any = {
+      eq: vi.fn().mockReturnThis(),
+      then: (resolve: any, reject?: any) =>
+        Promise.resolve({ data: null, error: { message: 'column mismatch' } }).then(resolve, reject),
+    };
+    const fallbackQuery: any = {
+      eq: vi.fn().mockReturnThis(),
+      then: (resolve: any, reject?: any) =>
+        Promise.resolve({ data: fallbackBooks, error: null }).then(resolve, reject),
+    };
+    const selectMock = vi.fn()
+      .mockReturnValueOnce(initialQuery)
+      .mockReturnValueOnce(fallbackQuery);
+    (supabase.from as any).mockReturnValue({ select: selectMock });
+
+    const { result } = renderHook(() => useBooksByGenre('Fiction'), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(result.current.data?.[0].title).toBe('Godaan');
+    expect(initialQuery.eq).toHaveBeenCalledWith('genre', 'Fiction');
+    expect(fallbackQuery.eq).toHaveBeenCalledWith('genre', 'Fiction');
+  });
+
 });
