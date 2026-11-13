@@ -107,6 +107,7 @@ function getAuthorLinks(authorships?: OpenAlexAuthor[] | null): { name: string; 
     .map((item) => ({ name: item.author?.display_name || '', url: safeHttpUrl(item.author?.id) }))
     .filter((author) => author.name.trim().length > 0);
 }
+
 function safeHttpUrl(value?: string | null): string {
   if (typeof value !== 'string') return '';
   try {
