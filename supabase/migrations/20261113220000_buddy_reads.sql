@@ -50,7 +50,7 @@ create policy "hosts update buddy reads" on public.buddy_reads for update to aut
 create policy "hosts delete buddy reads" on public.buddy_reads for delete to authenticated using (created_by=auth.uid());
 
 create policy "members view buddy read membership" on public.buddy_read_members for select to authenticated
-using (user_id=auth.uid() or exists(select 1 from public.buddy_reads b where b.id=buddy_read_id and b.created_by=auth.uid()) or exists(select 1 from public.buddy_read_members m where m.buddy_read_id=buddy_read_id and m.user_id=auth.uid()));
+using (user_id=auth.uid() or exists(select 1 from public.buddy_reads b where b.id=buddy_read_id and b.created_by=auth.uid()));
 create policy "hosts add buddy read members" on public.buddy_read_members for insert to authenticated
 with check (exists(select 1 from public.buddy_reads b where b.id=buddy_read_id and b.created_by=auth.uid()) or user_id=auth.uid());
 create policy "members update own progress" on public.buddy_read_members for update to authenticated
