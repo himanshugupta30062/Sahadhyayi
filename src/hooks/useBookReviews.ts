@@ -12,7 +12,11 @@ export interface BookReview {
   book_id: string;
   user_id: string;
   review_text: string;
-  contains_spoilers: boolean;\n  overall_rating?: number | null;\n  plot_rating?: number | null;\n  characters_rating?: number | null;\n  writing_rating?: number | null;
+  contains_spoilers: boolean;
+  overall_rating?: number | null;
+  plot_rating?: number | null;
+  characters_rating?: number | null;
+  writing_rating?: number | null;
   reader_reaction?: ReaderReaction | null;
   dimensions?: ReviewScore[];
   created_at: string;
@@ -72,7 +76,11 @@ export function useSaveBookReview(bookId: string | undefined) {
         book_id: bookId,
         user_id: user.id,
         review_text: reviewText,
-        contains_spoilers: input.containsSpoilers,\n        overall_rating: input.overallRating,\n        plot_rating: input.plotRating,\n        characters_rating: input.charactersRating,\n        writing_rating: input.writingRating,
+        contains_spoilers: input.containsSpoilers,
+        overall_rating: input.overallRating,
+        plot_rating: input.plotRating,
+        characters_rating: input.charactersRating,
+        writing_rating: input.writingRating,
         reader_reaction: input.readerReaction || null,
       }, { onConflict: 'book_id,user_id' })
         .select('id, book_id, user_id, review_text, contains_spoilers, created_at, updated_at')

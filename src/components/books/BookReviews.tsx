@@ -18,7 +18,11 @@ export default function BookReviews({ bookId }: { bookId: string }) {
   const deleteReview = useDeleteBookReview(bookId);
   const myReview = reviews.find((review) => review.user_id === user?.id);
   const [reviewText, setReviewText] = useState('');
-  const [containsSpoilers, setContainsSpoilers] = useState(false);\n  const [overallRating, setOverallRating] = useState(0);\n  const [plotRating, setPlotRating] = useState(0);\n  const [charactersRating, setCharactersRating] = useState(0);\n  const [writingRating, setWritingRating] = useState(0);
+  const [containsSpoilers, setContainsSpoilers] = useState(false);
+  const [overallRating, setOverallRating] = useState(0);
+  const [plotRating, setPlotRating] = useState(0);
+  const [charactersRating, setCharactersRating] = useState(0);
+  const [writingRating, setWritingRating] = useState(0);
   const [readerReaction, setReaderReaction] = useState<ReaderReaction | ''>('');
   const [dimensionScores, setDimensionScores] = useState<Record<ReviewDimension, number>>({ writing: 0, characters: 0, plot: 0, pacing: 0, worldbuilding: 0, originality: 0 });
   const [showSpoilers, setShowSpoilers] = useState<Record<string, boolean>>({});
@@ -26,7 +30,11 @@ export default function BookReviews({ bookId }: { bookId: string }) {
 
   useEffect(() => {
     setReviewText(myReview?.review_text || '');
-    setContainsSpoilers(myReview?.contains_spoilers || false);\n    setOverallRating(myReview?.overall_rating || 0);\n    setPlotRating(myReview?.plot_rating || 0);\n    setCharactersRating(myReview?.characters_rating || 0);\n    setWritingRating(myReview?.writing_rating || 0);
+    setContainsSpoilers(myReview?.contains_spoilers || false);
+    setOverallRating(myReview?.overall_rating || 0);
+    setPlotRating(myReview?.plot_rating || 0);
+    setCharactersRating(myReview?.characters_rating || 0);
+    setWritingRating(myReview?.writing_rating || 0);
     setReaderReaction(myReview?.reader_reaction || '');
     setDimensionScores({ writing: 0, characters: 0, plot: 0, pacing: 0, worldbuilding: 0, originality: 0, ...(myReview?.dimensions || []).reduce((acc, item) => ({ ...acc, [item.dimension]: item.score }), {}) });
     setEditing(false);
@@ -34,7 +42,8 @@ export default function BookReviews({ bookId }: { bookId: string }) {
 
   const handleSave = async () => {
     try {
-      if (overallRating < 1 || overallRating > 5) throw new Error('Please choose an overall rating from 1 to 5.');\n      await saveReview.mutateAsync({ reviewText, containsSpoilers, overallRating, plotRating: plotRating || null, charactersRating: charactersRating || null, writingRating: writingRating || null, readerReaction: readerReaction || null, dimensions: REVIEW_DIMENSIONS.filter(d => dimensionScores[d] > 0).map(d => ({ dimension: d, score: dimensionScores[d] })) });
+      if (overallRating < 1 || overallRating > 5) throw new Error('Please choose an overall rating from 1 to 5.');
+      await saveReview.mutateAsync({ reviewText, containsSpoilers, overallRating, plotRating: plotRating || null, charactersRating: charactersRating || null, writingRating: writingRating || null, readerReaction: readerReaction || null, dimensions: REVIEW_DIMENSIONS.filter(d => dimensionScores[d] > 0).map(d => ({ dimension: d, score: dimensionScores[d] })) });
       setEditing(false);
       toast({ title: 'Review saved', description: 'Your review is now available to signed-in readers.' });
     } catch (err) {
@@ -72,7 +81,8 @@ export default function BookReviews({ bookId }: { bookId: string }) {
             {myReview && !editing ? (
               <>
                 <p className="whitespace-pre-wrap text-sm text-gray-700">{myReview.review_text}</p>
-                <p className="text-sm text-amber-700">★ {myReview.overall_rating || '—'}/5 overall{myReview.plot_rating ? ` · Plot ${myReview.plot_rating}/5` : ''}{myReview.characters_rating ? ` · Characters ${myReview.characters_rating}/5` : ''}{myReview.writing_rating ? ` · Writing ${myReview.writing_rating}/5` : ''}</p>\n                {myReview.contains_spoilers && <p className="text-xs text-amber-800">Marked as containing spoilers</p>}
+                <p className="text-sm text-amber-700">★ {myReview.overall_rating || '—'}/5 overall{myReview.plot_rating ? ` · Plot ${myReview.plot_rating}/5` : ''}{myReview.characters_rating ? ` · Characters ${myReview.characters_rating}/5` : ''}{myReview.writing_rating ? ` · Writing ${myReview.writing_rating}/5` : ''}</p>
+                {myReview.contains_spoilers && <p className="text-xs text-amber-800">Marked as containing spoilers</p>}
                 <div className="flex flex-wrap gap-2">
                   <Button variant="outline" size="sm" onClick={() => setEditing(true)}><Pencil className="h-4 w-4 mr-1" /> Edit review</Button>
                   <Button variant="ghost" size="sm" onClick={handleDelete} disabled={deleteReview.isPending}><Trash2 className="h-4 w-4 mr-1" /> Delete</Button>
@@ -80,7 +90,16 @@ export default function BookReviews({ bookId }: { bookId: string }) {
               </>
             ) : (
               <>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">\n                  {[['Overall',overallRating,setOverallRating],['Plot',plotRating,setPlotRating],['Characters',charactersRating,setCharactersRating],['Writing',writingRating,setWritingRating]].map(([label,value,setter]) => (\n                    <label key={label as string} className="text-xs font-medium text-gray-700">{label as string}{label === 'Overall' && <span className="text-red-500"> *</span>}\n                      <select className="mt-1 w-full rounded-md border border-emerald-200 bg-white px-2 py-2 text-sm" value={value as number} onChange={(event) => (setter as (v:number)=>void)(Number(event.target.value))} aria-label={`${label as string} rating`}>\n                        <option value={0}>Rate…</option>{[1,2,3,4,5].map((n)=><option key={n} value={n}>{n} ★</option>)}\n                      </select>\n                    </label>\n                  ))}\n                </div>\n                <label className="block text-sm font-medium">Your reading reaction</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[['Overall',overallRating,setOverallRating],['Plot',plotRating,setPlotRating],['Characters',charactersRating,setCharactersRating],['Writing',writingRating,setWritingRating]].map(([label,value,setter]) => (
+                    <label key={label as string} className="text-xs font-medium text-gray-700">{label as string}{label === 'Overall' && <span className="text-red-500"> *</span>}
+                      <select className="mt-1 w-full rounded-md border border-emerald-200 bg-white px-2 py-2 text-sm" value={value as number} onChange={(event) => (setter as (v:number)=>void)(Number(event.target.value))} aria-label={`${label as string} rating`}>
+                        <option value={0}>Rate…</option>{[1,2,3,4,5].map((n)=><option key={n} value={n}>{n} ★</option>)}
+                      </select>
+                    </label>
+                  ))}
+                </div>
+                <label className="block text-sm font-medium">Your reading reaction</label>
                 <select className="w-full rounded-md border bg-background px-3 py-2 text-sm" value={readerReaction} onChange={e => setReaderReaction(e.target.value as ReaderReaction | '')} aria-label="Reading reaction">
                   <option value="">Choose a reaction (optional)</option>{(['joyful','thoughtful','inspired','heartbroken','tense','surprised','comforted','challenged'] as ReaderReaction[]).map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
