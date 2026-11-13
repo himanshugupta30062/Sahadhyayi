@@ -7,11 +7,10 @@ import { useUserJoinedGroups } from '@/hooks/useUserGroups';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, BookOpen, Library, Users, ChevronRight, Flame, Circle, CheckCircle2 } from 'lucide-react';
+import { Plus, BookOpen, Library, Users, ChevronRight, Circle, CheckCircle2 } from 'lucide-react';
 import SEO from '@/components/SEO';
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import CurrentReads from '@/components/dashboard/CurrentReads';
-import ReadingGoalDialog from '@/components/dashboard/ReadingGoalDialog';
 import ReadingGoalMilestones from '@/components/dashboard/ReadingGoalMilestones';
 import ReadingGoalModal from '@/components/dashboard/ReadingGoalModal';
 import BookRecommendations from '@/components/dashboard/BookRecommendations';
@@ -39,7 +38,6 @@ const DashboardContent = () => {
   const currentlyReading = userBooks.filter(book => book.status === 'reading').length;
   const wantToRead = userBooks.filter(book => book.status === 'want_to_read').length;
   const totalBooks = completedBooks + currentlyReading + wantToRead;
-  const progressPercentage = Math.min(100, Math.round((completedBooks / readingGoal) * 100));
   
   // Get the current book being read for the welcome message
   const currentBook = userBooks.find(book => book.status === 'reading');
