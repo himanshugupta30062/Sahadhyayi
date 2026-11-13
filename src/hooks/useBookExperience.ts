@@ -11,7 +11,8 @@ export type BookExperience = { moods: BookMood[]; pacing: 'fast'|'medium'|'slow'
 export function useBookExperience(bookId: string) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const queryKey = ['book-experience', user?.id, bookId];\n  const db = supabase as any;
+  const queryKey = ['book-experience', user?.id, bookId];
+  const db = supabase as any;
   const query = useQuery({
     queryKey,
     enabled: Boolean(user?.id && bookId),

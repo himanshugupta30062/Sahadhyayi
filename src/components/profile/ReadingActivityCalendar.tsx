@@ -38,7 +38,8 @@ const streakMetrics = (dates: Set<string>) => {
 
 export const ReadingActivityCalendar: React.FC = () => {
   const { user } = useAuth();
-  const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));\n  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const { data: days = [], isLoading } = useQuery({
     queryKey: ["reading-activity-days", user?.id],
     enabled: !!user?.id,
@@ -48,7 +49,8 @@ export const ReadingActivityCalendar: React.FC = () => {
       return (data ?? []) as ActivityDay[];
     },
   });
-  const activeDates = useMemo(() => new Set(days.map((day) => day.activity_date)), [days]);\n  const selectedActivity = days.find((day) => day.activity_date === selectedDay);
+  const activeDates = useMemo(() => new Set(days.map((day) => day.activity_date)), [days]);
+  const selectedActivity = days.find((day) => day.activity_date === selectedDay);
   const streaks = useMemo(() => streakMetrics(activeDates), [activeDates]);
   const nextMilestone = milestones.find((value) => value > streaks.current) ?? null;
   const milestoneBase = milestones.filter((value) => value <= streaks.current).at(-1) ?? 0;
