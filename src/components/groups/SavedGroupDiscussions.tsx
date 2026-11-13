@@ -69,7 +69,21 @@ export default function SavedGroupDiscussions() {
       </div>}
       {loading ? <div className="space-y-3" aria-label="Loading saved discussions"><div className="h-28 animate-pulse rounded-xl bg-muted"/><div className="h-28 animate-pulse rounded-xl bg-muted"/></div> :
       items.length === 0 ?
-        <div className="py-8 text-center"><Bookmark className="mx-auto mb-2 h-8 w-8 text-muted-foreground"/><p className="font-medium">No saved discussions yet</p><p className="text-sm text-muted-foreground">Bookmark a useful conversation to find it here.</p></div> :
+        <div className="space-y-4 py-3">
+          <div className="rounded-xl border border-dashed border-border px-4 py-6 text-center">
+            <Bookmark className="mx-auto mb-2 h-8 w-8 text-muted-foreground"/>
+            <p className="font-medium">No saved discussions yet</p>
+            <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">Save a thoughtful question, insight, or passage from any reading group and it will appear here.</p>
+            <Button className="mt-3" size="sm" onClick={() => window.location.assign('/groups')}><MessageCircle className="mr-1 h-4 w-4"/>Explore reading groups</Button>
+          </div>
+          <article className="rounded-xl border bg-muted/20 p-4">
+            <div className="mb-3 flex items-center justify-between gap-2"><Badge variant="outline">Example · Preview</Badge><Badge variant="secondary">Reflection</Badge></div>
+            <h3 className="font-semibold">What makes a book stay with you?</h3>
+            <p className="mt-1 text-xs text-muted-foreground">The reading circle · Example discussion</p>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">Sometimes it is a character, sometimes a single sentence—or the way a story changes how we see something ordinary. What moment from your current read has stayed with you, and why?</p>
+            <p className="mt-3 text-xs text-muted-foreground">This is sample content for preview only. It is not a saved discussion.</p>
+          </article>
+        </div> :
       filtered.length === 0 ?
         <div className="py-8 text-center"><Search className="mx-auto mb-2 h-8 w-8 text-muted-foreground"/><p className="font-medium">No matching discussions</p><p className="text-sm text-muted-foreground">Try another search or topic.</p><Button variant="link" onClick={()=>{setSearch('');setTopic('all')}}>Clear filters</Button></div> :
       <>
