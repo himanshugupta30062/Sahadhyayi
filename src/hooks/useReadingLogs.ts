@@ -114,6 +114,7 @@ export const useCreateReadingLog = () => {
     onSuccess: (entry) => {
       void queryClient.invalidateQueries({ queryKey: ['reading-logs', user?.id] });
       void queryClient.invalidateQueries({ queryKey: ['reading-activity-days', user?.id] });
+      void queryClient.invalidateQueries({ queryKey: ['reading-streak', user?.id] });
       void queryClient.invalidateQueries({ queryKey: ['reading-progress', user?.id] });
       return entry;
     },

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Flame } from 'lucide-react';
 import { useReadingStreak } from '@/hooks/useReadingStreak';
@@ -6,7 +7,25 @@ const ReadingStreakCard = () => {
   const { data, isLoading } = useReadingStreak();
   const current = data?.current ?? 0;
   const best = data?.best ?? 0;
-  const activeDays = new Set(data?.activeDays ?? []);
+
+  const activeDays = useMemo(() => {
+    if (data?.activeDays && data.activeDays.length > 0) {
+      return new Set(data.activeDays);
+    }
+    if (data?.daysThisWeek && data.daysThisWeek > 0) {
+      const set = new Set<string>();
+      for (let i = 0; i < data.daysThisWeek; i++) {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        d.setDate(d.getDate() - i);
+        set.add(
+          `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`,
+        );
+      }
+      return set;
+    }
+    return new Set<string>();
+  }, [data?.activeDays, data?.daysThisWeek]);
 
   // Build last-7-day dots: today is index 6
   const today = new Date();

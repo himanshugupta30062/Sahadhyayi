@@ -2633,6 +2633,47 @@ export type Database = {
         }
         Relationships: []
       }
+      reading_activity_days: {
+        Row: {
+          activity_date: string
+          book_id: string | null
+          created_at: string
+          first_activity_at: string
+          last_activity_at: string
+          source: string
+          timezone: string
+          user_id: string
+        }
+        Insert: {
+          activity_date: string
+          book_id?: string | null
+          created_at?: string
+          first_activity_at?: string
+          last_activity_at?: string
+          source?: string
+          timezone?: string
+          user_id: string
+        }
+        Update: {
+          activity_date?: string
+          book_id?: string | null
+          created_at?: string
+          first_activity_at?: string
+          last_activity_at?: string
+          source?: string
+          timezone?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_activity_days_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reading_progress: {
         Row: {
           book_id: string | null

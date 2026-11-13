@@ -112,7 +112,23 @@ export default function BookReviews({ bookId }: { bookId: string }) {
             <h3 className="font-medium">{myReview && !editing ? 'Your review' : myReview ? 'Edit your review' : 'Share your thoughts'}</h3>
             {myReview && !editing ? (
               <>
-                {myReview.contains_spoilers && !showOwnSpoilers ? <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"><p className="mb-2">Your review is marked as containing spoilers.</p><Button type="button" size="sm" variant="outline" onClick={() => setShowOwnSpoilers(true)}><Eye className="mr-1 h-4 w-4" />Reveal my review</Button></div> : <><p className="whitespace-pre-wrap text-sm text-gray-700">{myReview.review_text}</p>{myReview.contains_spoilers && <Button type="button" size="sm" variant="ghost" onClick={() => setShowOwnSpoilers(false)}><EyeOff className="mr-1 h-4 w-4" />Hide my review</Button></>}
+                {myReview.contains_spoilers && !showOwnSpoilers ? (
+                  <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                    <p className="mb-2">Your review is marked as containing spoilers.</p>
+                    <Button type="button" size="sm" variant="outline" onClick={() => setShowOwnSpoilers(true)}>
+                      <Eye className="mr-1 h-4 w-4" />Reveal my review
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <p className="whitespace-pre-wrap text-sm text-gray-700">{myReview.review_text}</p>
+                    {myReview.contains_spoilers && (
+                      <Button type="button" size="sm" variant="ghost" onClick={() => setShowOwnSpoilers(false)}>
+                        <EyeOff className="mr-1 h-4 w-4" />Hide my review
+                      </Button>
+                    )}
+                  </>
+                )}
                 <p className="text-sm text-amber-700">★ {myReview.overall_rating || '—'}/5 overall{myReview.plot_rating ? ` · Plot ${myReview.plot_rating}/5` : ''}{myReview.characters_rating ? ` · Characters ${myReview.characters_rating}/5` : ''}{myReview.writing_rating ? ` · Writing ${myReview.writing_rating}/5` : ''}</p>
                 {myReview.contains_spoilers && <p className="text-xs text-amber-800">Marked as containing spoilers</p>}
                 <div className="flex flex-wrap gap-2">
