@@ -31,7 +31,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
   const { user } = useAuth();
   const { toast } = useToast();
   const createPost = useCreatePost();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);\n  const POST_TEXT_LIMIT = 2000;
   
   const [postText, setPostText] = useState('');
   const [postKind, setPostKind] = useState<'post' | 'quote'>('post');
@@ -252,7 +252,7 @@ export const FeedComposer = ({ onPost }: { onPost?: (postData: any) => void }) =
                 placeholder={postKind === 'quote' ? 'Add your reflection (optional)…' : 'What are you reading or thinking about?'}
                 aria-label={postKind === 'quote' ? 'Reflection on the quote' : 'What are you reading or thinking about?'}
                 value={postText}
-                onChange={(e) => setPostText(e.target.value)}
+                onChange={(e) => setPostText(e.target.value.slice(0, POST_TEXT_LIMIT))}\n                maxLength={POST_TEXT_LIMIT}
                 onKeyDown={(e) => {
                   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
                     e.preventDefault();
