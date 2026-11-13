@@ -25,7 +25,7 @@ export default function ReadingJournalPage() {
   const [editText, setEditText] = useState('');
   const [editPage, setEditPage] = useState('1');
   const [editColor, setEditColor] = useState<'yellow' | 'green' | 'blue' | 'pink'>('yellow');
-  const [meta, setMeta] = useState<Record<string, { favorite?: boolean; pinned?: boolean; tags?: string[] }>>({});
+  const [meta, setMeta] = useState<Record<string, { favorite?: boolean; pinned?: boolean; tags?: string[]; collection?: string }>>({});
   const [tagInput, setTagInput] = useState<Record<string, string>>({});
   const [collections, setCollections] = useState<string[]>([]);
   const [collectionInput, setCollectionInput] = useState('');
