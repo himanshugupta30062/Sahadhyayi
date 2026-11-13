@@ -7,7 +7,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const mocks = vi.hoisted(() => ({
   rpc: vi.fn(),
+  user: { id: 'reader-1' } as null | { id: string },
 }));
+
+vi.mock('@/contexts/authHelpers', () => ({ useAuth: () => ({ user: mocks.user }) }));
 
 vi.mock('@/integrations/supabase/client-universal', () => ({
   supabase: { rpc: mocks.rpc },
@@ -95,7 +98,7 @@ describe('useGroupReadingBoard RPC hooks', () => {
       p_target_date: '2026-12-01',
     });
     await waitFor(() => expect(context.invalidateQueries).toHaveBeenCalledWith({
-      queryKey: ['group-reading-books', 'group-1'],
+      queryKey: ['group-reading-books', 'group-1', 'reader-1'],
     }));
   });
 
@@ -128,7 +131,7 @@ describe('useGroupReadingBoard RPC hooks', () => {
       p_status: 'completed',
     });
     await waitFor(() => expect(context.invalidateQueries).toHaveBeenCalledWith({
-      queryKey: ['group-reading-books', 'group-3'],
+      queryKey: ['group-reading-books', 'group-3', 'reader-1'],
     }));
   });
 
@@ -156,7 +159,7 @@ describe('useGroupReadingBoard RPC hooks', () => {
       p_group_reading_book_id: 'reading-2',
     });
     await waitFor(() => expect(context.invalidateQueries).toHaveBeenCalledWith({
-      queryKey: ['group-reading-books', 'group-4'],
+      queryKey: ['group-reading-books', 'group-4', 'reader-1'],
     }));
   });
 
@@ -186,7 +189,7 @@ describe('useGroupReadingBoard RPC hooks', () => {
       p_is_shared: true,
     });
     await waitFor(() => expect(context.invalidateQueries).toHaveBeenCalledWith({
-      queryKey: ['group-reading-books', 'group-5'],
+      queryKey: ['group-reading-books', 'group-5', 'reader-1'],
     }));
   });
 
