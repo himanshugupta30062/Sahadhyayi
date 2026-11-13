@@ -9,7 +9,7 @@ import SEO from '@/components/SEO';
 import { trackUiEvent } from '@/lib/analytics';
 import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
 import { useBookRecommendations } from '@/hooks/useBookRecommendations';
-import { useAddToBookshelf } from '@/hooks/useUserBookshelf';
+import { useAddToBookshelf, useUserBookshelf } from '@/hooks/useUserBookshelf';
 import { useAuth } from '@/contexts/authHelpers';
 import { BookOpen, Plus, Search, Sparkles, RotateCcw } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -20,6 +20,22 @@ const Discovery = () => {
   const { data: books = [], isLoading, isError } = useAllLibraryBooks();
   const { data: recommendations = [] } = useBookRecommendations(user?.id);
   const addToShelf = useAddToBookshelf();
+  const { data: shelfItems = [] } = useUserBookshelf();
+  const personalizedRecommendations = useMemo(() => {
+    const shelfBookIds = new Set(shelfItems.map((item) => item.book_id));
+    const genreCounts = new Map<string, number>();
+    shelfItems.forEach((item) => {
+      const genre = item.books_library?.genre?.trim().toLowerCase();
+      if (genre && (item.status === 'reading' || item.status === 'completed' || item.rating)) {
+        genreCounts.set(genre, (genreCounts.get(genre) ?? 0) + (item.rating ? Math.max(1, item.rating) : 1));
+      }
+    });
+    return recommendations
+      .filter((book) => !shelfBookIds.has(book.id))
+      .map((book) => ({ book, preferenceScore: genreCounts.get(book.genre?.trim().toLowerCase() ?? '') ?? 0 }))
+      .sort((a, b) => b.preferenceScore - a.preferenceScore)
+      .map(({ book, preferenceScore }) => ({ book, reason: preferenceScore > 0 ? 'Matches your reading interests' : 'Suggested for your bookshelf' }));
+  }, [recommendations, shelfItems]);
   const [searchQuery, setSearchQuery] = useState('');
   const [languageFilter, setLanguageFilter] = useState('all');
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
@@ -230,20 +246,21 @@ const Discovery = () => {
         </CardContent>
       </Card>
 
-      {user && recommendations.length > 0 && (
+      {user && personalizedRecommendations.length > 0 && (
         <section className="mb-10" aria-labelledby="recommended-heading">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-5 h-5 text-brand-primary" />
             <h2 id="recommended-heading" className="text-2xl font-semibold">Recommended for you</h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {recommendations.slice(0, 4).map((book) => (
+            {personalizedRecommendations.slice(0, 4).map(({ book, reason }) => (
               <Link key={book.id} to={`/book/${book.id}`} className="block">
                 <Card className="h-full border-border hover:border-brand-primary/50 transition-colors">
                   <CardContent className="p-4">
-                    <p className="text-xs text-brand-primary font-medium mb-2">Based on your bookshelf</p>
+                    <p className="text-xs text-brand-primary font-medium mb-2">{reason}</p>
                     <h3 className="font-semibold line-clamp-2">{book.title}</h3>
                     <p className="text-sm text-muted-foreground mt-1">{book.author || 'Unknown author'}</p>
+                    {book.genre && <Badge variant="outline" className="mt-2 text-xs">{book.genre}</Badge>}
                   </CardContent>
                 </Card>
               </Link>
