@@ -83,7 +83,7 @@ export const WhatsAppCallCenterFab: React.FC = () => {
       >
         {/* Radar ping ring */}
         <span
-          className="pointer-events-none absolute inset-0 rounded-full bg-[#D5B16D]/25 opacity-40 animate-ping [animation-duration:2.8s]"
+          className="pointer-events-none absolute inset-0 rounded-full bg-white/20 opacity-30 animate-ping [animation-duration:2.8s]"
           aria-hidden="true"
         />
         {/* Support / Help Icon matching Book Reader icon scale */}
@@ -96,7 +96,7 @@ export const WhatsAppCallCenterFab: React.FC = () => {
             showTooltip && !isOpen ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'
           )}
         >
-          Call Center & WhatsApp Support
+          Chat with Sahadhyayi
         </span>
       </button>
 
