@@ -24,7 +24,9 @@ const BuddyReads = () => {
   const [description, setDescription] = useState("");
   const [targetDate, setTargetDate] = useState("");
   const [inviteBusy, setInviteBusy] = useState<string | null>(null);
-  const [inviteLinks, setInviteLinks] = useState<Record<string, string>>({});\n  const [progress, setProgress] = useState<Record<string, number>>({});\n  const [progressSaving, setProgressSaving] = useState<string | null>(null);
+  const [inviteLinks, setInviteLinks] = useState<Record<string, string>>({});
+  const [progress, setProgress] = useState<Record<string, number>>({});
+  const [progressSaving, setProgressSaving] = useState<string | null>(null);
 
   const load = async () => {
     if (!user) return;
@@ -47,7 +49,17 @@ const BuddyReads = () => {
     }
   }, [user?.id]);
 
-  const saveProgress = async (readId: string, value: number) => {\n    if (!user) return; setProgressSaving(readId); const client=supabase as any;\n    const { error } = await client.from("buddy_read_members").update({progress_percent:value}).eq("buddy_read_id",readId).eq("user_id",user.id);\n    setProgressSaving(null); if(error) toast({title:"Progress not saved",description:error.message,variant:"destructive"}); else toast({title:"Progress updated"});\n  };\n\n  const createInvite = async (readId: string) => {
+  const saveProgress = async (readId: string, value: number) => {
+    if (!user) return;
+    setProgressSaving(readId);
+    const client = supabase as any;
+    const { error } = await client.from("buddy_read_members").update({ progress_percent: value }).eq("buddy_read_id", readId).eq("user_id", user.id);
+    setProgressSaving(null);
+    if (error) toast({ title: "Progress not saved", description: error.message, variant: "destructive" });
+    else toast({ title: "Progress updated" });
+  };
+
+  const createInvite = async (readId: string) => {
     if (!user) return;
     setInviteBusy(readId);
     const client = supabase as any;
