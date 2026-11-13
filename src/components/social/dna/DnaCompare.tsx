@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ReadingDna, getCrossRecommendations, matchScore } from "@/lib/readingDna";
+import { ReadingDna, getCrossRecommendations, matchScore, genreOverlap, cosineSimilarity } from "@/lib/readingDna";
 import { useUserShelfForCompare } from "@/hooks/useReadingDna";
 import { useAuth } from "@/contexts/authHelpers";
 import {
@@ -31,6 +31,12 @@ export const DnaCompare: React.FC<DnaCompareProps> = ({
 }) => {
   const { user } = useAuth();
   const score = matchScore(myDna, friendDna);
+  const matchBreakdown = [
+    { label: "Genre overlap", weight: 45, similarity: genreOverlap(myDna, friendDna) },
+    { label: "Mood alignment", weight: 25, similarity: cosineSimilarity(myDna.moods, friendDna.moods) },
+    { label: "Theme overlap", weight: 20, similarity: cosineSimilarity(myDna.themes, friendDna.themes) },
+    { label: "Reading pace", weight: 10, similarity: myDna.pace && friendDna.pace && myDna.pace.toLowerCase() === friendDna.pace.toLowerCase() ? 1 : 0 },
+  ];
 
   const { data: myShelf = [] } = useUserShelfForCompare(user?.id);
   const { data: friendShelf = [] } = useUserShelfForCompare(friendDna.user_id);
@@ -76,6 +82,32 @@ export const DnaCompare: React.FC<DnaCompareProps> = ({
               </span>
             </div>
           </div>
+
+          {/* Explainable compatibility score */}
+          <Card className="border-border bg-card">
+            <CardContent className="p-4 space-y-3">
+              <div>
+                <h4 className="text-sm font-semibold text-foreground">How this match is calculated</h4>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  The score combines four signals with fixed weights. Each bar shows similarity for that signal.
+                </p>
+              </div>
+              {matchBreakdown.map(({ label, weight, similarity }) => (
+                <div key={label} className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-foreground">{label} <span className="text-muted-foreground">({weight}% weight)</span></span>
+                    <span className="font-medium tabular-nums text-muted-foreground">{Math.round(similarity * 100)}%</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-muted overflow-hidden" role="progressbar" aria-label={label + " similarity"} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(similarity * 100)}>
+                    <div className="h-full rounded-full bg-amber-500 transition-all" style={{ width: Math.round(similarity * 100) + "%" }} />
+                  </div>
+                </div>
+              ))}
+              <p className="text-[11px] text-muted-foreground border-t border-border pt-2">
+                Weighted formula: genres 45% · moods 25% · themes 20% · pace 10%. A match is a discovery aid—not a judgment of reading compatibility.
+              </p>
+            </CardContent>
+          </Card>
 
           {/* Side-by-side DNA Staves */}
           <div className="grid sm:grid-cols-2 gap-4">
