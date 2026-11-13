@@ -76,7 +76,10 @@ Deno.serve(async (req: Request) => {
     const year = input.year === "all" || input.year == null ? "all" : String(input.year);
     // Keep compatibility with previously deployed frontends that still send "type".
     const requestedCategory = input.category ?? input.type;
-    const category = typeof requestedCategory === "string" ? requestedCategory.trim() : "all";\n    const requestedSort = typeof input.sort === "string" ? input.sort : "cited_by_count";\n    const sortOptions: Record<string, string> = { cited_by_count: "cited_by_count:desc", publication_date: "publication_date:desc", relevance_score: "relevance_score:desc" };\n    const sort = sortOptions[requestedSort] ?? sortOptions.cited_by_count;
+    const category = typeof requestedCategory === "string" ? requestedCategory.trim() : "all";
+    const requestedSort = typeof input.sort === "string" ? input.sort : "cited_by_count";
+    const sortOptions: Record<string, string> = { cited_by_count: "cited_by_count:desc", publication_date: "publication_date:desc", relevance_score: "relevance_score:desc" };
+    const sort = sortOptions[requestedSort] ?? sortOptions.cited_by_count;
 
     if (page < 1 || page > 10000) return jsonResponse({ error: "Page must be between 1 and 10,000." }, 400);
     if (perPage < 1 || perPage > 25) return jsonResponse({ error: "Page size must be between 1 and 25." }, 400);
