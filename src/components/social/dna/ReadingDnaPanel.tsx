@@ -17,6 +17,9 @@ const FriendMatchesList: React.FC<{ myDna: ReadingDna }> = ({ myDna }) => {
   const { user } = useAuth();
   const [selectedFriend, setSelectedFriend] = useState<{ dna: ReadingDna; name: string } | null>(null);
 
+  const [matchFilter, setMatchFilter] = useState<"all" | "strong">("all");
+  const [search, setSearch] = useState("");
+
   const { data: friendsWithDna = [], isLoading } = useQuery({
     queryKey: ["friend-dna-matches", user?.id],
     enabled: !!user,
@@ -50,6 +53,10 @@ const FriendMatchesList: React.FC<{ myDna: ReadingDna }> = ({ myDna }) => {
       score: matchScore(myDna, dna),
     }))
     .sort((a, b) => b.score - a.score);
+  const visibleMatches = scored.filter(({ profile, score }) =>
+    (matchFilter === "all" || score >= 60) &&
+    (profile?.full_name ?? "Reader").toLowerCase().includes(search.trim().toLowerCase())
+  );
 
   return (
     <>
@@ -65,8 +72,16 @@ const FriendMatchesList: React.FC<{ myDna: ReadingDna }> = ({ myDna }) => {
             </span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2.5">
-          {scored.map(({ profile, score, dna }) => {
+        <CardContent className="space-y-3">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search friends by name…" aria-label="Search reader matches" className="h-9 flex-1 rounded-md border border-input bg-background px-3 text-sm" />
+            <div className="flex gap-1">
+              <Button size="sm" variant={matchFilter === "all" ? "default" : "outline"} onClick={() => setMatchFilter("all")}>All</Button>
+              <Button size="sm" variant={matchFilter === "strong" ? "default" : "outline"} onClick={() => setMatchFilter("strong")}>60%+ match</Button>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">Showing {visibleMatches.length} of {scored.length} readers · ranked by compatibility</p>
+          {visibleMatches.map(({ profile, score, dna }) => {
             const hue = Math.min(130, Math.max(0, score * 1.3));
             const friendName = profile?.full_name ?? "Reader";
             return (
@@ -109,6 +124,7 @@ const FriendMatchesList: React.FC<{ myDna: ReadingDna }> = ({ myDna }) => {
               </button>
             );
           })}
+          {visibleMatches.length === 0 && <p className="py-5 text-center text-sm text-muted-foreground">No readers match these filters. Try another name or show all.</p>}
         </CardContent>
       </Card>
 
