@@ -15,13 +15,9 @@ create table if not exists public.reading_logs (
     pages_read is not null or current_page is not null or minutes_read is not null or journal_note is not null
   )
 );
-create index if not exists reading_logs_user_logged_at_idx
-  on public.reading_logs(user_id, logged_at desc);
-create index if not exists reading_logs_user_book_idx
-  on public.reading_logs(user_id, book_id, logged_at desc);
+create index if not exists reading_logs_user_logged_at_idx on public.reading_logs(user_id, logged_at desc);
+create index if not exists reading_logs_user_book_idx on public.reading_logs(user_id, book_id, logged_at desc);
 alter table public.reading_logs enable row level security;
 drop policy if exists "Readers manage their own reading logs" on public.reading_logs;
-create policy "Readers manage their own reading logs"
-  on public.reading_logs for all
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id;
+create policy "Readers manage their own reading logs" on public.reading_logs for all
+  using (auth.uid() = user_id) with check (auth.uid() = user_id);
