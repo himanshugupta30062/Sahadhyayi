@@ -28,7 +28,7 @@ export function CreateBookReelDialog({ onPublished }: CreateBookReelDialogProps)
   const selectVideo = (selected: File | undefined) => {
     setFile(null); setVideoDuration(null);
     if (!selected) return;
-    if (!ALLOWED_TYPES.includes(selected.type) { toast.error('Use an MP4, WebM, or MOV video.'); return; }
+    if (!ALLOWED_TYPES.includes(selected.type)) { toast.error('Use an MP4, WebM, or MOV video.'); return; }
     if (selected.size > MAX_VIDEO_BYTES) { toast.error('Video must be 50 MB or smaller.'); return; }
     setCheckingDuration(true);
     const video = document.createElement('video');
