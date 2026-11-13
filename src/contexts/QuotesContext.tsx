@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/authHelpers';
 import { supabase } from '@/integrations/supabase/client';
 import { mergeQuotes, QuotesContext, type Quote } from './quotesHelpers';
@@ -26,6 +26,10 @@ const QuotesProvider = ({ children }: { children: React.ReactNode }) => {
   const storageKey = getStorageKey(user?.id);
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loadedStorageKey, setLoadedStorageKey] = useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = useState<'local' | 'syncing' | 'synced' | 'error'>('local');
+  const [syncAttempt, setSyncAttempt] = useState(0);
+  const deletedQuoteIds = useRef(new Set<string>());
+  const syncGeneration = useRef(0);
 
   useEffect(() => {
     setLoadedStorageKey(null);
@@ -49,27 +53,38 @@ const QuotesProvider = ({ children }: { children: React.ReactNode }) => {
   // uploaded first (upsert by stable client_id), then the merged cloud collection
   // becomes the canonical in-memory list. Guests remain local-only.
   useEffect(() => {
-    if (!user?.id || loadedStorageKey !== storageKey) return;
+    if (!user?.id || loadedStorageKey !== storageKey) { setSyncStatus('local'); return; }
+    setSyncStatus('syncing');
     let cancelled = false;
+    const generation = ++syncGeneration.current;
     const sync = async () => {
-      const local = quotes;
+      const local = quotes.filter(q => !deletedQuoteIds.current.has(String(q.id)));
       const pending = local.map(q => toCloud(q, user.id));
       if (pending.length) {
         const { error: uploadError } = await supabase.from('saved_quotes').upsert(pending, { onConflict: 'user_id,client_id' });
-        if (uploadError) return; // local data remains safe; retry on next change/session
+        if (uploadError) { if (!cancelled && generation === syncGeneration.current) setSyncStatus('error'); return; }
+        // A deletion can race with an upload that was already in flight. Re-apply
+        // tombstones after upsert so that stale pending rows cannot be resurrected.
+        const deletedIds = [...deletedQuoteIds.current];
+        if (deletedIds.length) {
+          const { error: cleanupError } = await supabase.from('saved_quotes').delete()
+            .eq('user_id', user.id).in('client_id', deletedIds);
+          if (cleanupError) { if (!cancelled && generation === syncGeneration.current) setSyncStatus('error'); return; }
+        }
       }
       const { data, error } = await supabase.from('saved_quotes')
         .select('client_id,quote_text,source,note,book_id,page,location,created_at')
         .eq('user_id', user.id).order('created_at', { ascending: false });
-      if (error || !data || cancelled) return;
-      const cloud = (data as unknown as CloudQuote[]).map(fromCloud);
-      const merged = mergeQuotes(cloud, local);
-      if (!cancelled) setQuotes(previous => JSON.stringify(previous) === JSON.stringify(merged) ? previous : merged);
+      if (error || !data || cancelled || generation !== syncGeneration.current) { if (!cancelled && generation === syncGeneration.current) setSyncStatus('error'); return; }
+      const cloud = (data as unknown as CloudQuote[]).map(fromCloud).filter(q => !deletedQuoteIds.current.has(String(q.id)));
+      const cloudIds = new Set(cloud.map(q => String(q.id)));
+      const merged = mergeQuotes(cloud, local).filter(q => !deletedQuoteIds.current.has(String(q.id)));
+      if (!cancelled && generation === syncGeneration.current) { setQuotes(previous => JSON.stringify(previous) === JSON.stringify(merged) ? previous : merged); setSyncStatus('synced'); }
     };
     void sync();
     return () => { cancelled = true; };
   // quotes changes trigger sync so newly added quotes are uploaded.
-  }, [user?.id, loadedStorageKey, storageKey, quotes]);
+  }, [user?.id, loadedStorageKey, storageKey, quotes, syncAttempt]);
 
   const addQuote = (text: string, source?: string, note?: string, metadata?: { bookId?: string; page?: number; location?: string }) => {
     if (!text.trim() || loadedStorageKey !== storageKey) return;
@@ -79,13 +94,26 @@ const QuotesProvider = ({ children }: { children: React.ReactNode }) => {
 
   const removeQuote = (id: number | string) => {
     if (loadedStorageKey !== storageKey) return;
+    const removed = quotes.find(q => String(q.id) === String(id));
+    deletedQuoteIds.current.add(String(id));
+    ++syncGeneration.current;
     setQuotes(prev => prev.filter(q => String(q.id) !== String(id)));
     if (user?.id) {
-      void supabase.from('saved_quotes').delete().eq('user_id', user.id).eq('client_id', String(id));
+      void supabase.from('saved_quotes').delete().eq('user_id', user.id).eq('client_id', String(id))
+        .then(({ error }) => {
+          // A failed cloud delete must not silently lose the user's quote locally.
+          if (error && removed) {
+            deletedQuoteIds.current.delete(String(id));
+            setSyncStatus('error');
+            setQuotes(prev => prev.some(q => String(q.id) === String(id)) ? prev : [...prev, removed]);
+          }
+        });
     }
   };
 
-  return <QuotesContext.Provider value={{ quotes, addQuote, removeQuote }}>{children}</QuotesContext.Provider>;
+  const retrySync = () => setSyncAttempt(attempt => attempt + 1);
+
+  return <QuotesContext.Provider value={{ quotes, addQuote, removeQuote, syncStatus, retrySync }}>{children}</QuotesContext.Provider>;
 };
 
 export default QuotesProvider;
