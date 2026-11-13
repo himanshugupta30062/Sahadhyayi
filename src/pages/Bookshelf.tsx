@@ -63,6 +63,8 @@ const Bookshelf = () => {
   const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [ownedOnly, setOwnedOnly] = useState(false);
+  const [pageEditorBookId, setPageEditorBookId] = useState<string | null>(null);
+  const [pageEditorValue, setPageEditorValue] = useState('');
 
   // Stats
   const stats = useMemo(() => {
@@ -559,7 +561,7 @@ const Bookshelf = () => {
                           <Star className={`h-4 w-4 ${item.is_favorite ? "fill-amber-300 text-amber-300" : ""}`} />
                         </button>
 
-                        {canQuickLog && progressRecord && <div className="absolute bottom-2 left-2 right-2 z-30"><Button size="sm" className="w-full h-8 text-xs shadow" disabled={updateProgress.isPending} onClick={(event)=>{event.preventDefault();event.stopPropagation();updateProgress.mutate({id:progressRecord.id,current_page:Math.min(progressRecord.total_pages,progressRecord.current_page+5)});}}><BookOpen className="mr-1.5 h-3.5 w-3.5"/>+5 pages</Button></div>}
+                        {canQuickLog && progressRecord && <div className="absolute bottom-2 left-2 right-2 z-30 space-y-1"><Button size="sm" className="w-full h-8 text-xs shadow" disabled={updateProgress.isPending} onClick={(event)=>{event.preventDefault();event.stopPropagation();updateProgress.mutate({id:progressRecord.id,current_page:Math.min(progressRecord.total_pages,progressRecord.current_page+5)});}}><BookOpen className="mr-1.5 h-3.5 w-3.5"/>+5 pages</Button><Button size="sm" variant="secondary" className="w-full h-7 text-xs shadow" onClick={(event)=>{event.preventDefault();event.stopPropagation();setPageEditorBookId(pageEditorBookId===item.book_id?null:item.book_id);setPageEditorValue(String(progressRecord.current_page));}}>Set page…</Button></div>}{pageEditorBookId===item.book_id && progressRecord && <div className="absolute inset-x-2 bottom-2 z-40 rounded-md bg-background p-2 shadow-lg border" onClick={(event)=>event.stopPropagation()}><label className="mb-1 block text-xs font-medium">Current page (1–{progressRecord.total_pages})</label><Input aria-label={`Current page for ${book.title}`} type="number" min={0} max={progressRecord.total_pages} value={pageEditorValue} onChange={(event)=>setPageEditorValue(event.target.value)} className="h-8 text-sm"/><div className="mt-1 flex gap-1"><Button size="sm" variant="ghost" className="h-7 flex-1" onClick={()=>setPageEditorBookId(null)}>Cancel</Button><Button size="sm" className="h-7 flex-1" disabled={updateProgress.isPending||!Number.isFinite(Number(pageEditorValue))||Number(pageEditorValue)<0||Number(pageEditorValue)>progressRecord.total_pages} onClick={()=>{updateProgress.mutate({id:progressRecord.id,current_page:Math.floor(Number(pageEditorValue))});setPageEditorBookId(null);}}>Save</Button></div></div>}
 
                       {/* Progress Badge on Cover */}
                         {isReading && item.progressPercent > 0 && (
