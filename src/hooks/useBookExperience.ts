@@ -11,12 +11,12 @@ export type BookExperience = { moods: BookMood[]; pacing: 'fast'|'medium'|'slow'
 export function useBookExperience(bookId: string) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const queryKey = ['book-experience', user?.id, bookId];
+  const queryKey = ['book-experience', user?.id, bookId];\n  const db = supabase as any;
   const query = useQuery({
     queryKey,
     enabled: Boolean(user?.id && bookId),
     queryFn: async (): Promise<BookExperience> => {
-      const { data, error } = await supabase.from('book_experience_tags').select('moods,pacing,content_warnings,custom_warning').eq('user_id', user!.id).eq('book_id', bookId).maybeSingle();
+      const { data, error } = await db.from('book_experience_tags').select('moods,pacing,content_warnings,custom_warning').eq('user_id', user!.id).eq('book_id', bookId).maybeSingle();
       if (error) throw error;
       return { moods: (data?.moods ?? []) as BookMood[], pacing: (data?.pacing ?? null) as BookExperience['pacing'], content_warnings: (data?.content_warnings ?? []) as BookContentWarning[], custom_warning: data?.custom_warning ?? null };
     },
