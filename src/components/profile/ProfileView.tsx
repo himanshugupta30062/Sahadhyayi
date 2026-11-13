@@ -38,7 +38,7 @@ import { useReadingDna } from "@/hooks/useReadingDna";
 import { ReadingDnaCard } from "@/components/social/dna/ReadingDnaCard";
 import { AppearanceSettingsCard } from "./AppearanceSettingsCard";
 import ReadingPassportCard from "./ReadingPassportCard";
-import ProfileReadingStats from "./ProfileReadingStats";
+import ProfileReadingStats from "./ProfileReadingStats";\nimport ReadingYearReview from "./ReadingYearReview";
 
 type EditMode = "view" | "edit" | "delete";
 
@@ -237,7 +237,7 @@ export const ProfileView: React.FC = () => {
               </div>
             </div>
 
-            <ProfileReadingStats books={bookshelf} />
+            <ProfileReadingStats books={bookshelf} />\n\n            <ReadingYearReview books={bookshelf} />
 
             <ReadingPassportCard name={profile?.name} username={profile?.username} books={bookshelf} />
 
