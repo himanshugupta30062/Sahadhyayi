@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
 import { useBookRecommendations } from '@/hooks/useBookRecommendations';
 import { useAddToBookshelf } from '@/hooks/useUserBookshelf';
 import { useAuth } from '@/contexts/authHelpers';
-import { BookOpen, Plus, Search, Sparkles } from 'lucide-react';
+import { BookOpen, Plus, Search, Sparkles, RotateCcw } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import SemanticBookDiscovery from '@/components/discovery/SemanticBookDiscovery';
 
@@ -25,7 +25,6 @@ const Discovery = () => {
   const [genreFilter, setGenreFilter] = useState('all');
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
   const [sortBy, setSortBy] = useState<'relevance' | 'newest' | 'title_asc'>('relevance');
-  const [visibleCount, setVisibleCount] = useState(24);
 
   const filteredTrendingBooks = useMemo(() => {
     let list = [...books];
@@ -46,16 +45,23 @@ const Discovery = () => {
     if (sortBy === 'newest') list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     if (sortBy === 'title_asc') list.sort((a, b) => a.title.localeCompare(b.title));
 
-    return list;
+    return list.slice(0, 24);
   }, [availabilityFilter, books, genreFilter, languageFilter, searchQuery, sortBy]);
-
-  useEffect(() => { setVisibleCount(24); }, [searchQuery, languageFilter, genreFilter, availabilityFilter, sortBy]);
-  const visibleBooks = filteredTrendingBooks.slice(0, visibleCount);
 
   const genres = useMemo(
     () => [...new Set(books.map((book) => book.genre).filter(Boolean))].sort((a, b) => (a ?? '').localeCompare(b ?? '')),
     [books],
   );
+  const hasActiveFilters = Boolean(searchQuery.trim()) || languageFilter !== 'all' || genreFilter !== 'all' || availabilityFilter !== 'all' || sortBy !== 'relevance';
+  const clearFilters = () => {
+    setSearchQuery('');
+    setLanguageFilter('all');
+    setGenreFilter('all');
+    setAvailabilityFilter('all');
+    setSortBy('relevance');
+    void trackUiEvent('discovery_filters_reset');
+  };
+
   const languages = useMemo(
     () => [...new Set(books.map((book) => book.language).filter(Boolean))].sort((a, b) => (a ?? '').localeCompare(b ?? '')),
     [books],
@@ -134,6 +140,7 @@ const Discovery = () => {
               </SelectContent>
             </Select>
           </div>
+          {hasActiveFilters && <div className="flex justify-end"><Button type="button" variant="ghost" size="sm" onClick={clearFilters}><RotateCcw className="w-4 h-4 mr-2" />Clear filters</Button></div>}
         </CardContent>
       </Card>
 
@@ -148,19 +155,9 @@ const Discovery = () => {
               <Link key={book.id} to={`/book/${book.id}`} className="block">
                 <Card className="h-full border-border hover:border-brand-primary/50 transition-colors">
                   <CardContent className="p-4">
-                    <div className="flex gap-3">
-                      {book.cover_image_url ? (
-                        <img src={book.cover_image_url} alt="" loading="lazy" className="h-24 w-16 shrink-0 rounded-md object-cover" />
-                      ) : (
-                        <div className="flex h-24 w-16 shrink-0 items-center justify-center rounded-md bg-muted"><BookOpen className="w-6 h-6 text-muted-foreground" /></div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs text-brand-primary font-medium mb-2">Based on your bookshelf</p>
-                        <h3 className="font-semibold line-clamp-2">{book.title}</h3>
-                        <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{book.author || 'Unknown author'}</p>
-                        {book.genre && <Badge variant="outline" className="mt-2 text-xs">{book.genre}</Badge>}
-                      </div>
-                    </div>
+                    <p className="text-xs text-brand-primary font-medium mb-2">Based on your bookshelf</p>
+                    <h3 className="font-semibold line-clamp-2">{book.title}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">{book.author || 'Unknown author'}</p>
                   </CardContent>
                 </Card>
               </Link>
@@ -174,7 +171,7 @@ const Discovery = () => {
         {isLoading && <div className="flex justify-center py-16"><LoadingSpinner /></div>}
         {isError && <p className="text-center text-destructive py-12">Books could not be loaded. Please try again.</p>}
         {!isLoading && !isError && <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {visibleBooks.map((book) => (
+          {filteredTrendingBooks.map((book) => (
             <Card key={book.id} className="border-border overflow-hidden">
               <CardContent className="p-4 flex gap-4">
                 <Link to={`/book/${book.id}`} className="w-20 h-28 bg-muted rounded overflow-hidden shrink-0 flex items-center justify-center">
@@ -201,7 +198,6 @@ const Discovery = () => {
             </Card>
           ))}
         </div>}
-        {filteredTrendingBooks.length > visibleBooks.length && <div className="mt-6 text-center"><p className="mb-3 text-sm text-muted-foreground">Showing {visibleBooks.length} of {filteredTrendingBooks.length} books</p><Button variant="outline" onClick={() => setVisibleCount((count) => count + 24)}>Load 24 more books</Button></div>}
         {filteredTrendingBooks.length === 0 && (
           <Card className="border-dashed border-2 border-border">
             <CardContent className="py-12 text-center space-y-2">

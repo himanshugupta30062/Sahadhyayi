@@ -10,6 +10,8 @@ import {
   Heart,
   Flame,
   Coffee,
+  Bookmark,
+  Share2,
   X,
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
@@ -37,7 +39,11 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
   const [selectedReelIndex, setSelectedReelIndex] = useState<number | null>(null);
   const [activeReaction, setActiveReaction] = useState<{ [reelId: string]: string }>({});
   const [extraLikes, setExtraLikes] = useState<{ [reelId: string]: number }>({});
+  const [comments, setComments] = useState<any[]>([]);
+  const [commentDraft, setCommentDraft] = useState('');
+  const [commentBusy, setCommentBusy] = useState(false);
   const [communityReels, setCommunityReels] = useState<BookReelItem[]>([]);
+  const [savedReels, setSavedReels] = useState<Record<string, boolean>>({});
   useEffect(() => {
     let active = true;
     const load = async () => {
@@ -50,7 +56,8 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
       if (!active) return;
       const currentUser = (await supabase.auth.getUser()).data.user?.id;
       setActiveReaction(Object.fromEntries((reactions || []).filter((reaction: any) => reaction.user_id === currentUser).map((reaction: any) => [reaction.reel_id, reaction.emoji])));
-      setCommunityReels(data.map((item: any) => { const profile: any = profileMap.get(item.user_id); const count = (reactions || []).filter((reaction: any) => reaction.reel_id === item.id).length; return { id: item.id, tag: '📚 COMMUNITY REEL', tagColor: 'bg-emerald-700/80 text-white', readerName: profile?.full_name || profile?.username || 'Sahadhyayi Reader', readerHandle: profile?.username || 'reader', readerAvatar: profile?.profile_photo_url || '', bookTitle: item.book_title || 'A reader moment', bookAuthor: item.book_author || '', hook: item.caption, fullQuote: item.caption, moodAudio: 'Community video', imageUrl: '', videoUrl: item.video_url, likesCount: count, commentsCount: 0 }; }));
+      if (currentUser) { const { data: saves } = await supabase.from('book_reel_saves').select('reel_id').eq('user_id', currentUser); if (active) setSavedReels(Object.fromEntries((saves || []).map((save: any) => [save.reel_id, true]))); }
+      setCommunityReels(data.map((item: any) => { const profile: any = profileMap.get(item.user_id); const count = (reactions || []).filter((reaction: any) => reaction.reel_id === item.id).length; return { id: item.id, creatorId: item.user_id, tag: '📚 COMMUNITY REEL', tagColor: 'bg-emerald-700/80 text-white', readerName: profile?.full_name || profile?.username || 'Sahadhyayi Reader', readerHandle: profile?.username || 'reader', readerAvatar: profile?.profile_photo_url || '', bookTitle: item.book_title || 'A reader moment', bookAuthor: item.book_author || '', hook: item.caption, fullQuote: item.caption, moodAudio: 'Community video', imageUrl: '', videoUrl: item.video_url, likesCount: count, commentsCount: 0 }; }));
 
     };
     void load();
@@ -70,6 +77,34 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
   };
 
   const activeReel = selectedReelIndex !== null ? displayedReels[selectedReelIndex] : null;
+  useEffect(() => {
+    let active = true;
+    const loadComments = async () => {
+      if (!activeReel || !communityReels.some((reel) => reel.id === activeReel.id)) { setComments([]); return; }
+      const { data } = await supabase.from('book_reel_comments').select('id,reel_id,user_id,body,created_at').eq('reel_id', activeReel.id).order('created_at', { ascending: true }).limit(100);
+      if (!active || !data) return;
+      const ids = [...new Set(data.map((item: any) => item.user_id))];
+      const { data: profiles } = ids.length ? await supabase.from('profiles_public').select('id,full_name,username,profile_photo_url').in('id', ids) : { data: [] };
+      const map = new Map((profiles || []).map((profile: any) => [profile.id, profile]));
+      setComments(data.map((item: any) => ({ ...item, profile: map.get(item.user_id) })));
+    };
+    void loadComments();
+    return () => { active = false; };
+  }, [activeReel?.id, communityReels]);
+  const submitComment = async () => {
+    const body = commentDraft.trim();
+    if (!body || !activeReel) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { toast.error('Sign in to comment.'); return; }
+    setCommentBusy(true);
+    const { data, error } = await supabase.from('book_reel_comments').insert({ reel_id: activeReel.id, user_id: user.id, body }).select('id,reel_id,user_id,body,created_at').single();
+    setCommentBusy(false);
+    if (error || !data) { toast.error('Could not post comment. Apply the comments migration first.'); return; }
+    const { data: profile } = await supabase.from('profiles_public').select('id,full_name,username,profile_photo_url').eq('id', user.id).maybeSingle();
+    setComments((previous) => [...previous, { ...data, profile }]);
+    setCommentDraft('');
+  };
+
 
   const handleNextReel = () => {
     if (selectedReelIndex === null) return;
@@ -81,7 +116,7 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
     setSelectedReelIndex((selectedReelIndex - 1 + displayedReels.length) % displayedReels.length);
   };
 
-  const handleReaction = async (reelId: string, emoji: string) => {
+  const handleSaveReel = async (reelId: string) => {\n    const { data: { user } } = await supabase.auth.getUser();\n    if (!user) { toast.error('Sign in to save reels.'); return; }\n    if (savedReels[reelId]) {\n      const { error } = await supabase.from('book_reel_saves').delete().eq('reel_id', reelId).eq('user_id', user.id);\n      if (error) { toast.error('Could not remove saved reel.'); return; }\n      setSavedReels(prev => { const next = { ...prev }; delete next[reelId]; return next; }); toast.success('Reel removed from saved.');\n    } else {\n      const { error } = await supabase.from('book_reel_saves').insert({ reel_id: reelId, user_id: user.id });\n      if (error) { toast.error('Could not save reel. Apply the saved reels migration first.'); return; }\n      setSavedReels(prev => ({ ...prev, [reelId]: true })); toast.success('Reel saved.');\n    }\n  };\n\n  const handleReaction = async (reelId: string, emoji: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { toast.error('Sign in to react to reels.'); return; }
     const existing = activeReaction[reelId];
@@ -117,7 +152,7 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
           )}
         </div>
 
-        <div className="flex items-center gap-1.5"><CreateBookReelDialog /> <div className="hidden items-center gap-1.5 sm:flex">
+        <div className="flex items-center gap-1.5"><Button asChild variant="outline" size="sm" className="h-8 gap-1.5"><Link to="/social/reels/saved"><Bookmark className="h-3.5 w-3.5"/>Saved</Link></Button><CreateBookReelDialog /> <div className="hidden items-center gap-1.5 sm:flex">
           <Button
             type="button"
             variant="outline"
@@ -138,6 +173,7 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
+        </div>
         </div>
       </div>
 
@@ -315,6 +351,18 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
 
               {/* Bottom: Quick Reaction Emojis & Reel Switcher */}
               <div className="relative z-10 space-y-3 pt-2">
+                <div className="rounded-xl border border-white/10 bg-black/30 p-3 space-y-2">
+                  <div className="flex items-center justify-between"><span className="text-xs font-semibold text-white">Reader discussion</span><span className="text-[10px] text-white/50">{comments.length} comments</span></div>
+                  <div className="max-h-28 space-y-2 overflow-y-auto">
+                    {comments.map((comment) => <div key={comment.id} className="text-xs"><span className="font-semibold text-amber-200">{comment.profile?.full_name || comment.profile?.username || 'Reader'} </span><span className="text-white/85 break-words">{comment.body}</span></div>)}
+                    {!comments.length && <p className="text-[11px] text-white/50">Be the first to share a thought.</p>}
+                  </div>
+                  <form onSubmit={(event) => { event.preventDefault(); void submitComment(); }} className="flex gap-2">
+                    <input value={commentDraft} onChange={(event) => setCommentDraft(event.target.value)} maxLength={500} placeholder="Add a thoughtful comment…" aria-label="Comment on reel" className="min-w-0 flex-1 rounded-lg border border-white/15 bg-white/10 px-2.5 py-2 text-xs text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-amber-400" />
+                    <Button type="submit" size="sm" disabled={commentBusy || !commentDraft.trim()} className="bg-amber-400 text-black hover:bg-amber-300">{commentBusy ? '…' : 'Post'}</Button>
+                  </form>
+                </div>
+
                 <div className="flex items-center justify-between rounded-xl bg-white/10 px-3 py-2 backdrop-blur-md">
                   <span className="text-xs font-medium text-white/80">React with readers:</span>
                   <div className="flex items-center gap-2">

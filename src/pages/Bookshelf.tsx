@@ -442,13 +442,6 @@ const Bookshelf = () => {
             </Tabs>
           </div>
 
-          {/* Five-book personal Up Next queue */}
-          {booksWithProgress.some((book) => book.up_next_rank) && (
-            <Card className="border-amber-500/20 bg-amber-500/5"><CardContent className="p-4 sm:p-5">
-              <div className="flex items-center justify-between mb-3"><div><h2 className="font-semibold text-foreground flex items-center gap-2"><BookMarked className="w-4 h-4 text-amber-500" />Up Next</h2><p className="text-xs text-muted-foreground mt-0.5">Your personal queue · up to 5 books</p></div><span className="text-xs text-muted-foreground">{booksWithProgress.filter((book) => book.up_next_rank).length}/5</span></div>
-              <div className="flex gap-3 overflow-x-auto pb-1">{booksWithProgress.filter((book) => book.up_next_rank).sort((a, b) => (a.up_next_rank || 99) - (b.up_next_rank || 99)).map((item) => (<Link key={item.id} to={`/book/${item.book_id}`} className="flex items-center gap-2 min-w-[190px] max-w-[230px] rounded-lg border border-border bg-card p-2 hover:border-amber-500/50 transition-colors"><span className="text-xs font-semibold text-amber-600">{item.up_next_rank}</span>{item.books_library?.cover_image_url ? <img src={item.books_library.cover_image_url} alt="" className="w-8 h-11 rounded object-cover" /> : <div className="w-8 h-11 rounded bg-muted flex items-center justify-center"><BookOpen className="w-4 h-4" /></div>}<span className="text-sm font-medium text-foreground line-clamp-2">{item.books_library?.title || 'Untitled'}</span></Link>))}</div>
-            </CardContent></Card>
-          )}
           {/* Empty State */}
           {(!bookshelfData || bookshelfData.length === 0) && (
             <Card className="border-dashed border-2 border-border bg-muted/30">
@@ -639,16 +632,6 @@ const Bookshelf = () => {
                                 <BookOpen className="w-4 h-4 mr-2" />
                                 Did Not Finish
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => {
-                                if (item.up_next_rank) { updateBookshelf.mutate({ id: item.id, updates: { up_next_rank: null } }); return; }
-                                const ranks = booksWithProgress.map((book) => book.up_next_rank).filter((rank): rank is number => typeof rank === 'number');
-                                const nextRank = [1, 2, 3, 4, 5].find((rank) => !ranks.includes(rank));
-                                if (!nextRank) { toast({ title: 'Up Next is full', description: 'Remove a book from your five-book queue first.', variant: 'destructive' }); return; }
-                                updateBookshelf.mutate({ id: item.id, updates: { up_next_rank: nextRank } });
-                              }}>
-                                <BookMarked className="w-4 h-4 mr-2 text-amber-500" />{item.up_next_rank ? 'Remove from Up Next' : 'Add to Up Next'}
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
                               <DropdownMenuItem onClick={() => updateBookshelf.mutate({ id: item.id, updates: { is_owned: !item.is_owned } })}>
                                 <BookMarked className="w-4 h-4 mr-2" />
                                 {item.is_owned ? 'Remove Owned Mark' : 'Mark as Owned'}

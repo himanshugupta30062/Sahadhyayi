@@ -149,6 +149,12 @@ describe('useUserBookshelf', () => {
     expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Success' }));
   });
 
+  it('supports adding a book with DNF status', async () => {
+    renderHook(() => useAddToBookshelf());
+    await expect(mocks.mutationOptions.mutationFn({ bookId: 'book-1', status: 'dnf' })).resolves.toMatchObject({ id: 'shelf-1' });
+    expect(mocks.insert).toHaveBeenCalledWith({ user_id: 'reader-1', book_id: 'book-1', status: 'dnf' });
+  });
+
   it('rejects adding a book for a guest and reports the error', async () => {
     mocks.user = null;
     renderHook(() => useAddToBookshelf());
