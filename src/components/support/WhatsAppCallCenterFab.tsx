@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { PhoneCall, LifeBuoy, X, ExternalLink, Clock } from 'lucide-react';
+import { PhoneCall, LifeBuoy, Headset, X, ExternalLink, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   SAHADHYAYI_PHONE_RAW,
@@ -11,23 +11,6 @@ import {
 export const WhatsAppIcon = ({ className = 'w-6 h-6' }: { className?: string }) => (
   <svg viewBox="0 0 32 32" className={className} fill="currentColor" aria-hidden="true">
     <path d="M16.04 3C9.4 3 4 8.4 4 15.04c0 2.12.56 4.2 1.62 6.03L4 29l8.13-1.6a12 12 0 0 0 3.9.65h.01C22.68 28.05 28 22.65 28 16.01 28 8.4 22.68 3 16.04 3Zm0 22.98h-.01a9.95 9.95 0 0 1-5.07-1.39l-.36-.21-4.82.95.98-4.7-.24-.38a9.9 9.9 0 0 1-1.52-5.21c0-5.5 4.48-9.98 10.04-9.98 5.53 0 9.96 4.47 9.96 9.98 0 5.5-4.47 9.94-9.96 9.94Zm5.46-7.44c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.49s1.07 2.89 1.22 3.09c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.7.63.71.23 1.36.2 1.87.12.57-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z" />
-  </svg>
-);
-
-const SupportAgentIcon = ({ className = 'h-7 w-7' }: { className?: string }) => (
-  <svg viewBox="0 0 42 32" className={className} fill="none" aria-hidden="true">
-    {/* Headband and ear cups */}
-    <path d="M4.5 15v-1.2a9.5 9.5 0 0 1 19 0V15" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
-    <rect x="2.5" y="13.5" width="6" height="10" rx="2.8" fill="currentColor" fillOpacity=".22" stroke="currentColor" strokeWidth="1.6"/>
-    <rect x="20" y="13.5" width="6" height="10" rx="2.8" fill="currentColor" fillOpacity=".22" stroke="currentColor" strokeWidth="1.6"/>
-    {/* Friendly agent face */}
-    <path d="M8.5 13.5a5.5 5.5 0 0 1 11 0v4a5.5 5.5 0 0 1-11 0v-4Z" fill="currentColor" fillOpacity=".96"/>
-    <path d="M11.2 17h.1m4.9 0h.1" stroke="#172333" strokeWidth="1.8" strokeLinecap="round"/>
-    <path d="M12 19.4c1.2.8 2.4.8 3.6 0" stroke="#172333" strokeWidth="1.2" strokeLinecap="round"/>
-    {/* Boom deliberately extends beyond the circular button edge */}
-    <path d="M23.5 20.5c2.5 2.4 5.1 2.8 7.7 2.1 1.5-.4 2.3-1.4 3-2.8" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"/>
-    <rect x="32.2" y="16.5" width="8.2" height="5.3" rx="2.65" fill="#102235" stroke="currentColor" strokeWidth="1.5" transform="rotate(-18 32.2 16.5)"/>
-    <path d="M35 17.9l.8 2.2m1.7-2.7.8 2.2" stroke="#34D399" strokeWidth="1.2" strokeLinecap="round"/>
   </svg>
 );
 
@@ -84,7 +67,7 @@ export const WhatsAppCallCenterFab: React.FC = () => {
         onClick={() => setIsOpen((prev) => !prev)}
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
-        aria-label="Call Center and WhatsApp Support"
+        aria-label="Open Sahadhyayi support"
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         data-testid="whatsapp-callcenter-fab"
@@ -100,11 +83,13 @@ export const WhatsAppCallCenterFab: React.FC = () => {
       >
         {/* Radar ping ring */}
         <span
-          className="pointer-events-none absolute inset-0 rounded-full bg-[#D5B16D]/25 opacity-40 animate-ping [animation-duration:2.8s]"
+          className="pointer-events-none absolute inset-0 rounded-full bg-white/10 opacity-30 animate-ping [animation-duration:3.2s]"
           aria-hidden="true"
         />
         {/* Support / Help Icon matching Book Reader icon scale */}
-        <span className="pointer-events-none absolute inset-[3px] rounded-full border border-white/[0.07]" aria-hidden="true" />\n        <SupportAgentIcon className="relative h-7 w-7 sm:h-8 sm:w-8 transition-transform duration-300 group-hover:scale-105" />\n        <span className="absolute bottom-[2px] right-[2px] flex h-[17px] w-[17px] items-center justify-center rounded-full border-[2.5px] border-[#172333] bg-emerald-500" aria-hidden="true"><span className="h-1.5 w-1.5 rounded-full bg-white" /></span>
+        <span className="pointer-events-none absolute inset-[3px] rounded-full border border-white/10" aria-hidden="true" />
+        <Headset className="relative h-[26px] w-[26px] sm:h-7 sm:w-7 stroke-[1.8] transition-transform duration-300 group-hover:scale-105" aria-hidden="true" />
+        <span className="absolute bottom-0.5 right-0.5 h-3 w-3 rounded-full border-2 border-[#172333] bg-emerald-400" aria-label="Support available" />
 
         {/* Desktop Tooltip */}
         <span
