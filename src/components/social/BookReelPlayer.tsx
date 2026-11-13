@@ -32,7 +32,7 @@ export const BookReelPlayer: React.FC<BookReelPlayerProps> = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const viewRecordedRef = useRef(false);
-  const completionRecordedRef = useRef(false);
+  const completionRecordedRef = useRef(false);\n  const watchedSecondsRef = useRef(0);\n  const lastMediaTimeRef = useRef(0);\n  const watchSessionRef = useRef(crypto.randomUUID());
 
   const initialDuration =
     reel.durationSeconds != null && reel.durationSeconds > 0
