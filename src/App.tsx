@@ -408,7 +408,11 @@ const App = memo(() => {
                           }
                         />
                         <Route
-                          path="/reading-stats"\n                          element={<ProtectedRoute><Suspense fallback={<LoadingFallback />}><MyReadingStats /></Suspense></ProtectedRoute>}\n                        />\n                        <Route\n                          path="/dashboard"
+                          path="/reading-stats"
+                          element={<ProtectedRoute><Suspense fallback={<LoadingFallback />}><MyReadingStats /></Suspense></ProtectedRoute>}
+                        />
+                        <Route
+                          path="/dashboard"
                           element={
                             <ProtectedRoute>
                               <Suspense fallback={<LoadingFallback message="Loading dashboard..." />}>
