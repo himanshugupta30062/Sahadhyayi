@@ -3,6 +3,7 @@ import {
   cosineSimilarity,
   genreOverlap,
   getCrossRecommendations,
+  getCompatibilityBreakdown,
   matchScore,
   type ReadingDna,
   type ShelfBookItem,
@@ -41,7 +42,7 @@ describe("reading DNA similarity", () => {
   });
 
   it("normalizes terms and computes cosine similarity", () => {
-    expect(cosineSimilarity([" Hopeful ", "curious"], ["hopeful", "CURIOUS"])).toBe(1);
+    expect(cosineSimilarity([" Hopeful ", "curious"], ["hopeful", "CURIOUS"])).toBeCloseTo(1);
     expect(cosineSimilarity(["hopeful", "curious"], ["hopeful"])).toBeCloseTo(1 / Math.sqrt(2));
   });
 
@@ -77,7 +78,7 @@ describe("reading DNA cross recommendations", () => {
   });
 
   it("ranks genre matches and boosts high friend ratings", () => {
-    const result = getCrossRecommendations([], friends, dna({ genres: [{ name: "fantasy", weight: 1 }] }));
+    const result = getCrossRecommendations(mine, friends, dna({ genres: [{ name: "fantasy", weight: 1 }] }));
     expect(result.map((book) => book.book_id)).toEqual(["fantasy", "mystery"]);
   });
 
@@ -89,3 +90,72 @@ describe("reading DNA cross recommendations", () => {
     expect(getCrossRecommendations([], books, dna({ genres: [] })).map((b) => b.books_library?.id)).toEqual(["one", "two"]);
   });
 });
+
+describe("compatibility breakdown and explanation", () => {
+  it("provides comprehensive breakdown with confidence, shared signals, and narrative", () => {
+    const readerA = dna({
+      genres: [
+        { name: "Science Fiction", weight: 0.9 },
+        { name: "Fantasy", weight: 0.7 },
+        { name: "Literary Fiction", weight: 0.5 },
+      ],
+      moods: ["thoughtful", "reflective"],
+      themes: ["space", "identity"],
+      pace: "steady",
+    });
+
+    const readerB = dna({
+      user_id: "reader-2",
+      genres: [
+        { name: "Science Fiction", weight: 0.8 },
+        { name: "Fantasy", weight: 0.6 },
+        { name: "Historical Fiction", weight: 0.4 },
+      ],
+      moods: ["thoughtful", "adventurous"],
+      themes: ["space", "revolution"],
+      pace: "steady",
+    });
+
+    const shelfA: ShelfBookItem[] = [
+      shelfBook("dune", "Science Fiction", 5),
+      shelfBook("hobbit", "Fantasy", 4),
+    ];
+
+    const shelfB: ShelfBookItem[] = [
+      shelfBook("dune", "Science Fiction", 5),
+      shelfBook("foundation", "Science Fiction", 4),
+    ];
+
+    const breakdown = getCompatibilityBreakdown(readerA, readerB, shelfA, shelfB);
+
+    expect(breakdown.score).toBeGreaterThan(50);
+    expect(breakdown.confidence).toBe("high");
+    expect(breakdown.sharedGenres).toContain("Science Fiction");
+    expect(breakdown.sharedGenres).toContain("Fantasy");
+    expect(breakdown.sharedMoods).toEqual(["thoughtful"]);
+    expect(breakdown.sharedThemes).toEqual(["space"]);
+    expect(breakdown.paceMatch).toBe(true);
+
+    // Overlapping book Dune
+    expect(breakdown.overlappingBooks).toHaveLength(1);
+    expect(breakdown.overlappingBooks[0].title).toBe("Book dune");
+    expect(breakdown.overlappingBooks[0].myRating).toBe(5);
+
+    // Narrative contains shared genre
+    expect(breakdown.narrativeExplanation).toMatch(/Science Fiction/i);
+
+    // Differences in taste contains Historical Fiction
+    expect(breakdown.differencesInTaste).toContain("Historical Fiction");
+  });
+
+  it("handles empty or emerging DNA profiles safely without division by zero or crashing", () => {
+    const emptyDna = dna({ genres: [], moods: [], themes: [], pace: null });
+    const breakdown = getCompatibilityBreakdown(null, emptyDna);
+
+    expect(breakdown.score).toBe(0);
+    expect(breakdown.confidence).toBe("emerging");
+    expect(breakdown.sharedGenres).toHaveLength(0);
+    expect(breakdown.narrativeExplanation).toBeTruthy();
+  });
+});
+

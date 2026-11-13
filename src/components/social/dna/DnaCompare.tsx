@@ -1,6 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ReadingDna, getCrossRecommendations, matchScore } from "@/lib/readingDna";
+import {
+  ReadingDna,
+  getCrossRecommendations,
+  getCompatibilityBreakdown,
+  matchScore,
+} from "@/lib/readingDna";
 import { useUserShelfForCompare } from "@/hooks/useReadingDna";
 import { useAuth } from "@/contexts/authHelpers";
 import {
@@ -11,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dna, Sparkles, BookOpen, ExternalLink, ArrowRight } from "lucide-react";
+import { Dna, Sparkles, BookOpen, ArrowRight, Compass, ShieldCheck } from "lucide-react";
 import { DnaStrip } from "./ReadingDnaCard";
 
 interface DnaCompareProps {
@@ -25,25 +30,23 @@ interface DnaCompareProps {
 export const DnaCompare: React.FC<DnaCompareProps> = ({
   friendDna,
   myDna,
-  friendName = "Friend",
+  friendName = "Reader",
   open,
   onOpenChange,
 }) => {
   const { user } = useAuth();
-  const score = matchScore(myDna, friendDna);
-
   const { data: myShelf = [] } = useUserShelfForCompare(user?.id);
   const { data: friendShelf = [] } = useUserShelfForCompare(friendDna.user_id);
 
+  const breakdown = getCompatibilityBreakdown(myDna, friendDna, myShelf, friendShelf);
+  const score = breakdown.score;
+
   const crossRecs = getCrossRecommendations(myShelf, friendShelf, myDna, 5);
   const friendTasteRecs = getCrossRecommendations(friendShelf, myShelf, friendDna, 5);
-  const shared = (mine: string[], theirs: string[]) => {
-    const other = new Set(theirs.map((value) => value.trim().toLowerCase()));
-    return [...new Map(mine.filter((value) => other.has(value.trim().toLowerCase())).map((value) => [value.trim().toLowerCase(), value])).values()];
-  };
-  const sharedGenres = shared(myDna.genres.map((g) => g.name), friendDna.genres.map((g) => g.name));
-  const sharedMoods = shared(myDna.moods, friendDna.moods);
-  const sharedThemes = shared(myDna.themes, friendDna.themes);
+
+  const sharedGenres = breakdown.sharedGenres;
+  const sharedMoods = breakdown.sharedMoods;
+  const sharedThemes = breakdown.sharedThemes;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -58,15 +61,28 @@ export const DnaCompare: React.FC<DnaCompareProps> = ({
         <div className="space-y-6 py-2">
           {/* Big Match Score Banner */}
           <div className="rounded-2xl p-5 bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-purple-500/15 border border-amber-500/20 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Compatibility Index
-              </p>
-              <h3 className="text-xl font-bold text-foreground mt-0.5">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 justify-center sm:justify-start">
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Compatibility Index
+                </span>
+                <Badge
+                  variant="outline"
+                  className="text-[10px] px-1.5 py-0 border-amber-500/40 text-amber-700 dark:text-amber-300"
+                >
+                  <ShieldCheck className="w-3 h-3 mr-1 inline" />
+                  {breakdown.confidence === "high"
+                    ? "High Confidence"
+                    : breakdown.confidence === "moderate"
+                    ? "Moderate Data"
+                    : "Emerging Taste Profile"}
+                </Badge>
+              </div>
+              <h3 className="text-xl font-bold text-foreground">
                 You and {friendName}
               </h3>
-              <p className="text-xs text-muted-foreground mt-1">
-                Based on genre overlap, tone preferences, themes, and reading pace.
+              <p className="text-xs text-foreground/90 max-w-md italic">
+                "{breakdown.narrativeExplanation}"
               </p>
             </div>
 
@@ -141,6 +157,43 @@ export const DnaCompare: React.FC<DnaCompareProps> = ({
                   ) : <p className="text-xs text-muted-foreground">No overlap detected yet</p>}
                 </div>
               ))}
+
+              {/* Differences in taste / New horizons */}
+              {breakdown.differencesInTaste.length > 0 && (
+                <div className="space-y-1.5 pt-2 border-t border-amber-500/10">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground flex items-center gap-1">
+                    <Compass className="w-3 h-3 text-amber-600" />
+                    Genres to discover from {friendName}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {breakdown.differencesInTaste.map((genre) => (
+                      <Badge key={genre} variant="outline" className="text-xs border-amber-500/30">
+                        + {genre}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Overlapping shelf books */}
+              {breakdown.overlappingBooks.length > 0 && (
+                <div className="space-y-1.5 pt-2 border-t border-amber-500/10">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground flex items-center gap-1">
+                    <BookOpen className="w-3 h-3 text-amber-600" />
+                    Books on both your shelves ({breakdown.overlappingBooks.length})
+                  </p>
+                  <div className="space-y-1">
+                    {breakdown.overlappingBooks.slice(0, 3).map((book, idx) => (
+                      <div key={book.id || idx} className="text-xs text-foreground flex items-center justify-between">
+                        <span className="truncate">{book.title}</span>
+                        <span className="text-[10px] text-muted-foreground shrink-0 ml-2">
+                          {book.myRating ? `You: ★${book.myRating}` : "On shelf"} · {book.theirRating ? `${friendName}: ★${book.theirRating}` : `${friendName}: Saved`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
