@@ -54,6 +54,7 @@ serve(async (req) => {
       .from('user_bookshelf')
       .select(`
         book_id,
+        status,
         rating,
         books_library:book_id (
           id,
@@ -68,39 +69,56 @@ serve(async (req) => {
 
     if (error) throw error;
 
+    // Build taste signals from explicit ratings first; un-rated books are
+    // weaker evidence. Genres and authors rated highly receive more weight.
     const genreScores: Record<string, number> = {};
-    const excludeIds: string[] = [];
+    const authorScores: Record<string, number> = {};
+    const excludeIds = new Set<string>();
 
     for (const item of shelf ?? []) {
-      excludeIds.push(item.book_id);
-      const genre = item.books_library?.[0]?.genre;
-      if (!genre) continue;
-      const weight = item.rating ?? 3;
-      genreScores[genre] = (genreScores[genre] || 0) + weight;
+      excludeIds.add(item.book_id);
+      const book = Array.isArray(item.books_library) ? item.books_library[0] : item.books_library;
+      if (!book) continue;
+
+      const rating = typeof item.rating === 'number' ? item.rating : null;
+      const signal = rating === null ? 0.5 : rating >= 4 ? rating : rating <= 2 ? rating - 3 : 0.25;
+      const statusWeight = item.status === 'completed' ? 1.15 : item.status === 'currently_reading' ? 1 : 0.8;
+      const weight = signal * statusWeight;
+
+      if (book.genre) genreScores[book.genre] = (genreScores[book.genre] || 0) + weight;
+      if (book.author && rating !== null && rating >= 4) {
+        authorScores[book.author] = (authorScores[book.author] || 0) + rating;
+      }
     }
 
-    const topGenres = Object.entries(genreScores)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 2)
-      .map(([g]) => g);
-
-    let query = supabase
+    const hasTasteSignals = Object.keys(genreScores).length > 0 || Object.keys(authorScores).length > 0;
+    let candidateQuery = supabase
       .from('books_library')
-      .select('*')
-      .limit(5);
+      .select('id, title, author, genre, cover_image_url, description')
+      .limit(100);
 
-    if (excludeIds.length) {
-      query = query.not('id', 'in', `(${excludeIds.join(',')})`);
-    }
-    if (topGenres.length) {
-      query = query.in('genre', topGenres);
+    if (excludeIds.size) {
+      candidateQuery = candidateQuery.not('id', 'in', `(${[...excludeIds].join(',')})`);
     }
 
-    const { data: recs, error: recError } = await query;
-    if (recError) throw recError;
+    const { data: candidates, error: candidateError } = await candidateQuery;
+    if (candidateError) throw candidateError;
+
+    const recommendations = (candidates ?? [])
+      .map((book) => {
+        const genreScore = book.genre ? genreScores[book.genre] || 0 : 0;
+        const authorScore = book.author ? authorScores[book.author] || 0 : 0;
+        return { book, score: genreScore + authorScore * 0.35 };
+      })
+      .sort((a, b) => b.score - a.score || a.book.title.localeCompare(b.book.title))
+      .slice(0, 5)
+      .map(({ book }) => book);
+
+    // New readers still receive fresh catalog picks rather than an empty list.
+    const fallback = hasTasteSignals ? recommendations : (candidates ?? []).slice(0, 5);
 
     return new Response(
-      JSON.stringify({ recommendations: recs || [] }),
+      JSON.stringify({ recommendations: fallback }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (err) {
