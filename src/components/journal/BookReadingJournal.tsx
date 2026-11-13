@@ -6,11 +6,8 @@ import {
   Copy,
   ExternalLink,
   Highlighter,
-  MessageSquare,
   PenLine,
-  Plus,
   Quote as QuoteIcon,
-  Sparkles,
   Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -44,15 +41,20 @@ export const BookReadingJournal: React.FC<Props> = ({
 
   const [activeFilter, setActiveFilter] = useState<'all' | 'reflection' | 'highlight' | 'quote'>('all');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<'recent' | 'page'>('recent');
 
   const bookSummary = useMemo(() => {
     return bookSummaries.find((b) => b.bookId === bookId);
   }, [bookSummaries, bookId]);
 
   const filteredEntries = useMemo(() => {
-    if (activeFilter === 'all') return entries;
-    return entries.filter((e) => e.type === activeFilter);
-  }, [entries, activeFilter]);
+    const matching = activeFilter === 'all' ? entries : entries.filter((e) => e.type === activeFilter);
+    return [...matching].sort((a, b) =>
+      sortOrder === 'page'
+        ? a.page - b.page || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }, [entries, activeFilter, sortOrder]);
 
   const handleCopy = async (entry: UnifiedJournalEntry) => {
     const textToCopy = [
@@ -192,6 +194,13 @@ export const BookReadingJournal: React.FC<Props> = ({
       </div>
 
       {/* Entries List */}
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs text-muted-foreground">{filteredEntries.length} {filteredEntries.length === 1 ? 'entry' : 'entries'}</span>
+        <div className="flex items-center gap-1" role="group" aria-label="Sort journal entries">
+          <Button size="sm" variant={sortOrder === 'recent' ? 'secondary' : 'ghost'} onClick={() => setSortOrder('recent')} className="h-7 px-2 text-xs">Newest</Button>
+          <Button size="sm" variant={sortOrder === 'page' ? 'secondary' : 'ghost'} onClick={() => setSortOrder('page')} className="h-7 px-2 text-xs">Page order</Button>
+        </div>
+      </div>
       <div className="space-y-3">
         {isLoading ? (
           <div className="py-8 text-center text-xs text-muted-foreground">Loading journal entries…</div>
@@ -252,6 +261,8 @@ export const BookReadingJournal: React.FC<Props> = ({
                     )}
                   </div>
                 </div>
+
+                <p className="text-[10px] text-muted-foreground">{Number.isNaN(new Date(entry.createdAt).getTime()) ? '' : new Date(entry.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</p>
 
                 {/* Quote / Highlight Text */}
                 {entry.text && (
