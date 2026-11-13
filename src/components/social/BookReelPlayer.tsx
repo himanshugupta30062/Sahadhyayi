@@ -109,7 +109,8 @@ export const BookReelPlayer: React.FC<BookReelPlayerProps> = ({
   const markCompleted = () => {
     if (completionRecordedRef.current) return;
     completionRecordedRef.current = true;
-    markCompleted();
+    setIsCompleted(true);
+    onComplete?.(reel.id);
   };
 
   const handleTimeUpdate = () => {
@@ -126,8 +127,7 @@ export const BookReelPlayer: React.FC<BookReelPlayerProps> = ({
 
   const handleEnded = () => {
     setIsPlaying(false);
-    setIsCompleted(true);
-    onComplete?.(reel.id);
+    markCompleted();
   };
 
   const handlePlay = () => {
