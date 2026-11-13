@@ -492,6 +492,12 @@ export default function Events() {
                 </Button>
               </div>
 
+              <div className="mt-6 flex flex-wrap gap-2.5">
+                <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-xs text-muted-foreground backdrop-blur"><Globe2 className="h-3.5 w-3.5 text-primary" /> Online & in-person</span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-xs text-muted-foreground backdrop-blur"><Users className="h-3.5 w-3.5 text-primary" /> Meet fellow readers</span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-xs text-muted-foreground backdrop-blur"><Ticket className="h-3.5 w-3.5 text-primary" /> Save your seat</span>
+              </div>
+
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex flex-wrap gap-2">
                   <Button
