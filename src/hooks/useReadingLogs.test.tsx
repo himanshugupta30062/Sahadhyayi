@@ -4,7 +4,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-const mocks = vi.hoisted(() => ({ user: { id: 'reader-1' } as null | { id: string }, insert: vi.fn(), select: vi.fn(), single: vi.fn(), from: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  user: { id: 'reader-1' } as null | { id: string },
+  insert: vi.fn(),
+  select: vi.fn(),
+  single: vi.fn(),
+  upsert: vi.fn(),
+  from: vi.fn(),
+}));
 vi.mock('@/contexts/authHelpers', () => ({ useAuth: () => ({ user: mocks.user }) }));
 vi.mock('@/integrations/supabase/client-universal', () => ({ supabase: { from: (...args: unknown[]) => mocks.from(...args) } }));
 import { useCreateReadingLog } from './useReadingLogs';
@@ -18,10 +25,16 @@ const setup = () => {
 describe('useCreateReadingLog', () => {
   beforeEach(() => {
     mocks.user = { id: 'reader-1' };
+    mocks.upsert.mockReset().mockResolvedValue({ error: null });
     mocks.single.mockReset().mockResolvedValue({ data: { id: 'log-1' }, error: null });
     mocks.select.mockReset().mockReturnValue({ single: mocks.single });
     mocks.insert.mockReset().mockReturnValue({ select: mocks.select });
-    mocks.from.mockReset().mockReturnValue({ insert: mocks.insert });
+    mocks.from.mockReset().mockImplementation((table: string) => {
+      if (table === 'reading_activity_days') {
+        return { upsert: mocks.upsert };
+      }
+      return { insert: mocks.insert };
+    });
   });
   afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 

@@ -56,6 +56,7 @@ vi.mock('@/components/ui/sidebar', () => ({
 describe('Primary Navigation (5 core sections)', () => {
   beforeEach(() => {
     authState.user = null;
+    vi.mocked(useIsMobile).mockReturnValue(false);
   });
 
   afterEach(() => {

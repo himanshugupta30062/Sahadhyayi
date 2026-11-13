@@ -18,6 +18,10 @@ vi.mock('@/components/social/margins/AddMarginNoteDialog', () => ({
   AddMarginNoteDialog: ({ trigger }: any) => <>{trigger}</>,
 }));
 
+vi.mock('@/components/books/BookshelfStatusPicker', () => ({
+  BookshelfStatusPicker: () => <div data-testid="bookshelf-status-picker" />,
+}));
+
 vi.mock('@/components/ui/LazyImage', () => ({
   LazyImage: ({ src, alt }: any) => <img src={src} alt={alt} />,
 }));

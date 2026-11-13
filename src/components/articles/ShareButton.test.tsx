@@ -75,12 +75,14 @@ describe('ShareButton', () => {
   });
 
   it('copies the canonical link and reports success or failure', async () => {
-    render(<ShareButton url="https://example.test/article" title="Article" />);
+    const { unmount } = render(<ShareButton url="https://example.test/article" title="Article" />);
     fireEvent.click(screen.getByRole('menuitem', { name: 'Copy link' }));
     await waitFor(() => expect(mocks.writeText).toHaveBeenCalledWith('https://example.test/article'));
     expect(mocks.toast).toHaveBeenCalledWith({ title: 'Link copied to clipboard' });
+    unmount();
 
     mocks.writeText.mockRejectedValueOnce(new Error('clipboard unavailable'));
+    render(<ShareButton url="https://example.test/article" title="Article" />);
     fireEvent.click(screen.getByRole('menuitem', { name: 'Copy link' }));
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith({
       title: 'Failed to copy link', variant: 'destructive',
@@ -144,18 +146,21 @@ describe('ShareButton', () => {
   it('reports caption generation and internal post errors without opening a share window', async () => {
     const open = vi.spyOn(window, 'open').mockImplementation(() => null);
     mocks.invoke.mockResolvedValueOnce({ data: null, error: { message: 'AI unavailable' } });
-    render(<ShareButton url="/article" title="Article" />);
+    const { unmount } = render(<ShareButton url="/article" title="Article" />);
     fireEvent.click(screen.getByRole('menuitem', { name: 'Facebook' }));
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith({
       title: 'AI caption failed', description: 'AI unavailable', variant: 'destructive',
     }));
     expect(open).not.toHaveBeenCalled();
+    unmount();
 
     mocks.user = { id: 'reader-1' };
+    mocks.invoke.mockResolvedValueOnce({ data: { caption: 'Valid caption' }, error: null });
     mocks.insert.mockResolvedValueOnce({ error: { message: 'post rejected' } });
+    render(<ShareButton url="/article" title="Article" />);
     fireEvent.click(screen.getByRole('menuitem', { name: 'Post on Sahadhyayi' }));
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith({
-      title: 'AI caption failed', description: 'post rejected', variant: 'destructive',
+      title: 'Failed to share', description: 'post rejected', variant: 'destructive',
     }));
   });
 });

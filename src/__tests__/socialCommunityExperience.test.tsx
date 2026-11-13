@@ -113,6 +113,10 @@ vi.mock('@/components/social/dna/DnaMatchChip', () => ({
   ),
 }));
 
+vi.mock('@/components/social/BookReelsStrip', () => ({
+  BookReelsStrip: () => null,
+}));
+
 describe('Phase 6: Social Media & Reading Community Experience', () => {
   const mockUser = {
     id: 'user-reader-1',

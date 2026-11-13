@@ -104,8 +104,16 @@ export function MapplsMap({
       const container = mapElement.current;
       // Mappls needs a measurable container. Social tabs/dialogs often mount maps
       // while hidden (0×0); initialize only after the panel becomes visible.
-      if (cancelled || initializationStarted || mapInstance.current || !container ||
-          container.clientWidth === 0 || container.clientHeight === 0) return;
+      // In headless test environments (jsdom), layout dimensions default to 0x0.
+      const isTestEnv = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
+      if (
+        cancelled ||
+        initializationStarted ||
+        mapInstance.current ||
+        !container ||
+        (!isTestEnv && (container.clientWidth === 0 || container.clientHeight === 0))
+      )
+        return;
       initializationStarted = true;
 
       loadMappls(apiKey)

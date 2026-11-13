@@ -35,10 +35,17 @@ export function recommendBestEditions(group: DuplicateGroup): DuplicateRecommend
     };
   });
 
-  // Keep the first record as the merge anchor (primary); rank only the remaining
-  // candidates. This lets metadata-poor canonical records be enriched safely.
-  const primary = ratedBooks[0];
-  const remainingCandidates = ratedBooks.slice(1).sort((a, b) => b.quality.score - a.quality.score);
+  // Keep the first record as the merge anchor (primary) unless it has a broken link;
+  // rank only the remaining candidates. This lets metadata-poor canonical records be enriched safely.
+  let primaryIndex = 0;
+  if ((ratedBooks[0].book as any).isBrokenLink) {
+    const bestIndex = ratedBooks.findIndex((b) => !(b.book as any).isBrokenLink);
+    if (bestIndex !== -1) {
+      primaryIndex = bestIndex;
+    }
+  }
+  const primary = ratedBooks[primaryIndex];
+  const remainingCandidates = ratedBooks.filter((_, idx) => idx !== primaryIndex).sort((a, b) => b.quality.score - a.quality.score);
   const primaryBookId = primary.id;
 
   const reasonsForRecommendation: string[] = [];

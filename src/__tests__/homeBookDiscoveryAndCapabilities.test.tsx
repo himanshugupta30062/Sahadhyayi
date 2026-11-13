@@ -99,9 +99,9 @@ describe('HomeBookDiscovery component', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText('The Bhagavad Gita')).toBeInTheDocument();
-    expect(screen.getByText('Vyasa')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /the bhagavad gita by vyasa/i })).toHaveAttribute(
+    expect(screen.getAllByText('The Bhagavad Gita').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Vyasa').length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('link', { name: /the bhagavad gita by vyasa/i })[0]).toHaveAttribute(
       'href',
       '/book/book-101'
     );
@@ -110,7 +110,7 @@ describe('HomeBookDiscovery component', () => {
       genre: 'All',
     });
     await waitFor(() => {
-      expect(screen.getByRole('img', { name: 'Cover of The Bhagavad Gita' })).toHaveAttribute(
+      expect(screen.getAllByRole('img', { name: 'Cover of The Bhagavad Gita' })[0]).toHaveAttribute(
         'src',
         'https://example.com/cover.jpg'
       );

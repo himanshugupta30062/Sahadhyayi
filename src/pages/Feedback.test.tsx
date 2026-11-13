@@ -35,7 +35,8 @@ describe('Feedback', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByRole('heading', { name: 'Send Feedback' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Share Your Feedback' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Send Feedback' })).toBeInTheDocument();
     expect(screen.getByLabelText(/Name \*/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Email \*/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Subject/i)).toBeInTheDocument();
