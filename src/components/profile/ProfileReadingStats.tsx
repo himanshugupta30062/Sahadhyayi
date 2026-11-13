@@ -10,7 +10,7 @@ export const ProfileReadingStats: React.FC<Props> = ({ books }) => {
   const reading = books.filter((b) => b.status === "reading");
   const wantToRead = books.filter((b) => b.status === "want_to_read");
   const ratings = books.map((b) => b.rating).filter((r): r is number => typeof r === "number" && r >= 1 && r <= 5);
-  const average = ratings.length ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length : null;
+  const average = ratings.length ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length : null;\n  const tracked = books.length;\n  const completionRate = tracked ? Math.round((completed.length / tracked) * 100) : 0;
   const genres = books.flatMap((b) => (b.books_library?.genre ?? "").split(/[,/|]/).map((g) => g.trim()).filter(Boolean));
   const genreCounts = genres.reduce<Record<string, number>>((acc, genre) => {
     acc[genre] = (acc[genre] ?? 0) + 1;
@@ -38,6 +38,11 @@ export const ProfileReadingStats: React.FC<Props> = ({ books }) => {
               <div className="text-xs text-muted-foreground">{label}</div>
             </div>
           ))}
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs"><span className="font-medium">Shelf completion</span><span className="text-muted-foreground">{completed.length} of {tracked} books · {completionRate}%</span></div>
+          <div className="h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label="Shelf completion" aria-valuemin={0} aria-valuemax={100} aria-valuenow={completionRate}><div className="h-full rounded-full bg-[hsl(var(--brand-primary))] transition-all" style={{width:`${completionRate}%`}} /></div>
+          <p className="text-xs text-muted-foreground">{tracked === 0 ? "Add books to your shelf to start your reading snapshot." : `${tracked - completed.length} ${tracked - completed.length === 1 ? "book is" : "books are"} still in your reading journey.`}</p>
         </div>
         {topGenres.length > 0 && (
           <div>
