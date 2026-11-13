@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ChevronLeft,
@@ -16,6 +16,8 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { SAMPLE_BOOK_REELS, BookReelItem } from '@/data/sampleSocialPosts';
+import { CreateBookReelDialog } from './CreateBookReelDialog';
+import { supabase } from '@/integrations/supabase/client-universal';
 
 interface BookReelsStripProps {
   reels?: BookReelItem[];
@@ -34,6 +36,20 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
   const [selectedReelIndex, setSelectedReelIndex] = useState<number | null>(null);
   const [activeReaction, setActiveReaction] = useState<{ [reelId: string]: string }>({});
   const [extraLikes, setExtraLikes] = useState<{ [reelId: string]: number }>({});
+  const [communityReels, setCommunityReels] = useState<BookReelItem[]>([]);
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      const { data } = await supabase.from('book_reels').select('id,user_id,video_url,caption,book_title,book_author,created_at').order('created_at', { ascending: false }).limit(50);
+      if (!active || !data) return;
+      setCommunityReels(data.map((item: any) => ({ id: item.id, tag: '📚 COMMUNITY REEL', tagColor: 'bg-emerald-700/80 text-white', readerName: 'Sahadhyayi Reader', readerHandle: 'reader', readerAvatar: '', bookTitle: item.book_title || 'A reader moment', bookAuthor: item.book_author || '', hook: item.caption, fullQuote: item.caption, moodAudio: 'Community video', imageUrl: '', videoUrl: item.video_url, likesCount: 0, commentsCount: 0 })));
+    };
+    void load();
+    const refresh = () => void load();
+    window.addEventListener('book-reel-published', refresh);
+    return () => { active = false; window.removeEventListener('book-reel-published', refresh); };
+  }, []);
+  const displayedReels = [...communityReels, ...reels];
 
   const scroll = (direction: 'left' | 'right') => {
     if (!scrollRef.current) return;
@@ -44,16 +60,16 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
     });
   };
 
-  const activeReel = selectedReelIndex !== null ? reels[selectedReelIndex] : null;
+  const activeReel = selectedReelIndex !== null ? displayedReels[selectedReelIndex] : null;
 
   const handleNextReel = () => {
     if (selectedReelIndex === null) return;
-    setSelectedReelIndex((selectedReelIndex + 1) % reels.length);
+    setSelectedReelIndex((selectedReelIndex + 1) % displayedReels.length);
   };
 
   const handlePrevReel = () => {
     if (selectedReelIndex === null) return;
-    setSelectedReelIndex((selectedReelIndex - 1 + reels.length) % reels.length);
+    setSelectedReelIndex((selectedReelIndex - 1 + displayedReels.length) % displayedReels.length);
   };
 
   const handleReaction = (reelId: string, emoji: string) => {
@@ -80,7 +96,7 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
           )}
         </div>
 
-        <div className="hidden items-center gap-1.5 sm:flex">
+        <div className="flex items-center gap-1.5"><CreateBookReelDialog /> <div className="hidden items-center gap-1.5 sm:flex">
           <Button
             type="button"
             variant="outline"
@@ -111,7 +127,7 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
         aria-label="Horizontal list of book reels"
         className="flex gap-3.5 overflow-x-auto pb-3 pt-1 outline-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden focus-visible:ring-1 focus-visible:ring-primary/40 rounded-xl"
       >
-        {reels.map((reel, index) => {
+        {displayedReels.map((reel, index) => {
           const totalLikes = reel.likesCount + (extraLikes[reel.id] || 0);
 
           return (
@@ -315,7 +331,7 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
                     <ChevronLeft className="h-4 w-4" /> Previous
                   </Button>
                   <span className="text-xs text-white/50">
-                    {(selectedReelIndex ?? 0) + 1} of {reels.length}
+                    {(selectedReelIndex ?? 0) + 1} of {displayedReels.length}
                   </span>
                   <Button
                     type="button"
