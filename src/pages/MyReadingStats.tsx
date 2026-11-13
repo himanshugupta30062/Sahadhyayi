@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft, BookOpen, BookMarked, Clock3, TrendingUp, Award, BarChart3 } from 'lucide-react';
-import { useState } from 'react;
+import { useState } from 'react';
 import { useAuth } from '@/contexts/authHelpers';
 import { useUserBookshelf } from '@/hooks/useUserBookshelf';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +14,14 @@ const StatsPage = () => {
  const { data: shelf = [], isLoading } = useUserBookshelf();
  const { data: logs = [], isLoading: logsLoading } = useReadingLogs();
  const { data: streak } = useReadingStreak();
+ const weekStart = new Date(); weekStart.setHours(0,0,0,0); weekStart.setDate(weekStart.getDate()-((weekStart.getDay()+6)%7));
+ const weekLogs = logs.filter(log => new Date(log.logged_at) >= weekStart);
+ const weekMinutes = weekLogs.reduce((sum,log)=>sum+(log.minutes_read||0),0);
+ const weekPages = weekLogs.reduce((sum,log)=>sum+(log.pages_read||0),0);
+ const completed=shelf.filter(x=>x.status==='completed');
+ const reading=shelf.filter(x=>x.status==='reading');
+ const want=shelf.filter(x=>x.status==='want_to_read');
+ const dnf=shelf.filter(x=>x.status==='dnf');
  const [trendRange, setTrendRange] = useState<'month'|'year'>('month');
  const trendBuckets = Array.from({length:trendRange==='month'?6:12},(_,i)=>{
   const date=new Date(); date.setDate(1); date.setMonth(date.getMonth()-(trendRange==='month'?5-i:11-i));
@@ -25,14 +33,6 @@ const StatsPage = () => {
  });
  const trendMax=Math.max(1,...trendBuckets.map(x=>x.pages));
  const completionMax=Math.max(1,...trendBuckets.map(x=>x.books));
- const weekStart = new Date(); weekStart.setHours(0,0,0,0); weekStart.setDate(weekStart.getDate()-((weekStart.getDay()+6)%7));
- const weekLogs = logs.filter(log => new Date(log.logged_at) >= weekStart);
- const weekMinutes = weekLogs.reduce((sum,log)=>sum+(log.minutes_read||0),0);
- const weekPages = weekLogs.reduce((sum,log)=>sum+(log.pages_read||0),0);
- const completed=shelf.filter(x=>x.status==='completed');
- const reading=shelf.filter(x=>x.status==='reading');
- const want=shelf.filter(x=>x.status==='want_to_read');
- const dnf=shelf.filter(x=>x.status==='dnf');
  const genreCounts=completed.reduce<Record<string,number>>((acc,x)=>{const g=x.books_library?.genre?.trim()||'Uncategorized';acc[g]=(acc[g]||0)+1;return acc;},{});
  const genres=Object.entries(genreCounts).sort((a,b)=>b[1]-a[1]).slice(0,8);
  const rated=completed.filter(x=>typeof x.rating==='number'&&x.rating>0);
