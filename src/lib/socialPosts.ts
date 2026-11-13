@@ -2,6 +2,7 @@ export class PostCreationError extends Error {
   code?: string;
   details?: string;
   hint?: string;
+  cause?: unknown;
 
   constructor(
     message: string,

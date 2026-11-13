@@ -55,9 +55,9 @@ export default function Activity() {
 
   // Sync tab state when URL changes (e.g. from nav clicks)
   useEffect(() => {
-    const rawTab = searchParams.get('tab') as ActivityCategory | null;
+    const rawTab = searchParams.get('tab');
     if (rawTab && rawTab !== 'groups' && rawTab !== activeCategory) {
-      setActiveCategory(rawTab);
+      setActiveCategory(rawTab as ActivityCategory);
     }
   }, [searchParams, activeCategory]);
 
