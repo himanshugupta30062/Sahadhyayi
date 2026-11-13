@@ -7,7 +7,6 @@ import {
   ChevronDown,
   Copy,
   ExternalLink,
-  Headset,
   LoaderCircle,
   Maximize2,
   MessageCircle,
@@ -25,6 +24,7 @@ import { useBookExpert } from "@/contexts/book-expert.utils";
 import type { BookExpertBook, BookExpertCitation } from "@/contexts/book-expert.utils";
 import { cn } from "@/lib/utils";
 import { openSahadhyayiWhatsApp } from "@/components/support/whatsappSupport";
+import { WhatsAppIcon } from "@/components/support/WhatsAppCallCenterFab";
 
 const bookIcon = new URL("./Sahadhyayi_Book_optimized.generated.webp", import.meta.url).href;
 
@@ -564,15 +564,15 @@ const BookExpert = () => {
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">
-            {/* WhatsApp / Call Center Handoff Button (like Estate Mitr's Headset button) */}
+            {/* WhatsApp / Call Center Handoff Button */}
             <button
               type="button"
               onClick={() => openSahadhyayiWhatsApp('Namaste! I was chatting with the Reading Room AI and would like to speak with a human advisor.')}
               aria-label="Connect with Call Center on WhatsApp"
               title="Connect with WhatsApp Support"
-              className="inline-flex items-center gap-1 rounded-xl px-2 py-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-white bg-[#25D366] hover:bg-[#20ba59] transition-colors shadow-2xs"
             >
-              <Headset className="h-3.5 w-3.5" aria-hidden="true" />
+              <WhatsAppIcon className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">WhatsApp Help</span>
             </button>
 
