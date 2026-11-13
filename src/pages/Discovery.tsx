@@ -27,6 +27,7 @@ const Discovery = () => {
   const [languageFilter, setLanguageFilter] = useState('all');
   const [genreFilter, setGenreFilter] = useState('all');
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
+  const [paceFilter, setPaceFilter] = useState('all');
   const [lengthFilter, setLengthFilter] = useState('all');
   const [sortBy, setSortBy] = useState<'relevance' | 'newest' | 'title_asc'>('relevance');
   const [readingMood, setReadingMood] = useState<string | null>(null);
@@ -53,6 +54,10 @@ const Discovery = () => {
     if (languageFilter !== 'all') list = list.filter((book) => book.language === languageFilter);
     if (genreFilter !== 'all') list = list.filter((book) => book.genre === genreFilter);
     if (availabilityFilter === 'readable') list = list.filter((book) => Boolean(book.pdf_url));
+    // Session estimates use ~40 pages/session; only books with page metadata qualify.
+    if (paceFilter === 'quick') list = list.filter((book) => book.pages && book.pages <= 120);
+    if (paceFilter === 'steady') list = list.filter((book) => book.pages && book.pages > 120 && book.pages <= 320);
+    if (paceFilter === 'immersive') list = list.filter((book) => book.pages && book.pages > 320);
     if (lengthFilter === 'short') list = list.filter((book) => book.pages && book.pages <= 200);
     if (lengthFilter === 'medium') list = list.filter((book) => book.pages && book.pages > 200 && book.pages <= 400);
     if (lengthFilter === 'long') list = list.filter((book) => book.pages && book.pages > 400);
@@ -65,19 +70,20 @@ const Discovery = () => {
     if (sortBy === 'title_asc') list.sort((a, b) => a.title.localeCompare(b.title));
 
     return list.slice(0, 24);
-  }, [availabilityFilter, books, genreFilter, languageFilter, lengthFilter, searchQuery, sortBy, readingMood]);
+  }, [availabilityFilter, books, genreFilter, languageFilter, lengthFilter, paceFilter, searchQuery, sortBy, readingMood]);
 
   const genres = useMemo(
     () => [...new Set(books.map((book) => book.genre).filter(Boolean))].sort((a, b) => (a ?? '').localeCompare(b ?? '')),
     [books],
   );
-  const hasActiveFilters = Boolean(searchQuery.trim()) || languageFilter !== 'all' || genreFilter !== 'all' || availabilityFilter !== 'all' || lengthFilter !== 'all' || sortBy !== 'relevance' || readingMood !== null;
+  const hasActiveFilters = Boolean(searchQuery.trim()) || languageFilter !== 'all' || genreFilter !== 'all' || availabilityFilter !== 'all' || lengthFilter !== 'all' || paceFilter !== 'all' || sortBy !== 'relevance' || readingMood !== null;
   const clearFilters = () => {
     setSearchQuery('');
     setLanguageFilter('all');
     setGenreFilter('all');
     setAvailabilityFilter('all');
     setLengthFilter('all');
+    setPaceFilter('all');
     setSortBy('relevance');
     setReadingMood(null);
     void trackUiEvent('discovery_filters_reset');
