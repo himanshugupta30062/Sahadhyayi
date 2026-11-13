@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Search, PenLine, Highlighter, Quote, ArrowUpRight, Library } from 'lucide-react';
 import { useReadingJournal } from '@/hooks/useReadingJournal';
