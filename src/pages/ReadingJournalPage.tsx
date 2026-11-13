@@ -87,11 +87,58 @@ export default function ReadingJournalPage() {
       <Select value={collectionFilter} onValueChange={setCollectionFilter}><SelectTrigger className="w-full sm:w-44"><Folder className="mr-2 h-4 w-4"/><SelectValue placeholder="All collections"/></SelectTrigger><SelectContent><SelectItem value="all">All collections</SelectItem>{collections.map(c=><SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select><Button size="sm" variant="ghost" onClick={()=>setSort(s=>s==='recent'?'page':'recent')}>{sort==='recent'?'Newest first':'Page order'}</Button>
     </div>
     <div className="flex flex-wrap items-center gap-2 rounded-xl border p-3"><FolderPlus className="h-4 w-4 text-muted-foreground"/><Input className="max-w-xs" placeholder="New collection name…" value={collectionInput} onChange={e=>setCollectionInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();createCollection()}}}/><Button size="sm" onClick={createCollection}>Create collection</Button><span className="text-xs text-muted-foreground">Organize entries into themed reading folders</span></div>
-    {isLoading ? <div className="py-16 text-center text-muted-foreground">Loading your journal…</div> : filtered.length===0 ? <Card><CardContent className="flex flex-col items-center gap-3 py-14 text-center"><Library className="h-8 w-8 text-muted-foreground"/><h2 className="font-semibold">{entries.length?'No matching entries':'Your journal is waiting'}</h2><p className="max-w-md text-sm text-muted-foreground">{entries.length?'Try a different search or filter.':'Save a reflection, highlight, or quote while reading; it will appear here automatically.'}</p><Button asChild variant="outline"><Link to="/bookshelf">Explore your bookshelf</Link></Button></CardContent></Card> : <div className="grid gap-3 md:grid-cols-2">{filtered.map(entry=>{const Icon=icons[entry.type as keyof typeof icons]||BookOpen;return <Card key={entry.id} className="transition-shadow hover:shadow-sm"><CardContent className="space-y-3 p-4">
-      <div className="flex items-center justify-between gap-2"><Badge variant="outline" className="capitalize"><Icon className="mr-1 h-3 w-3"/>{entry.type}</Badge><span className="text-xs text-muted-foreground">{entry.createdAt&&new Date(entry.createdAt).getTime()>0?new Date(entry.createdAt).toLocaleDateString():''}</span></div>
-      <div className="flex flex-wrap items-center gap-1"><Button size="sm" variant="ghost" aria-label="Toggle favorite" onClick={()=>toggleMeta(entry.id,'favorite')}><Star className={'h-3 w-3 '+(meta[entry.id]?.favorite?'fill-amber-400 text-amber-500':'')}/></Button><Button size="sm" variant="ghost" aria-label="Pin entry" onClick={()=>toggleMeta(entry.id,'pinned')}><Pin className={'h-3 w-3 '+(meta[entry.id]?.pinned?'fill-current':'')}/></Button>{meta[entry.id]?.collection&&<Badge variant="outline"><Folder className="mr-1 h-3 w-3"/>{meta[entry.id].collection}</Badge>}{(meta[entry.id]?.tags||[]).map(tag=><Badge key={tag} variant="secondary" className="cursor-pointer" onClick={()=>removeTag(entry.id,tag)}>#{tag} ×</Badge>)}<Select value={meta[entry.id]?.collection||'none'} onValueChange={v=>assignCollection(entry.id,v)}><SelectTrigger className="h-7 w-36 text-xs"><SelectValue placeholder="Collection"/></SelectTrigger><SelectContent><SelectItem value="none">No collection</SelectItem>{collections.map(c=><SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select><Input className="h-7 w-24" placeholder="Tag" value={tagInput[entry.id]||''} onChange={e=>setTagInput(prev=>({...prev,[entry.id]:e.target.value}))} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addTag(entry.id)}}}/><Button size="sm" variant="outline" onClick={()=>addTag(entry.id)}><Tags className="h-3 w-3"/></Button></div>
-      {editing===entry.id ? <div className="space-y-2"><Textarea value={editText} onChange={e=>setEditText(e.target.value)} aria-label="Edit highlight text"/><div className="flex flex-wrap gap-2"><Input type="number" min="1" className="w-24" value={editPage} onChange={e=>setEditPage(e.target.value)} aria-label="Highlight page"/><Select value={editColor} onValueChange={v=>setEditColor(v as typeof editColor)}><SelectTrigger className="w-32"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="yellow">Yellow</SelectItem><SelectItem value="green">Green</SelectItem><SelectItem value="blue">Blue</SelectItem><SelectItem value="pink">Pink</SelectItem></SelectContent></Select><Button size="sm" onClick={()=>saveEdit(entry)} disabled={updateHighlight.isPending}>Save</Button><Button size="sm" variant="ghost" onClick={()=>setEditing(null)}><X className="mr-1 h-3 w-3"/>Cancel</Button></div> : <>{entry.text&&<blockquote className="border-l-2 border-amber-400 pl-3 font-serif text-sm italic leading-relaxed">“{entry.text}”</blockquote>}{entry.note&&<p className="whitespace-pre-wrap text-sm">{entry.note}</p>}</>}
-      <div className="flex items-center justify-between border-t pt-2 text-xs text-muted-foreground"><span className="truncate">{entry.bookTitle||'Book'} · p. {entry.page}</span><div className="flex items-center">{entry.type==='highlight'&&editing!==entry.id&&<Button variant="ghost" size="sm" className="h-7" onClick={()=>beginEdit(entry)}><Pencil className="mr-1 h-3 w-3"/>Edit</Button>}<Button asChild variant="ghost" size="sm" className="h-7"><Link to={entry.bookId==='general'?'/quotes':`/reader/${entry.bookId}?page=${entry.page}`}>Open <ArrowUpRight className="ml-1 h-3 w-3"/></Link></Button></div></div>
-    </CardContent></Card>})}</div>}
+    {isLoading ? (
+      <div className="py-16 text-center text-muted-foreground">Loading your journal…</div>
+    ) : filtered.length === 0 ? (
+      <Card><CardContent className="flex flex-col items-center gap-3 py-14 text-center">
+        <Library className="h-8 w-8 text-muted-foreground" />
+        <h2 className="font-semibold">{entries.length ? 'No matching entries' : 'Your journal is waiting'}</h2>
+        <p className="max-w-md text-sm text-muted-foreground">{entries.length ? 'Try a different search or filter.' : 'Save a reflection, highlight, or quote while reading; it will appear here automatically.'}</p>
+        <Button asChild variant="outline"><Link to="/bookshelf">Explore your bookshelf</Link></Button>
+      </CardContent></Card>
+    ) : (
+      <div className="grid gap-3 md:grid-cols-2">
+        {filtered.map(entry => {
+          const Icon = icons[entry.type as keyof typeof icons] || BookOpen;
+          return (
+            <Card key={entry.id} className="transition-shadow hover:shadow-sm">
+              <CardContent className="space-y-3 p-4">
+                <div className="flex items-center justify-between gap-2">
+                  <Badge variant="outline" className="capitalize"><Icon className="mr-1 h-3 w-3" />{entry.type}</Badge>
+                  <span className="text-xs text-muted-foreground">{entry.createdAt && new Date(entry.createdAt).getTime() > 0 ? new Date(entry.createdAt).toLocaleDateString() : ''}</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-1">
+                  <Button size="sm" variant="ghost" aria-label="Toggle favorite" onClick={() => toggleMeta(entry.id, 'favorite')}><Star className={'h-3 w-3 ' + (meta[entry.id]?.favorite ? 'fill-amber-400 text-amber-500' : '')} /></Button>
+                  <Button size="sm" variant="ghost" aria-label="Pin entry" onClick={() => toggleMeta(entry.id, 'pinned')}><Pin className={'h-3 w-3 ' + (meta[entry.id]?.pinned ? 'fill-current' : '')} /></Button>
+                  {meta[entry.id]?.collection && <Badge variant="outline"><Folder className="mr-1 h-3 w-3" />{meta[entry.id].collection}</Badge>}
+                  {(meta[entry.id]?.tags || []).map(tag => <Badge key={tag} variant="secondary" className="cursor-pointer" onClick={() => removeTag(entry.id, tag)}>#{tag} ×</Badge>)}
+                  <Select value={meta[entry.id]?.collection || 'none'} onValueChange={v => assignCollection(entry.id, v)}><SelectTrigger className="h-7 w-36 text-xs"><SelectValue placeholder="Collection" /></SelectTrigger><SelectContent><SelectItem value="none">No collection</SelectItem>{collections.map(collection => <SelectItem key={collection} value={collection}>{collection}</SelectItem>)}</SelectContent></Select>
+                  <Input className="h-7 w-24" placeholder="Tag" value={tagInput[entry.id] || ''} onChange={e => setTagInput(prev => ({...prev, [entry.id]: e.target.value}))} onKeyDown={e => {if (e.key === 'Enter') {e.preventDefault(); addTag(entry.id);}}} />
+                  <Button size="sm" variant="outline" onClick={() => addTag(entry.id)}><Tags className="h-3 w-3" /></Button>
+                </div>
+                {editing === entry.id ? (
+                  <div className="space-y-2">
+                    <Textarea value={editText} onChange={e => setEditText(e.target.value)} aria-label="Edit highlight text" />
+                    <div className="flex flex-wrap gap-2">
+                      <Input type="number" min="1" className="w-24" value={editPage} onChange={e => setEditPage(e.target.value)} aria-label="Highlight page" />
+                      <Select value={editColor} onValueChange={v => setEditColor(v as typeof editColor)}><SelectTrigger className="w-32"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="yellow">Yellow</SelectItem><SelectItem value="green">Green</SelectItem><SelectItem value="blue">Blue</SelectItem><SelectItem value="pink">Pink</SelectItem></SelectContent></Select>
+                      <Button size="sm" onClick={() => saveEdit(entry)} disabled={updateHighlight.isPending}>Save</Button>
+                      <Button size="sm" variant="ghost" onClick={() => setEditing(null)}><X className="mr-1 h-3 w-3" />Cancel</Button>
+                    </div>
+                  </div>
+                ) : <>{entry.text && <blockquote className="border-l-2 border-amber-400 pl-3 font-serif text-sm italic leading-relaxed">“{entry.text}”</blockquote>}{entry.note && <p className="whitespace-pre-wrap text-sm">{entry.note}</p>}</>}
+                <div className="flex items-center justify-between border-t pt-2 text-xs text-muted-foreground">
+                  <span className="truncate">{entry.bookTitle || 'Book'} · p. {entry.page}</span>
+                  <div className="flex items-center">
+                    {entry.type === 'highlight' && editing !== entry.id && <Button variant="ghost" size="sm" className="h-7" onClick={() => beginEdit(entry)}><Pencil className="mr-1 h-3 w-3" />Edit</Button>}
+                    <Button asChild variant="ghost" size="sm" className="h-7"><Link to={entry.bookId === 'general' ? '/quotes' : `/reader/${entry.bookId}?page=${entry.page}`}>Open <ArrowUpRight className="ml-1 h-3 w-3" /></Link></Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    )}
   </div>;
 }
