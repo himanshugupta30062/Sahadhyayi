@@ -72,13 +72,13 @@ export const WhatsAppCallCenterFab: React.FC = () => {
         aria-haspopup="dialog"
         data-testid="whatsapp-callcenter-fab"
         className={cn(
-          'group fixed z-40 flex items-center justify-center rounded-full shadow-2xl transition-all duration-300 hover:-translate-y-0.5 hover:scale-105 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D] focus-visible:ring-offset-2',
+          'group fixed z-40 flex items-center justify-center rounded-full shadow-[0_8px_28px_-8px_rgba(15,23,42,0.45)] transition-all duration-300 hover:-translate-y-1 hover:scale-[1.04] hover:shadow-[0_12px_32px_-8px_rgba(15,23,42,0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2',
           // Exactly matching Book Reader launcher dimensions: 48px (w-12 h-12) on mobile, 56px (sm:w-14 sm:h-14) on sm+
           'w-12 h-12 sm:w-14 sm:h-14',
           // Positioned directly above Book Reader: right-4 sm:right-5 lg:right-6 (vertically aligned)
           'bottom-[76px] right-4 sm:bottom-[88px] sm:right-5 lg:bottom-[96px] lg:right-6',
           // Deep emerald & radiant gold styling
-          'bg-[#1C442D] text-[#D5B16D] border border-[#D5B16D]/50 hover:bg-[#153422] hover:border-[#D5B16D]'
+          'bg-gradient-to-br from-[#263548] via-[#172333] to-[#101827] text-white border border-white/15 hover:from-[#33465d] hover:via-[#1d2d40] hover:to-[#152033]'
         )}
       >
         {/* Radar ping ring */}
@@ -87,7 +87,7 @@ export const WhatsAppCallCenterFab: React.FC = () => {
           aria-hidden="true"
         />
         {/* Support / Help Icon matching Book Reader icon scale */}
-        <LifeBuoy className="relative h-6 w-6 sm:h-7 sm:w-7 transition-transform group-hover:scale-110" aria-hidden="true" />
+        <span className="pointer-events-none absolute inset-[3px] rounded-full border border-white/[0.07]" aria-hidden="true" />\n        <PhoneCall className="relative h-6 w-6 sm:h-7 sm:w-7 stroke-[1.8] transition-transform duration-300 group-hover:scale-105" aria-hidden="true" />\n        <span className="absolute bottom-[2px] right-[2px] flex h-[17px] w-[17px] items-center justify-center rounded-full border-[2.5px] border-[#172333] bg-emerald-500" aria-hidden="true"><span className="h-1.5 w-1.5 rounded-full bg-white" /></span>
 
         {/* Desktop Tooltip */}
         <span
