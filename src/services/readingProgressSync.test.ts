@@ -86,6 +86,13 @@ describe('readingProgressSync domain service', () => {
       expect(result.status).toBe('reading');
     });
 
+    it('clamps percentage inputs to the supported 0–100 range', () => {
+      const result = normalizeProgressValues({ bookId: 'book-1', percentage: 140 });
+      expect(result.percentage).toBe(100);
+      expect(result.currentPage).toBe(100);
+      expect(result.status).toBe('completed');
+    });
+
     it('rejects invalid inputs with descriptive errors', () => {
       expect(() =>
         normalizeProgressValues({
@@ -145,6 +152,12 @@ describe('readingProgressSync domain service', () => {
 
     it('strictly preserves DNF status when browsing pages', () => {
       const transition = computeSynchronizedStatus('dnf', 50, 200);
+      expect(transition.status).toBe('dnf');
+      expect(transition.isCompleted).toBe(false);
+    });
+
+    it('preserves DNF even when page position reaches the final page', () => {
+      const transition = computeSynchronizedStatus('dnf', 200, 200);
       expect(transition.status).toBe('dnf');
       expect(transition.isCompleted).toBe(false);
     });
