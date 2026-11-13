@@ -42,7 +42,7 @@ const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const ConfirmEmail = lazy(() => import('./pages/ConfirmEmail'));
 const AuthCallback = lazy(() => import('./pages/AuthCallback'));
 const BookDetails = lazy(() => import('./pages/BookDetails'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));\nconst MyReadingStats = lazy(() => import('./pages/MyReadingStats'));
 const BookExpert = lazy(() => import('./components/book-expert/BookExpert'));
 const WhatsAppCallCenterFab = lazy(() => import('./components/support/WhatsAppCallCenterFab'));
 const StructuredFooter = lazy(() => import("./components/footer/StructuredFooter"));
@@ -403,7 +403,7 @@ const App = memo(() => {
                           }
                         />
                         <Route
-                          path="/dashboard"
+                          path="/reading-stats"\n                          element={<ProtectedRoute><Suspense fallback={<LoadingFallback />}><MyReadingStats /></Suspense></ProtectedRoute>}\n                        />\n                        <Route\n                          path="/dashboard"
                           element={
                             <ProtectedRoute>
                               <Suspense fallback={<LoadingFallback message="Loading dashboard..." />}>
