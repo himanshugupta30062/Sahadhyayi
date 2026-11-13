@@ -9,6 +9,8 @@ import SEO from '@/components/SEO';
 import { trackUiEvent } from '@/lib/analytics';
 import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
 import { useBookRecommendations } from '@/hooks/useBookRecommendations';
+import { useReadingProgress } from '@/hooks/useReadingProgress';
+import { useReadingGoal } from '@/hooks/useReadingGoal';
 import { useAddToBookshelf, useUserBookshelf } from '@/hooks/useUserBookshelf';
 import { useAuth } from '@/contexts/authHelpers';
 import { BookOpen, Plus, Search, Sparkles, RotateCcw } from 'lucide-react';
@@ -21,9 +23,15 @@ const Discovery = () => {
   const { data: recommendations = [] } = useBookRecommendations(user?.id);
   const addToShelf = useAddToBookshelf();
   const { data: shelfItems = [] } = useUserBookshelf();
+  const { data: readingProgress = [] } = useReadingProgress({ enabled: !!user });
+  const { goal, currentYear } = useReadingGoal();
+  const completedThisYear = shelfItems.filter((item) => item.status === 'completed' && item.added_at && new Date(item.added_at).getFullYear() === currentYear).length;
+  const goalProgress = Math.min(100, Math.round((completedThisYear / Math.max(1, goal)) * 100));
+  const progressByBook = useMemo(() => new Map(readingProgress.map((item) => [item.book_id, item.total_pages > 0 ? Math.min(1, item.current_page / item.total_pages) : 0])), [readingProgress]);
   const personalizedRecommendations = useMemo(() => {
     const shelfBookIds = new Set(shelfItems.map((item) => item.book_id));
     const genreCounts = new Map<string, number>();
+    const activeGenres = new Set<string>();
     shelfItems.forEach((item) => {
       const genre = item.books_library?.genre?.trim().toLowerCase();
       if (genre && (item.status === 'reading' || item.status === 'completed' || item.rating)) {
@@ -34,8 +42,8 @@ const Discovery = () => {
       .filter((book) => !shelfBookIds.has(book.id))
       .map((book) => ({ book, preferenceScore: genreCounts.get(book.genre?.trim().toLowerCase() ?? '') ?? 0 }))
       .sort((a, b) => b.preferenceScore - a.preferenceScore)
-      .map(({ book, preferenceScore }) => ({ book, reason: preferenceScore > 0 ? 'Matches your reading interests' : 'Suggested for your bookshelf' }));
-  }, [recommendations, shelfItems]);
+      .map(({ book, preferenceScore }) => ({ book, reason: activeGenres.has(book.genre?.trim().toLowerCase() ?? '') ? 'Inspired by your current read' : preferenceScore > 0 ? 'Matches your reading interests' : 'Suggested for your bookshelf' }));
+  }, [recommendations, shelfItems, progressByBook]);
   const [searchQuery, setSearchQuery] = useState('');
   const [languageFilter, setLanguageFilter] = useState('all');
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
