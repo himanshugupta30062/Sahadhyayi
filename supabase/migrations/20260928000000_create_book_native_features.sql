@@ -470,3 +470,11 @@ END;
 $$;
 
 NOTIFY pgrst, 'reload schema';
+
+-- Reading DNA visibility: private profiles are only selectable by their owner.
+ALTER TABLE public.reading_dna ADD COLUMN IF NOT EXISTS visibility TEXT NOT NULL DEFAULT 'public';
+ALTER TABLE public.reading_dna DROP CONSTRAINT IF EXISTS reading_dna_visibility_check;
+ALTER TABLE public.reading_dna ADD CONSTRAINT reading_dna_visibility_check CHECK (visibility IN ('public', 'private'));
+DROP POLICY IF EXISTS "Reading DNA is viewable by all authenticated users" ON public.reading_dna;
+CREATE POLICY "Reading DNA is viewable by owner or when public" ON public.reading_dna
+  FOR SELECT TO authenticated USING (auth.uid() = user_id OR visibility = 'public');

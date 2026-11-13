@@ -72,3 +72,22 @@ export const useGenerateReadingDna = () => {
     },
   });
 };
+
+export type ReadingDnaVisibility = "public" | "private";
+
+export const useUpdateReadingDnaVisibility = () => {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: async (visibility: ReadingDnaVisibility) => {
+      if (!user) throw new Error("Sign in to change Reading DNA privacy.");
+      const { error } = await supabase.from("reading_dna").update({ visibility }).eq("user_id", user.id);
+      if (error) throw error;
+      return visibility;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["reading-dna", user?.id] });
+      void qc.invalidateQueries({ queryKey: ["friend-dna"] });
+    },
+  });
+};

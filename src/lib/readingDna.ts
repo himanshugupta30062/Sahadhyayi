@@ -7,6 +7,7 @@ export interface ReadingDna {
   summary: string | null;
   signature_color: string | null;
   generated_at: string;
+  visibility?: "public" | "private";
 }
 
 export interface ShelfBookItem {
