@@ -22,6 +22,7 @@ import { useBookRatings, useRateBook } from '@/hooks/useBookRatings';
 import { useAuth } from '@/contexts/authHelpers';
 import StarRating from '@/components/StarRating';
 import { generateBookSchema, generateBreadcrumbSchema } from '@/utils/schema';
+import { useToast } from '@/hooks/use-toast';
 import { logBookEvent } from '@/lib/supabase/events';
 import { BookEditionTransparency } from '@/components/books/BookEditionTransparency';
 import BookReviews from '@/components/books/BookReviews';\nimport BookExperienceTags from '@/components/books/BookExperienceTags';
@@ -43,6 +44,7 @@ const BookDetails = () => {
   const { data: book, isLoading, error } = useBookById(id);
   const { data: ratingData, isLoading: ratingLoading } = useBookRatings(id);
   const rateMutation = useRateBook(id);
+  const { toast } = useToast();
 
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -281,7 +283,10 @@ const BookDetails = () => {
                   ) : (
                     <StarRating
                       value={userRating || 0}
-                      onChange={(val) => rateMutation.mutate(val)}
+                      onChange={(val) => rateMutation.mutate(val, {
+                        onSuccess: () => toast({ title: 'Rating saved', description: `You rated ${book?.title || 'this book'} ${val} out of 5.` }),
+                        onError: () => toast({ title: 'Could not save rating', description: 'Please try again in a moment.', variant: 'destructive' }),
+                      })}
                       readOnly={rateMutation.isPending}
                     />
                   )}
