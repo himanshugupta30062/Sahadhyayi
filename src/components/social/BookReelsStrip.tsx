@@ -10,6 +10,7 @@ import {
   Heart,
   Flame,
   Coffee,
+  Bookmark,
   X,
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
@@ -41,6 +42,7 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
   const [commentDraft, setCommentDraft] = useState('');
   const [commentBusy, setCommentBusy] = useState(false);
   const [communityReels, setCommunityReels] = useState<BookReelItem[]>([]);
+  const [savedReels, setSavedReels] = useState<Record<string, boolean>>({});
   useEffect(() => {
     let active = true;
     const load = async () => {
@@ -53,6 +55,7 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
       if (!active) return;
       const currentUser = (await supabase.auth.getUser()).data.user?.id;
       setActiveReaction(Object.fromEntries((reactions || []).filter((reaction: any) => reaction.user_id === currentUser).map((reaction: any) => [reaction.reel_id, reaction.emoji])));
+      if (currentUser) { const { data: saves } = await supabase.from('book_reel_saves').select('reel_id').eq('user_id', currentUser); if (active) setSavedReels(Object.fromEntries((saves || []).map((save: any) => [save.reel_id, true]))); }
       setCommunityReels(data.map((item: any) => { const profile: any = profileMap.get(item.user_id); const count = (reactions || []).filter((reaction: any) => reaction.reel_id === item.id).length; return { id: item.id, tag: '📚 COMMUNITY REEL', tagColor: 'bg-emerald-700/80 text-white', readerName: profile?.full_name || profile?.username || 'Sahadhyayi Reader', readerHandle: profile?.username || 'reader', readerAvatar: profile?.profile_photo_url || '', bookTitle: item.book_title || 'A reader moment', bookAuthor: item.book_author || '', hook: item.caption, fullQuote: item.caption, moodAudio: 'Community video', imageUrl: '', videoUrl: item.video_url, likesCount: count, commentsCount: 0 }; }));
 
     };
@@ -112,6 +115,20 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
     setSelectedReelIndex((selectedReelIndex - 1 + displayedReels.length) % displayedReels.length);
   };
 
+  const handleSaveReel = async (reelId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { toast.error('Sign in to save reels.'); return; }
+    if (savedReels[reelId]) {
+      const { error } = await supabase.from('book_reel_saves').delete().eq('reel_id', reelId).eq('user_id', user.id);
+      if (error) { toast.error('Could not remove saved reel.'); return; }
+      setSavedReels(prev => { const next = { ...prev }; delete next[reelId]; return next; }); toast.success('Reel removed from saved.');
+    } else {
+      const { error } = await supabase.from('book_reel_saves').insert({ reel_id: reelId, user_id: user.id });
+      if (error) { toast.error('Could not save reel. Apply the saved reels migration first.'); return; }
+      setSavedReels(prev => ({ ...prev, [reelId]: true })); toast.success('Reel saved.');
+    }
+  };
+
   const handleReaction = async (reelId: string, emoji: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { toast.error('Sign in to react to reels.'); return; }
@@ -148,7 +165,7 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
           )}
         </div>
 
-        <div className="flex items-center gap-1.5"><CreateBookReelDialog /> <div className="hidden items-center gap-1.5 sm:flex">
+        <div className="flex items-center gap-1.5"><Button asChild variant="outline" size="sm" className="h-8 gap-1.5"><Link to="/social/reels/saved"><Bookmark className="h-3.5 w-3.5"/>Saved</Link></Button><CreateBookReelDialog /> <div className="hidden items-center gap-1.5 sm:flex">
           <Button
             type="button"
             variant="outline"
@@ -360,7 +377,7 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
 
                 <div className="flex items-center justify-between rounded-xl bg-white/10 px-3 py-2 backdrop-blur-md">
                   <span className="text-xs font-medium text-white/80">React with readers:</span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2"><button type="button" onClick={() => void handleSaveReel(activeReel.id)} aria-label={savedReels[activeReel.id] ? 'Remove saved reel' : 'Save reel'} className={`flex h-8 items-center gap-1 rounded-full border px-2.5 text-xs transition-colors ${savedReels[activeReel.id] ? 'border-amber-400 bg-amber-400 text-black' : 'border-white/20 bg-white/5 text-white hover:bg-white/20'}><Bookmark className="h-4 w-4"/><span>{savedReels[activeReel.id] ? 'Saved' : 'Save'}</span></button>
                     {[
                       { emoji: '❤️', label: 'Love', icon: Heart },
                       { emoji: '😭', label: 'Tears', text: '😭' },
