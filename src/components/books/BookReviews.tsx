@@ -13,7 +13,10 @@ import { useToast } from '@/hooks/use-toast';
 export default function BookReviews({ bookId }: { bookId: string }) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { data: reviews = [], isLoading, error } = useBookReviews(bookId);\n  const reviewIds = reviews.filter(review => review.user_id !== user?.id).map(review => review.id);\n  const { data: helpfulVotes = [] } = useReviewHelpfulVotes(reviewIds);\n  const toggleHelpful = useToggleReviewHelpfulVote();
+  const { data: reviews = [], isLoading, error } = useBookReviews(bookId);
+  const reviewIds = reviews.filter(review => review.user_id !== user?.id).map(review => review.id);
+  const { data: helpfulVotes = [] } = useReviewHelpfulVotes(reviewIds);
+  const toggleHelpful = useToggleReviewHelpfulVote();
   const saveReview = useSaveBookReview(bookId);
   const deleteReview = useDeleteBookReview(bookId);
   const myReview = reviews.find((review) => review.user_id === user?.id);
@@ -159,7 +162,9 @@ export default function BookReviews({ bookId }: { bookId: string }) {
         <div className="space-y-4">
           {!isLoading && !error && otherReviews.length > 0 && <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3"><span className="text-sm text-muted-foreground">{visibleReviews.length} of {otherReviews.length} reviews</span><div className="flex gap-2"><select aria-label="Sort reviews" className="h-9 rounded-md border bg-background px-2 text-sm" value={reviewOrder} onChange={(event)=>setReviewOrder(event.target.value as typeof reviewOrder)}><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="highest">Highest rated</option></select><select aria-label="Filter reviews" className="h-9 rounded-md border bg-background px-2 text-sm" value={spoilerFilter} onChange={(event)=>setSpoilerFilter(event.target.value as typeof spoilerFilter)}><option value="all">All reviews</option><option value="clean">Hide spoilers</option></select></div></div>}
           {visibleReviews.map((review) => {
-            const revealed = showSpoilers[review.id] === true;\n            const votes = helpfulVotes.filter(vote => vote.review_id === review.id);\n            const votedHelpful = votes.some(vote => vote.user_id === user?.id);
+            const revealed = showSpoilers[review.id] === true;
+            const votes = helpfulVotes.filter(vote => vote.review_id === review.id);
+            const votedHelpful = votes.some(vote => vote.user_id === user?.id);
             const name = review.reviewer?.full_name || (review.reviewer?.username ? `@${review.reviewer.username}` : 'Reader');
             return (
               <article key={review.id} className="border-t border-gray-100 pt-4 space-y-2">
