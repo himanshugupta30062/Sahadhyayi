@@ -36,6 +36,14 @@ export const DnaCompare: React.FC<DnaCompareProps> = ({
   const { data: friendShelf = [] } = useUserShelfForCompare(friendDna.user_id);
 
   const crossRecs = getCrossRecommendations(myShelf, friendShelf, myDna, 5);
+  const friendTasteRecs = getCrossRecommendations(friendShelf, myShelf, friendDna, 5);
+  const shared = (mine: string[], theirs: string[]) => {
+    const other = new Set(theirs.map((value) => value.trim().toLowerCase()));
+    return [...new Map(mine.filter((value) => other.has(value.trim().toLowerCase())).map((value) => [value.trim().toLowerCase(), value])).values()];
+  };
+  const sharedGenres = shared(myDna.genres.map((g) => g.name), friendDna.genres.map((g) => g.name));
+  const sharedMoods = shared(myDna.moods, friendDna.moods);
+  const sharedThemes = shared(myDna.themes, friendDna.themes);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -112,6 +120,30 @@ export const DnaCompare: React.FC<DnaCompareProps> = ({
             </div>
           </div>
 
+          {/* Shared reading signals */}
+          <Card className="border-amber-500/20 bg-amber-500/5">
+            <CardContent className="p-4 space-y-3">
+              <div>
+                <h4 className="text-sm font-semibold text-foreground">Your shared reading signals</h4>
+                <p className="text-xs text-muted-foreground">Interests appearing in both profiles—not a guarantee you will enjoy every same book.</p>
+              </div>
+              {[
+                { label: "Genres", values: sharedGenres },
+                { label: "Moods", values: sharedMoods },
+                { label: "Themes", values: sharedThemes },
+              ].map(({ label, values }) => (
+                <div key={label} className="space-y-1.5">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+                  {values.length ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {values.map((value) => <Badge key={value} variant="secondary">{value}</Badge>)}
+                    </div>
+                  ) : <p className="text-xs text-muted-foreground">No overlap detected yet</p>}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
           {/* 5 Cross Recommendations */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -175,6 +207,33 @@ export const DnaCompare: React.FC<DnaCompareProps> = ({
                   );
                 })}
               </div>
+            )}
+          </div>
+
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-violet-500" />
+              Books on your shelf {friendName} may enjoy
+            </h4>
+            <p className="text-xs text-muted-foreground">Your books ranked against {friendName}'s reading DNA.</p>
+            {friendTasteRecs.length ? (
+              <div className="space-y-2">
+                {friendTasteRecs.map((b, i) => {
+                  const book = b.books_library;
+                  const bId = b.book_id || b.id || book?.id;
+                  return (
+                    <div key={bId || i} className="flex items-center justify-between gap-3 p-2.5 bg-card border border-border rounded-xl">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-xs sm:text-sm text-foreground truncate">{book?.title ?? "Untitled Book"}</p>
+                        <p className="text-[11px] text-muted-foreground truncate">{book?.author ?? "Author Unknown"}{book?.genre && ` · ${book.genre}`}</p>
+                      </div>
+                      {bId && <Link to={`/book/${bId}`} onClick={() => onOpenChange(false)}><Badge variant="outline" className="shrink-0 gap-1">Details <ArrowRight className="w-3 h-3" /></Badge></Link>}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <Card className="border-dashed bg-muted/20"><CardContent className="py-5 text-center text-xs text-muted-foreground">Add more books to your shelf to unlock recommendations for {friendName}.</CardContent></Card>
             )}
           </div>
         </div>
