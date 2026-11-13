@@ -126,3 +126,4 @@ export function useBookSeries(book?: UseBookSeriesParams | null): BookSeriesHook
     isStandalone: !seriesName,
   };
 }
+

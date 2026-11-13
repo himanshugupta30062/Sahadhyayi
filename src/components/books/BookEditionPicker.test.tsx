@@ -116,3 +116,4 @@ describe('BookEditionPicker', () => {
     expect(screen.getByText('Switch')).toBeInTheDocument();
   });
 });
+

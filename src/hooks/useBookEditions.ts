@@ -73,3 +73,4 @@ export function useBookEditions(book?: UseBookEditionsParams | null): BookEditio
     isLoading: isAltLoading || isShelfLoading,
   };
 }
+
