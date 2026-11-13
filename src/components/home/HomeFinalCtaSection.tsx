@@ -8,7 +8,7 @@ export const HomeFinalCtaSection: React.FC = () => {
 
   return (
     <section
-      className="home-final-cta relative isolate py-20 sm:py-24 lg:py-28 px-4 sm:px-6 lg:px-8 bg-[#F4F3EF] dark:bg-gradient-to-br dark:from-[#0B0D0C] dark:via-[#121614] dark:to-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] border-t border-[#E8E8E3] dark:border-[#222824] overflow-hidden transition-colors duration-300"
+      className="home-final-cta relative isolate py-20 sm:py-24 lg:py-28 px-4 sm:px-6 lg:px-8 bg-[#F5F3EC] dark:bg-gradient-to-br dark:from-[#0B0D0C] dark:via-[#111614] dark:to-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] border-t border-[#E5E0D8] dark:border-[#202722] overflow-hidden transition-colors duration-300"
       aria-label="Join Sahadhyayi"
     >
       {/* Ambient background glow */}
@@ -18,13 +18,13 @@ export const HomeFinalCtaSection: React.FC = () => {
 
       <div className="relative z-10 max-w-4xl mx-auto text-center">
         {/* Cultural Origin Tag */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-[#151D18] border border-[#E3DDD4] dark:border-[#28352D] text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.24em] text-[#8F681C] dark:text-[#D5B16D] mb-6 shadow-xs">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/95 dark:bg-[#131715] border border-[#E5E0D8] dark:border-[#242E28] text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.24em] text-[#8F681C] dark:text-[#D5B16D] mb-6 shadow-xs">
           <span lang="hi" className="font-serif">सहाध्यायी</span>
           <span aria-hidden="true">·</span>
           <span>Fellow Reader</span>
         </div>
 
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold tracking-tight text-[#1C201D] dark:text-[#F3F0E7] mb-6 leading-[1.18]">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold tracking-tight text-[#1C201D] dark:text-[#F3F0E7] mb-6 leading-[1.14]">
           Ready to make reading a richer, deeper journey?
         </h2>
 
@@ -43,7 +43,7 @@ export const HomeFinalCtaSection: React.FC = () => {
 
           <Link
             to="/library"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full border border-[#D5D8CF] hover:border-[#B7CEB7] bg-white hover:bg-[#F2F6F0] dark:border-[#2B352E] dark:hover:border-[#38483D] dark:bg-[#141A17] dark:hover:bg-[#19221D] text-[#1C201D] dark:text-[#F3F0E7] text-sm sm:text-base font-medium transition-all shadow-xs"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full border border-[#E5E0D8] hover:border-[#8F681C]/50 bg-white hover:bg-[#FAF7F0] dark:border-[#242E28] dark:hover:border-[#38483D] dark:bg-[#131715] dark:hover:bg-[#1A211D] text-[#1C201D] dark:text-[#F3F0E7] text-sm sm:text-base font-medium transition-all shadow-xs"
           >
             <BookOpen className="w-4 h-4 text-[#8F681C] dark:text-[#D5B16D]" />
             <span>Explore the Digital Library</span>
