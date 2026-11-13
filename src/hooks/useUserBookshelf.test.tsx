@@ -69,6 +69,9 @@ import {
   useAddToBookshelf,
   useUpdateBookshelfItem,
   useRemoveFromBookshelf,
+  useMarkAsDnf,
+  useResumeFromDnf,
+  useUpNextQueue,
 } from '@/hooks/useUserBookshelf';
 
 const makeQuery = () => {
@@ -141,7 +144,13 @@ describe('useUserBookshelf', () => {
   it('adds a book and invalidates shelf, challenge and badge caches on success', async () => {
     renderHook(() => useAddToBookshelf());
     await expect(mocks.mutationOptions.mutationFn({ bookId: 'book-1', status: 'want_to_read' })).resolves.toMatchObject({ id: 'shelf-1' });
-    expect(mocks.insert).toHaveBeenCalledWith({ user_id: 'reader-1', book_id: 'book-1', status: 'want_to_read' });
+    expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({
+      user_id: 'reader-1',
+      book_id: 'book-1',
+      status: 'want_to_read',
+      started_at: null,
+      completed_at: null,
+    }));
     mocks.mutationOptions.onSuccess();
     expect(mocks.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['user-bookshelf'] });
     expect(mocks.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['user-challenges'] });
@@ -152,7 +161,11 @@ describe('useUserBookshelf', () => {
   it('supports adding a book with DNF status', async () => {
     renderHook(() => useAddToBookshelf());
     await expect(mocks.mutationOptions.mutationFn({ bookId: 'book-1', status: 'dnf' })).resolves.toMatchObject({ id: 'shelf-1' });
-    expect(mocks.insert).toHaveBeenCalledWith({ user_id: 'reader-1', book_id: 'book-1', status: 'dnf' });
+    expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({
+      user_id: 'reader-1',
+      book_id: 'book-1',
+      status: 'dnf',
+    }));
   });
 
   it('rejects adding a book for a guest and reports the error', async () => {
@@ -170,9 +183,46 @@ describe('useUserBookshelf', () => {
   it('updates a shelf item and notifies dependent features', async () => {
     renderHook(() => useUpdateBookshelfItem());
     await expect(mocks.mutationOptions.mutationFn({ id: 'shelf-1', updates: { status: 'completed', rating: 5 } })).resolves.toMatchObject({ id: 'shelf-1' });
-    expect(mocks.update).toHaveBeenCalledWith({ status: 'completed', rating: 5 });
+    expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({
+      status: 'completed',
+      rating: 5,
+      up_next_position: null,
+    }));
     mocks.mutationOptions.onSuccess();
     expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ description: 'Book updated!' }));
+  });
+
+  it('marks a book as DNF with stopped page and reason', async () => {
+    renderHook(() => useMarkAsDnf());
+    await expect(
+      mocks.mutationOptions.mutationFn({
+        id: 'shelf-1',
+        dnf_page: 84,
+        dnf_date: '2026-11-13T00:00:00.000Z',
+        dnf_reason: 'pacing_too_slow',
+        dnf_notes: 'Slow middle section',
+      })
+    ).resolves.toMatchObject({ id: 'shelf-1' });
+    expect(mocks.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'dnf',
+        dnf_page: 84,
+        dnf_reason: 'pacing_too_slow',
+        dnf_notes: 'Slow middle section',
+        up_next_position: null,
+      })
+    );
+  });
+
+  it('resumes reading from DNF', async () => {
+    renderHook(() => useResumeFromDnf());
+    await expect(mocks.mutationOptions.mutationFn({ id: 'shelf-1' })).resolves.toMatchObject({ id: 'shelf-1' });
+    expect(mocks.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'reading',
+        up_next_position: null,
+      })
+    );
   });
 
   it('removes a shelf item and reports successful removal', async () => {

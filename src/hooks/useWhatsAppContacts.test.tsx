@@ -124,7 +124,11 @@ describe('useWhatsAppContacts', () => {
     await waitFor(() => expect(result.current.contacts).toHaveLength(1));
 
     await expect(result.current.inviteContact('missing', 'hello')).resolves.toBeUndefined();
-    await expect(result.current.inviteContact('contact-1', 'hello')).resolves.toBe(false);
+    let inviteSuccess: boolean | undefined;
+    await act(async () => {
+      inviteSuccess = await result.current.inviteContact('contact-1', 'hello');
+    });
+    expect(inviteSuccess).toBe(false);
     expect(result.current.error).toBe('invite insert failed');
 
     mocks.user = null;

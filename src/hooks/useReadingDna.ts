@@ -73,7 +73,96 @@ export const useGenerateReadingDna = () => {
   });
 };
 
-export type ReadingDnaVisibility = "public" | "private";
+export type ReadingDnaVisibility = "public" | "friends" | "private";
+
+export interface DiscoverableReader {
+  user_id: string;
+  username: string | null;
+  full_name: string | null;
+  profile_photo_url: string | null;
+  bio: string | null;
+  genres: Array<{ name: string; weight: number }>;
+  moods: string[];
+  pace: string | null;
+  themes: string[];
+  summary: string | null;
+  signature_color: string | null;
+  generated_at: string;
+  friend_request_status?: string;
+}
+
+export const useDiscoverableReaders = (options: {
+  search?: string;
+  limit?: number;
+  offset?: number;
+  enabled?: boolean;
+} = {}) => {
+  const { user } = useAuth();
+  const search = options.search?.trim() || "";
+  const limit = options.limit ?? 20;
+  const offset = options.offset ?? 0;
+
+  return useQuery({
+    queryKey: ["discoverable-readers", user?.id, search, limit, offset],
+    enabled: !!user?.id && (options.enabled ?? true),
+    queryFn: async (): Promise<DiscoverableReader[]> => {
+      try {
+        const { data, error } = await supabase.rpc("get_discoverable_readers", {
+          p_limit: limit,
+          p_offset: offset,
+          p_search: search || null,
+        });
+
+        if (error) {
+          console.warn("[useDiscoverableReaders] RPC fallback:", error.message);
+          // Fallback directly to public reading_dna with profile hydration
+          const { data: dnas, error: dnaErr } = await supabase
+            .from("reading_dna")
+            .select("*")
+            .eq("visibility", "public")
+            .neq("user_id", user!.id)
+            .limit(limit);
+
+          if (dnaErr) throw dnaErr;
+          if (!dnas || dnas.length === 0) return [];
+
+          const ids = dnas.map((d: any) => d.user_id);
+          const { data: profs } = await supabase
+            .from("profiles")
+            .select("id, username, full_name, profile_photo_url, bio")
+            .in("id", ids);
+
+          const profMap = new Map((profs ?? []).map((p) => [p.id, p]));
+
+          return (dnas ?? []).map((d: any) => {
+            const p = profMap.get(d.user_id);
+            return {
+              user_id: d.user_id,
+              username: p?.username ?? null,
+              full_name: p?.full_name ?? null,
+              profile_photo_url: p?.profile_photo_url ?? null,
+              bio: p?.bio ?? null,
+              genres: d.genres ?? [],
+              moods: d.moods ?? [],
+              pace: d.pace ?? null,
+              themes: d.themes ?? [],
+              summary: d.summary ?? null,
+              signature_color: d.signature_color ?? null,
+              generated_at: d.generated_at,
+              friend_request_status: "none",
+            };
+          });
+        }
+
+        return (data ?? []) as DiscoverableReader[];
+      } catch (err) {
+        console.error("Failed to load discoverable readers", err);
+        return [];
+      }
+    },
+    staleTime: 60_000,
+  });
+};
 
 export const useUpdateReadingDnaVisibility = () => {
   const qc = useQueryClient();
@@ -88,6 +177,7 @@ export const useUpdateReadingDnaVisibility = () => {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["reading-dna", user?.id] });
       void qc.invalidateQueries({ queryKey: ["friend-dna"] });
+      void qc.invalidateQueries({ queryKey: ["discoverable-readers"] });
     },
   });
 };
