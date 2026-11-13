@@ -7,7 +7,7 @@ import { MemoryRouter } from 'react-router-dom';
 import BookReadingJournal from './BookReadingJournal';
 
 vi.mock('@/contexts/authHelpers', () => ({ useAuth: () => ({ user: { id: 'u1' } }) }));
-vi.mock('@/hooks/useMarginNotes', () => ({ useMarginNotes: () => ({ data: [{ id: 'n1', user_id: 'u1', book_id: 'b1', page: 15, quote: 'Truth alone triumphs.', note: 'Personal reflection on truth in adversity.', visibility: 'private', created_at: new Date().toISOString() }], isLoading: false }) }));
+vi.mock('@/hooks/useMarginNotes', () => ({ useDeleteMarginNote: () => ({ mutate: vi.fn() }), useMarginNotes: () => ({ data: [{ id: 'n1', user_id: 'u1', book_id: 'b1', page: 15, quote: 'Truth alone triumphs.', note: 'Personal reflection on truth in adversity.', visibility: 'private', created_at: new Date().toISOString() }], isLoading: false }) }));
 vi.mock('@/hooks/useReaderHighlights', () => ({ useReaderHighlights: () => ({ data: [{ id: 'h1', user_id: 'u1', book_id: 'b1', text: 'The mind is everything. What you think you become.', page: 22, color: 'yellow', created_at: new Date().toISOString() }], isLoading: false }), useDeleteReaderHighlight: () => ({ mutate: vi.fn(), isPending: false }) }));
 vi.mock('@/contexts/quotesHelpers', () => ({ useQuotes: () => ({ quotes: [{ id: 1, text: 'A room without books is like a body without a soul.', source: 'Cicero', bookId: 'b1', page: 5 }], addQuote: vi.fn(), removeQuote: vi.fn() }) }));
 vi.mock('@/hooks/useReadingProgress', () => ({ useReadingProgress: () => ({ data: [{ id: 1, book_id: 'b1', book_title: 'Satyamev', current_page: 25, total_pages: 100 }], isLoading: false }) }));
@@ -38,7 +38,7 @@ describe('BookReadingJournal', () => {
     expect(screen.queryByText(/Personal reflection on truth/i)).not.toBeInTheDocument();
   });
 
-  it('searches journal text, notes, and page numbers', () => {
+  it('offers deletion for private reflections', () => {\n    vi.spyOn(window, 'confirm').mockReturnValue(true);\n    renderJournal();\n    expect(screen.getByTitle('Delete private reflection')).toBeInTheDocument();\n  });\n\n  it('searches journal text, notes, and page numbers', () => {
     renderJournal();
     fireEvent.change(screen.getByRole('textbox', { name: /Search journal entries/i }), { target: { value: 'adversity' } });
     expect(screen.getByText(/Personal reflection on truth/i)).toBeInTheDocument();
