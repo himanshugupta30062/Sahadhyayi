@@ -19,7 +19,7 @@ const ResearchCitationNetwork = () => {
   const { workId } = useParams<{ workId: string }>();
   const [root, setRoot] = useState<Work | null>(null);
   const [references, setReferences] = useState<Work[]>([]);
-  const [citing, setCiting] = useState<Work[]>([]);
+  const [citing, setCiting] = useState<Work[]>([]);\n  const [related, setRelated] = useState<Work[]>([]);
   const [refCount, setRefCount] = useState(0);
   const [citingCount, setCitingCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -39,17 +39,17 @@ const ResearchCitationNetwork = () => {
         setRoot(paper);
         setRefCount(paper.referenced_works?.length || 0);
         const refs = Array.isArray(paper.referenced_works) ? paper.referenced_works.slice(0, 12) : [];
-        const [refResult, citingResult] = await Promise.all([
+        const [refResult, citingResult, relatedResult] = await Promise.all([
           refs.length ? fetch(`${OPENALEX}?filter=openalex_id:${refs.join('|')}&per-page=12&select=id,display_name,title,publication_year,cited_by_count,doi,authorships`) : Promise.resolve(null),
           fetch(`${OPENALEX}?filter=cites:${workId}&per-page=12&select=id,display_name,title,publication_year,cited_by_count,doi,authorships`)
         ]);
         if (refResult && !refResult.ok) throw new Error('Could not load referenced papers.');
         if (!citingResult.ok) throw new Error(citingResult.status === 429 ? 'OpenAlex citation lookup is rate-limited. Retry in a moment.' : 'Could not load papers citing this work.');
-        const [refData, citingData] = await Promise.all([
+        const [refData, citingData, relatedData] = await Promise.all([
           refResult ? refResult.json() as Promise<WorksResponse> : Promise.resolve({ results: [] }),
           citingResult.json() as Promise<WorksResponse>,
         ]);
-        if (active) { setReferences(refData.results || []); setCiting(citingData.results || []); setCitingCount(citingData.meta?.count || paper.cited_by_count || 0); }
+        if (active) { setReferences(refData.results || []); setCiting(citingData.results || []); setRelated((relatedData.results || []).filter((work) => work.id !== paper.id)); setCitingCount(citingData.meta?.count || paper.cited_by_count || 0); }
       } catch (e) { if (active) setError(e instanceof Error ? e.message : 'Citation network failed to load.'); }
       finally { if (active) setLoading(false); }
     };
@@ -57,9 +57,9 @@ const ResearchCitationNetwork = () => {
     return () => { active = false; };
   }, [workId, refresh]);
 
-  const PaperCard = ({ work, relation }: { work: Work; relation: 'reference' | 'citing' }) => (
+  const PaperCard = ({ work, relation }: { work: Work; relation: 'reference' | 'citing' | 'related' }) => (
     <article className="group rounded-xl border border-border/70 bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md">
-      <div className="mb-2 flex items-center justify-between gap-2"><span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{relation === 'reference' ? 'This paper references' : 'Cites this paper'}</span><span className="rounded-full bg-muted px-2 py-0.5 text-xs">{work.publication_year || '—'}</span></div>
+      <div className="mb-2 flex items-center justify-between gap-2"><span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{relation === 'reference' ? 'This paper references' : relation === 'citing' ? 'Cites this paper' : 'Related research'}</span><span className="rounded-full bg-muted px-2 py-0.5 text-xs">{work.publication_year || '—'}</span></div>
       <h3 className="line-clamp-3 font-semibold leading-snug group-hover:text-primary">{safeTitle(work)}</h3>
       {authorNames(work) && <p className="mt-2 line-clamp-1 text-xs text-muted-foreground">{authorNames(work)}</p>}
       <p className="mt-2 text-xs text-muted-foreground"><Quote className="mr-1 inline h-3 w-3"/>{Number(work.cited_by_count || 0).toLocaleString()} citations</p>
@@ -89,7 +89,7 @@ const ResearchCitationNetwork = () => {
         <section className="rounded-2xl border border-border bg-muted/20 p-4 sm:p-5"><div className="mb-4 flex items-center justify-between"><div><h2 className="text-lg font-semibold">References</h2><p className="text-sm text-muted-foreground">Earlier research this paper builds on</p></div><span className="rounded-full bg-muted px-3 py-1 text-sm font-semibold">{references.length}</span></div>{references.length ? <div className="space-y-3">{references.map(w=><PaperCard key={w.id} work={w} relation="reference"/>)}</div>:<div className="rounded-xl border border-dashed border-border bg-background p-6 text-center text-sm text-muted-foreground">{loading?'Loading references…':'No reference metadata available for this paper.'}</div>}</section>
         <section className="rounded-2xl border border-border bg-muted/20 p-4 sm:p-5"><div className="mb-4 flex items-center justify-between"><div><h2 className="text-lg font-semibold">Cited by</h2><p className="text-sm text-muted-foreground">Newer research building on this work</p></div><span className="rounded-full bg-muted px-3 py-1 text-sm font-semibold">{citing.length}</span></div>{citing.length ? <div className="space-y-3">{citing.map(w=><PaperCard key={w.id} work={w} relation="citing"/>)}</div>:<div className="rounded-xl border border-dashed border-border bg-background p-6 text-center text-sm text-muted-foreground">{loading?'Loading citing works…':'No citing works found in this result set.'}</div>}</section>
       </div>
-      <p className="mt-8 text-center text-xs text-muted-foreground">Citation metadata provided by OpenAlex. Counts and coverage may vary by publication.</p>
+      <section className="mt-8 rounded-2xl border border-border bg-muted/20 p-4 sm:p-5"><div className="mb-4"><h2 className="text-2xl font-bold">Related research</h2><p className="mt-1 text-sm text-muted-foreground">Discover similar works beyond direct citations, based on OpenAlex relationships.</p></div>{related.length ? <div className="grid gap-3 md:grid-cols-2">{related.map((work) => <PaperCard key={work.id} work={work} relation="reference" />)}</div> : <p className="rounded-xl border border-dashed border-border bg-background p-6 text-center text-sm text-muted-foreground">{loading ? "Finding related research…" : "No related works were returned for this paper."}</p>}</section>\n      <p className="mt-8 text-center text-xs text-muted-foreground">Citation metadata provided by OpenAlex. Counts and coverage may vary by publication.</p>
     </div>
   </main>;
 };
