@@ -9,7 +9,7 @@ type Point = { day:string; views:number };
 const Stat = ({icon:Icon,label,value}:{icon:React.ElementType;label:string;value:number})=><div className="rounded-xl border bg-card p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground"><Icon className="h-4 w-4"/>{label}</div><p className="mt-2 text-2xl font-semibold tabular-nums">{value.toLocaleString()}</p></div>;
 
 export default function BookReelDetailInsights(){
- const {reelId}=useParams(); const [reel,setReel]=useState<Reel|null>(null);const [points,setPoints]=useState<Point[]>([]);const [loading,setLoading]=useState(true);const [error,setError]=useState('');
+ const {reelId}=useParams(); const [reel,setReel]=useState<Reel|null>(null);const [points,setPoints]=useState<Point[]>([]);const [loading,setLoading]=useState(true);const [error,setError]=useState('');const [range,setRange]=useState(14);
  useEffect(()=>{let alive=true;setLoading(true);setError('');(async()=>{const [all,trend]=await Promise.all([supabase.rpc('get_my_book_reel_analytics'),supabase.rpc('get_my_book_reel_daily_detail',{p_reel_id:reelId,p_days:range})]);if(!alive)return;
   if(all.error){setError('Could not load creator analytics. Check that the Book Reel analytics migrations are applied.');setLoading(false);return;}
   const found=((all.data||[]) as Reel[]).find(x=>x.reel_id===reelId);if(!found){setError('This Reel is unavailable or you do not own it.');setLoading(false);return;}setReel(found);
