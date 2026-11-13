@@ -123,7 +123,11 @@ export const useSaveReadingProgress = () => {
             book_title: normalizedBookTitle,
             current_page: safePage,
             total_pages: safeTotal,
-            cover_image_url: coverImageUrl ?? null,\n            started_at: new Date().toISOString(),\n            completed_at: safePage >= safeTotal ? new Date().toISOString() : null,
+            cover_image_url: coverImageUrl ?? null,
+            started_at: existingProgress?.started_at ?? new Date().toISOString(),
+            completed_at: safePage >= safeTotal
+              ? existingProgress?.completed_at ?? new Date().toISOString()
+              : null,
           },
           { onConflict: 'user_id,book_id' },
         )
