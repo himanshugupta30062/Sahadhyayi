@@ -9,5 +9,7 @@
 - If commands fail due to network or environment issues, mention that in the PR.
 
 ## Pull Requests
+- Always create a pull request (PR) after making changes and pushing to a dedicated feature/fix branch.
+- Provide the direct PR creation link and summary of the PR.
 - Summarize key changes and reference relevant files.
 - Include test results in the PR description.
