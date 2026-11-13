@@ -25,6 +25,14 @@ const Discovery = () => {
   const [genreFilter, setGenreFilter] = useState('all');
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
   const [sortBy, setSortBy] = useState<'relevance' | 'newest' | 'title_asc'>('relevance');
+  const [readingMood, setReadingMood] = useState<string | null>(null);
+  const moodPresets = [
+    { id: 'comfort', label: '☕ Comfort & cozy', terms: ['fiction', 'romance', 'poetry', 'classic'] },
+    { id: 'curious', label: '🧠 Learn something', terms: ['science', 'history', 'philosophy', 'non-fiction', 'education'] },
+    { id: 'adventure', label: '🗺️ Adventure', terms: ['adventure', 'fantasy', 'travel', 'thriller', 'mystery'] },
+    { id: 'reflect', label: '🌙 Reflect & unwind', terms: ['poetry', 'philosophy', 'spiritual', 'self-help', 'memoir'] },
+    { id: 'inspire', label: '✨ Feel inspired', terms: ['biography', 'motivation', 'self-help', 'business', 'inspiration'] },
+  ];
 
   const filteredTrendingBooks = useMemo(() => {
     let list = [...books];
@@ -41,24 +49,29 @@ const Discovery = () => {
     if (languageFilter !== 'all') list = list.filter((book) => book.language === languageFilter);
     if (genreFilter !== 'all') list = list.filter((book) => book.genre === genreFilter);
     if (availabilityFilter === 'readable') list = list.filter((book) => Boolean(book.pdf_url));
+    if (readingMood) {
+      const mood = moodPresets.find((preset) => preset.id === readingMood);
+      if (mood) list = list.filter((book) => mood.terms.some((term) => `${book.genre || ''} ${book.title || ''} ${book.description || ''}`.toLowerCase().includes(term)));
+    }
 
     if (sortBy === 'newest') list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     if (sortBy === 'title_asc') list.sort((a, b) => a.title.localeCompare(b.title));
 
     return list.slice(0, 24);
-  }, [availabilityFilter, books, genreFilter, languageFilter, searchQuery, sortBy]);
+  }, [availabilityFilter, books, genreFilter, languageFilter, searchQuery, sortBy, readingMood]);
 
   const genres = useMemo(
     () => [...new Set(books.map((book) => book.genre).filter(Boolean))].sort((a, b) => (a ?? '').localeCompare(b ?? '')),
     [books],
   );
-  const hasActiveFilters = Boolean(searchQuery.trim()) || languageFilter !== 'all' || genreFilter !== 'all' || availabilityFilter !== 'all' || sortBy !== 'relevance';
+  const hasActiveFilters = Boolean(searchQuery.trim()) || languageFilter !== 'all' || genreFilter !== 'all' || availabilityFilter !== 'all' || sortBy !== 'relevance' || readingMood !== null;
   const clearFilters = () => {
     setSearchQuery('');
     setLanguageFilter('all');
     setGenreFilter('all');
     setAvailabilityFilter('all');
     setSortBy('relevance');
+    setReadingMood(null);
     void trackUiEvent('discovery_filters_reset');
   };
 
