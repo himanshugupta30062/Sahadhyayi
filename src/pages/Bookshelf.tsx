@@ -23,7 +23,8 @@ import {
   Share2,
   FileSpreadsheet,
   ArrowUpDown,
-  Play
+  Play,
+  X
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -409,6 +410,19 @@ const Bookshelf = () => {
                 </Select>
               </div>
             </div>
+
+            {(searchQuery.trim() || activeFilter !== 'all' || favoritesOnly) && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => { setSearchQuery(''); setActiveFilter('all'); setFavoritesOnly(false); }}
+                className="h-9 shrink-0 gap-1.5 text-xs"
+                aria-label="Clear bookshelf search and filters"
+              >
+                <X className="h-3.5 w-3.5" /> Clear all
+              </Button>
+            )}
 
             <Tabs value={activeFilter} onValueChange={(v) => setActiveFilter(v as StatusFilter)} className="w-full md:w-auto">
               <TabsList className="grid grid-cols-5 w-full md:w-auto h-9">
