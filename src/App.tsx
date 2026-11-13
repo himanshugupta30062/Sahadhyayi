@@ -43,6 +43,7 @@ const ConfirmEmail = lazy(() => import('./pages/ConfirmEmail'));
 const AuthCallback = lazy(() => import('./pages/AuthCallback'));
 const BookDetails = lazy(() => import('./pages/BookDetails'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));\nconst MyReadingStats = lazy(() => import('./pages/MyReadingStats'));
+const ReadingJournalPage = lazy(() => import('./pages/ReadingJournalPage'));
 const BookExpert = lazy(() => import('./components/book-expert/BookExpert'));
 const WhatsAppCallCenterFab = lazy(() => import('./components/support/WhatsAppCallCenterFab'));
 const StructuredFooter = lazy(() => import("./components/footer/StructuredFooter"));
@@ -52,6 +53,8 @@ const WebsiteTour = lazy(() => import("./components/onboarding/WebsiteTour"));
 const Profile = lazy(() => import('./pages/Profile'));
 const SocialMedia = lazy(() => import('./pages/SocialMedia'));
 const BookReelSharePage = lazy(() => import('./pages/BookReelSharePage'));
+const BookReelInsights = lazy(() => import('./pages/BookReelInsights'));
+const BookReelDetailInsights = lazy(() => import('./pages/BookReelDetailInsights'));
 const BookReelCreatorProfile = lazy(() => import('./pages/BookReelCreatorProfile'));
 const Stories = lazy(() => import('./pages/Stories'));
 const Authors = lazy(() => import('./pages/Authors'));
@@ -880,13 +883,15 @@ const App = memo(() => {
                         />
                         <Route path="/investors" element={<Suspense fallback={<LoadingFallback />}><Investors /></Suspense>} />
                         <Route path="/quotes" element={<Suspense fallback={<LoadingFallback />}><QuotesPage /></Suspense>} />
-                        <Route path="/journal" element={<Suspense fallback={<LoadingFallback message="Loading your reading journal..." />}><QuotesPage /></Suspense>} />
+                        <Route path="/journal" element={<ProtectedRoute><Suspense fallback={<LoadingFallback message="Loading your reading journal..." />}><ReadingJournalPage /></Suspense></ProtectedRoute>} />
                         <Route path="/community-stories" element={<Navigate to="/stories" replace />} />
                         <Route path="/life-stories/:slug?" element={<Suspense fallback={<LoadingFallback message="Loading life stories..." />}><LifeStories /></Suspense>} />
                         <Route path="/book-library" element={<Suspense fallback={<LoadingFallback />}><BookLibrary /></Suspense>} />
                         <Route path="/dmca" element={<Suspense fallback={<LoadingFallback />}><DmcaPolicy /></Suspense>} />
                         <Route path="/dmca-policy" element={<Navigate to="/dmca" replace />} />
                         <Route path="/open-source-licenses" element={<Suspense fallback={<LoadingFallback />}><OpenSourceLicenses /></Suspense>} />
+                        <Route path="/social/reels/insights" element={<ProtectedRoute><Suspense fallback={<LoadingFallback message="Loading reel insights..." />}><BookReelInsights /></Suspense></ProtectedRoute>} />
+                        <Route path="/social/reels/insights/:reelId" element={<ProtectedRoute><Suspense fallback={<LoadingFallback message="Loading Reel detail..." />}><BookReelDetailInsights /></Suspense></ProtectedRoute>} />
                         <Route path="/social/reels/saved" element={<ProtectedRoute><Suspense fallback={<LoadingFallback message="Loading saved reels..." />}><SavedBookReels /></Suspense></ProtectedRoute>} />
                         <Route path="/social/reel/:reelId" element={<Suspense fallback={<LoadingFallback message="Loading Book Reel..." />}><BookReelSharePage /></Suspense>} />
                         <Route path="*" element={<NotFound />} />

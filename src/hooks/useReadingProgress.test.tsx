@@ -10,6 +10,9 @@ const mocks = vi.hoisted(() => ({
   upsert: vi.fn(),
   select: vi.fn(),
   single: vi.fn(),
+  maybeSingle: vi.fn(),
+  lookupEq: vi.fn(),
+  lookupSelect: vi.fn(),
   from: vi.fn(),
 }));
 
@@ -32,9 +35,12 @@ describe('useSaveReadingProgress', () => {
   beforeEach(() => {
     mocks.user = { id: 'reader-1' };
     mocks.single.mockReset().mockResolvedValue({ data: { id: 1 }, error: null });
+    mocks.maybeSingle.mockReset().mockResolvedValue({ data: null, error: null });
+    mocks.lookupEq.mockReset().mockReturnValue({ eq: mocks.lookupEq, maybeSingle: mocks.maybeSingle });
+    mocks.lookupSelect.mockReset().mockReturnValue({ eq: mocks.lookupEq });
     mocks.select.mockReset().mockReturnValue({ single: mocks.single });
     mocks.upsert.mockReset().mockReturnValue({ select: mocks.select });
-    mocks.from.mockReset().mockReturnValue({ upsert: mocks.upsert });
+    mocks.from.mockReset().mockImplementation(() => ({ upsert: mocks.upsert, select: mocks.lookupSelect }));
   });
 
   afterEach(() => { cleanup(); vi.restoreAllMocks(); });
@@ -51,7 +57,19 @@ describe('useSaveReadingProgress', () => {
     expect(mocks.upsert).toHaveBeenCalledWith({
       user_id: 'reader-1', book_id: 'book-1', book_title: 'Example Book',
       current_page: 100, total_pages: 100, cover_image_url: 'cover.jpg',
+      started_at: expect.any(String), completed_at: expect.any(String),
     }, { onConflict: 'user_id,book_id' });
+  });
+
+  it('preserves the original start and completion timestamps for an existing completed book', async () => {
+    mocks.maybeSingle.mockResolvedValue({ data: { started_at: '2026-01-01T00:00:00Z', completed_at: '2026-02-01T00:00:00Z' }, error: null });
+    const { result } = renderProgressHook();
+    await act(async () => {
+      await result.current.mutateAsync({ bookId: 'book-1', bookTitle: 'Book', currentPage: 10, totalPages: 10 });
+    });
+    const payload = mocks.upsert.mock.calls[0][0];
+    expect(payload.started_at).toBe('2026-01-01T00:00:00Z');
+    expect(payload.completed_at).toBe('2026-02-01T00:00:00Z');
   });
 
   it('rejects a blank book ID or title before writing', async () => {
