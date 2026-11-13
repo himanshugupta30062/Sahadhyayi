@@ -1,0 +1,50 @@
+name: Remediate npm audit vulnerabilities
+
+on:
+  push:
+    branches:
+      - automation/npm-audit-remediation
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  audit-fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Apply non-breaking npm security updates
+        run: npm audit fix --ignore-scripts
+      - name: Verify remaining vulnerabilities
+        run: npm audit --audit-level=high
+      - name: Install from updated lockfile
+        run: npm ci --ignore-scripts
+      - name: Run tests
+        run: npm test
+      - name: Build production app
+        run: npm run build
+      - name: Create dependency remediation PR
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: security/npm-audit-remediation
+          base: main
+          title: "fix: remediate npm dependency vulnerabilities"
+          commit-message: "fix: remediate npm dependency vulnerabilities"
+          body: |
+            ## Security dependency remediation
+
+            - Applies compatible npm audit fixes and updates package-lock.json.
+            - Requires npm audit to pass with no high/critical vulnerabilities.
+            - Validates with npm ci, Vitest, and production build.
+            - No force upgrades are used; semver-major changes remain for review.
+          add-paths: |
+            package.json
+            package-lock.json
