@@ -49,6 +49,7 @@ export function CreateBookReelDialog({ onPublished }: CreateBookReelDialogProps)
 
   const publish = async () => {
     if (!file || !caption.trim()) { toast.error('Choose a video and add a caption.'); return; }
+    if (videoDuration === null || videoDuration > MAX_VIDEO_SECONDS + 0.05) { toast.error('Choose a video that is 10 seconds or shorter.'); return; }
     if (!ALLOWED_TYPES.includes(file.type)) { toast.error('Use an MP4, WebM, or MOV video.'); return; }
     if (file.size > MAX_VIDEO_BYTES) { toast.error('Video must be 50 MB or smaller.'); return; }
     if (caption.trim().length > 500) { toast.error('Caption must be 500 characters or less.'); return; }
@@ -62,7 +63,7 @@ export function CreateBookReelDialog({ onPublished }: CreateBookReelDialogProps)
       if (uploadError) throw uploadError;
       const { data: urlData } = supabase.storage.from('book-reels').getPublicUrl(path);
       const { error: insertError } = await supabase.from('book_reels').insert({
-        user_id: user.id, video_url: urlData.publicUrl, storage_path: path,
+        user_id: user.id, video_url: urlData.publicUrl, storage_path: path, duration_seconds: Number(videoDuration.toFixed(3)),
         caption: caption.trim(), book_title: bookTitle.trim() || null, book_author: bookAuthor.trim() || null,
       });
       if (insertError) {
