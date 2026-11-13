@@ -11,7 +11,7 @@ import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
 import { useBookRecommendations } from '@/hooks/useBookRecommendations';
 import { useAddToBookshelf } from '@/hooks/useUserBookshelf';
 import { useAuth } from '@/contexts/authHelpers';
-import { BookOpen, Plus, Search, Sparkles, RotateCcw } from 'lucide-react';
+import { BookOpen, Plus, Search, Sparkles, RotateCcw, BookmarkCheck } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import SemanticBookDiscovery from '@/components/discovery/SemanticBookDiscovery';
 
@@ -165,15 +165,20 @@ const Discovery = () => {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {recommendations.slice(0, 4).map((book) => (
-              <Link key={book.id} to={`/book/${book.id}`} className="block">
-                <Card className="h-full border-border hover:border-brand-primary/50 transition-colors">
-                  <CardContent className="p-4">
-                    <p className="text-xs text-brand-primary font-medium mb-2">Based on your bookshelf</p>
-                    <h3 className="font-semibold line-clamp-2">{book.title}</h3>
+              <Card key={book.id} className="h-full border-border hover:border-brand-primary/50 transition-colors">
+                <CardContent className="p-4 flex flex-col h-full">
+                  <Link to={`/book/${book.id}`} className="group">
+                    <div className="flex items-center gap-1.5 text-xs text-brand-primary font-medium mb-2"><Sparkles className="w-3.5 h-3.5" /> Picked from your bookshelf activity</div>
+                    <h3 className="font-semibold line-clamp-2 group-hover:text-brand-primary">{book.title}</h3>
                     <p className="text-sm text-muted-foreground mt-1">{book.author || 'Unknown author'}</p>
-                  </CardContent>
-                </Card>
-              </Link>
+                    {book.genre && <Badge variant="outline" className="mt-2 text-xs">{book.genre}</Badge>}
+                  </Link>
+                  <div className="mt-auto pt-3 flex gap-2">
+                    <Button size="sm" variant="outline" className="flex-1" asChild><Link to={`/book/${book.id}`}>Details</Link></Button>
+                    <Button size="sm" variant="ghost" className="flex-1 text-brand-primary" disabled={addToShelf.isPending} onClick={() => addToShelf.mutate({ bookId: book.id, status: 'want_to_read' })}><BookmarkCheck className="w-4 h-4 mr-1" /> Save</Button>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </section>
