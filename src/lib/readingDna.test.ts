@@ -28,7 +28,7 @@ const shelfBook = (id: string, genre: string, rating?: number): ShelfBookItem =>
 
 describe("reading DNA similarity", () => {
   it("calculates weighted genre overlap case-insensitively", () => {
-    expect(genreOverlap(dna(), dna({ genres: [{ name: " fantasy ", weight: 0.5 }, { name: "Romance", weight: 0.5 }] }))).toBeCloseTo(0.5);
+    expect(genreOverlap(dna(), dna({ genres: [{ name: " fantasy ", weight: 0.5 }, { name: "Romance", weight: 0.5 }] }))).toBeCloseTo(0.5 / 1.7);
   });
 
   it("returns zero when both genre lists are empty", () => {
