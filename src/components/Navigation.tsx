@@ -235,7 +235,7 @@ function pathMatches(pathname: string, href: string) {
       pathname.startsWith("/reader/");
   }
   if (path === "/social") {
-    return pathname === path || pathname.startsWith("/stories") || pathname.startsWith("/groups");
+    return pathname === path || pathname.startsWith("/social/");
   }
   if (path === "/activity") {
     return (
@@ -276,6 +276,7 @@ const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [openDesktopMenu, setOpenDesktopMenu] = useState<string | null>(null);
   const closeDesktopMenuTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const desktopTriggerRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const clearDesktopMenuCloseTimer = useCallback(() => {
     if (closeDesktopMenuTimer.current !== null) {
@@ -477,6 +478,12 @@ const Navigation = () => {
         aria-expanded={expanded}
         aria-controls={panelId}
         onClick={onToggle}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " " || e.code === "Space") {
+            e.preventDefault();
+            onToggle();
+          }
+        }}
         className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <ChevronDown className={"h-4 w-4 transition-transform " + (expanded ? "rotate-180" : "")} aria-hidden="true" />
@@ -676,6 +683,9 @@ const Navigation = () => {
                   >
                     <DropdownMenuTrigger asChild>
                       <button
+                        ref={(el) => {
+                          desktopTriggerRefs.current[key] = el;
+                        }}
                         type="button"
                         onMouseEnter={() => openDesktopMenuByKey(key)}
                         onMouseLeave={() => scheduleDesktopMenuClose(key)}
@@ -697,6 +707,13 @@ const Navigation = () => {
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
+                      onCloseAutoFocus={(e) => {
+                        e.preventDefault();
+                        desktopTriggerRefs.current[key]?.focus();
+                      }}
+                      onEscapeKeyDown={() => {
+                        desktopTriggerRefs.current[key]?.focus();
+                      }}
                       onMouseEnter={clearDesktopMenuCloseTimer}
                       onMouseLeave={() => scheduleDesktopMenuClose(key)}
                       align="start"
@@ -728,7 +745,7 @@ const Navigation = () => {
                               const items = socialItems.filter((item) => group.names.includes(item.name));
                               if (!items.length) return null;
                               return (
-                                <section key={group.title} className="min-w-0 rounded-lg border border-border/60 bg-card/50 p-2.5 transition-colors hover:border-[hsl(var(--brand-primary)/0.25)]">
+                                <section key={group.title} role="group" aria-label={group.title} className="min-w-0 rounded-lg border border-border/60 bg-card/50 p-2.5 transition-colors hover:border-[hsl(var(--brand-primary)/0.25)]">
                                   <h3 className="pb-1 text-xs font-bold uppercase tracking-wider text-[hsl(var(--brand-primary))]">{group.title}</h3>
                                   <p className="pb-2 text-xs text-muted-foreground">{group.description}</p>
                                   <div className="space-y-1">
@@ -742,7 +759,7 @@ const Navigation = () => {
                                             onClick={() => handleDesktopNavigationClick(item.href)}
                                             data-tour-target={item.tourTarget}
                                             aria-current={active ? "page" : undefined}
-                                            className={"flex min-h-10 cursor-pointer items-center rounded-md px-2.5 py-2 text-sm transition-colors " + (active
+                                            className={"flex min-h-10 cursor-pointer items-center rounded-md px-2.5 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring " + (active
                                               ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]"
                                               : "text-foreground hover:bg-muted")}
                                           >
@@ -778,7 +795,7 @@ const Navigation = () => {
                             validGroups.length <= 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"
                           )}>
                             {validGroups.map((group) => (
-                              <section key={group.title} className="min-w-0 rounded-lg border border-border/70 bg-card/70 p-2.5 shadow-sm transition-colors hover:border-[hsl(var(--brand-primary)/0.28)]">
+                              <section key={group.title} role="group" aria-label={group.title} className="min-w-0 rounded-lg border border-border/70 bg-card/70 p-2.5 shadow-sm transition-colors hover:border-[hsl(var(--brand-primary)/0.28)]">
                                 <h3 className="px-1 pb-1 text-xs font-bold uppercase tracking-wider text-[hsl(var(--brand-primary))]">{group.title}</h3>
                                 <p className="px-1 pb-2 text-xs leading-relaxed text-muted-foreground/80">{group.description}</p>
                                 <div className="space-y-0.5">

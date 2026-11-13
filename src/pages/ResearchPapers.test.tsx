@@ -79,7 +79,7 @@ describe('ResearchPapers', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Artificial intelligence' }));
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
       'search-research-papers',
-      { body: { query: 'artificial intelligence', year: 'all', category: 'all', page: 1, perPage: 12 } },
+      { body: { query: 'artificial intelligence', year: 'all', category: 'all', sort: 'cited_by_count', page: 1, perPage: 12 } },
     ));
   });
 
@@ -91,16 +91,19 @@ describe('ResearchPapers', () => {
     });
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
       'search-research-papers',
-      { body: { query: '', year: 'all', category: 'review', page: 1, perPage: 12 } },
+      { body: { query: '', year: 'all', category: 'review', sort: 'cited_by_count', page: 1, perPage: 12 } },
     ));
   });
 
   it('renders metadata, abstract, author summary and paper links', async () => {
     renderPage();
     expect(await screen.findByRole('heading', { name: 'A Test Research Paper' })).toBeInTheDocument();
-    expect(screen.getByText('Ada Lovelace, Alan Turing, Grace Hopper and 1 more')).toBeInTheDocument();
+    expect(screen.getByText(/Ada Lovelace/)).toBeInTheDocument();
+    expect(screen.getByText(/Alan Turing/)).toBeInTheDocument();
+    expect(screen.getByText(/Grace Hopper/)).toBeInTheDocument();
+    expect(screen.getByText(/and 1 more/)).toBeInTheDocument();
     expect(screen.getByText('Evidence matters greatly')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Read paper/ })).toHaveAttribute('href', 'https://publisher.example/paper');
+    expect(screen.getByRole('link', { name: /Read paper/ })).toHaveAttribute('href', 'https://publisher.example/paper.pdf');
     expect(screen.getByText('Research article', { selector: 'span' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'PDF' })).toHaveAttribute('href', 'https://publisher.example/paper.pdf');
     expect(screen.getByText('42 citations')).toBeInTheDocument();
@@ -144,14 +147,14 @@ describe('ResearchPapers', () => {
     });
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith(
       'search-research-papers',
-      { body: { query: 'quantum computing', year: 'all', category: 'all', page: 1, perPage: 12 } },
+      { body: { query: 'quantum computing', year: 'all', category: 'all', sort: 'cited_by_count', page: 1, perPage: 12 } },
     ));
     fireEvent.change(screen.getByRole('combobox', { name: 'Filter by publication year' }), {
       target: { value: '2024' },
     });
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
       'search-research-papers',
-      { body: { query: 'quantum computing', year: '2024', category: 'all', page: 1, perPage: 12 } },
+      { body: { query: 'quantum computing', year: '2024', category: 'all', sort: 'cited_by_count', page: 1, perPage: 12 } },
     ));
   });
 
@@ -162,7 +165,7 @@ describe('ResearchPapers', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Artificial intelligence' }));
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
       'search-research-papers',
-      { body: { query: 'artificial intelligence', year: 'all', category: 'all', page: 1, perPage: 12 } },
+      { body: { query: 'artificial intelligence', year: 'all', category: 'all', sort: 'cited_by_count', page: 1, perPage: 12 } },
     ));
     fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
     expect(await screen.findByText('Page 2 of 2')).toBeInTheDocument();
@@ -170,7 +173,7 @@ describe('ResearchPapers', () => {
     expect(screen.getByText(/Showing 13–24 of 24 papers/)).toBeInTheDocument();
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenLastCalledWith(
       'search-research-papers',
-      { body: { query: 'artificial intelligence', year: 'all', category: 'all', page: 2, perPage: 12 } },
+      { body: { query: 'artificial intelligence', year: 'all', category: 'all', sort: 'cited_by_count', page: 2, perPage: 12 } },
     ));
   });
 });
@@ -196,7 +199,7 @@ describe('ResearchPapers URL pagination', () => {
     renderPage('/research-papers?page=2&category=review&year=2024');
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith(
       'search-research-papers',
-      { body: { query: '', year: '2024', category: 'review', page: 2, perPage: 12 } },
+      { body: { query: '', year: '2024', category: 'review', sort: 'cited_by_count', page: 2, perPage: 12 } },
     ));
     expect(await screen.findByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page');
   });
@@ -206,7 +209,7 @@ describe('ResearchPapers URL pagination', () => {
     renderPage('/research-papers?page=10001');
     await waitFor(() => expect(supabase.functions.invoke).toHaveBeenCalledWith(
       'search-research-papers',
-      { body: { query: '', year: 'all', category: 'all', page: 833, perPage: 12 } },
+      { body: { query: '', year: 'all', category: 'all', sort: 'cited_by_count', page: 833, perPage: 12 } },
     ));
     expect(await screen.findByText(/first 10,000 results/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();

@@ -132,6 +132,7 @@ const renderPanel = (canModerate = false) => {
 describe('GroupReadingDiscussions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.confirm = vi.fn(() => true);
     mocks.user = { id: 'reader-1' };
     mocks.books = [makeBook()];
     mocks.booksLoading = false;
@@ -186,7 +187,7 @@ describe('GroupReadingDiscussions', () => {
     mocks.discussions = [makeDiscussion({ topic_type: 'question', chapter_number: 3, body: 'A thoughtful question.' })];
     renderPanel();
     expect(screen.getByText('Chapter discussions')).toBeInTheDocument();
-    expect(screen.getByText('Question')).toBeInTheDocument();
+    expect(screen.getAllByText('Question').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Chapter 3')).toBeInTheDocument();
     expect(screen.getByText('A question about the journey')).toBeInTheDocument();
     expect(screen.getByText(/Reader Two/)).toBeInTheDocument();

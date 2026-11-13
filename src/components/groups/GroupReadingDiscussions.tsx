@@ -543,29 +543,33 @@ const GroupReadingDiscussions = ({ groupId, canModerate }: GroupReadingDiscussio
               </label>
             </div>
 
-            <label className="block text-xs font-medium text-muted-foreground">
-              Title
+            <div className="space-y-1">
+              <label htmlFor="discussion-composer-title" className="block text-xs font-medium text-muted-foreground">
+                Title
+              </label>
               <Input
+                id="discussion-composer-title"
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
                 placeholder="A spoiler-free discussion title"
                 maxLength={160}
-                className="mt-1"
               />
-              <p className="mt-1 text-right text-[11px] text-muted-foreground" aria-live="polite">{title.length}/160 characters</p>
-            </label>
-            <label className="block text-xs font-medium text-muted-foreground">
-              Your thoughts
+              <p className="text-right text-[11px] text-muted-foreground" aria-live="polite">{title.length}/160 characters</p>
+            </div>
+            <div className="space-y-1">
+              <label htmlFor="discussion-composer-body" className="block text-xs font-medium text-muted-foreground">
+                Your thoughts
+              </label>
               <Textarea
+                id="discussion-composer-body"
                 value={body}
                 onChange={(event) => setBody(event.target.value)}
                 placeholder="Share a question, reflection or passage you want to discuss…"
                 rows={4}
                 maxLength={6000}
-                className="mt-1"
               />
-              <p className="mt-1 text-right text-[11px] text-muted-foreground" aria-live="polite">{body.length}/6000 characters</p>
-            </label>
+              <p className="text-right text-[11px] text-muted-foreground" aria-live="polite">{body.length}/6000 characters</p>
+            </div>
 
             <div className="flex flex-wrap justify-end gap-2">
               <Button type="button" variant="outline" onClick={requestCloseComposer} disabled={createDiscussion.isPending}>

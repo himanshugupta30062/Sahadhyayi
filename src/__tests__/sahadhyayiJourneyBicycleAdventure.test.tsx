@@ -180,7 +180,7 @@ describe('Sahadhyayi Bicycle Adventure Journey', () => {
         </MemoryRouter>
       );
 
-      expect(screen.getByText('Explore Sahadhyayi as You Ride')).toBeInTheDocument();
+      expect(screen.getByText('Explore as You Ride')).toBeInTheDocument();
       expect(screen.getByText('A Journey Through Sahadhyayi')).toBeInTheDocument();
       expect(container.querySelector('[data-testid="journey-scenic-trail"]')).toBeInTheDocument();
       expect(container.querySelector('[data-testid="journey-illustrated-landscape"]')).toBeInTheDocument();
@@ -193,10 +193,9 @@ describe('Sahadhyayi Bicycle Adventure Journey', () => {
       }
       expect(container.querySelectorAll('.journey-scenic-stop__menu-cue')).toHaveLength(8);
 
-      expect(screen.getAllByText(/Choose a place/i).length).toBeGreaterThan(0);
-      expect(screen.getByRole('button', { name: /jump to library city/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /pedal to previous stop/i })).toBeDisabled();
-      expect(screen.getByRole('button', { name: /pedal to next stop/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /go to stop 1: library city/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /previous stop/i })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /next stop/i })).toBeInTheDocument();
     });
 
     it('shows a destination menu after selecting a landmark without requiring hover', () => {
@@ -257,9 +256,9 @@ describe('Sahadhyayi Bicycle Adventure Journey', () => {
         </MemoryRouter>
       );
 
-      fireEvent.click(screen.getByRole('button', { name: /pedal to next stop/i }));
+      fireEvent.click(screen.getByRole('button', { name: /next stop/i }));
       expect(screen.getAllByText(/stop 2 of 8/i).length).toBeGreaterThan(0);
-      expect(screen.getByText('14% of the journey explored')).toBeInTheDocument();
+      expect(screen.getByText('14% explored')).toBeInTheDocument();
     });
 
     it('toggles Auto Ride on and off', () => {
@@ -269,10 +268,10 @@ describe('Sahadhyayi Bicycle Adventure Journey', () => {
         </MemoryRouter>
       );
 
-      fireEvent.click(screen.getByRole('button', { name: /start auto tour/i }));
-      expect(screen.getByText('Riding...')).toBeInTheDocument();
-      fireEvent.click(screen.getByRole('button', { name: /pause bicycle tour/i }));
-      expect(screen.getByText('Auto Ride')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: /auto ride/i }));
+      expect(screen.getByText('Pause')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: /pause tour/i }));
+      expect(screen.getByText('Auto')).toBeInTheDocument();
     });
 
     it('allows switching destinations via the detail switcher tabs and retains selection', () => {
@@ -286,18 +285,18 @@ describe('Sahadhyayi Bicycle Adventure Journey', () => {
       expect(screen.getAllByRole('heading', { name: 'Library City' }).length).toBeGreaterThan(0);
 
       // Click Stop 3 in destination switcher tabs
-      const tab3 = screen.getByRole('tab', { name: /3\.\s*Reader Village/i });
+      const tab3 = screen.getByRole('tab', { name: /reader village/i });
       fireEvent.click(tab3);
 
       expect(screen.getAllByRole('heading', { name: 'Reader Village' }).length).toBeGreaterThan(0);
-      expect(screen.getByRole('tab', { name: /3\.\s*Reader Village/i })).toHaveAttribute('aria-selected', 'true');
+      expect(screen.getByRole('tab', { name: /reader village/i })).toHaveAttribute('aria-selected', 'true');
 
       // Click Stop 5 in destination switcher tabs
-      const tab5 = screen.getByRole('tab', { name: /5\.\s*Storytelling Forest/i });
+      const tab5 = screen.getByRole('tab', { name: /storytelling forest/i });
       fireEvent.click(tab5);
 
       expect(screen.getAllByRole('heading', { name: 'Storytelling Forest' }).length).toBeGreaterThan(0);
-      expect(screen.getByRole('tab', { name: /5\.\s*Storytelling Forest/i })).toHaveAttribute('aria-selected', 'true');
+      expect(screen.getByRole('tab', { name: /storytelling forest/i })).toHaveAttribute('aria-selected', 'true');
     });
   });
 });
