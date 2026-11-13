@@ -36,7 +36,7 @@ export function rankPersonalizedBooks(
     const genre = normalize(item.books_library?.genre);
     const author = normalize(item.books_library?.author);
     if (genre) genreWeights.set(genre, (genreWeights.get(genre) ?? 0) + ratingBoost);
-    if (author) authorWeights.set(author, (authorWeights.get(author) ?? 0) + ratingBoost * 1.25;
+    if (author) authorWeights.set(author, (authorWeights.get(author) ?? 0) + ratingBoost * 1.25);
   });
 
   return catalog
