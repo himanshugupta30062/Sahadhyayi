@@ -11,7 +11,7 @@ import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
 import { useBookRecommendations } from '@/hooks/useBookRecommendations';
 import { useAddToBookshelf } from '@/hooks/useUserBookshelf';
 import { useAuth } from '@/contexts/authHelpers';
-import { BookOpen, Plus, Search, Sparkles } from 'lucide-react';
+import { BookOpen, Plus, Search, Sparkles, RotateCcw } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import SemanticBookDiscovery from '@/components/discovery/SemanticBookDiscovery';
 
@@ -52,6 +52,16 @@ const Discovery = () => {
     () => [...new Set(books.map((book) => book.genre).filter(Boolean))].sort((a, b) => (a ?? '').localeCompare(b ?? '')),
     [books],
   );
+  const hasActiveFilters = Boolean(searchQuery.trim()) || languageFilter !== 'all' || genreFilter !== 'all' || availabilityFilter !== 'all' || sortBy !== 'relevance';
+  const clearFilters = () => {
+    setSearchQuery('');
+    setLanguageFilter('all');
+    setGenreFilter('all');
+    setAvailabilityFilter('all');
+    setSortBy('relevance');
+    void trackUiEvent('discovery_filters_reset');
+  };
+
   const languages = useMemo(
     () => [...new Set(books.map((book) => book.language).filter(Boolean))].sort((a, b) => (a ?? '').localeCompare(b ?? '')),
     [books],
@@ -130,6 +140,7 @@ const Discovery = () => {
               </SelectContent>
             </Select>
           </div>
+          {hasActiveFilters && <div className="flex justify-end"><Button type="button" variant="ghost" size="sm" onClick={clearFilters}><RotateCcw className="w-4 h-4 mr-2" />Clear filters</Button></div>}
         </CardContent>
       </Card>
 
