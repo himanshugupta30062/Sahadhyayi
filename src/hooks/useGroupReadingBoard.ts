@@ -101,7 +101,7 @@ export const useRemoveGroupReadingBook = () => {
       if (error) throw new Error(error.message || 'Could not remove this book from the group.');
     },
     onSuccess: (_, variables) => {
-      void queryClient.invalidateQueries({ queryKey: groupReadingBooksKey(variables.groupId) });
+      void queryClient.invalidateQueries({ queryKey: groupReadingBooksKey(variables.groupId, userId) });
     },
   });
 };
@@ -129,7 +129,7 @@ export const useSaveGroupReadingProgress = () => {
       return data as string;
     },
     onSuccess: (_, variables) => {
-      void queryClient.invalidateQueries({ queryKey: groupReadingBooksKey(variables.groupId) });
+      void queryClient.invalidateQueries({ queryKey: groupReadingBooksKey(variables.groupId, userId) });
     },
   });
 };

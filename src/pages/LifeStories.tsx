@@ -8,6 +8,7 @@ import {
   Check,
   Compass,
   ExternalLink,
+  Feather,
   Heart,
   Pause,
   Play,

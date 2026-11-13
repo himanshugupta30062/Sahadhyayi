@@ -8,6 +8,7 @@ export interface BookReelItem {
   bookTitle: string;
   bookAuthor: string;
   bookSlug?: string;
+  creatorId?: string;
   hook: string;
   fullQuote: string;
   moodAudio: string;

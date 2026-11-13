@@ -41,7 +41,7 @@ function bundleDiagnosticsPlugin() {
           );
         }
       }
-      this.emitFile({
+      (this as any).emitFile({
         type: "asset",
         fileName: "bundle-analysis.json",
         source: JSON.stringify(chunks, null, 2),
