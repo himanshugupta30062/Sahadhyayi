@@ -139,9 +139,13 @@ export const useUserBookshelf = () => {
 
 const notifyShelfChanged = (queryClient: ReturnType<typeof useQueryClient>) => {
   void queryClient.invalidateQueries({ queryKey: ['user-bookshelf'] });
+  void queryClient.invalidateQueries({ queryKey: ['reading-progress'] });
   // The database trigger updates challenge progress and awards badges on shelf changes.
   void queryClient.invalidateQueries({ queryKey: ['user-challenges'] });
   void queryClient.invalidateQueries({ queryKey: ['user-badges'] });
+  void queryClient.invalidateQueries({ queryKey: ['user-bookshelf-stats'] });
+  void queryClient.invalidateQueries({ queryKey: ['reading-stats'] });
+  void queryClient.invalidateQueries({ queryKey: ['reading-activity-days'] });
   window.dispatchEvent(new Event('shelfUpdated'));
   try {
     localStorage.setItem('sahadhyayi_shelf_sync', Date.now().toString());
@@ -199,8 +203,13 @@ export const useUpdateBookshelfItem = () => {
         payload.up_next_position = null;
       } else if (updates.status === 'completed') {
         payload.completed_at = new Date().toISOString();
+        payload.progress = 100;
         payload.up_next_position = null;
       } else if (updates.status === 'dnf') {
+        payload.up_next_position = null;
+      } else if (updates.progress === 100) {
+        payload.status = 'completed';
+        payload.completed_at = new Date().toISOString();
         payload.up_next_position = null;
       }
 
@@ -212,6 +221,52 @@ export const useUpdateBookshelfItem = () => {
         .single();
 
       if (error) throw error;
+
+      // Synchronize reading_progress if book_id is known
+      if (data?.book_id && user?.id) {
+        try {
+          if (payload.status === 'completed') {
+            const { data: rp } = await supabase
+              .from('reading_progress')
+              .select('id, total_pages')
+              .eq('user_id', user.id)
+              .eq('book_id', data.book_id)
+              .maybeSingle();
+
+            if (rp && rp.total_pages > 0) {
+              await supabase
+                .from('reading_progress')
+                .update({
+                  current_page: rp.total_pages,
+                  completed_at: payload.completed_at || new Date().toISOString(),
+                })
+                .eq('id', rp.id)
+                .eq('user_id', user.id);
+            }
+          } else if (payload.progress !== undefined) {
+            const { data: rp } = await supabase
+              .from('reading_progress')
+              .select('id, total_pages')
+              .eq('user_id', user.id)
+              .eq('book_id', data.book_id)
+              .maybeSingle();
+
+            if (rp && rp.total_pages > 0) {
+              const newPage = Math.min(rp.total_pages, Math.max(0, Math.round((payload.progress / 100) * rp.total_pages)));
+              await supabase
+                .from('reading_progress')
+                .update({
+                  current_page: newPage,
+                  completed_at: payload.progress >= 100 ? (payload.completed_at || new Date().toISOString()) : null,
+                })
+                .eq('id', rp.id)
+                .eq('user_id', user.id);
+            }
+          }
+        } catch {
+          // Sync to reading_progress is best-effort alongside shelf update
+        }
+      }
 
       // Progress saves and meaningful reading-status transitions count as reading activity.
       const recordsActivity = updates.progress !== undefined || updates.status === 'reading' || updates.status === 'completed';

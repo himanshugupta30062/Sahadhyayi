@@ -80,9 +80,11 @@ const makeQuery = () => {
     eq: (...args: unknown[]) => { mocks.eq(...args); return query; },
     order: (...args: unknown[]) => { mocks.order(...args); return Promise.resolve(mocks.result); },
     insert: (...args: unknown[]) => { mocks.insert(...args); return query; },
+    upsert: (...args: unknown[]) => { return query; },
     update: (...args: unknown[]) => { mocks.update(...args); return query; },
     delete: (...args: unknown[]) => { mocks.remove(...args); return query; },
     single: () => mocks.single(),
+    maybeSingle: () => mocks.single(),
     then: (resolve: (value: any) => unknown, reject: (reason: unknown) => unknown) =>
       Promise.resolve(mocks.result).then(resolve, reject),
   };
@@ -99,7 +101,6 @@ describe('useUserBookshelf', () => {
     for (const fn of [mocks.invalidateQueries, mocks.removeChannel, mocks.channelOn, mocks.subscribe, mocks.from, mocks.select, mocks.eq, mocks.order, mocks.insert, mocks.update, mocks.remove, mocks.single, mocks.toast]) fn.mockClear();
     mocks.removeChannel.mockResolvedValue(undefined);
     mocks.from.mockImplementation((table: string) => {
-      expect(table).toBe('user_bookshelf');
       return makeQuery();
     });
     mocks.single.mockResolvedValue({ data: { id: 'shelf-1', user_id: 'reader-1', book_id: 'book-1', status: 'reading' }, error: null });
