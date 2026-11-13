@@ -35,4 +35,5 @@ coverage
 src/components/book-expert/Sahadhyayi_Book_optimized.generated.webp
 /public/optimized-assets/
 supabase/.temp/
+*.tsbuildinfo
 
