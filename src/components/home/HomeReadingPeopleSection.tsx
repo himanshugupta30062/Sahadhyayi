@@ -84,7 +84,7 @@ export const HomeReadingPeopleSection: React.FC = () => {
         </div>
 
         {/* Signature feature: readers map */}
-        <Link to="/map" className="group relative mb-8 block overflow-hidden rounded-[2rem] border border-[#D9E4D8] bg-gradient-to-br from-[#EAF2E8] via-[#F8F7F1] to-[#E8EFEA] p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-[#2C4034] dark:from-[#14251B] dark:via-[#111614] dark:to-[#18221D] sm:p-10 lg:p-12">
+        <div className="group relative mb-8 block overflow-hidden rounded-[2rem] border border-[#D9E4D8] bg-gradient-to-br from-[#EAF2E8] via-[#F8F7F1] to-[#E8EFEA] p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-[#2C4034] dark:from-[#14251B] dark:via-[#111614] dark:to-[#18221D] sm:p-10 lg:p-12">
           <div className="pointer-events-none absolute -right-12 -top-20 h-72 w-72 rounded-full border border-[#5B8064]/20 dark:border-[#A6C9A8]/20" aria-hidden="true"/>
           <div className="pointer-events-none absolute right-8 top-8 h-52 w-52 rounded-full border border-dashed border-[#5B8064]/25 dark:border-[#A6C9A8]/20" aria-hidden="true"/>
           <div className="relative z-10 grid items-center gap-8 lg:grid-cols-[1.05fr_.95fr]">
@@ -92,7 +92,7 @@ export const HomeReadingPeopleSection: React.FC = () => {
               <span className="inline-flex items-center gap-2 rounded-full border border-[#C8D9C8] bg-white/70 px-3 py-1 text-[10px] font-bold uppercase tracking-[.18em] text-[#42684A] dark:border-[#36513C] dark:bg-white/[.05] dark:text-[#B8D7B7]"><MapPin size={13}/> Sahadhyayi signature feature</span>
               <h3 className="mt-5 font-serif text-3xl font-bold leading-tight text-[#1C3423] dark:text-[#E9F2E7] sm:text-4xl lg:text-5xl">Books connect us.<br/><span className="text-[#527B5C] dark:text-[#B8D7B7]">See readers around you.</span></h3>
               <p className="mt-4 max-w-lg text-sm leading-7 text-[#536657] dark:text-[#A8B9AA] sm:text-base">Discover fellow readers by city, find people reading the same book, and turn shared shelves into real connections—without revealing anyone’s exact location.</p>
-              <span className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#244B31] px-5 py-3 text-sm font-semibold text-white transition-transform group-hover:translate-x-1 dark:bg-[#D5B16D] dark:text-[#182018]">Explore the Readers Map <ArrowRight size={16}/></span>
+              <div className="mt-7 flex flex-wrap gap-3"><Link to="/map" className="inline-flex items-center gap-2 rounded-full bg-[#244B31] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#315D3D] dark:bg-[#D5B16D] dark:text-[#182018] dark:hover:bg-[#E4C688]">Explore Readers Map <ArrowRight size={16}/></Link><Link to="/reader-map" className="inline-flex items-center gap-2 rounded-full border border-[#B9CDB7] bg-white/65 px-5 py-3 text-sm font-semibold text-[#315A3D] transition-colors hover:bg-white dark:border-[#36513C] dark:bg-white/[.05] dark:text-[#B8D7B7] dark:hover:bg-white/[.1]">Find readers by book <BookOpen size={16}/></Link></div>
             </div>
             <div className="relative mx-auto aspect-[4/3] w-full max-w-[520px] overflow-hidden rounded-3xl border border-white/70 bg-[#DCE9DC]/80 shadow-inner dark:border-white/10 dark:bg-[#1B2C20]/60" aria-hidden="true">
               <div className="absolute inset-0 opacity-50" style={{backgroundImage:"linear-gradient(rgba(75,110,80,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(75,110,80,.12) 1px,transparent 1px)",backgroundSize:"26px 26px"}}/>
@@ -105,7 +105,7 @@ export const HomeReadingPeopleSection: React.FC = () => {
               <div className="absolute bottom-3 left-3 rounded-full border border-white/70 bg-white/85 px-3 py-1.5 text-[10px] font-semibold text-[#47664A] shadow-sm dark:border-white/10 dark:bg-[#101A13]/85 dark:text-[#B8D7B7]">Illustrative map preview · not live user locations</div>
             </div>
           </div>
-        </Link>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {/* Pillar 1: Reader Map */}
