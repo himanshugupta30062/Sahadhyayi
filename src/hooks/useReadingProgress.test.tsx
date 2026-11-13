@@ -36,7 +36,7 @@ describe('useSaveReadingProgress', () => {
     mocks.user = { id: 'reader-1' };
     mocks.single.mockReset().mockResolvedValue({ data: { id: 1 }, error: null });
     mocks.maybeSingle.mockReset().mockResolvedValue({ data: null, error: null });
-    mocks.lookupEq.mockReset().mockReturnValue({ maybeSingle: mocks.maybeSingle });
+    mocks.lookupEq.mockReset().mockReturnValue({ eq: mocks.lookupEq, maybeSingle: mocks.maybeSingle });
     mocks.lookupSelect.mockReset().mockReturnValue({ eq: mocks.lookupEq });
     mocks.select.mockReset().mockReturnValue({ single: mocks.single });
     mocks.upsert.mockReset().mockReturnValue({ select: mocks.select });
