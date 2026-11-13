@@ -470,6 +470,7 @@ const ResearchPapers = () => {
                 {papers.map((paper, index) => {
                   const pdfUrl = safeHttpUrl(paper.best_oa_location?.pdf_url || paper.primary_location?.pdf_url);
                   const paperUrl = getPaperUrl(paper);
+                  // Prefer the full-text PDF for the primary reading action when available.
                   const source = paper.primary_location?.source?.display_name;
                   const abstract = getAbstract(paper.abstract_inverted_index);
                   const authorLinks = getAuthorLinks(paper.authorships);
@@ -503,7 +504,8 @@ const ResearchPapers = () => {
                             <span>Paper {((page - 1) * PAGE_SIZE) + index + 1}</span>
                           </div>
                           <div className="mt-5 flex flex-wrap gap-2">
-                            {paperUrl && <a href={paperUrl} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#1C442D] px-3.5 text-xs font-semibold text-white transition-colors hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#101711] dark:hover:bg-[#E3C483]"><BookOpen className="h-3.5 w-3.5" /> Read paper <ExternalLink className="h-3 w-3" /></a>}
+                            {(pdfUrl || paperUrl) && <a href={pdfUrl || paperUrl} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#1C442D] px-3.5 text-xs font-semibold text-white transition-colors hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#101711] dark:hover:bg-[#E3C483]"><BookOpen className="h-3.5 w-3.5" /> Read paper <ExternalLink className="h-3 w-3" /></a>}
+                            {pdfUrl && paperUrl && pdfUrl !== paperUrl && <a href={paperUrl} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#D9E1DA] px-3.5 text-xs font-semibold text-[#31583D] hover:bg-[#F3F6F2] dark:border-[#344039] dark:text-[#D5B16D] dark:hover:bg-[#1D2821]"><ExternalLink className="h-3.5 w-3.5" /> Publisher page</a>}
                             {paper.id && <a href={`/research-network/${paper.id.split('/').pop()}`} className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#D9E1DA] px-3.5 text-xs font-semibold text-[#31583D] hover:bg-[#F3F6F2] dark:border-[#344039] dark:text-[#D5B16D] dark:hover:bg-[#1D2821]"><GitBranch className="h-3.5 w-3.5" /> Citation network</a>}
                             {pdfUrl && <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#D9E1DA] px-3.5 text-xs font-semibold text-[#31583D] hover:bg-[#F3F6F2] dark:border-[#344039] dark:text-[#D5B16D] dark:hover:bg-[#1D2821]"><Download className="h-3.5 w-3.5" /> PDF</a>}
                             <Button type="button" variant="outline" disabled={savingId === paper.id} onClick={() => { toggleBookmark(paper).catch((bookmarkSaveError: unknown) => { setBookmarkError(bookmarkSaveError instanceof Error ? bookmarkSaveError.message : 'Unable to update your saved papers.'); }); }} className="h-9 gap-2 border-[#D9E1DA] px-3.5 text-xs dark:border-[#344039]">
