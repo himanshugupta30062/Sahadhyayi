@@ -19,7 +19,8 @@ const ResearchCitationNetwork = () => {
   const { workId } = useParams<{ workId: string }>();
   const [root, setRoot] = useState<Work | null>(null);
   const [references, setReferences] = useState<Work[]>([]);
-  const [citing, setCiting] = useState<Work[]>([]);\n  const [related, setRelated] = useState<Work[]>([]);
+  const [citing, setCiting] = useState<Work[]>([]);
+  const [related, setRelated] = useState<Work[]>([]);
   const [refCount, setRefCount] = useState(0);
   const [citingCount, setCitingCount] = useState(0);
   const [loading, setLoading] = useState(true);

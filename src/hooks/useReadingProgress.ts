@@ -138,6 +138,7 @@ export const useUpdateReadingProgress = () => {
       void queryClient.invalidateQueries({ queryKey: ['reading-progress', user?.id] });
       void queryClient.invalidateQueries({ queryKey: ['user-bookshelf', user?.id] });
     },
+  });
 };
 
 export const useSaveReadingProgress = () => {

@@ -25,6 +25,8 @@ import { generateBookSchema, generateBreadcrumbSchema } from '@/utils/schema';
 import { useToast } from '@/hooks/use-toast';
 import { logBookEvent } from '@/lib/supabase/events';
 import { BookEditionTransparency } from '@/components/books/BookEditionTransparency';
+import { BookSeriesSection } from '@/components/books/BookSeriesSection';
+import { BookEditionPicker } from '@/components/books/BookEditionPicker';
 import BookReviews from '@/components/books/BookReviews';
 import BookExperienceTags from '@/components/books/BookExperienceTags';
 import BookLiteraryVoices from '@/components/books/BookLiteraryVoices';
@@ -342,6 +344,11 @@ const BookDetails = () => {
                     </Card>
                   )}
                 </div>
+
+                {/* Edition Selector Shortcut */}
+                <div className="flex items-center gap-3 mb-6">
+                  <BookEditionPicker book={book} triggerVariant="outline" triggerSize="sm" />
+                </div>
               </div>
 
               {/* Book-specific Gemini AI */}
@@ -381,11 +388,15 @@ const BookDetails = () => {
             </div>
           </div>
 
+          {/* Series Navigation (if book is part of a series) */}
+          <BookSeriesSection book={book} className="mb-8" />
+
           <Separator className="my-8" />
 
           <div className="mb-8">
-            <BookExperienceTags bookId={book.id} />\n                  <BookReviews bookId={book.id} />
-          <BookLiteraryVoices bookId={book.id} />
+            <BookExperienceTags bookId={book.id} />
+            <BookReviews bookId={book.id} />
+            <BookLiteraryVoices bookId={book.id} />
           </div>
 
           {/* Guest CTA */}
