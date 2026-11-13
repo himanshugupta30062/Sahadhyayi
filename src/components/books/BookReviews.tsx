@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useBookReviews, useDeleteBookReview, useSaveBookReview } from '@/hooks/useBookReviews';
+import { REVIEW_DIMENSIONS, type ReviewDimension, type ReaderReaction, useBookReviews, useDeleteBookReview, useSaveBookReview } from '@/hooks/useBookReviews';
 import { useToast } from '@/hooks/use-toast';
 
 export default function BookReviews({ bookId }: { bookId: string }) {
@@ -18,18 +18,22 @@ export default function BookReviews({ bookId }: { bookId: string }) {
   const myReview = reviews.find((review) => review.user_id === user?.id);
   const [reviewText, setReviewText] = useState('');
   const [containsSpoilers, setContainsSpoilers] = useState(false);
+  const [readerReaction, setReaderReaction] = useState<ReaderReaction | ''>('');
+  const [dimensionScores, setDimensionScores] = useState<Record<ReviewDimension, number>>({ writing: 0, characters: 0, plot: 0, pacing: 0, worldbuilding: 0, originality: 0 });
   const [showSpoilers, setShowSpoilers] = useState<Record<string, boolean>>({});
   const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     setReviewText(myReview?.review_text || '');
     setContainsSpoilers(myReview?.contains_spoilers || false);
+    setReaderReaction(myReview?.reader_reaction || '');
+    setDimensionScores({ writing: 0, characters: 0, plot: 0, pacing: 0, worldbuilding: 0, originality: 0, ...(myReview?.dimensions || []).reduce((acc, item) => ({ ...acc, [item.dimension]: item.score }), {}) });
     setEditing(false);
   }, [myReview?.id, myReview?.updated_at, myReview?.review_text, myReview?.contains_spoilers]);
 
   const handleSave = async () => {
     try {
-      await saveReview.mutateAsync({ reviewText, containsSpoilers });
+      await saveReview.mutateAsync({ reviewText, containsSpoilers, readerReaction: readerReaction || null, dimensions: REVIEW_DIMENSIONS.filter((dimension) => dimensionScores[dimension] > 0).map((dimension) => ({ dimension, score: dimensionScores[dimension] })) });
       setEditing(false);
       toast({ title: 'Review saved', description: 'Your review is now available to signed-in readers.' });
     } catch (err) {
@@ -43,6 +47,8 @@ export default function BookReviews({ bookId }: { bookId: string }) {
       await deleteReview.mutateAsync(myReview.id);
       setReviewText('');
       setContainsSpoilers(false);
+      setReaderReaction('');
+      setDimensionScores({ writing: 0, characters: 0, plot: 0, pacing: 0, worldbuilding: 0, originality: 0 });
       setEditing(false);
       toast({ title: 'Review deleted' });
     } catch (err) {
@@ -73,6 +79,19 @@ export default function BookReviews({ bookId }: { bookId: string }) {
               </>
             ) : (
               <>
+                <label className="block text-sm font-medium">Your reading reaction</label>
+                <select className="w-full rounded-md border bg-background px-3 py-2 text-sm" value={readerReaction} onChange={(event) => setReaderReaction(event.target.value as ReaderReaction | '')} aria-label="Reading reaction">
+                  <option value="">Choose a reaction (optional)</option>
+                  {(['joyful','thoughtful','inspired','heartbroken','tense','surprised','comforted','challenged'] as ReaderReaction[]).map((reaction) => <option key={reaction} value={reaction}>{reaction.charAt(0).toUpperCase()+reaction.slice(1)}</option>)}
+                </select>
+                <p className="text-sm font-medium">Rate the book (optional, 1–5)</p>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {REVIEW_DIMENSIONS.map((dimension) => <label key={dimension} className="text-xs capitalize text-muted-foreground">{dimension}
+                    <select className="mt-1 w-full rounded-md border bg-background px-2 py-2 text-sm text-foreground" value={dimensionScores[dimension]} onChange={(event) => setDimensionScores((current) => ({ ...current, [dimension]: Number(event.target.value) }))} aria-label={dimension + " score"}>
+                      <option value={0}>Not rated</option>{[1,2,3,4,5].map((score) => <option key={score} value={score}>{score}</option>)}
+                    </select>
+                  </label>)}
+                </div>
                 <Textarea value={reviewText} onChange={(event) => setReviewText(event.target.value)} rows={4} maxLength={5000} placeholder="What stayed with you after reading this book?" aria-label="Your book review" />
                 <div className="flex items-center gap-2">
                   <Checkbox checked={containsSpoilers} onCheckedChange={(checked) => setContainsSpoilers(checked === true)} />
