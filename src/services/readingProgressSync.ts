@@ -182,12 +182,12 @@ export function computeSynchronizedStatus(
     }
   } else {
     // Page-driven status transition
-    if (currentPage >= totalPages && totalPages > 0) {
+    if (currentStatus === 'dnf') {
+      // PRESERVE DNF even if the stored page position reaches the end.
+      status = 'dnf';
+    } else if (currentPage >= totalPages && totalPages > 0) {
       status = 'completed';
       completedAt = existingCompletedAt || now;
-    } else if (currentStatus === 'dnf') {
-      // PRESERVE DNF: Do not auto-revert DNF to reading on page browse
-      status = 'dnf';
     } else if (currentPage > 0) {
       if (currentStatus === 'want_to_read' || currentStatus === 'completed') {
         status = 'reading';
