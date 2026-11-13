@@ -15,6 +15,9 @@ import {
   Share2,
   X,
   MessageCircle,
+  Trash2,
+  Edit3,
+  Clock,
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -36,7 +39,7 @@ interface BookReelsStripProps {
 export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
   reels = SAMPLE_BOOK_REELS,
   title = 'Book Reels & Reader Moments',
-  subtitle = 'Swipe through unfiltered 10-second book reactions, margin finds & late-night thoughts',
+  subtitle = 'Swipe through unfiltered 10-second book reactions, margin finds & reader moments',
   className = '',
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -51,6 +54,12 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
   const [communityReels, setCommunityReels] = useState<BookReelItem[]>([]);
   const [savedReels, setSavedReels] = useState<Record<string, boolean>>({});
   const [isLoadingCommunity, setIsLoadingCommunity] = useState<boolean>(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // Owner controls for caption editing & deletion
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedCaption, setEditedCaption] = useState('');
+  const [deleteBusy, setDeleteBusy] = useState(false);
 
   // Load community reels from Supabase
   useEffect(() => {
@@ -84,19 +93,22 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
           .in('reel_id', data.map((item: any) => item.id));
 
         if (!active) return;
-        const currentUser = (await supabase.auth.getUser()).data.user?.id;
-        if (currentUser) {
-          setActiveReaction(
-            Object.fromEntries(
-              (reactions || [])
-                .filter((r: any) => r.user_id === currentUser)
-                .map((r: any) => [r.reel_id, r.emoji])
-            )
+        const currentUser = (await supabase.auth.getUser()).data.user;
+        setCurrentUserId(currentUser?.id ?? null);
+
+        if (currentUser?.id) {
+          const userReactions = Object.fromEntries(
+            (reactions || [])
+              .filter((r: any) => r.user_id === currentUser.id)
+              .map((r: any) => [r.reel_id, r.emoji])
           );
+          setActiveReaction((prev) => ({ ...userReactions, ...prev }));
+
           const { data: saves } = await supabase
             .from('book_reel_saves')
             .select('reel_id')
-            .eq('user_id', currentUser);
+            .eq('user_id', currentUser.id);
+
           if (active && saves) {
             setSavedReels(Object.fromEntries(saves.map((s: any) => [s.reel_id, true])));
           }
@@ -109,7 +121,7 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
             return {
               id: item.id,
               creatorId: item.user_id,
-              tag: '📚 COMMUNITY REEL',
+              tag: '📚 10S REEL',
               tagColor: 'bg-emerald-700/80 text-white',
               readerName: profile?.full_name || profile?.username || 'Sahadhyayi Reader',
               readerHandle: profile?.username || 'reader',
@@ -122,7 +134,7 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
               imageUrl:
                 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80',
               videoUrl: item.video_url,
-              durationSeconds: item.duration_seconds == null ? null : Number(item.duration_seconds),
+              durationSeconds: item.duration_seconds == null ? 10.0 : Number(item.duration_seconds),
               likesCount: count,
               commentsCount: 0,
             };
@@ -157,7 +169,7 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
 
   const activeReel = selectedReelIndex !== null ? displayedReels[selectedReelIndex] : null;
 
-  // Load comments for active reel
+  // Load comments when active reel changes
   useEffect(() => {
     let active = true;
     const loadComments = async () => {
@@ -179,12 +191,17 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
             .from('profiles_public')
             .select('id,full_name,username,profile_photo_url')
             .in('id', ids)
-        : { data: [] };
+          : { data: [] };
 
       const map = new Map((profiles || []).map((p: any) => [p.id, p]));
       setComments(data.map((item: any) => ({ ...item, profile: map.get(item.user_id) })));
     };
+
     void loadComments();
+    setIsEditing(false);
+    if (activeReel) {
+      setEditedCaption(activeReel.hook || '');
+    }
     return () => {
       active = false;
     };
@@ -206,8 +223,8 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
       .insert({ reel_id: activeReel.id, user_id: user.id, body })
       .select('id,reel_id,user_id,body,created_at')
       .single();
-    setCommentBusy(false);
 
+    setCommentBusy(false);
     if (error || !data) {
       toast.error('Could not post comment.');
       return;
@@ -244,7 +261,7 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
           target.tagName === 'TEXTAREA' ||
           target.isContentEditable)
       ) {
-        return; // Don't interrupt comment typing
+        return; // Don't interrupt comment/caption typing
       }
 
       if (e.key === 'ArrowRight') {
@@ -351,32 +368,69 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
           .upsert({ reel_id: reelId, user_id: user.id, emoji }, { onConflict: 'reel_id,user_id' });
       }
     } catch {
-      // ignore reaction network glitch
+      // ignore network glitch
     }
   };
 
   const handleShareReel = async (reel: BookReelItem) => {
     const url = `${window.location.origin}/social/reels/${reel.id}`;
-    try {
-      if (navigator.share) {
+    if (navigator.share) {
+      try {
         await navigator.share({
           title: reel.bookTitle || 'Book Reel on Sahadhyayi',
-          text: reel.hook || 'Watch this 10-second reader moment on Sahadhyayi',
+          text: reel.hook || 'Check out this 10-second Book Reel on Sahadhyayi',
           url,
         });
-      } else {
-        await navigator.clipboard.writeText(url);
-        toast.success('Reel link copied to clipboard');
+        return;
+      } catch (e: any) {
+        if (e.name === 'AbortError') return;
       }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success('Reel link copied to clipboard!');
+    } catch {
+      toast.error('Could not copy link.');
+    }
+  };
+
+  const handleUpdateCaption = async () => {
+    if (!activeReel) return;
+    const newCap = editedCaption.trim();
+    if (!newCap) {
+      toast.error('Caption cannot be empty.');
+      return;
+    }
+    const { error } = await supabase
+      .from('book_reels')
+      .update({ caption: newCap, updated_at: new Date().toISOString() })
+      .eq('id', activeReel.id);
+
+    if (error) {
+      toast.error('Could not update caption.');
+      return;
+    }
+    toast.success('Caption updated.');
+    setCommunityReels((prev) =>
+      prev.map((r) => (r.id === activeReel.id ? { ...r, hook: newCap, fullQuote: newCap } : r))
+    );
+    setIsEditing(false);
+  };
+
+  const handleDeleteReel = async () => {
+    if (!activeReel) return;
+    if (!window.confirm('Are you sure you want to delete your 10-second reel?')) return;
+    setDeleteBusy(true);
+    try {
+      const { error } = await supabase.from('book_reels').delete().eq('id', activeReel.id);
+      if (error) throw error;
+      toast.success('Reel deleted successfully.');
+      setCommunityReels((prev) => prev.filter((r) => r.id !== activeReel.id));
+      setSelectedReelIndex(null);
     } catch (e: any) {
-      if (e?.name !== 'AbortError') {
-        try {
-          await navigator.clipboard.writeText(url);
-          toast.success('Reel link copied to clipboard');
-        } catch {
-          toast.error('Could not share reel');
-        }
-      }
+      toast.error(e.message || 'Could not delete reel.');
+    } finally {
+      setDeleteBusy(false);
     }
   };
 
@@ -467,17 +521,27 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
               }}
               className="group relative flex h-72 w-48 shrink-0 cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border border-[#E8E8E3] bg-[#101711] p-3.5 text-left text-white shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-[#1C442D]/50 dark:border-[#29332D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"
             >
-              {/* Background Photo */}
-              <img
-                src={reel.imageUrl}
-                alt=""
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                loading="lazy"
-              />
+              {/* Background Video or Photo */}
+              {reel.videoUrl ? (
+                <video
+                  src={reel.videoUrl}
+                  muted
+                  playsInline
+                  preload="metadata"
+                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <img
+                  src={reel.imageUrl}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
+              )}
 
               {/* Scrim Overlays */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/30" />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/30 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent pointer-events-none" />
 
               {/* Top: Tag + Duration Badge + Audio/Video Icon */}
               <div className="relative z-10 flex items-center justify-between gap-1.5">
@@ -489,9 +553,10 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
                 <div className="flex items-center gap-1.5">
                   {durationLabel && (
                     <span
-                      className="rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] font-semibold text-white backdrop-blur-md border border-white/10"
+                      className="rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300 backdrop-blur-md border border-white/10 flex items-center gap-1"
                       aria-label={`Duration: ${durationLabel}`}
                     >
+                      <Clock className="h-2.5 w-2.5" />
                       {durationLabel}
                     </span>
                   )}
@@ -554,49 +619,42 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
               {/* Top Navigation & Reader Info */}
               <div className="relative z-10 flex items-center justify-between border-b border-white/15 pb-3">
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10 border-2 border-amber-400/80 shadow-md">
-                    <AvatarImage src={activeReel.readerAvatar} alt={activeReel.readerName} />
-                    <AvatarFallback className="bg-emerald-900 text-white font-bold">
-                      {activeReel.readerName.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-                      {activeReel.creatorId ? (
-                        <Link
-                          to={`/social/reels/creator/${activeReel.creatorId}`}
-                          className="hover:underline text-white"
-                        >
-                          {activeReel.readerName}
-                        </Link>
-                      ) : (
-                        <span>{activeReel.readerName}</span>
-                      )}
-                      <span className="text-xs font-normal text-white/60">
-                        @{activeReel.readerHandle}
-                      </span>
-                    </h3>
-                    <p className="text-[11px] text-amber-300 truncate max-w-[200px]">
-                      📖 {activeReel.bookTitle}
-                    </p>
-                  </div>
+                  <Link
+                    to={
+                      activeReel.creatorId
+                        ? `/social/reels/creator/${activeReel.creatorId}`
+                        : '/social'
+                    }
+                    onClick={() => setSelectedReelIndex(null)}
+                    className="group flex items-center gap-3"
+                  >
+                    <Avatar className="h-10 w-10 border-2 border-amber-400/80 shadow-md group-hover:scale-105 transition-transform">
+                      <AvatarImage src={activeReel.readerAvatar} alt={activeReel.readerName} />
+                      <AvatarFallback className="bg-emerald-900 text-white font-bold">
+                        {activeReel.readerName.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="text-sm font-bold text-white flex items-center gap-1.5 group-hover:text-amber-300 transition-colors">
+                        {activeReel.readerName}
+                        <span className="text-xs font-normal text-white/60">
+                          @{activeReel.readerHandle}
+                        </span>
+                      </h3>
+                      <div className="flex items-center gap-1.5 text-[11px] text-amber-300">
+                        <Clock className="h-3 w-3" />
+                        <span>
+                          {activeReel.durationSeconds != null
+                            ? `${Number(activeReel.durationSeconds).toFixed(1)}s Reel`
+                            : '10s Micro-Reel'}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
                 </div>
 
-                <div className="flex items-center gap-1.5">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleSaveReel(activeReel.id)}
-                    className="h-8 w-8 rounded-full text-white/80 hover:bg-white/10 hover:text-amber-300"
-                    aria-label={savedReels[activeReel.id] ? 'Remove bookmark' : 'Bookmark reel'}
-                  >
-                    <Bookmark
-                      className={`h-4 w-4 ${
-                        savedReels[activeReel.id] ? 'fill-amber-400 text-amber-400' : ''
-                      }`}
-                    />
-                  </Button>
+                <div className="flex items-center gap-1">
+                  {/* Share Reel */}
                   <Button
                     type="button"
                     variant="ghost"
@@ -607,6 +665,55 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
                   >
                     <Share2 className="h-4 w-4" />
                   </Button>
+
+                  {/* Bookmark Reel */}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleSaveReel(activeReel.id)}
+                    className={`h-8 w-8 rounded-full ${
+                      savedReels[activeReel.id]
+                        ? 'text-amber-400 bg-white/10'
+                        : 'text-white/80 hover:bg-white/10 hover:text-white'
+                    }`}
+                    aria-label={savedReels[activeReel.id] ? 'Remove from saved' : 'Save reel'}
+                  >
+                    <Bookmark
+                      className={`h-4 w-4 ${
+                        savedReels[activeReel.id] ? 'fill-amber-400 text-amber-400' : ''
+                      }`}
+                    />
+                  </Button>
+
+                  {/* Owner Controls (Edit & Delete) */}
+                  {currentUserId && activeReel.creatorId === currentUserId && (
+                    <>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setIsEditing(!isEditing)}
+                        className="h-8 w-8 rounded-full text-amber-300 hover:bg-white/10"
+                        aria-label="Edit caption"
+                      >
+                        <Edit3 className="h-4 w-4" />
+                      </Button>
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleDeleteReel}
+                        disabled={deleteBusy}
+                        className="h-8 w-8 rounded-full text-destructive hover:bg-white/10"
+                        aria-label="Delete reel"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+
                   <Button
                     type="button"
                     variant="ghost"
@@ -628,30 +735,65 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
                 />
               </div>
 
-              {/* Attached Book Link & Caption */}
-              <div className="relative z-10 space-y-2 rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-xs">
-                {activeReel.videoUrl && (
-                  <p className="text-xs text-white/90 leading-relaxed">{activeReel.hook}</p>
-                )}
-                <div className="flex items-center justify-between gap-2 pt-1 border-t border-white/10">
-                  <div className="min-w-0">
-                    <p className="truncate text-xs font-semibold text-white">
-                      {activeReel.bookTitle}
-                    </p>
-                    {activeReel.bookAuthor && (
-                      <p className="truncate text-[10px] text-white/60">{activeReel.bookAuthor}</p>
-                    )}
+              {/* Caption or Inline Caption Editing */}
+              {isEditing ? (
+                <div className="relative z-10 space-y-2 rounded-xl border border-white/20 bg-black/60 p-3">
+                  <label className="text-xs font-semibold text-amber-200">
+                    Edit Reel Caption
+                  </label>
+                  <textarea
+                    value={editedCaption}
+                    onChange={(e) => setEditedCaption(e.target.value)}
+                    maxLength={500}
+                    className="w-full rounded-xl border border-white/20 bg-black/60 p-2.5 text-xs text-white resize-none focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    rows={3}
+                  />
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setIsEditing(false)}
+                      className="h-7 text-xs text-white/70"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleUpdateCaption}
+                      className="h-7 text-xs bg-amber-400 text-black hover:bg-amber-300 font-semibold"
+                    >
+                      Save
+                    </Button>
                   </div>
-                  <Link
-                    to={`/library?q=${encodeURIComponent(activeReel.bookTitle)}`}
-                    onClick={() => setSelectedReelIndex(null)}
-                    className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-amber-400 px-2.5 py-1 text-xs font-semibold text-black transition-colors hover:bg-amber-300"
-                  >
-                    <span>Find Book</span>
-                    <ArrowRight className="h-3 w-3" />
-                  </Link>
                 </div>
-              </div>
+              ) : (
+                activeReel.hook && (
+                  <div className="relative z-10 space-y-2 rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-xs">
+                    <p className="text-xs text-white/90 leading-relaxed font-serif italic">
+                      “{activeReel.hook}”
+                    </p>
+                    <div className="flex items-center justify-between gap-2 pt-1 border-t border-white/10">
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-semibold text-white">
+                          {activeReel.bookTitle}
+                        </p>
+                        {activeReel.bookAuthor && (
+                          <p className="truncate text-[10px] text-white/60">{activeReel.bookAuthor}</p>
+                        )}
+                      </div>
+                      <Link
+                        to={`/library?q=${encodeURIComponent(activeReel.bookTitle)}`}
+                        onClick={() => setSelectedReelIndex(null)}
+                        className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-[#D5B16D] px-2.5 py-1 text-xs font-semibold text-[#0B0D0C] transition-colors hover:bg-[#E8CC91]"
+                      >
+                        <BookOpen className="h-3 w-3" />
+                        <span>Find Book</span>
+                        <ArrowRight className="h-3 w-3" />
+                      </Link>
+                    </div>
+                  </div>
+                )
+              )}
 
               {/* Bottom: Discussion & Reactions */}
               <div className="relative z-10 space-y-3 pt-1">
@@ -695,7 +837,7 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
                       type="submit"
                       size="sm"
                       disabled={commentBusy || !commentDraft.trim()}
-                      className="bg-amber-400 text-black hover:bg-amber-300 h-7 text-xs px-2.5"
+                      className="bg-amber-400 text-black hover:bg-amber-300 h-7 text-xs px-2.5 font-semibold"
                     >
                       {commentBusy ? '…' : 'Post'}
                     </Button>
@@ -703,34 +845,37 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
                 </div>
 
                 {/* Emojis Reactions Bar */}
-                <div className="flex items-center justify-between rounded-xl bg-white/10 px-3 py-2 backdrop-blur-md">
+                <div className="flex items-center justify-between rounded-xl bg-white/10 px-3 py-1.5 backdrop-blur-md">
                   <span className="text-xs font-medium text-white/80">React:</span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     {[
                       { emoji: '❤️', label: 'Love', icon: Heart },
                       { emoji: '😭', label: 'Tears' },
                       { emoji: '☕', label: 'Cozy', icon: Coffee },
                       { emoji: '🔥', label: 'Fire', icon: Flame },
-                    ].map((item) => (
-                      <button
-                        key={item.emoji}
-                        type="button"
-                        onClick={() => handleReaction(activeReel.id, item.emoji)}
-                        aria-label={`React with ${item.label}`}
-                        className={`flex h-8 items-center gap-1 rounded-full border px-2.5 text-xs font-bold transition-all ${
-                          activeReaction[activeReel.id] === item.emoji
-                            ? 'scale-110 border-amber-400 bg-amber-400 text-black'
-                            : 'border-white/20 bg-white/5 text-white hover:bg-white/20'
-                        }`}
-                      >
-                        <span>{item.emoji}</span>
-                      </button>
-                    ))}
+                    ].map((item) => {
+                      const isSelected = activeReaction[activeReel.id] === item.emoji;
+                      return (
+                        <button
+                          key={item.emoji}
+                          type="button"
+                          onClick={() => handleReaction(activeReel.id, item.emoji)}
+                          aria-label={`React with ${item.label}`}
+                          className={`flex h-7 items-center gap-1 rounded-full border px-2 text-xs font-bold transition-all ${
+                            isSelected
+                              ? 'scale-105 border-amber-400 bg-amber-400 text-black'
+                              : 'border-white/20 bg-white/5 text-white hover:bg-white/20'
+                          }`}
+                        >
+                          <span>{item.emoji}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
                 {/* Next / Previous Navigation */}
-                <div className="flex items-center justify-between pt-1">
+                <div className="flex items-center justify-between pt-0.5">
                   <Button
                     type="button"
                     variant="ghost"
