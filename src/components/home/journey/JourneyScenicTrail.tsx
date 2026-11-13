@@ -8,7 +8,7 @@ import './journey-scenic-trail.css';
 
 interface JourneyScenicTrailProps {
   activeStopIndex: number;
-  onSelect: (index: number) => void;
+  onSelect: (index: number, scrollIntoDetail?: boolean) => void;
 }
 
 interface LandmarkPosition {
@@ -261,7 +261,7 @@ export const JourneyScenicTrail: React.FC<JourneyScenicTrailProps> = ({
               <button
                 type="button"
                 className="journey-scenic-stop__trigger"
-                onClick={() => onSelect(destination.index)}
+                onClick={() => onSelect(destination.index, true)}
                 aria-label={'Explore ' + destination.title + ' — ' + position.shortDescription}
                 aria-pressed={isActive}
                 aria-expanded={isActive}
