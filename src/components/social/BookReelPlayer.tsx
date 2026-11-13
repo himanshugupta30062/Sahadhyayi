@@ -32,6 +32,7 @@ export const BookReelPlayer: React.FC<BookReelPlayerProps> = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const viewRecordedRef = useRef(false);
+  const completionRecordedRef = useRef(false);
 
   const initialDuration =
     reel.durationSeconds != null && reel.durationSeconds > 0
@@ -53,6 +54,7 @@ export const BookReelPlayer: React.FC<BookReelPlayerProps> = ({
     setHasError(false);
     setIsCompleted(false);
     viewRecordedRef.current = false;
+    completionRecordedRef.current = false;
     setDuration(
       reel.durationSeconds != null && reel.durationSeconds > 0
         ? Number(reel.durationSeconds)
@@ -104,6 +106,12 @@ export const BookReelPlayer: React.FC<BookReelPlayerProps> = ({
     setIsLoading(false);
   };
 
+  const markCompleted = () => {
+    if (completionRecordedRef.current) return;
+    completionRecordedRef.current = true;
+    markCompleted();
+  };
+
   const handleTimeUpdate = () => {
     if (!videoRef.current) return;
     const current = videoRef.current.currentTime;
@@ -112,8 +120,7 @@ export const BookReelPlayer: React.FC<BookReelPlayerProps> = ({
     const effectiveDuration = duration > 0 ? duration : 10;
     // Mark completed if >= 90% watched or within 0.3s of end
     if (!isCompleted && (current / effectiveDuration >= 0.9 || current >= effectiveDuration - 0.3)) {
-      setIsCompleted(true);
-      onComplete?.(reel.id);
+      markCompleted();
     }
   };
 
@@ -149,6 +156,7 @@ export const BookReelPlayer: React.FC<BookReelPlayerProps> = ({
     }
     setCurrentTime(0);
     setIsCompleted(false);
+    completionRecordedRef.current = false;
     void videoRef.current.play().catch(() => {
       // Browser autoplay restriction handling
     });
