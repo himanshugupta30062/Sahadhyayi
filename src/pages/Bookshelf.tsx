@@ -421,6 +421,30 @@ const Bookshelf = () => {
             </Tabs>
           </div>
 
+          {/* Five-book personal Up Next queue */}
+          {booksWithProgress.some((book) => book.up_next_rank) && (
+            <Card className="border-amber-500/20 bg-amber-500/5">
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h2 className="font-semibold text-foreground flex items-center gap-2"><BookMarked className="w-4 h-4 text-amber-500" />Up Next</h2>
+                    <p className="text-xs text-muted-foreground mt-0.5">Your personal queue · up to 5 books</p>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{booksWithProgress.filter((book) => book.up_next_rank).length}/5</span>
+                </div>
+                <div className="flex gap-3 overflow-x-auto pb-1">
+                  {booksWithProgress.filter((book) => book.up_next_rank).sort((a, b) => (a.up_next_rank || 99) - (b.up_next_rank || 99)).map((item) => (
+                    <Link key={item.id} to={`/book/${item.book_id}`} className="flex items-center gap-2 min-w-[190px] max-w-[230px] rounded-lg border border-border bg-card p-2 hover:border-amber-500/50 transition-colors">
+                      <span className="text-xs font-semibold text-amber-600">{item.up_next_rank}</span>
+                      {item.books_library?.cover_image_url ? <img src={item.books_library.cover_image_url} alt="" className="w-8 h-11 rounded object-cover" /> : <div className="w-8 h-11 rounded bg-muted flex items-center justify-center"><BookOpen className="w-4 h-4" /></div>}
+                      <span className="text-sm font-medium text-foreground line-clamp-2">{item.books_library?.title || 'Untitled'}</span>
+                    </Link>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Empty State */}
           {(!bookshelfData || bookshelfData.length === 0) && (
             <Card className="border-dashed border-2 border-border bg-muted/30">
