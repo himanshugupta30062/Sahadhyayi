@@ -11,6 +11,8 @@ export interface ReadingProgressItem {
   total_pages: number;
   cover_image_url?: string;
   user_id?: string;
+  started_at?: string | null;
+  completed_at?: string | null;
 }
 
 export const useReadingProgress = (options: { enabled?: boolean } = {}) => {
@@ -55,7 +57,7 @@ export const useUpdateReadingProgress = () => {
       // Scope writes to the authenticated owner as well as relying on database RLS.
       const { data, error } = await supabase
         .from('reading_progress')
-        .update({ current_page })
+        .update({ current_page, completed_at: null })
         .eq('id', id)
         .eq('user_id', user.id)
         .select()
@@ -112,7 +114,7 @@ export const useSaveReadingProgress = () => {
             book_title: normalizedBookTitle,
             current_page: safePage,
             total_pages: safeTotal,
-            cover_image_url: coverImageUrl ?? null,
+            cover_image_url: coverImageUrl ?? null,\n            started_at: new Date().toISOString(),\n            completed_at: safePage >= safeTotal ? new Date().toISOString() : null,
           },
           { onConflict: 'user_id,book_id' },
         )
