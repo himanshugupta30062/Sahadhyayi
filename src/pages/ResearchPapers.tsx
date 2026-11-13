@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 
-type OpenAlexAuthor = { author?: { display_name?: string | null } | null } | null;
+type OpenAlexAuthor = { author?: { id?: string | null; display_name?: string | null } | null } | null;
 type OpenAlexLocation = {
   landing_page_url?: string | null;
   pdf_url?: string | null;
@@ -470,7 +470,7 @@ const ResearchPapers = () => {
                   const paperUrl = getPaperUrl(paper);
                   const source = paper.primary_location?.source?.display_name;
                   const abstract = getAbstract(paper.abstract_inverted_index);
-                  const authors = getAuthors(paper.authorships);
+                  const authorLinks = getAuthorLinks(paper.authorships);
                   const title = paper.display_name || paper.title || 'Untitled research paper';
                   return (
                     <article key={paper.id} className="group rounded-2xl border border-[#E8E8E3] bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#C9D5CA] hover:shadow-md dark:border-[#26302A] dark:bg-[#141815] dark:hover:border-[#46594A] sm:p-6">
@@ -491,7 +491,7 @@ const ResearchPapers = () => {
                           <h3 className="font-serif text-lg font-semibold leading-snug text-[#1C201D] transition-colors group-hover:text-[#1C442D] dark:text-[#F3F0E7] dark:group-hover:text-[#D5B16D] sm:text-xl">
                             {paperUrl ? <a href={paperUrl} target="_blank" rel="noopener noreferrer" className="focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D]">{title}</a> : title}
                           </h3>
-                          <p className="mt-2 text-sm text-[#59635B] dark:text-[#A5ADA6]">{authors || 'Author details unavailable'}</p>
+                          <p className="mt-2 flex flex-wrap items-center gap-x-1 text-sm text-[#59635B] dark:text-[#A5ADA6]">{authorLinks.length ? authorLinks.slice(0, 3).map((author, authorIndex) => <span key={`${author.name}-${authorIndex}`}>{author.url ? <a href={author.url} target="_blank" rel="noopener noreferrer" className="font-medium underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D]">{author.name}<ExternalLink className="ml-0.5 inline h-3 w-3" aria-hidden="true" /></a> : author.name}{authorIndex < Math.min(authorLinks.length, 3) - 1 ? "," : ""}</span>) : "Author details unavailable"}{authorLinks.length > 3 && <span className="text-xs">and {authorLinks.length - 3} more</span>}</p>
                           {abstract && <p className="mt-3 line-clamp-3 max-w-5xl text-sm leading-6 text-[#737B74] dark:text-[#A5ADA6]">{abstract}</p>}
                           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[#737B74] dark:text-[#A5ADA6]">
                             <span className="inline-flex items-center gap-1.5"><Quote className="h-3.5 w-3.5" /> {Number(paper.cited_by_count || 0).toLocaleString('en-US')} citations</span>
