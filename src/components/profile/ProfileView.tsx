@@ -41,6 +41,10 @@ import ReadingPassportCard from "./ReadingPassportCard";
 import ProfileReadingStats from "./ProfileReadingStats";
 import ReadingYearReview from "./ReadingYearReview";
 import ReadingActivityCalendar from "./ReadingActivityCalendar";
+import ReadingMomentumWidget from "./ReadingMomentumWidget";
+import { useReadingStreak } from "@/hooks/useReadingStreak";
+import { useReadingLogs } from "@/hooks/useReadingLogs";
+import { useReadingGoal } from "@/hooks/useReadingGoal";
 
 type EditMode = "view" | "edit" | "delete";
 
@@ -50,6 +54,9 @@ export const ProfileView: React.FC = () => {
   const { data: profile, isLoading } = useUserProfile();
   const { data: myDna } = useReadingDna(user?.id);
   const { data: bookshelf = [] } = useUserBookshelf();
+  const { data: streak } = useReadingStreak();
+  const { data: logs = [] } = useReadingLogs();
+  const { goal } = useReadingGoal();
   const upsertProfile = useUpsertUserProfile();
   const deleteProfile = useDeleteUserProfile();
 
@@ -240,6 +247,14 @@ export const ProfileView: React.FC = () => {
             </div>
 
             <ProfileReadingStats books={bookshelf} />
+
+            <ReadingMomentumWidget
+              currentStreakDays={streak?.current ?? 0}
+              completedThisYear={bookshelf.filter((b) => b.status === 'completed' && b.completed_at && new Date(b.completed_at).getFullYear() === new Date().getFullYear()).length}
+              annualTarget={goal}
+              recentCompleted={bookshelf.filter((b) => b.status === 'completed')}
+              readingLogs={logs}
+            />
 
             <ReadingActivityCalendar />
 
