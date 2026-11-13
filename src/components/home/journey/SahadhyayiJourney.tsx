@@ -8,7 +8,7 @@ import {
   RotateCcw,
   Sparkles,
   Compass,
-  Route,
+  MapPin,
 } from 'lucide-react';
 import { JOURNEY_DESTINATIONS } from './journeyData';
 import { JourneyDestinationNode } from './JourneyDestinationNode';
@@ -19,7 +19,6 @@ export const SahadhyayiJourney: React.FC = () => {
   const [isAutoPlaying, setIsAutoPlaying] = useState<boolean>(false);
 
   const journeyContainerRef = useRef<HTMLElement>(null);
-  const isUserInteractingRef = useRef<boolean>(false);
 
   const activeDestination =
     JOURNEY_DESTINATIONS[activeStopIndex - 1] || JOURNEY_DESTINATIONS[0];
@@ -32,7 +31,7 @@ export const SahadhyayiJourney: React.FC = () => {
     setActiveStopIndex(safeIndex);
 
     if (scrollIntoDetail) {
-      const detailElement = document.getElementById('journey-detail-section') || document.getElementById('journey-detail-' + safeIndex);
+      const detailElement = document.getElementById('journey-detail-section');
       if (detailElement) {
         detailElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
@@ -51,7 +50,6 @@ export const SahadhyayiJourney: React.FC = () => {
 
   useEffect(() => {
     if (!isAutoPlaying) return;
-
     const interval = window.setInterval(handleNextStop, 6000);
     return () => window.clearInterval(interval);
   }, [isAutoPlaying, handleNextStop]);
@@ -85,211 +83,227 @@ export const SahadhyayiJourney: React.FC = () => {
     <section
       ref={journeyContainerRef}
       id="sahadhyayi-journey"
-      className="sahadhyayi-bicycle-adventure relative isolate py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-background transition-colors duration-300 overflow-hidden"
+      className="sahadhyayi-bicycle-adventure relative isolate py-16 sm:py-20 lg:py-28 px-4 sm:px-6 lg:px-8 bg-background transition-colors duration-300 overflow-hidden"
       aria-label="Sahadhyayi interactive cycling journey"
     >
+      {/* Ambient background glows */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute top-1/4 -left-32 w-[600px] h-[600px] rounded-full bg-[hsl(var(--brand-primary)/0.06)] blur-[140px]" />
-        <div className="absolute bottom-1/3 -right-32 w-[600px] h-[600px] rounded-full bg-[hsl(var(--brand-secondary)/0.07)] blur-[150px]" />
+        <div className="absolute top-1/4 -left-40 w-[700px] h-[700px] rounded-full bg-[hsl(var(--brand-primary)/0.05)] blur-[160px]" />
+        <div className="absolute bottom-1/3 -right-40 w-[700px] h-[700px] rounded-full bg-[hsl(var(--brand-secondary)/0.06)] blur-[180px]" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
-        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[hsl(var(--brand-primary)/0.1)] border border-[hsl(var(--brand-primary)/0.2)] text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[hsl(var(--brand-primary))] mb-4">
-            <Bike className="w-4 h-4" />
-            <span>Explore Sahadhyayi as You Ride</span>
+
+        {/* ── Section header ── */}
+        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[hsl(var(--brand-primary)/0.08)] border border-[hsl(var(--brand-primary)/0.18)] text-[11px] font-bold uppercase tracking-widest text-[hsl(var(--brand-primary))] mb-5">
+            <Bike className="w-3.5 h-3.5" />
+            <span>Explore as You Ride</span>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-foreground tracking-tight leading-[1.18] mb-4">
-            A Journey Through Sahadhyayi
+          <h2 className="text-3xl sm:text-4xl md:text-[2.75rem] font-serif font-bold text-foreground tracking-tight leading-[1.15] mb-4">
+            A Journey Through<br className="hidden sm:block" /> Sahadhyayi
           </h2>
 
           <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-            Follow the trail through Sahadhyayi. Each stop represents a real section of the platform, with its own menu of places to explore.
-          </p>
-          <p className="mt-3 inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-semibold text-[hsl(var(--brand-primary))]">
-            <Route className="w-4 h-4" />
-            <span className="inline-flex items-center gap-1.5"><span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(var(--brand-primary))] text-white text-[10px]">1</span> Choose a place</span>
-            <span aria-hidden="true">→</span>
-            <span className="inline-flex items-center gap-1.5"><span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(var(--brand-primary))] text-white text-[10px]">2</span> View its menu</span>
-            <span aria-hidden="true">→</span>
-            <span className="inline-flex items-center gap-1.5"><span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(var(--brand-primary))] text-white text-[10px]">3</span> Open a feature</span>
+            Eight destinations. One winding road. Click any landmark to discover what lives inside each corner of Sahadhyayi.
           </p>
         </div>
 
-        <div className="sticky top-20 z-40 mb-8 rounded-3xl bg-card/95 backdrop-blur-xl border border-border shadow-xl p-4 sm:p-5 transition-all">
-          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5 min-w-0">
-              <div className="w-12 h-12 rounded-2xl bg-[hsl(var(--brand-primary))] text-white flex items-center justify-center shrink-0 shadow-md">
-                <Bike className="w-6 h-6" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[hsl(var(--brand-primary))]">
-                  <span>STOP {activeDestination.index} OF {JOURNEY_DESTINATIONS.length}</span>
-                  <span>·</span>
-                  <span>JOURNEY PROGRESS</span>
+        {/* ── Sticky control bar ── */}
+        <div className="sticky top-20 z-40 mb-10 rounded-2xl bg-card/95 backdrop-blur-xl border border-border/80 shadow-lg shadow-black/5 overflow-hidden">
+          {/* Accent top line using active destination color */}
+          <div
+            className="h-0.5 w-full transition-colors duration-500"
+            style={{ background: activeDestination.accentColor }}
+            aria-hidden="true"
+          />
+
+          <div className="p-3 sm:p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+
+              {/* Current stop identity */}
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 text-white shadow-md transition-colors duration-500"
+                  style={{ background: activeDestination.accentColor }}
+                >
+                  <Bike className="w-5 h-5" />
                 </div>
-                <h3 className="text-base sm:text-lg font-serif font-bold text-foreground truncate">
-                  {activeDestination.title}
-                </h3>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-[.14em] text-muted-foreground">
+                    Stop {activeDestination.index} of {JOURNEY_DESTINATIONS.length}
+                  </p>
+                  <p className="text-sm sm:text-base font-serif font-bold text-foreground truncate leading-tight">
+                    {activeDestination.title}
+                  </p>
+                </div>
+              </div>
+
+              {/* Dot-step navigator */}
+              <div
+                className="flex items-center gap-1.5 overflow-x-auto scrollbar-none shrink-0"
+                aria-label="Journey stops"
+              >
+                {JOURNEY_DESTINATIONS.map((dest) => {
+                  const isActive = dest.index === activeStopIndex;
+                  const isPast = dest.index < activeStopIndex;
+                  return (
+                    <button
+                      key={dest.id}
+                      type="button"
+                      onClick={() => scrollToDestination(dest.index)}
+                      title={dest.title}
+                      aria-label={`Go to stop ${dest.index}: ${dest.title}`}
+                      aria-current={isActive ? 'step' : undefined}
+                      className="group relative shrink-0 transition-all duration-200 cursor-pointer"
+                    >
+                      <span
+                        className={
+                          'flex items-center justify-center rounded-full text-[10px] font-bold transition-all duration-200 ' +
+                          (isActive
+                            ? 'w-7 h-7 text-white shadow-md'
+                            : isPast
+                              ? 'w-5 h-5 opacity-70 hover:opacity-100'
+                              : 'w-5 h-5 bg-muted border border-border text-muted-foreground hover:bg-muted/80')
+                        }
+                        style={
+                          isActive
+                            ? { background: activeDestination.accentColor }
+                            : isPast
+                              ? { background: dest.accentColor, color: '#fff' }
+                              : {}
+                        }
+                      >
+                        {dest.index}
+                      </span>
+                      {/* Tooltip on hover */}
+                      <span className="pointer-events-none absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-popover border border-border text-popover-foreground text-[10px] px-2 py-0.5 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
+                        {dest.title.split(' ')[0]}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Navigation controls */}
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={handlePrevStop}
+                  disabled={activeStopIndex <= 1}
+                  className="p-2 rounded-lg border border-border bg-background hover:bg-muted text-foreground disabled:opacity-30 transition-all cursor-pointer"
+                  aria-label="Previous stop"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsAutoPlaying((p) => !p)}
+                  className={
+                    'inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer border ' +
+                    (isAutoPlaying
+                      ? 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-700/40'
+                      : 'bg-background border-border text-foreground hover:bg-muted')
+                  }
+                  aria-label={isAutoPlaying ? 'Pause tour' : 'Auto ride'}
+                >
+                  {isAutoPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                  <span className="hidden sm:inline">{isAutoPlaying ? 'Pause' : 'Auto'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleNextStop}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-white font-semibold text-xs shadow-sm hover:opacity-90 transition-all cursor-pointer"
+                  style={{ background: activeDestination.accentColor }}
+                  aria-label="Next stop"
+                >
+                  <span>Next</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-none max-w-full" aria-label="Journey destinations">
-              {JOURNEY_DESTINATIONS.map((destination) => {
-                const isSelected = destination.index === activeStopIndex;
-                const isPassed = destination.index < activeStopIndex;
-                return (
-                  <button
-                    key={destination.id}
-                    type="button"
-                    onClick={() => scrollToDestination(destination.index)}
-                    className={
-                      'shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ' +
-                      (isSelected
-                        ? 'bg-[hsl(var(--brand-primary))] text-white font-bold shadow-md'
-                        : isPassed
-                          ? 'bg-muted text-foreground hover:bg-muted/80'
-                          : 'bg-background hover:bg-muted text-muted-foreground border border-border')
-                    }
-                    title={'Jump to ' + destination.title}
-                    aria-label={'Jump to ' + destination.title}
-                    aria-current={isSelected ? 'step' : undefined}
-                  >
-                    <span>{destination.index}</span>
-                    <span className="hidden md:inline truncate max-w-[90px]">{destination.title.split(' ')[0]}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="flex items-center gap-2 self-end xl:self-auto shrink-0">
-              <button
-                type="button"
-                onClick={handlePrevStop}
-                disabled={activeStopIndex <= 1}
-                className="p-2 rounded-xl border border-border bg-background hover:bg-muted text-foreground disabled:opacity-40 transition-all cursor-pointer"
-                aria-label="Pedal to previous stop"
-                title="Previous Stop"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setIsAutoPlaying((playing) => !playing)}
-                className={
-                  'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ' +
-                  (isAutoPlaying
-                    ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30'
-                    : 'bg-background border border-border text-foreground hover:bg-muted')
-                }
-                aria-label={isAutoPlaying ? 'Pause bicycle tour' : 'Start auto tour'}
-                title={isAutoPlaying ? 'Pause Auto Tour' : 'Start Auto Tour'}
-              >
-                {isAutoPlaying ? (
-                  <>
-                    <Pause className="w-3.5 h-3.5" />
-                    <span>Riding...</span>
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-3.5 h-3.5" />
-                    <span>Auto Ride</span>
-                  </>
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleNextStop}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[hsl(var(--brand-primary))] text-white font-semibold text-xs shadow-md hover:opacity-90 transition-all cursor-pointer"
-                aria-label="Pedal to next stop"
-              >
-                <span>Next Stop</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-4 pt-3 border-t border-border">
-            <div className="flex items-center justify-between gap-3 text-[11px] text-muted-foreground mb-2">
-              <span>START</span>
-              <span className="font-semibold text-foreground tabular-nums">
-                {progressPercent}% of the journey explored
-              </span>
-              <span>FINISH</span>
-            </div>
-            <div
-              className="h-2.5 rounded-full bg-muted overflow-hidden"
-              role="progressbar"
-              aria-label="Cycling journey progress"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.round(progressPercent)}
-            >
+            {/* Progress bar */}
+            <div className="mt-3 pt-3 border-t border-border/60">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-[hsl(var(--brand-primary))] to-[hsl(var(--brand-secondary))] transition-[width] duration-700 ease-out"
-                style={{ width: progressPercent + '%' }}
-              />
+                className="h-1.5 rounded-full bg-muted overflow-hidden"
+                role="progressbar"
+                aria-label="Journey progress"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={progressPercent}
+              >
+                <div
+                  className="h-full rounded-full transition-[width] duration-700 ease-out"
+                  style={{
+                    width: progressPercent + '%',
+                    background: `linear-gradient(90deg, ${activeDestination.accentColor}, ${activeDestination.accentColor}99)`,
+                  }}
+                />
+              </div>
+              <div className="flex justify-between mt-1 text-[10px] text-muted-foreground">
+                <span>Start</span>
+                <span className="font-medium text-foreground">{progressPercent}% explored</span>
+                <span>Finish</span>
+              </div>
             </div>
           </div>
         </div>
 
+        {/* ── Scenic trail map ── */}
         <JourneyScenicTrail
           activeStopIndex={activeStopIndex}
           onSelect={scrollToDestination}
         />
 
+        {/* ── Destination detail panel ── */}
         <div
           id="journey-detail-section"
-          className="mt-10 sm:mt-12 scroll-mt-28"
+          className="mt-12 sm:mt-14 scroll-mt-28"
           aria-live="polite"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 px-1">
-            <div>
-              <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[.16em] text-[hsl(var(--brand-primary))]">
-                Explore this destination
-              </p>
-              <h2 className="text-xl sm:text-2xl font-serif font-bold text-foreground mt-1">
-                {activeDestination.title}
-              </h2>
-            </div>
-            <span className="text-xs text-muted-foreground whitespace-nowrap">
-              Stop {activeDestination.index} / {JOURNEY_DESTINATIONS.length}
-            </span>
-          </div>
-
-          {/* Quick Destination Switcher Tabs directly in the detail card */}
+          {/* Destination tab switcher — single row, clean pills */}
           <div
-            className="flex items-center gap-1.5 overflow-x-auto pb-3 mb-4 scrollbar-none"
+            className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 scrollbar-none"
             role="tablist"
-            aria-label="Destination switcher tabs"
+            aria-label="Destination tabs"
           >
-            {JOURNEY_DESTINATIONS.map((destination) => {
-              const isSelected = destination.index === activeStopIndex;
+            {JOURNEY_DESTINATIONS.map((dest) => {
+              const isActive = dest.index === activeStopIndex;
               return (
                 <button
-                  key={destination.id}
+                  key={dest.id}
                   type="button"
                   role="tab"
-                  aria-selected={isSelected}
-                  onClick={() => scrollToDestination(destination.index, false)}
+                  aria-selected={isActive}
+                  onClick={() => scrollToDestination(dest.index, false)}
                   className={
-                    'shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all cursor-pointer ' +
-                    (isSelected
-                      ? 'bg-[hsl(var(--brand-primary))] text-white font-bold shadow-sm'
-                      : 'bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60')
+                    'shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer border whitespace-nowrap ' +
+                    (isActive
+                      ? 'text-white border-transparent shadow-md'
+                      : 'bg-background border-border text-muted-foreground hover:text-foreground hover:border-border/80 hover:bg-muted/60')
                   }
+                  style={isActive ? { background: dest.accentColor, borderColor: dest.accentColor } : {}}
                 >
-                  <span className="font-semibold">{destination.index}.</span>
-                  <span className="truncate max-w-[130px]">{destination.title}</span>
+                  <MapPin className="w-3 h-3" />
+                  <span>{dest.title}</span>
                 </button>
               );
             })}
           </div>
 
-          <div id={'journey-detail-' + activeDestination.index}>
+          {/* Active destination card */}
+          <div
+            id={'journey-detail-' + activeDestination.index}
+            className="rounded-3xl border border-border/60 overflow-hidden shadow-xl transition-all duration-300"
+            style={{
+              borderTopColor: activeDestination.accentColor,
+              borderTopWidth: '3px',
+            }}
+          >
             <JourneyDestinationNode
               destination={activeDestination}
               isActive={true}
@@ -299,40 +313,56 @@ export const SahadhyayiJourney: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-16 sm:mt-20 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-muted/60 via-card to-muted/40 border border-border text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[hsl(var(--brand-primary)/0.1)] text-[hsl(var(--brand-primary))] text-xs font-semibold uppercase tracking-wider mb-3">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>The Journey Continues Every Day</span>
-          </div>
-          <h3 className="text-xl sm:text-2xl font-serif font-bold text-foreground mb-2">
-            Every Book is a New Horizon
-          </h3>
-          <p className="text-sm text-muted-foreground max-w-xl mx-auto mb-6">
-            Whether you are reading in quiet solitude, sharing ideas with your circle, creating stories, or exploring with Book Expert AI, Sahadhyayi is your lifelong literary companion.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <button
-              type="button"
-              onClick={() => scrollToDestination(1, true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-background hover:bg-muted border border-border text-foreground text-xs sm:text-sm font-semibold transition-all cursor-pointer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Ride From the Beginning</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollToDestination(activeStopIndex < JOURNEY_DESTINATIONS.length ? activeStopIndex + 1 : 1, true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[hsl(var(--brand-primary))] hover:opacity-90 text-white text-xs sm:text-sm font-semibold shadow-md transition-all cursor-pointer"
-            >
-              <Compass className="w-3.5 h-3.5" />
-              <span>
-                {activeStopIndex < JOURNEY_DESTINATIONS.length
-                  ? `Next: ${JOURNEY_DESTINATIONS[activeStopIndex].title}`
-                  : 'Start Again: Library City'}
-              </span>
-            </button>
+        {/* ── Footer CTA ── */}
+        <div className="mt-16 sm:mt-20 relative overflow-hidden rounded-3xl border border-border/50 bg-gradient-to-br from-card via-card/80 to-muted/30 p-8 sm:p-10 text-center">
+          {/* Soft background accent */}
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.04]"
+            style={{
+              background: `radial-gradient(ellipse at 50% 0%, ${activeDestination.accentColor}, transparent 70%)`,
+            }}
+            aria-hidden="true"
+          />
+          <div className="relative z-10">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[hsl(var(--brand-primary)/0.08)] border border-[hsl(var(--brand-primary)/0.18)] text-[hsl(var(--brand-primary))] text-xs font-semibold uppercase tracking-wider mb-4">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>The Journey Never Ends</span>
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-serif font-bold text-foreground mb-3">
+              Every Book is a New Horizon
+            </h3>
+            <p className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto mb-7 leading-relaxed">
+              Whether reading in solitude, sharing ideas with friends, writing stories, or exploring with Book Expert AI — Sahadhyayi is your lifelong literary companion.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => scrollToDestination(1, true)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-background hover:bg-muted border border-border text-foreground text-sm font-semibold transition-all cursor-pointer shadow-sm"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Ride from the Start</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollToDestination(
+                  activeStopIndex < JOURNEY_DESTINATIONS.length ? activeStopIndex + 1 : 1,
+                  true,
+                )}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-sm font-semibold shadow-md transition-all cursor-pointer hover:opacity-90"
+                style={{ background: activeDestination.accentColor }}
+              >
+                <Compass className="w-3.5 h-3.5" />
+                <span>
+                  {activeStopIndex < JOURNEY_DESTINATIONS.length
+                    ? `Next: ${JOURNEY_DESTINATIONS[activeStopIndex].title}`
+                    : 'Back to Library City'}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
+
       </div>
     </section>
   );

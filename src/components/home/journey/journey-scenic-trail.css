@@ -1089,3 +1089,38 @@
 .journey-scenic-trail__cyclist[data-direction="right"] > div {
   transform: none !important;
 }
+
+/* ── Enhanced active stop glow using per-destination accent color ── */
+.journey-scenic-stop.is-active .journey-scenic-stop__trigger {
+  border-color: var(--journey-accent, #557B52);
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, .14),
+    0 0 0 3px color-mix(in srgb, var(--journey-accent, #557B52) 20%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, .92);
+}
+
+.dark .journey-scenic-stop.is-active .journey-scenic-stop__trigger {
+  border-color: color-mix(in srgb, var(--journey-accent, #8BAA77) 70%, transparent);
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, .32),
+    0 0 0 3px color-mix(in srgb, var(--journey-accent, #8BAA77) 22%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, .06);
+}
+
+/* Active stop number uses accent color */
+.journey-scenic-stop.is-active .journey-scenic-stop__number {
+  color: var(--journey-accent, #557B52);
+  font-size: 10px;
+}
+
+/* Subtle left-edge accent bar: thicker and accent-colored for active */
+.journey-scenic-stop.is-active .journey-scenic-stop__trigger::before {
+  width: 5px;
+  opacity: 1;
+}
+
+/* Menu cue becomes more visible on active stop */
+.journey-scenic-stop.is-active .journey-scenic-stop__menu-cue {
+  opacity: 1;
+}
+
