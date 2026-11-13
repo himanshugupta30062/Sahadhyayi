@@ -77,6 +77,7 @@ export interface Edition {
   publicationYear?: number;
   editionName?: string;
   language: string;
+  format?: 'Paperback' | 'Hardcover' | 'Ebook' | 'Audiobook' | 'Digital' | string;
   originalScript?: string;
   isbn10?: string;
   isbn13?: string;
@@ -104,6 +105,39 @@ export interface Work {
   preferredEdition: Edition;
   alternativeEditions: Edition[];
   totalEditionsCount: number;
+}
+
+// -------------------------------------------------------------
+// SERIES & VOLUME CONTRACTS
+// -------------------------------------------------------------
+
+export interface SeriesVolume {
+  bookId: string;
+  title: string;
+  author?: string;
+  coverImageUrl?: string;
+  seriesName: string;
+  sequenceNumber?: number | null;
+  rawSequence?: string;
+  totalVolumes?: number | null;
+  publicationYear?: number | null;
+  isCurrentBook?: boolean;
+}
+
+export interface BookSeries {
+  id: string;
+  name: string;
+  description?: string;
+  totalVolumes?: number | null;
+  volumes: SeriesVolume[];
+}
+
+export interface ParsedSeriesInfo {
+  seriesName: string;
+  volumeNumber?: number | null;
+  rawSequence?: string;
+  totalVolumes?: number | null;
+  isStandalone: boolean;
 }
 
 // -------------------------------------------------------------
