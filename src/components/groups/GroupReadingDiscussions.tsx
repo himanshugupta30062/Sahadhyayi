@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Heart, ThumbsUp, Lightbulb, Bookmark } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -56,7 +56,7 @@ const DiscussionReactions = ({ discussionId }: { discussionId: string }) => {
   });
   const [busy, setBusy] = useState<ReactionKind | null>(null);
   const toggleLock = useRef(false);
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     const { data, error } = await supabase.rpc('list_group_reading_discussion_reactions', { p_discussion_id: discussionId });
     if (error) { toast.error('Could not load reactions.'); return; }
     const next = { heart: { count: 0, mine: false }, like: { count: 0, mine: false }, insightful: { count: 0, mine: false } };
@@ -64,8 +64,8 @@ const DiscussionReactions = ({ discussionId }: { discussionId: string }) => {
       if (row.reaction in next) next[row.reaction] = { count: Number(row.reaction_count), mine: Boolean(row.mine) };
     });
     setCounts(next);
-  };
-  useEffect(() => { void refresh(); }, [discussionId]);
+  }, [discussionId]);
+  useEffect(() => { void refresh(); }, [refresh]);
   const toggle = async (kind: ReactionKind) => {
     // Lock synchronously before React can re-render and disable the buttons.
     if (toggleLock.current) return;

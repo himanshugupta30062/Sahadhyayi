@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { BookOpen, CalendarDays, Plus, Users, ArrowRight, Link2, Check, MessageCircle } from "lucide-react";
 import { useAuth } from "@/contexts/authHelpers";
@@ -35,7 +35,7 @@ const BuddyReads = () => {
   const [milestones, setMilestones] = useState<Record<string, {id:string;title:string;target_page:number|null;target_date:string|null}[]>>({});
   const [milestoneDraft, setMilestoneDraft] = useState<Record<string,string>>({});
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     const client = supabase as any;
@@ -43,7 +43,7 @@ const BuddyReads = () => {
     if (error) toast({ title: "Couldn't load Buddy Reads", description: error.message, variant: "destructive" });
     else { const plans=(data||[]) as BuddyRead[]; setReads(plans); if(plans.length){ const ids=plans.map(p=>p.id); const [{data:people},{data:steps}]=await Promise.all([client.from("buddy_read_members").select("buddy_read_id,user_id,role,progress_percent").in("buddy_read_id",ids),client.from("buddy_read_milestones").select("id,buddy_read_id,title,target_page,target_date").in("buddy_read_id",ids).order("position")]); const grouped:Record<string,any[]>={}; (people||[]).forEach((m:any)=>(grouped[m.buddy_read_id] ||= []).push(m)); setParticipants(grouped); setProgress(Object.fromEntries((people||[]).filter((m:any)=>m.user_id===user.id).map((m:any)=>[m.buddy_read_id,Number(m.progress_percent)]))); const mg:Record<string,any[]>={}; (steps||[]).forEach((m:any)=>(mg[m.buddy_read_id] ||= []).push(m)); setMilestones(mg); }}
     setLoading(false);
-  };
+  }, [user]);
 
   useEffect(() => {
     void load();
@@ -54,18 +54,44 @@ const BuddyReads = () => {
         else { toast({ title: "You joined the Buddy Read!", description: "Your shared reading journey is ready." }); window.history.replaceState({}, "", "/buddy-reads"); void load(); }
       });
     }
-  }, [user?.id]);
+  }, [load, user]);
 
   const saveProgress = async (readId: string, value: number) => {
-    if (!user) return; setProgressSaving(readId); const client=supabase as any;
-    const { error } = await client.from("buddy_read_members").update({progress_percent:value}).eq("buddy_read_id",readId).eq("user_id",user.id);
-    setProgressSaving(null); if(error) toast({title:"Progress not saved",description:error.message,variant:"destructive"}); else toast({title:"Progress updated"});
+    if (!user) return;
+    setProgressSaving(readId);
+    const client = supabase as any;
+    const { error } = await client.from("buddy_read_members").update({ progress_percent: value }).eq("buddy_read_id", readId).eq("user_id", user.id);
+    setProgressSaving(null);
+    if (error) toast({ title: "Progress not saved", description: error.message, variant: "destructive" });
+    else toast({ title: "Progress updated" });
   };
 
-  const addMilestone = async (readId:string) => { const name=(milestoneDraft[readId]||"").trim(); if(!name)return; const {error}=await (supabase as any).from("buddy_read_milestones").insert({buddy_read_id:readId,title:name,position:(milestones[readId]||[]).length}); if(error)toast({title:"Milestone failed",description:error.message,variant:"destructive"});else{setMilestoneDraft(p=>({...p,[readId]:""}));await load();toast({title:"Milestone added"});} };
+  const addMilestone = async (readId: string) => {
+    const name = (milestoneDraft[readId] || "").trim();
+    if (!name) return;
+    const { error } = await (supabase as any).from("buddy_read_milestones").insert({ buddy_read_id: readId, title: name, position: (milestones[readId] || []).length });
+    if (error) toast({ title: "Milestone failed", description: error.message, variant: "destructive" });
+    else {
+      setMilestoneDraft((p) => ({ ...p, [readId]: "" }));
+      await load();
+      toast({ title: "Milestone added" });
+    }
+  };
 
-  const postDiscussion = async (readId:string) => { const body=(threadDraft[readId]||"").trim(); if(!user||!body)return;setThreadBusy(readId);const {error}=await (supabase as any).from("buddy_read_discussions").insert({buddy_read_id:readId,author_id:user.id,body,spoiler_page:spoilerPage[readId]?Number(spoilerPage[readId]):null});setThreadBusy(null);if(error){toast({title:"Message not posted",description:error.message,variant:"destructive"});return;}setThreadDraft(p=>({...p,[readId]:""}));setSpoilerPage(p=>({...p,[readId]:""}));await load();};
-
+  const postDiscussion = async (readId: string) => {
+    const body = (threadDraft[readId] || "").trim();
+    if (!user || !body) return;
+    setThreadBusy(readId);
+    const { error } = await (supabase as any).from("buddy_read_discussions").insert({ buddy_read_id: readId, author_id: user.id, body, spoiler_page: spoilerPage[readId] ? Number(spoilerPage[readId]) : null });
+    setThreadBusy(null);
+    if (error) {
+      toast({ title: "Message not posted", description: error.message, variant: "destructive" });
+      return;
+    }
+    setThreadDraft((p) => ({ ...p, [readId]: "" }));
+    setSpoilerPage((p) => ({ ...p, [readId]: "" }));
+    await load();
+  };
   const createInvite = async (readId: string) => {
     if (!user) return;
     setInviteBusy(readId);
