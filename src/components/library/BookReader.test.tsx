@@ -69,4 +69,60 @@ describe('Library BookReader Modal Dialog', () => {
     const iframe = screen.getByTitle('Gitanjali - Reader');
     expect(iframe.getAttribute('src')).toContain('https://example.com/poems.pdf#toolbar=1&navpanes=1&scrollbar=1&page=1');
   });
+
+  it('renders non-PDF books with interactive page navigation, view modes, and dark mode', () => {
+    const nonPdfBook: Book = {
+      id: 99,
+      title: 'Untouchable',
+      author: 'Mulk Raj Anand',
+      description: 'A day in the life of Bakha, an outcast sweeper.',
+      pages: 150,
+    };
+
+    const onClose = vi.fn();
+    render(<BookReader book={nonPdfBook} isOpen={true} onClose={onClose} />);
+
+    // Verify non-PDF page display
+    expect(screen.getByText('Page 1')).toBeInTheDocument();
+    expect(screen.getAllByText(/Page 1 of 150/i).length).toBeGreaterThan(0);
+    expect(screen.getByText('A day in the life of Bakha, an outcast sweeper.')).toBeInTheDocument();
+
+    // Toggle view mode between Double Page and Single Page
+    const viewModeBtn = screen.getByRole('button', { name: /double page/i });
+    fireEvent.click(viewModeBtn);
+    expect(screen.getByRole('button', { name: /single page/i })).toBeInTheDocument();
+
+    // Zoom controls
+    const zoomText = screen.getByText('100%');
+    expect(zoomText).toBeInTheDocument();
+
+    // Navigate to next page using keyboard ArrowRight
+    fireEvent.keyDown(window, { key: 'ArrowRight' });
+    expect(screen.getByText('Page 2')).toBeInTheDocument();
+
+    // Navigate back to previous page using keyboard ArrowLeft
+    fireEvent.keyDown(window, { key: 'ArrowLeft' });
+    expect(screen.getByText('Page 1')).toBeInTheDocument();
+
+    // Test zoom in / zoom out keyboard shortcuts
+    fireEvent.keyDown(window, { key: '+' });
+    expect(screen.getByText('125%')).toBeInTheDocument();
+    fireEvent.keyDown(window, { key: '-' });
+    expect(screen.getByText('100%')).toBeInTheDocument();
+
+    // Rotate shortcut
+    fireEvent.keyDown(window, { key: 'r' });
+
+    // Dark mode shortcut
+    fireEvent.keyDown(window, { key: 'd' });
+
+    // Escape closes reader
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('returns null when book is null', () => {
+    const { container } = render(<BookReader book={null} isOpen={true} onClose={vi.fn()} />);
+    expect(container).toBeEmptyDOMElement();
+  });
 });

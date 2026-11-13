@@ -2,13 +2,21 @@
 import React from 'react';
 import '@testing-library/jest-dom/vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import StoryReader from './StoryReader';
+import { toast } from 'sonner';
 
 vi.mock('@/components/SEO', () => ({
   default: () => null,
+}));
+
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
 }));
 
 vi.mock('@/contexts/authHelpers', () => ({
@@ -113,6 +121,16 @@ describe('StoryReader Page', () => {
       defaultOptions: { queries: { retry: false } },
     });
     vi.clearAllMocks();
+
+    (window as any).speechSynthesis = {
+      speak: vi.fn(),
+      pause: vi.fn(),
+      resume: vi.fn(),
+      cancel: vi.fn(),
+    };
+    (global as any).SpeechSynthesisUtterance = function (text: string) {
+      return { text, rate: 1, onend: null, onerror: null };
+    };
   });
 
   const renderReader = (initialEntry = '/stories/story-101/part/1') => {
@@ -173,12 +191,66 @@ describe('StoryReader Page', () => {
   it('allows reader to switch font sizes', () => {
     renderReader();
 
-    // Font size controls
     const largeFontBtns = screen.getAllByRole('button', { name: 'A+' });
     fireEvent.click(largeFontBtns[0]);
 
-    // Verify prose container is present
     const articles = screen.getAllByRole('article');
     expect(articles[0]).toBeInTheDocument();
+  });
+
+  it('supports posting a reader comment', async () => {
+    mockAddComment.mutateAsync.mockResolvedValue({});
+
+    renderReader();
+
+    expect(screen.getByText('Breathtaking imagery in this opening chapter!')).toBeInTheDocument();
+
+    const commentInput = screen.getByPlaceholderText(/Share your thoughts on this story or chapter/i);
+    fireEvent.change(commentInput, { target: { value: 'Mesmerizing prose. Can not wait for part 2!' } });
+
+    const postCommentBtn = screen.getByRole('button', { name: /post reflection/i });
+    fireEvent.click(postCommentBtn);
+
+    await waitFor(() => {
+      expect(mockAddComment.mutateAsync).toHaveBeenCalledWith({
+        storyId: 'story-101',
+        content: 'Mesmerizing prose. Can not wait for part 2!',
+        partId: 'part-1',
+      });
+    });
+  });
+
+  it('triggers audio playback via text-to-speech', () => {
+    renderReader();
+
+    const audioBtns = screen.getAllByRole('button', { name: /listen/i });
+    fireEvent.click(audioBtns[0]);
+
+    expect(window.speechSynthesis.speak).toHaveBeenCalled();
+  });
+
+  it('copies story link to clipboard when sharing', async () => {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: {
+        writeText: vi.fn().mockResolvedValue(undefined),
+      },
+      configurable: true,
+      writable: true,
+    });
+    Object.defineProperty(navigator, 'share', {
+      value: undefined,
+      configurable: true,
+      writable: true,
+    });
+
+    renderReader();
+
+    const shareBtn = screen.getByRole('button', { name: /share story/i });
+    fireEvent.click(shareBtn);
+
+    await waitFor(() => {
+      expect(navigator.clipboard.writeText).toHaveBeenCalled();
+      expect(toast.success).toHaveBeenCalledWith('Story link copied to clipboard!');
+    });
   });
 });

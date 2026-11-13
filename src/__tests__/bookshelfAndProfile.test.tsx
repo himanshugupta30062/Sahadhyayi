@@ -76,6 +76,9 @@ vi.mock('@/hooks/useReadingProgress', () => ({
       },
     ],
   }),
+  useUpdateReadingProgress: () => ({
+    mutate: vi.fn(),
+  }),
 }));
 
 vi.mock('@/hooks/useUserProfile', () => ({
@@ -174,8 +177,8 @@ describe('Bookshelf & Profile Modernization Tests', () => {
     );
 
     // Profile info rendered with dark-mode safe structure
-    expect(screen.getByText('Himanshu Gupta')).toBeInTheDocument();
-    expect(screen.getByText('@himanshu')).toBeInTheDocument();
+    expect(screen.getAllByText('Himanshu Gupta').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('@himanshu').length).toBeGreaterThan(0);
 
     // Native bridges to internal publications & articles
     expect(screen.getByText('My Articles')).toBeInTheDocument();

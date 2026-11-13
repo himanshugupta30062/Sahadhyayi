@@ -301,7 +301,8 @@ export const ModernGoogleMap: React.FC = () => {
       try {
         setIsLoading(true);
         await loadGoogleMapsScript();
-        console.log('Script loaded, waiting for callback...');
+        console.log('Script loaded, initializing map...');
+        void initializeMapRef.current();
       } catch (error) {
         console.error('Error loading Google Maps:', error);
         setIsLoading(false);
@@ -430,27 +431,6 @@ export const ModernGoogleMap: React.FC = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <Card className="bg-white shadow-sm border-0 rounded-xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-900">
-            📍 Readers Near You
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="relative bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl h-[500px] border overflow-hidden flex items-center justify-center">
-            <div className="text-center">
-              <MapPin className="w-12 h-12 mx-auto mb-4 text-orange-500 animate-pulse" />
-              <p className="text-gray-600 font-medium">Loading interactive map...</p>
-              <p className="text-sm text-gray-500 mt-2">Connecting to Google Maps</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   if (!isLoaded && !isLoading) {
     return (
       <Card className="bg-white shadow-sm border-0 rounded-xl">
@@ -491,17 +471,28 @@ export const ModernGoogleMap: React.FC = () => {
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div
-          id="map"
-          ref={mapRef}
-          className="w-full h-[400px] rounded-xl border border-gray-200 overflow-hidden shadow-lg"
-          style={{
-            minHeight: '400px',
-            height: '400px',
-            width: '100%',
-            display: 'block'
-          }}
-        />
+        <div className="relative">
+          {isLoading && (
+            <div className="absolute inset-0 z-10 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl h-[400px] border overflow-hidden flex items-center justify-center">
+              <div className="text-center">
+                <MapPin className="w-12 h-12 mx-auto mb-4 text-orange-500 animate-pulse" />
+                <p className="text-gray-600 font-medium">Loading interactive map...</p>
+                <p className="text-sm text-gray-500 mt-2">Connecting to Google Maps</p>
+              </div>
+            </div>
+          )}
+          <div
+            id="map"
+            ref={mapRef}
+            className="w-full h-[400px] rounded-xl border border-gray-200 overflow-hidden shadow-lg"
+            style={{
+              minHeight: '400px',
+              height: '400px',
+              width: '100%',
+              display: 'block'
+            }}
+          />
+        </div>
         
         <div className="flex justify-center">
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

@@ -58,7 +58,8 @@ export const ProfileReadingStats: React.FC<Props> = ({ books }) => {
             <p className="mb-2 text-xs font-medium text-muted-foreground">Most-read genres on your shelf</p>
             <div className="flex flex-wrap gap-2">
               {topGenres.map(([genre, count]) => <span key={genre} className="rounded-full border px-2.5 py-1 text-xs">{genre} · {count}</span>)}
-            {genres.length === 0 && <span className="text-xs text-muted-foreground">Add genres to book entries to see your reading mix.</span>}
+              {genres.length === 0 && <span className="text-xs text-muted-foreground">Add genres to book entries to see your reading mix.</span>}
+            </div>
           </div>
         )}
       </CardContent>
