@@ -118,6 +118,19 @@ describe('BookReelPlayer', () => {
     expect(playSpy).toHaveBeenCalled();
   });
 
+  it('fires completion only once when threshold and ended events both occur', () => {
+    const onComplete = vi.fn();
+    render(<BookReelPlayer reel={sampleVideoReel} isActive={true} onComplete={onComplete} />);
+    const video = screen.getByLabelText(/The God of Small Things video/i) as HTMLVideoElement;
+    Object.defineProperty(video, 'duration', { value: 10, writable: true, configurable: true });
+    Object.defineProperty(video, 'currentTime', { value: 9.5, writable: true, configurable: true });
+    fireEvent.timeUpdate(video);
+    fireEvent.ended(video);
+    fireEvent.ended(video);
+    expect(onComplete).toHaveBeenCalledTimes(1);
+    expect(onComplete).toHaveBeenCalledWith('reel-video-1');
+  });
+
   it('displays error state and allows retry on video loading failure', () => {
     render(<BookReelPlayer reel={sampleVideoReel} isActive={true} />);
 
