@@ -7,6 +7,9 @@ import {
   ExternalLink,
   Highlighter,
   PenLine,
+  Pencil,
+  Save,
+  X,
   Quote as QuoteIcon,
   Search,
   Trash2,
@@ -16,9 +19,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { UnifiedJournalEntry, useReadingJournal } from '@/hooks/useReadingJournal';
 import { useDeleteReaderHighlight } from '@/hooks/useReaderHighlights';
-import { useDeleteMarginNote } from '@/hooks/useMarginNotes';
+import { useDeleteMarginNote, useUpdateMarginNote } from '@/hooks/useMarginNotes';
 import { useQuotes } from '@/contexts/quotesHelpers';
 import { useToast } from '@/hooks/use-toast';
 
@@ -40,12 +44,17 @@ export const BookReadingJournal: React.FC<Props> = ({
   const { entries, bookSummaries, isLoading } = useReadingJournal(bookId);
   const deleteHighlight = useDeleteReaderHighlight();
   const deleteMarginNote = useDeleteMarginNote();
+  const updateMarginNote = useUpdateMarginNote();
   const { removeQuote } = useQuotes();
   const { toast } = useToast();
 
   const [activeFilter, setActiveFilter] = useState<'all' | 'reflection' | 'highlight' | 'quote'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editQuote, setEditQuote] = useState('');
+  const [editNote, setEditNote] = useState('');
+  const [editPage, setEditPage] = useState('1');
 
   const bookSummary = useMemo(() => bookSummaries.find((b) => b.bookId === bookId), [bookSummaries, bookId]);
 
@@ -88,6 +97,35 @@ export const BookReadingJournal: React.FC<Props> = ({
     } else if (entry.type === 'quote') {
       const raw = entry.rawItem as { id: number };
       removeQuote(raw.id);
+    }
+  };
+
+  const startEdit = (entry: UnifiedJournalEntry) => {
+    const raw = entry.rawItem as { id: string; quote?: string; note?: string; page?: number };
+    setEditingId(raw.id);
+    setEditQuote(raw.quote ?? entry.text ?? '');
+    setEditNote(raw.note ?? entry.note ?? '');
+    setEditPage(String(raw.page ?? entry.page));
+  };
+
+  const cancelEdit = () => setEditingId(null);
+
+  const saveEdit = async () => {
+    if (!editingId || !editQuote.trim() || !editNote.trim()) {
+      toast({ title: 'Quote and reflection are required', variant: 'destructive' });
+      return;
+    }
+    const page = Number(editPage);
+    if (!Number.isInteger(page) || page < 1) {
+      toast({ title: 'Enter a valid page number', variant: 'destructive' });
+      return;
+    }
+    try {
+      await updateMarginNote.mutateAsync({ noteId: editingId, quote: editQuote, note: editNote, page });
+      toast({ title: 'Reflection updated' });
+      setEditingId(null);
+    } catch {
+      toast({ title: 'Could not update reflection', variant: 'destructive' });
     }
   };
 
@@ -164,11 +202,29 @@ export const BookReadingJournal: React.FC<Props> = ({
                 </div>
                 <div className="flex items-center gap-1">
                   <Button size="icon" variant="ghost" onClick={() => void handleCopy(entry)} className="h-6 w-6 text-muted-foreground hover:text-foreground" title="Copy entry">{copiedId === entry.id ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}</Button>
+                  {entry.type === 'reflection' && <Button size="icon" variant="ghost" onClick={() => startEdit(entry)} className="h-6 w-6 text-muted-foreground hover:text-foreground" title="Edit private reflection"><Pencil className="h-3 w-3" /></Button>}
                   {(entry.type === 'reflection' || entry.type === 'highlight' || entry.type === 'quote') && <Button size="icon" variant="ghost" onClick={() => handleDelete(entry)} className="h-6 w-6 text-muted-foreground hover:text-destructive" title={entry.type === 'reflection' ? 'Delete private reflection' : 'Delete entry'}><Trash2 className="h-3 w-3" /></Button>}
                 </div>
               </div>
-              {entry.text && <p className="text-xs italic leading-relaxed text-foreground/90 font-serif whitespace-pre-wrap">“{entry.text}”</p>}
-              {entry.note && <div className="rounded-md border border-border/60 bg-background/60 p-2 text-xs text-foreground"><p className="font-sans whitespace-pre-wrap">{entry.note}</p></div>}
+              {entry.type === 'reflection' && editingId === (entry.rawItem as { id: string }).id ? (
+                <div className="space-y-2 rounded-md border border-border/60 bg-background/60 p-2">
+                  <label className="text-xs font-medium">Quoted passage</label>
+                  <Textarea aria-label="Edit reflection quote" value={editQuote} onChange={(event) => setEditQuote(event.target.value)} rows={2} />
+                  <label className="text-xs font-medium">Your reflection</label>
+                  <Textarea aria-label="Edit reflection note" value={editNote} onChange={(event) => setEditNote(event.target.value)} rows={3} />
+                  <label className="text-xs font-medium">Page</label>
+                  <Input aria-label="Edit reflection page" type="number" min={1} value={editPage} onChange={(event) => setEditPage(event.target.value)} className="w-24" />
+                  <div className="flex justify-end gap-2">
+                    <Button size="sm" variant="ghost" onClick={cancelEdit}><X className="mr-1 h-3 w-3" />Cancel</Button>
+                    <Button size="sm" onClick={() => void saveEdit()} disabled={updateMarginNote.isPending}><Save className="mr-1 h-3 w-3" />Save</Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {entry.text && <p className="text-xs italic leading-relaxed text-foreground/90 font-serif whitespace-pre-wrap">“{entry.text}”</p>}
+                  {entry.note && <div className="rounded-md border border-border/60 bg-background/60 p-2 text-xs text-foreground"><p className="font-sans whitespace-pre-wrap">{entry.note}</p></div>}
+                </>
+              )}
               <div className="flex justify-end pt-1">
                 {onJumpToPage ? <button type="button" onClick={() => onJumpToPage(entry.page)} className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-primary hover:underline"><span>Jump to Page {entry.page}</span><ExternalLink className="h-3 w-3" /></button> : <Link to={`/reader/${bookId}?page=${entry.page}`} className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand-primary hover:underline"><span>Open in Reader (p. {entry.page})</span><ExternalLink className="h-3 w-3" /></Link>}
               </div>
