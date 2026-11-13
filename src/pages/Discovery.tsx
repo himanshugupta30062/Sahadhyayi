@@ -27,6 +27,7 @@ const Discovery = () => {
   const [languageFilter, setLanguageFilter] = useState('all');
   const [genreFilter, setGenreFilter] = useState('all');
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
+  const [lengthFilter, setLengthFilter] = useState('all');
   const [sortBy, setSortBy] = useState<'relevance' | 'newest' | 'title_asc'>('relevance');
   const [readingMood, setReadingMood] = useState<string | null>(null);
   const moodPresets = [
@@ -52,6 +53,9 @@ const Discovery = () => {
     if (languageFilter !== 'all') list = list.filter((book) => book.language === languageFilter);
     if (genreFilter !== 'all') list = list.filter((book) => book.genre === genreFilter);
     if (availabilityFilter === 'readable') list = list.filter((book) => Boolean(book.pdf_url));
+    if (lengthFilter === 'short') list = list.filter((book) => book.pages && book.pages <= 200);
+    if (lengthFilter === 'medium') list = list.filter((book) => book.pages && book.pages > 200 && book.pages <= 400);
+    if (lengthFilter === 'long') list = list.filter((book) => book.pages && book.pages > 400);
     if (readingMood) {
       const mood = moodPresets.find((preset) => preset.id === readingMood);
       if (mood) list = list.filter((book) => mood.terms.some((term) => `${book.genre || ''} ${book.title || ''} ${book.description || ''}`.toLowerCase().includes(term)));
@@ -61,18 +65,19 @@ const Discovery = () => {
     if (sortBy === 'title_asc') list.sort((a, b) => a.title.localeCompare(b.title));
 
     return list.slice(0, 24);
-  }, [availabilityFilter, books, genreFilter, languageFilter, searchQuery, sortBy, readingMood]);
+  }, [availabilityFilter, books, genreFilter, languageFilter, lengthFilter, searchQuery, sortBy, readingMood]);
 
   const genres = useMemo(
     () => [...new Set(books.map((book) => book.genre).filter(Boolean))].sort((a, b) => (a ?? '').localeCompare(b ?? '')),
     [books],
   );
-  const hasActiveFilters = Boolean(searchQuery.trim()) || languageFilter !== 'all' || genreFilter !== 'all' || availabilityFilter !== 'all' || sortBy !== 'relevance' || readingMood !== null;
+  const hasActiveFilters = Boolean(searchQuery.trim()) || languageFilter !== 'all' || genreFilter !== 'all' || availabilityFilter !== 'all' || lengthFilter !== 'all' || sortBy !== 'relevance' || readingMood !== null;
   const clearFilters = () => {
     setSearchQuery('');
     setLanguageFilter('all');
     setGenreFilter('all');
     setAvailabilityFilter('all');
+    setLengthFilter('all');
     setSortBy('relevance');
     setReadingMood(null);
     void trackUiEvent('discovery_filters_reset');
@@ -169,6 +174,18 @@ const Discovery = () => {
               <SelectContent>
                 <SelectItem value="all">All genres</SelectItem>
                 {genres.map((genre) => <SelectItem key={genre} value={genre}>{genre}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={lengthFilter} onValueChange={(value) => {
+              setLengthFilter(value);
+              void trackUiEvent('discovery_filter_changed', { filter: 'book_length', value });
+            }}>
+              <SelectTrigger><SelectValue placeholder="Book length" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Any length</SelectItem>
+                <SelectItem value="short">Short · up to 200 pages</SelectItem>
+                <SelectItem value="medium">Medium · 201–400 pages</SelectItem>
+                <SelectItem value="long">Long · 400+ pages</SelectItem>
               </SelectContent>
             </Select>
           </div>
