@@ -16,9 +16,9 @@ export const HomeFinalCtaSection: React.FC = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#8F681C]/5 dark:bg-[#D5B16D]/10 blur-[150px]" />
       </div>
 
-      <div className="relative z-10 max-w-4xl mx-auto text-center">
+      <div className="relative z-10 max-w-4xl mx-auto text-center rounded-[2.5rem] bg-white/70 dark:bg-[#131715]/70 border border-[#E5E0D8] dark:border-[#242E28] p-8 sm:p-12 lg:p-16 shadow-lg backdrop-blur-md">
         {/* Cultural Origin Tag */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/95 dark:bg-[#131715] border border-[#E5E0D8] dark:border-[#242E28] text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.24em] text-[#8F681C] dark:text-[#D5B16D] mb-6 shadow-xs">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/95 dark:bg-[#18201B] border border-[#E5E0D8] dark:border-[#242E28] text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.24em] text-[#8F681C] dark:text-[#D5B16D] mb-6 shadow-2xs">
           <span lang="hi" className="font-serif">सहाध्यायी</span>
           <span aria-hidden="true">·</span>
           <span>Fellow Reader</span>
@@ -35,7 +35,7 @@ export const HomeFinalCtaSection: React.FC = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Link
             to={user ? "/dashboard" : "/signup"}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-full bg-[#1C442D] hover:bg-[#143221] dark:bg-[#D5B16D] dark:hover:bg-[#e4c688] text-white dark:text-stone-950 font-semibold text-sm sm:text-base shadow-md shadow-[#1C442D]/20 dark:shadow-[#D5B16D]/20 transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#1C442D] dark:focus:ring-[#D5B16D]"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-full bg-[#1C442D] hover:bg-[#143221] dark:bg-[#D5B16D] dark:hover:bg-[#e4c688] text-white dark:text-stone-950 font-semibold text-sm sm:text-base shadow-md shadow-[#1C442D]/20 dark:shadow-[#D5B16D]/20 transition-all hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#1C442D] dark:focus:ring-[#D5B16D] group"
           >
             <span>{user ? 'Open Your Dashboard' : 'Join the Community — It’s Free'}</span>
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -43,7 +43,7 @@ export const HomeFinalCtaSection: React.FC = () => {
 
           <Link
             to="/library"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full border border-[#E5E0D8] hover:border-[#8F681C]/50 bg-white hover:bg-[#FAF7F0] dark:border-[#242E28] dark:hover:border-[#38483D] dark:bg-[#131715] dark:hover:bg-[#1A211D] text-[#1C201D] dark:text-[#F3F0E7] text-sm sm:text-base font-medium transition-all shadow-xs"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full border border-[#E5E0D8] hover:border-[#8F681C]/50 bg-white hover:bg-[#FAF7F0] dark:border-[#242E28] dark:hover:border-[#38483D] dark:bg-[#18201B] dark:hover:bg-[#202923] text-[#1C201D] dark:text-[#F3F0E7] text-sm sm:text-base font-medium transition-all shadow-2xs"
           >
             <BookOpen className="w-4 h-4 text-[#8F681C] dark:text-[#D5B16D]" />
             <span>Explore the Digital Library</span>
