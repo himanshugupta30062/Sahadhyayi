@@ -67,11 +67,6 @@ const Index = () => {
       </ErrorBoundary>
 
       <div className="sahadhyayi-home-sections bg-[#FAFAF8] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300">
-        {/* Reader Map is Sahadhyayi’s signature connection feature: surface it immediately after discovery. */}
-        <DeferredSection fallback={<div className="min-h-[700px] bg-[#F4F3EF] dark:bg-[#0B0D0C]" aria-hidden="true" />} minHeightClassName="min-h-[700px]">
-          <ErrorBoundary fallback={null}><HomeReadingPeopleSection /></ErrorBoundary>
-        </DeferredSection>
-
         {/* Logged-in reader: Continue reading */}
         {user?.id && (
           <section className="relative isolate overflow-hidden py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-[#FAFAF8] dark:bg-[#0B0D0C]">
@@ -114,6 +109,13 @@ const Index = () => {
             <HomeBookDiscovery />
           </ErrorBoundary>
         </DeferredSection>
+
+        {/* Reader Map is Sahadhyayi’s signature connection feature: surface it immediately after discovery. */}
+        {/* Reader Map is Sahadhyayi’s signature connection feature: surface it immediately after discovery. */}
+        <DeferredSection fallback={<div className="min-h-[700px] bg-[#F4F3EF] dark:bg-[#0B0D0C]" aria-hidden="true" />} minHeightClassName="min-h-[700px]">
+          <ErrorBoundary fallback={null}><HomeReadingPeopleSection /></ErrorBoundary>
+        </DeferredSection>
+
 
         {/* 03. The Sahadhyayi Bicycle Adventure Journey (LOCKED) */}
         <DeferredSection
