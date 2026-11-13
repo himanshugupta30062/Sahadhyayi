@@ -1,17 +1,34 @@
 import React, { useState } from "react";
-import { useReadingDna, useGenerateReadingDna, useUpdateReadingDnaVisibility } from "@/hooks/useReadingDna";
+import {
+  useReadingDna,
+  useGenerateReadingDna,
+  useUpdateReadingDnaVisibility,
+  type ReadingDnaVisibility,
+} from "@/hooks/useReadingDna";
 import { matchScore, type ReadingDna } from "@/lib/readingDna";
 import { useAuth } from "@/contexts/authHelpers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dna, Sparkles, Loader2, RefreshCw, Users, ArrowRight } from "lucide-react";
+import {
+  Dna,
+  Sparkles,
+  Loader2,
+  RefreshCw,
+  Users,
+  ArrowRight,
+  Compass,
+  Globe,
+  Lock,
+  UserCheck,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ReadingDnaCard } from "./ReadingDnaCard";
 import { DnaCompare } from "./DnaCompare";
+import { ReaderDiscoveryList } from "./ReaderDiscoveryList";
 
 const FriendMatchesList: React.FC<{ myDna: ReadingDna }> = ({ myDna }) => {
   const { user } = useAuth();
@@ -65,7 +82,7 @@ const FriendMatchesList: React.FC<{ myDna: ReadingDna }> = ({ myDna }) => {
           <CardTitle className="text-base flex items-center justify-between">
             <span className="flex items-center gap-2">
               <Users className="w-4 h-4 text-brand-primary" />
-              Reader Matches & Compatibility
+              Connected Friend Matches
             </span>
             <span className="text-xs font-normal text-muted-foreground">
               {scored.length} friends with DNA
@@ -151,6 +168,8 @@ export const ReadingDnaPanel: React.FC = () => {
   const updateVisibility = useUpdateReadingDnaVisibility();
   const { toast } = useToast();
 
+  const [activeTab, setActiveTab] = useState<"discover" | "friends">("discover");
+
   const handleGenerate = async () => {
     try {
       await generate.mutateAsync();
@@ -167,6 +186,29 @@ export const ReadingDnaPanel: React.FC = () => {
     }
   };
 
+  const handleVisibilityChange = async (newVisibility: ReadingDnaVisibility) => {
+    try {
+      await updateVisibility.mutateAsync(newVisibility);
+      toast({
+        title: "Privacy setting updated",
+        description:
+          newVisibility === "public"
+            ? "Your Reading DNA is now public and discoverable by the community."
+            : newVisibility === "friends"
+            ? "Your Reading DNA is visible only to your confirmed friends."
+            : "Your Reading DNA is strictly private and hidden from other readers.",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Could not update privacy",
+        description: err.message || "An error occurred.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const currentVisibility: ReadingDnaVisibility = (dna?.visibility as ReadingDnaVisibility) || "public";
+
   return (
     <div className="space-y-5">
       {/* Top Header */}
@@ -174,10 +216,10 @@ export const ReadingDnaPanel: React.FC = () => {
         <div>
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Dna className="w-5 h-5 text-amber-500" />
-            Reading DNA
+            Reading DNA & Taste Matching
           </h2>
           <p className="text-xs text-muted-foreground">
-            A taste fingerprint computed from your reading habits. Compare with friends and discover cross-shelf matches.
+            A taste fingerprint computed from your reading habits. Discover kindred readers, compare compatibility, and exchange cross-shelf recommendations.
           </p>
         </div>
 
@@ -186,7 +228,7 @@ export const ReadingDnaPanel: React.FC = () => {
             size="sm"
             onClick={handleGenerate}
             disabled={generate.isPending}
-            className="gap-2 self-start sm:self-auto"
+            className="gap-2 self-start sm:self-auto shrink-0"
           >
             {generate.isPending ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -234,9 +276,103 @@ export const ReadingDnaPanel: React.FC = () => {
         </Card>
       )}
 
-      {dna && user && <Card><CardContent className="p-4 flex items-center justify-between gap-3"><div><p className="text-sm font-medium">DNA visibility: {dna.visibility === "private" ? "Private" : "Public"}</p><p className="text-xs text-muted-foreground">{dna.visibility === "private" ? "Only you can view your DNA." : "Visible to signed-in readers."}</p></div><Button size="sm" variant="outline" disabled={updateVisibility.isPending} onClick={() => updateVisibility.mutate(dna.visibility === "private" ? "public" : "private")}>Make {dna.visibility === "private" ? "Public" : "Private"}</Button></CardContent></Card>}
+      {/* Robust 3-Way Privacy Controls */}
+      {dna && user && (
+        <Card className="border-border bg-card">
+          <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium flex items-center gap-1.5">
+                {currentVisibility === "public" ? (
+                  <Globe className="w-4 h-4 text-emerald-600" />
+                ) : currentVisibility === "friends" ? (
+                  <UserCheck className="w-4 h-4 text-brand-primary" />
+                ) : (
+                  <Lock className="w-4 h-4 text-amber-600" />
+                )}
+                DNA Visibility:{" "}
+                <span className="capitalize font-semibold">{currentVisibility}</span>
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {currentVisibility === "public"
+                  ? "Public: Visible to all signed-in readers; allows other book lovers to discover you via shared taste."
+                  : currentVisibility === "friends"
+                  ? "Friends Only: Only confirmed friends can view and compare your reading taste."
+                  : "Private: Strictly confidential; only you can see your taste fingerprint."}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-1 shrink-0 bg-muted/50 p-1 rounded-lg border border-border/60">
+              <Button
+                size="sm"
+                variant={currentVisibility === "public" ? "default" : "ghost"}
+                disabled={updateVisibility.isPending}
+                onClick={() => handleVisibilityChange("public")}
+                className="text-xs h-7 px-2.5"
+              >
+                Public
+              </Button>
+              <Button
+                size="sm"
+                variant={currentVisibility === "friends" ? "default" : "ghost"}
+                disabled={updateVisibility.isPending}
+                onClick={() => handleVisibilityChange("friends")}
+                className="text-xs h-7 px-2.5"
+              >
+                Friends
+              </Button>
+              <Button
+                size="sm"
+                variant={currentVisibility === "private" ? "default" : "ghost"}
+                disabled={updateVisibility.isPending}
+                onClick={() => handleVisibilityChange("private")}
+                className="text-xs h-7 px-2.5"
+              >
+                Private
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {dna && <ReadingDnaCard dna={dna} mine />}
-      {dna && dna.visibility !== "private" && <FriendMatchesList myDna={dna} />}
+
+      {/* Tabs between Community Discovery and Friends */}
+      {dna && (
+        <div className="space-y-4">
+          <div className="flex border-b border-border pb-1 gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab("discover")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ${
+                activeTab === "discover"
+                  ? "bg-brand-primary/10 text-brand-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Compass className="w-4 h-4" />
+              Discover Readers
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("friends")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ${
+                activeTab === "friends"
+                  ? "bg-brand-primary/10 text-brand-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              Friend Matches
+            </button>
+          </div>
+
+          {activeTab === "discover" ? (
+            <ReaderDiscoveryList myDna={dna} />
+          ) : (
+            <FriendMatchesList myDna={dna} />
+          )}
+        </div>
+      )}
     </div>
   );
 };

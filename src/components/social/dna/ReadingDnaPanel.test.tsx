@@ -1,22 +1,53 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReadingDnaPanel } from "./ReadingDnaPanel";
 
+const mockUpdateVisibility = vi.fn().mockResolvedValue("friends");
+
 vi.mock("@/contexts/authHelpers", () => ({
-  useAuth: () => ({ user: { id: "test-user-id" } }),
+  useAuth: () => ({ user: { id: "my-user-id" } }),
 }));
 
 vi.mock("@/hooks/use-toast", () => ({
   useToast: () => ({ toast: vi.fn() }),
 }));
 
+vi.mock("@/hooks/useFriends", () => ({
+  useSendFriendRequest: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useFriendRequests: () => ({ data: [] }),
+}));
+
 vi.mock("@/hooks/useReadingDna", () => ({
   useReadingDna: vi.fn(),
   useGenerateReadingDna: () => ({ mutateAsync: vi.fn(), isPending: false }),
-  useUpdateReadingDnaVisibility: () => ({ mutate: vi.fn(), isPending: false }),
+  useUpdateReadingDnaVisibility: () => ({
+    mutateAsync: mockUpdateVisibility,
+    isPending: false,
+  }),
   useUserShelfForCompare: () => ({ data: [] }),
+  useDiscoverableReaders: () => ({
+    data: [
+      {
+        user_id: "reader-discovered-1",
+        username: "solaris",
+        full_name: "Stanisław Lem",
+        profile_photo_url: null,
+        bio: "Philosophical sci-fi author & reader",
+        genres: [{ name: "Sci-Fi", weight: 0.9 }],
+        moods: ["thoughtful"],
+        pace: "steady",
+        themes: ["cosmos"],
+        summary: "Cosmic explorer",
+        signature_color: "#3b82f6",
+        generated_at: new Date().toISOString(),
+        friend_request_status: "none",
+      },
+    ],
+    isLoading: false,
+    isError: false,
+  }),
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
@@ -26,7 +57,7 @@ vi.mock("@/integrations/supabase/client", () => ({
         return {
           select: vi.fn().mockReturnThis(),
           or: vi.fn().mockResolvedValue({
-            data: [{ user1_id: "test-user-id", user2_id: "friend-1" }],
+            data: [{ user1_id: "my-user-id", user2_id: "friend-1" }],
           }),
         };
       }
@@ -42,6 +73,7 @@ vi.mock("@/integrations/supabase/client", () => ({
                 themes: ["space"],
                 pace: "steady",
                 generated_at: new Date().toISOString(),
+                visibility: "friends",
               },
             ],
           }),
@@ -76,9 +108,7 @@ describe("ReadingDnaPanel", () => {
 
   beforeEach(() => {
     queryClient = new QueryClient({
-      defaultOptions: {
-        queries: { retry: false },
-      },
+      defaultOptions: { queries: { retry: false } },
     });
     vi.clearAllMocks();
   });
@@ -103,15 +133,15 @@ describe("ReadingDnaPanel", () => {
     expect(screen.getByText("Analyze My Shelf & Generate DNA")).toBeInTheDocument();
   });
 
-  it("renders reading DNA and friend matches with transparency notice", async () => {
+  it("renders 3-way privacy controls and allows changing visibility", async () => {
     vi.mocked(useReadingDna).mockReturnValue({
       data: {
-        user_id: "test-user-id",
+        user_id: "my-user-id",
         genres: [{ name: "Sci-Fi", weight: 0.9 }],
         moods: ["thoughtful"],
         themes: ["space"],
         pace: "steady",
-        summary: "A passionate sci-fi explorer",
+        summary: "Cosmic mind",
         signature_color: "#4f46e5",
         generated_at: new Date().toISOString(),
         visibility: "public",
@@ -122,14 +152,57 @@ describe("ReadingDnaPanel", () => {
 
     renderComponent();
 
-    expect(screen.getByText("Reading DNA")).toBeInTheDocument();
-    expect(screen.getByText(/DNA visibility: Public/i)).toBeInTheDocument();
+    // Verify 3-way privacy buttons exist
+    const publicBtn = screen.getByRole("button", { name: /^public$/i });
+    const friendsBtn = screen.getByRole("button", { name: /^friends$/i });
+    const privateBtn = screen.getByRole("button", { name: /^private$/i });
 
-    const notice = await screen.findByText(/Compatibility is estimated from shared reading interests, genres, and reading pace/i);
-    expect(notice).toBeInTheDocument();
+    expect(publicBtn).toBeInTheDocument();
+    expect(friendsBtn).toBeInTheDocument();
+    expect(privateBtn).toBeInTheDocument();
 
+    // Click Friends Only
+    fireEvent.click(friendsBtn);
+
+    await waitFor(() => {
+      expect(mockUpdateVisibility).toHaveBeenCalledWith("friends");
+    });
+  });
+
+  it("allows switching between Discover Readers and Friend Matches tabs", async () => {
+    vi.mocked(useReadingDna).mockReturnValue({
+      data: {
+        user_id: "my-user-id",
+        genres: [{ name: "Sci-Fi", weight: 0.9 }],
+        moods: ["thoughtful"],
+        themes: ["space"],
+        pace: "steady",
+        summary: "Cosmic mind",
+        signature_color: "#4f46e5",
+        generated_at: new Date().toISOString(),
+        visibility: "public",
+      },
+      isLoading: false,
+      error: null,
+    } as any);
+
+    renderComponent();
+
+    // Initially on Discover Readers tab
+    expect(screen.getByText("Discover Compatible Readers")).toBeInTheDocument();
+    expect(screen.getByText("Stanisław Lem")).toBeInTheDocument();
+
+    // Click Friend Matches tab
+    const friendsTab = screen.getByRole("button", { name: /friend matches/i });
+    fireEvent.click(friendsTab);
+
+    // Friend Matches should now be rendered with transparency notice
     const friendName = await screen.findByText("Elena Rostova");
     expect(friendName).toBeInTheDocument();
+
+    const notice = screen.getByText(
+      /Compatibility is estimated from shared reading interests, genres, and reading pace/i
+    );
+    expect(notice).toBeInTheDocument();
   });
 });
-

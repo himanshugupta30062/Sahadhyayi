@@ -147,9 +147,12 @@ describe('MyReadingStats Page', () => {
     fireEvent.click(twelveMonthsBtn);
     expect(twelveMonthsBtn).toHaveClass('bg-primary');
 
-    // Test reading goals save
-    const saveBtn = screen.getByRole('button', { name: 'Save goals' });
-    fireEvent.click(saveBtn);
+    // Test reading goals edit and save
+    const editGoalsBtn = screen.getByRole('button', { name: /edit goals/i });
+    fireEvent.click(editGoalsBtn);
+
+    const saveTargetsBtn = screen.getByRole('button', { name: /save targets/i });
+    fireEvent.click(saveTargetsBtn);
 
     await waitFor(() => {
       expect(mockSupabaseUpsert).toHaveBeenCalledWith(

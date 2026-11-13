@@ -1,21 +1,29 @@
 import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/authHelpers';
-import { useUserBookshelf, useUpdateBookshelfItem, useRemoveFromBookshelf } from '@/hooks/useUserBookshelf';
+import {
+  useUserBookshelf,
+  useUpdateBookshelfItem,
+  useRemoveFromBookshelf,
+  useUpNextQueue,
+  useResumeFromDnf,
+  DNF_REASON_LABELS,
+  BookshelfItem,
+} from '@/hooks/useUserBookshelf';
 import { useReadingProgress, useUpdateReadingProgress } from '@/hooks/useReadingProgress';
 import { loadProgressLocally } from '@/utils/readingProgressStorage';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  BookOpen, 
-  Download, 
-  Info, 
-  Search, 
-  Library, 
-  Clock, 
-  CheckCircle, 
+import {
+  BookOpen,
+  Download,
+  Info,
+  Search,
+  Library,
+  Clock,
+  CheckCircle,
   BookMarked,
   Star,
   MoreVertical,
@@ -24,8 +32,13 @@ import {
   FileSpreadsheet,
   ArrowUpDown,
   Play,
-  X
+  X,
+  Upload,
+  BookX,
+  ListOrdered,
+  RotateCcw,
 } from 'lucide-react';
+import { ReadingImportExportDialog } from '@/components/books/ReadingImportExportDialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,6 +57,9 @@ import { useToast } from '@/hooks/use-toast';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import SEO from '@/components/SEO';
 import { trackUiEvent } from '@/lib/analytics';
+import UpNextQueue from '@/components/books/UpNextQueue';
+import DnfBookDialog from '@/components/books/DnfBookDialog';
+import DnfAnalyticsCard from '@/components/books/DnfAnalyticsCard';
 
 type StatusFilter = 'all' | 'reading' | 'completed' | 'want_to_read' | 'dnf';
 type SortOption = 'recent' | 'progress' | 'title' | 'author';
@@ -57,22 +73,34 @@ const Bookshelf = () => {
   const updateProgress = useUpdateReadingProgress();
   const updateBookshelf = useUpdateBookshelfItem();
   const removeFromBookshelf = useRemoveFromBookshelf();
-  
+  const { addToUpNext, removeFromUpNext } = useUpNextQueue();
+  const resumeFromDnf = useResumeFromDnf();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<StatusFilter>('all');
   const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [ownedOnly, setOwnedOnly] = useState(false);
+  const [isImportExportOpen, setIsImportExportOpen] = useState(false);
+
+  // DNF Dialog state
+  const [dnfDialogOpen, setDnfDialogOpen] = useState(false);
+  const [selectedDnfItem, setSelectedDnfItem] = useState<BookshelfItem | null>(null);
+
+  const openDnfDialog = (item: BookshelfItem) => {
+    setSelectedDnfItem(item);
+    setDnfDialogOpen(true);
+  };
 
   // Stats
   const stats = useMemo(() => {
     if (!bookshelfData) return { all: 0, reading: 0, completed: 0, want_to_read: 0, dnf: 0 };
     return {
       all: bookshelfData.length,
-      reading: bookshelfData.filter(b => b.status === 'reading').length,
-      completed: bookshelfData.filter(b => b.status === 'completed').length,
-      want_to_read: bookshelfData.filter(b => b.status === 'want_to_read').length,
-      dnf: bookshelfData.filter(b => b.status === 'dnf').length,
+      reading: bookshelfData.filter((b) => b.status === 'reading').length,
+      completed: bookshelfData.filter((b) => b.status === 'completed').length,
+      want_to_read: bookshelfData.filter((b) => b.status === 'want_to_read').length,
+      dnf: bookshelfData.filter((b) => b.status === 'dnf').length,
     };
   }, [bookshelfData]);
 
@@ -80,16 +108,27 @@ const Bookshelf = () => {
   const booksWithProgress = useMemo(() => {
     if (!bookshelfData) return [];
 
-    return bookshelfData.map(item => {
+    return bookshelfData.map((item) => {
       const localProg = loadProgressLocally(item.book_id, user?.id);
-      const dbItem = dbProgress.find(p => p.book_id === item.book_id);
+      const dbItem = dbProgress.find((p) => p.book_id === item.book_id);
 
-      const currentPage = Math.max(localProg?.currentPage || 0, dbItem?.current_page || 0, 1);
-      const totalPages = Math.max(localProg?.totalPages || 0, dbItem?.total_pages || 0, 1);
+      const currentPage = Math.max(
+        item.dnf_page || 0,
+        localProg?.currentPage || 0,
+        dbItem?.current_page || 0,
+        1
+      );
+      const totalPages = Math.max(
+        item.books_library?.pages || 0,
+        localProg?.totalPages || 0,
+        dbItem?.total_pages || 0,
+        1
+      );
       const hasKnownTotal = totalPages > 1;
-      const progressPercent = item.status === 'completed' 
-        ? 100 
-        : hasKnownTotal 
+      const progressPercent =
+        item.status === 'completed'
+          ? 100
+          : hasKnownTotal
           ? Math.min(100, Math.round((currentPage / totalPages) * 100))
           : 0;
 
@@ -103,25 +142,36 @@ const Bookshelf = () => {
     });
   }, [bookshelfData, dbProgress, user?.id]);
 
+  const queuedItems = useMemo(() => {
+    return (bookshelfData || [])
+      .filter((b) => b.up_next_position != null && b.up_next_position >= 1 && b.up_next_position <= 5)
+      .sort((a, b) => (a.up_next_position || 0) - (b.up_next_position || 0));
+  }, [bookshelfData]);
+
+  const dnfBooks = useMemo(() => {
+    return (bookshelfData || []).filter((b) => b.status === 'dnf');
+  }, [bookshelfData]);
+
   const filteredBooks = useMemo(() => {
     let filtered = [...booksWithProgress];
-    
+
     // Filter by status
     if (activeFilter !== 'all') {
-      filtered = filtered.filter(b => b.status === activeFilter);
+      filtered = filtered.filter((b) => b.status === activeFilter);
     }
-    
+
     // Filter by search
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(b => 
-        b.books_library?.title?.toLowerCase().includes(query) ||
-        b.books_library?.author?.toLowerCase().includes(query) ||
-        b.books_library?.genre?.toLowerCase().includes(query)
+      filtered = filtered.filter(
+        (b) =>
+          b.books_library?.title?.toLowerCase().includes(query) ||
+          b.books_library?.author?.toLowerCase().includes(query) ||
+          b.books_library?.genre?.toLowerCase().includes(query)
       );
     }
 
-    // Favorites are a cross-status filter: any saved book can be a favorite.
+    // Favorites are a cross-status filter
     if (favoritesOnly) {
       filtered = filtered.filter((book) => book.is_favorite === true);
     }
@@ -142,11 +192,21 @@ const Bookshelf = () => {
       // 'recent' default
       return new Date(b.added_at).getTime() - new Date(a.added_at).getTime();
     });
-    
+
     return filtered;
   }, [booksWithProgress, activeFilter, searchQuery, sortBy, favoritesOnly, ownedOnly]);
 
-  const handleStatusChange = (itemId: string, newStatus: 'reading' | 'completed' | 'want_to_read' | 'dnf') => {
+  const handleStatusChange = (
+    itemId: string,
+    newStatus: 'reading' | 'completed' | 'want_to_read' | 'dnf'
+  ) => {
+    if (newStatus === 'dnf') {
+      const item = bookshelfData?.find((b) => b.id === itemId);
+      if (item) {
+        openDnfDialog(item);
+        return;
+      }
+    }
     updateBookshelf.mutate({ id: itemId, updates: { status: newStatus } });
   };
 
@@ -176,19 +236,20 @@ const Bookshelf = () => {
     }
 
     const rows = [
-      ['Title', 'Author', 'Status', 'Current Page', 'Total Pages', 'Progress %', 'Date Added'],
-      ...booksWithProgress.map(item => [
+      ['Title', 'Author', 'Status', 'Current Page', 'Total Pages', 'Progress %', 'DNF Reason', 'Date Added'],
+      ...booksWithProgress.map((item) => [
         `"${(item.books_library?.title || 'Untitled').replace(/"/g, '""')}"`,
         `"${(item.books_library?.author || 'Unknown').replace(/"/g, '""')}"`,
         item.status,
         String(item.currentPage),
         String(item.totalPages),
         `${item.progressPercent}%`,
+        item.dnf_reason ? DNF_REASON_LABELS[item.dnf_reason] || item.dnf_reason : '',
         item.added_at ? new Date(item.added_at).toLocaleDateString() : '',
       ]),
     ];
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(r => r.join(',')).join('\n');
+    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map((r) => r.join(',')).join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
@@ -218,21 +279,25 @@ const Bookshelf = () => {
 
   const getStatusBadge = (status: string) => {
     const badges = {
-      reading: { 
-        icon: Clock, 
-        label: 'Reading', 
-        bg: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20' 
+      reading: {
+        icon: Clock,
+        label: 'Reading',
+        bg: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20',
       },
-      completed: { 
-        icon: CheckCircle, 
-        label: 'Completed', 
-        bg: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
+      completed: {
+        icon: CheckCircle,
+        label: 'Completed',
+        bg: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
       },
-      dnf: { icon: BookOpen, label: 'Did Not Finish', bg: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20' },
-      want_to_read: { 
-        icon: BookMarked, 
-        label: 'Want to Read', 
-        bg: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20' 
+      dnf: {
+        icon: BookX,
+        label: 'DNF',
+        bg: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20',
+      },
+      want_to_read: {
+        icon: BookMarked,
+        label: 'Want to Read',
+        bg: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20',
       },
     };
     const badge = badges[status as keyof typeof badges] || badges.want_to_read;
@@ -294,13 +359,13 @@ const Bookshelf = () => {
     <>
       <SEO
         title="My Bookshelf - Track Your Reading | Sahadhyayi"
-        description="Manage your books, track reading progress, and get AI-powered assistance in your personal digital bookshelf."
+        description="Manage your books, track reading progress, and prioritize your Up Next queue in your personal digital bookshelf."
         canonical="https://sahadhyayi.com/bookshelf"
         url="https://sahadhyayi.com/bookshelf"
         noIndex={true}
       />
       <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
-      
+
       <div className="min-h-screen pt-20 pb-8 px-4 bg-background">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header with Actions */}
@@ -308,7 +373,7 @@ const Bookshelf = () => {
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground">My Bookshelf</h1>
               <p className="text-muted-foreground mt-1 text-sm">
-                {stats.all} {stats.all === 1 ? 'book' : 'books'} in your collection · {stats.reading} currently reading
+                {stats.all} {stats.all === 1 ? 'book' : 'books'} in your collection · {stats.reading} currently reading · {queuedItems.length} in Up Next
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -320,6 +385,16 @@ const Bookshelf = () => {
               >
                 <Share2 className="w-4 h-4 mr-1.5 text-muted-foreground" />
                 Share Shelf
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsImportExportOpen(true)}
+                className="border-border hover:border-[hsl(var(--brand-primary))] text-foreground"
+              >
+                <Upload className="w-4 h-4 mr-1.5 text-[hsl(var(--brand-primary))]" />
+                Import / Export
               </Button>
 
               <Button
@@ -341,20 +416,31 @@ const Bookshelf = () => {
             </div>
           </div>
 
+          {/* Up Next Reading Queue */}
+          {bookshelfData && bookshelfData.length > 0 && (
+            <UpNextQueue
+              bookshelfItems={bookshelfData}
+              onOpenWantToRead={() => setActiveFilter('want_to_read')}
+            />
+          )}
+
+          {/* DNF Insights (Shown when on DNF tab or when viewing DNF books) */}
+          {activeFilter === 'dnf' && <DnfAnalyticsCard dnfBooks={dnfBooks} />}
+
           {/* Stats Overview Filter Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             {[
               { key: 'all', label: 'All Saved', icon: Library, color: 'text-foreground', bg: 'bg-muted' },
               { key: 'reading', label: 'Reading Now', icon: Clock, color: 'text-blue-500 dark:text-blue-400', bg: 'bg-blue-500/10' },
               { key: 'completed', label: 'Completed', icon: CheckCircle, color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-emerald-500/10' },
               { key: 'want_to_read', label: 'Want to Read', icon: BookMarked, color: 'text-amber-500 dark:text-amber-400', bg: 'bg-amber-500/10' },
-              { key: 'dnf', label: 'Did Not Finish', icon: BookOpen, color: 'text-rose-500 dark:text-rose-400', bg: 'bg-rose-500/10' },
+              { key: 'dnf', label: 'Did Not Finish', icon: BookX, color: 'text-rose-500 dark:text-rose-400', bg: 'bg-rose-500/10' },
             ].map(({ key, label, icon: Icon, color, bg }) => (
-              <Card 
-                key={key} 
+              <Card
+                key={key}
                 className={`cursor-pointer transition-all hover:shadow-md ${
-                  activeFilter === key 
-                    ? 'ring-2 ring-[hsl(var(--brand-primary))] bg-[hsl(var(--brand-primary)/0.05)] border-[hsl(var(--brand-primary)/0.3)]' 
+                  activeFilter === key
+                    ? 'ring-2 ring-[hsl(var(--brand-primary))] bg-[hsl(var(--brand-primary)/0.05)] border-[hsl(var(--brand-primary)/0.3)]'
                     : 'border-border'
                 }`}
                 onClick={() => setActiveFilter(key as StatusFilter)}
@@ -388,13 +474,13 @@ const Bookshelf = () => {
               <Button
                 type="button"
                 size="sm"
-                variant={favoritesOnly ? "default" : "outline"}
+                variant={favoritesOnly ? 'default' : 'outline'}
                 aria-pressed={favoritesOnly}
                 aria-label="Favorites only"
                 onClick={() => setFavoritesOnly((current) => !current)}
                 className="h-9 shrink-0 gap-1.5 border-border"
               >
-                <Star className={`w-3.5 h-3.5 ${favoritesOnly ? "fill-current" : ""}`} />
+                <Star className={`w-3.5 h-3.5 ${favoritesOnly ? 'fill-current' : ''}`} />
                 Favorites ({booksWithProgress.filter((book) => book.is_favorite === true).length})
               </Button>
 
@@ -415,7 +501,15 @@ const Bookshelf = () => {
               </div>
             </div>
 
-            <Button type="button" size="sm" variant={ownedOnly ? "default" : "outline"} aria-pressed={ownedOnly} aria-label="Owned books only" onClick={() => setOwnedOnly((current) => !current)} className="h-9 shrink-0 gap-1.5 border-border">
+            <Button
+              type="button"
+              size="sm"
+              variant={ownedOnly ? 'default' : 'outline'}
+              aria-pressed={ownedOnly}
+              aria-label="Owned books only"
+              onClick={() => setOwnedOnly((current) => !current)}
+              className="h-9 shrink-0 gap-1.5 border-border"
+            >
               <BookMarked className="w-3.5 h-3.5" /> Owned ({booksWithProgress.filter((book) => book.is_owned === true).length})
             </Button>
 
@@ -424,7 +518,12 @@ const Bookshelf = () => {
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => { setSearchQuery(''); setActiveFilter('all'); setFavoritesOnly(false); setOwnedOnly(false); }}
+                onClick={() => {
+                  setSearchQuery('');
+                  setActiveFilter('all');
+                  setFavoritesOnly(false);
+                  setOwnedOnly(false);
+                }}
                 className="h-9 shrink-0 gap-1.5 text-xs"
                 aria-label="Clear bookshelf search and filters"
               >
@@ -450,7 +549,7 @@ const Bookshelf = () => {
                 <Library className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
                 <h3 className="text-xl font-semibold text-foreground mb-2">Your bookshelf is empty</h3>
                 <p className="text-muted-foreground mb-6 max-w-md mx-auto text-sm">
-                  Start building your personal library by adding books from our collection. You will start getting continue-reading and recommended-next suggestions after your first save.
+                  Start building your personal library by adding books from our collection. You can track progress, prioritize your Up Next queue, and save reflections.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                   <Link to="/library">
@@ -492,8 +591,8 @@ const Bookshelf = () => {
                     ? 'Tap the star on any book cover to save it here and show it on your profile.'
                     : 'Try adjusting your search query or reset the filter tab.'}
                 </p>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => {
                     setSearchQuery('');
@@ -517,12 +616,27 @@ const Bookshelf = () => {
                 const isReading = item.status === 'reading';
                 const isCompleted = item.status === 'completed';
                 const isWantToRead = item.status === 'want_to_read';
-                const progressRecord = dbProgress.find(p => p.book_id === item.book_id);
+                const isDnf = item.status === 'dnf';
+                const isQueued = item.up_next_position != null;
+                const progressRecord = dbProgress.find((p) => p.book_id === item.book_id);
                 const canQuickLog = isReading && !!progressRecord && progressRecord.current_page < progressRecord.total_pages;
 
+                // Estimated completion date calculation
+                let estimatedFinishLabel: string | null = null;
+                if (isReading && item.hasKnownTotal && item.currentPage > 1 && item.currentPage < item.totalPages) {
+                  const startedTime = item.started_at ? new Date(item.started_at).getTime() : new Date(item.added_at).getTime();
+                  const daysElapsed = Math.max(1, (Date.now() - startedTime) / (1000 * 60 * 60 * 24));
+                  const pace = (item.currentPage - 1) / daysElapsed; // pages per day
+                  if (pace >= 0.5) {
+                    const daysRemaining = Math.ceil((item.totalPages - item.currentPage) / pace);
+                    const finishDate = new Date(Date.now() + daysRemaining * 86400000);
+                    estimatedFinishLabel = `Est. finish: ${finishDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} (${daysRemaining}d)`;
+                  }
+                }
+
                 return (
-                  <Card 
-                    key={item.id} 
+                  <Card
+                    key={item.id}
                     className="group overflow-hidden border-border bg-card hover:shadow-lg transition-all duration-200 flex flex-col justify-between"
                   >
                     <div>
@@ -540,28 +654,69 @@ const Bookshelf = () => {
                             <BookOpen className="w-10 h-10 text-[hsl(var(--brand-primary))]" />
                           </div>
                         )}
-                        
+
                         {/* Status Badge */}
-                        <div className="absolute top-2 left-2 z-10">
+                        <div className="absolute top-2 left-2 z-10 flex flex-col gap-1 items-start">
                           {getStatusBadge(item.status)}
+                          {isQueued && (
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white shadow-xs">
+                              Queue #{item.up_next_position}
+                            </span>
+                          )}
                         </div>
 
-                        {/* Favorite toggle stays visible even when the cover is not hovered. */}
+                        {/* Favorite Toggle */}
                         <button
                           type="button"
                           aria-label={item.is_favorite ? `Remove ${book.title} from favorites` : `Add ${book.title} to favorites`}
                           aria-pressed={item.is_favorite === true}
-                          title={item.is_favorite ? "Remove from favorites" : "Add to favorites"}
+                          title={item.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
                           onClick={() => handleFavoriteToggle(item.id, item.is_favorite === true)}
                           className="absolute top-2 right-2 z-30 rounded-full bg-black/75 p-2 text-white shadow transition hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
                         >
-                          <Star className={`h-4 w-4 ${item.is_favorite ? "fill-amber-300 text-amber-300" : ""}`} />
+                          <Star className={`h-4 w-4 ${item.is_favorite ? 'fill-amber-300 text-amber-300' : ''}`} />
                         </button>
 
-                        {canQuickLog && progressRecord && <div className="absolute bottom-2 left-2 right-2 z-30"><Button size="sm" className="w-full h-8 text-xs shadow" disabled={updateProgress.isPending} onClick={(event)=>{event.preventDefault();event.stopPropagation();updateProgress.mutate({id:progressRecord.id,current_page:Math.min(progressRecord.total_pages,progressRecord.current_page+5)});}}><BookOpen className="mr-1.5 h-3.5 w-3.5"/>+5 pages</Button></div>}
+                        {/* Quick Page Update Pill (+5 and +10) */}
+                        {canQuickLog && progressRecord && (
+                          <div className="absolute bottom-2 left-2 right-2 z-30 flex items-center gap-1.5">
+                            <Button
+                              size="sm"
+                              className="flex-1 h-7 text-[10px] font-semibold shadow bg-black/80 hover:bg-black text-white backdrop-blur-xs px-1"
+                              disabled={updateProgress.isPending}
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                const newPage = Math.min(progressRecord.total_pages, progressRecord.current_page + 5);
+                                updateProgress.mutate({ id: progressRecord.id, current_page: newPage });
+                                if (newPage >= progressRecord.total_pages) {
+                                  handleStatusChange(item.id, 'completed');
+                                }
+                              }}
+                            >
+                              +5 pgs
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="flex-1 h-7 text-[10px] font-semibold shadow bg-black/80 hover:bg-black text-white backdrop-blur-xs px-1"
+                              disabled={updateProgress.isPending}
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                const newPage = Math.min(progressRecord.total_pages, progressRecord.current_page + 10);
+                                updateProgress.mutate({ id: progressRecord.id, current_page: newPage });
+                                if (newPage >= progressRecord.total_pages) {
+                                  handleStatusChange(item.id, 'completed');
+                                }
+                              }}
+                            >
+                              +10 pgs
+                            </Button>
+                          </div>
+                        )}
 
-                      {/* Progress Badge on Cover */}
-                        {isReading && item.progressPercent > 0 && (
+                        {/* Progress Badge on Cover */}
+                        {(isReading || isDnf) && item.progressPercent > 0 && !canQuickLog && (
                           <div className="absolute top-2 right-12 z-10 bg-black/80 backdrop-blur-xs text-white text-[10px] font-semibold px-1.5 py-0.5 rounded shadow-xs">
                             {item.progressPercent}%
                           </div>
@@ -603,7 +758,7 @@ const Bookshelf = () => {
                               </p>
                             )}
                           </div>
-                          
+
                           {/* Actions Menu */}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -611,38 +766,73 @@ const Bookshelf = () => {
                                 <MoreVertical className="w-4 h-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                              <DropdownMenuItem 
+                            <DropdownMenuContent align="end" className="w-52">
+                              <DropdownMenuItem
                                 onClick={() => handleStatusChange(item.id, 'reading')}
                                 disabled={item.status === 'reading'}
                               >
                                 <Clock className="w-4 h-4 mr-2" />
                                 Mark as Reading
                               </DropdownMenuItem>
-                              <DropdownMenuItem 
+
+                              <DropdownMenuItem
                                 onClick={() => handleStatusChange(item.id, 'completed')}
                                 disabled={item.status === 'completed'}
                               >
                                 <CheckCircle className="w-4 h-4 mr-2" />
                                 Mark as Completed
                               </DropdownMenuItem>
-                              <DropdownMenuItem 
+
+                              <DropdownMenuItem
                                 onClick={() => handleStatusChange(item.id, 'want_to_read')}
                                 disabled={item.status === 'want_to_read'}
                               >
                                 <BookMarked className="w-4 h-4 mr-2" />
                                 Want to Read
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleStatusChange(item.id, 'dnf')} disabled={item.status === 'dnf'}>
-                                <BookOpen className="w-4 h-4 mr-2" />
-                                Did Not Finish
+
+                              <DropdownMenuItem onClick={() => openDnfDialog(item)}>
+                                <BookX className="w-4 h-4 mr-2 text-rose-500" />
+                                Did Not Finish (DNF)
                               </DropdownMenuItem>
+
+                              <DropdownMenuSeparator />
+
+                              {/* Up Next Queue Actions */}
+                              {isQueued ? (
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    removeFromUpNext.mutate({
+                                      bookshelfItemId: item.id,
+                                      currentQueue: queuedItems,
+                                    })
+                                  }
+                                >
+                                  <X className="w-4 h-4 mr-2 text-amber-500" />
+                                  Remove from Up Next
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    addToUpNext.mutate({
+                                      bookshelfItemId: item.id,
+                                      currentQueueLength: queuedItems.length,
+                                    })
+                                  }
+                                  disabled={queuedItems.length >= 5}
+                                >
+                                  <ListOrdered className="w-4 h-4 mr-2 text-amber-500" />
+                                  Add to Up Next ({queuedItems.length}/5)
+                                </DropdownMenuItem>
+                              )}
+
                               <DropdownMenuItem onClick={() => updateBookshelf.mutate({ id: item.id, updates: { is_owned: !item.is_owned } })}>
                                 <BookMarked className="w-4 h-4 mr-2" />
                                 {item.is_owned ? 'Remove Owned Mark' : 'Mark as Owned'}
                               </DropdownMenuItem>
+
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={() => handleRemove(item.id)}
                                 className="text-destructive focus:text-destructive"
                               >
@@ -666,18 +856,49 @@ const Bookshelf = () => {
                             </div>
                             <div className="flex justify-between items-center text-[10px] text-muted-foreground">
                               <span>
-                                {item.hasKnownTotal 
-                                  ? `Pg ${item.currentPage} of ${item.totalPages}` 
+                                {item.hasKnownTotal
+                                  ? `Pg ${item.currentPage} of ${item.totalPages}`
                                   : `Page ${item.currentPage}`}
                               </span>
                               {item.hasKnownTotal && (
                                 <span className="font-semibold text-foreground">{item.progressPercent}%</span>
                               )}
                             </div>
+                            {estimatedFinishLabel && (
+                              <p className="text-[10px] text-muted-foreground line-clamp-1 pt-0.5">
+                                {estimatedFinishLabel}
+                              </p>
+                            )}
                           </div>
                         )}
 
-                        {item.is_owned && <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-400"><BookMarked className="w-3 h-3" /> Owned</span>}
+                        {/* DNF Stopped Info */}
+                        {isDnf && (
+                          <div className="space-y-1 rounded-md bg-rose-500/10 p-2 text-[11px] text-foreground border border-rose-500/20">
+                            <div className="flex items-center justify-between font-semibold text-rose-600 dark:text-rose-400 text-[10px]">
+                              <span>Stopped at {item.dnf_page ? `pg ${item.dnf_page}` : `${item.progressPercent}%`}</span>
+                              {item.dnf_date && (
+                                <span>{new Date(item.dnf_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                              )}
+                            </div>
+                            {item.dnf_reason && (
+                              <p className="text-[10px] text-muted-foreground font-medium">
+                                Reason: {DNF_REASON_LABELS[item.dnf_reason] || item.dnf_reason}
+                              </p>
+                            )}
+                            {item.dnf_notes && (
+                              <p className="text-[10px] italic text-muted-foreground line-clamp-2">
+                                &ldquo;{item.dnf_notes}&rdquo;
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {item.is_owned && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
+                            <BookMarked className="w-3 h-3" /> Owned
+                          </span>
+                        )}
 
                         {/* Genre Tag */}
                         {book.genre && (
@@ -690,12 +911,12 @@ const Bookshelf = () => {
                       </CardContent>
                     </div>
 
-                    {/* Quick 1-Click Action Button at Bottom of Card */}
+                    {/* Quick Action Button at Bottom of Card */}
                     <div className="p-3 pt-0">
                       {isReading && (
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
+                        <Button
+                          size="sm"
+                          variant="outline"
                           className="w-full text-xs h-7 border-border hover:border-[hsl(var(--brand-primary))] hover:text-[hsl(var(--brand-primary))]"
                           onClick={() => navigate(`/book/${book.id}`)}
                         >
@@ -704,8 +925,8 @@ const Bookshelf = () => {
                       )}
 
                       {isWantToRead && (
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           className="w-full text-xs h-7 bg-[hsl(var(--brand-primary))] hover:bg-[hsl(var(--brand-primary)/0.9)] text-white"
                           onClick={() => {
                             handleStatusChange(item.id, 'reading');
@@ -718,15 +939,38 @@ const Bookshelf = () => {
                       )}
 
                       {isCompleted && (
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
+                        <Button
+                          size="sm"
+                          variant="ghost"
                           className="w-full text-xs h-7 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
                           onClick={() => navigate(`/book/${book.id}`)}
                         >
                           <CheckCircle className="w-3 h-3 mr-1" />
                           Read Again
                         </Button>
+                      )}
+
+                      {isDnf && (
+                        <div className="flex gap-1.5">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 text-xs h-7 border-border hover:border-amber-500 hover:text-amber-600"
+                            onClick={() => resumeFromDnf.mutate({ id: item.id })}
+                            disabled={resumeFromDnf.isPending}
+                          >
+                            <RotateCcw className="w-3 h-3 mr-1" />
+                            Resume
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-xs h-7 px-2 text-muted-foreground"
+                            onClick={() => openDnfDialog(item)}
+                          >
+                            Edit
+                          </Button>
+                        </div>
                       )}
                     </div>
                   </Card>
@@ -736,6 +980,20 @@ const Bookshelf = () => {
           )}
         </div>
       </div>
+
+      <ReadingImportExportDialog
+        open={isImportExportOpen}
+        onOpenChange={setIsImportExportOpen}
+      />
+
+      {/* DNF Modal Dialog */}
+      <DnfBookDialog
+        open={dnfDialogOpen}
+        onOpenChange={setDnfDialogOpen}
+        bookshelfItem={selectedDnfItem}
+        currentPage={selectedDnfItem?.dnf_page || 1}
+        totalPages={selectedDnfItem?.books_library?.pages}
+      />
     </>
   );
 };

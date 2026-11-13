@@ -7,7 +7,7 @@ export interface ReadingDna {
   summary: string | null;
   signature_color: string | null;
   generated_at: string;
-  visibility?: "public" | "private";
+  visibility?: "public" | "friends" | "private";
 }
 
 export interface ShelfBookItem {
@@ -128,4 +128,134 @@ export const getCrossRecommendations = (
 
   scored.sort((a, b) => b.score - a.score);
   return scored.slice(0, limit).map((s) => s.item);
+};
+
+export interface CompatibilityBreakdown {
+  score: number;
+  confidence: "high" | "moderate" | "emerging";
+  sharedGenres: string[];
+  sharedMoods: string[];
+  sharedThemes: string[];
+  paceMatch: boolean;
+  overlappingBooks: Array<{
+    id?: string;
+    title: string;
+    author?: string | null;
+    myRating?: number | null;
+    theirRating?: number | null;
+  }>;
+  narrativeExplanation: string;
+  differencesInTaste: string[];
+}
+
+export const getCompatibilityBreakdown = (
+  myDna: ReadingDna | null,
+  theirDna: ReadingDna | null,
+  myShelf: ShelfBookItem[] = [],
+  theirShelf: ShelfBookItem[] = []
+): CompatibilityBreakdown => {
+  const score = matchScore(myDna, theirDna);
+
+  if (!myDna || !theirDna) {
+    return {
+      score: 0,
+      confidence: "emerging",
+      sharedGenres: [],
+      sharedMoods: [],
+      sharedThemes: [],
+      paceMatch: false,
+      overlappingBooks: [],
+      narrativeExplanation: "Generate or share Reading DNA to unlock taste compatibility insights.",
+      differencesInTaste: [],
+    };
+  }
+
+  // Intersect helper preserving clean capitalization
+  const intersect = (mine: string[], theirs: string[]) => {
+    const theirSet = new Set(theirs.map(norm));
+    const seen = new Set<string>();
+    const matches: string[] = [];
+    mine.forEach((m) => {
+      const n = norm(m);
+      if (theirSet.has(n) && !seen.has(n)) {
+        seen.add(n);
+        matches.push(m.trim());
+      }
+    });
+    return matches;
+  };
+
+  const myGenreNames = myDna.genres.map((g) => g.name);
+  const theirGenreNames = theirDna.genres.map((g) => g.name);
+
+  const sharedGenres = intersect(myGenreNames, theirGenreNames);
+  const sharedMoods = intersect(myDna.moods, theirDna.moods);
+  const sharedThemes = intersect(myDna.themes, theirDna.themes);
+  const paceMatch = Boolean(
+    myDna.pace && theirDna.pace && norm(myDna.pace) === norm(theirDna.pace)
+  );
+
+  // Confidence check: prevents misleading false precision when user has minimal shelf history
+  const totalGenres = myDna.genres.length + theirDna.genres.length;
+  const confidence: "high" | "moderate" | "emerging" =
+    totalGenres >= 6 && (myDna.moods.length > 0 || myDna.themes.length > 0)
+      ? "high"
+      : totalGenres >= 2
+      ? "moderate"
+      : "emerging";
+
+  // Book overlap on shelves
+  const theirBookMap = new Map(
+    theirShelf
+      .map((b) => [b.book_id || b.id || b.books_library?.id, b])
+      .filter(([id]) => Boolean(id))
+  );
+
+  const overlappingBooks = myShelf
+    .filter((myBook) => {
+      const id = myBook.book_id || myBook.id || myBook.books_library?.id;
+      return id && theirBookMap.has(id);
+    })
+    .map((myBook) => {
+      const id = myBook.book_id || myBook.id || myBook.books_library?.id;
+      const theirBook = theirBookMap.get(id!);
+      return {
+        id,
+        title: myBook.books_library?.title || theirBook?.books_library?.title || "Untitled Book",
+        author: myBook.books_library?.author || theirBook?.books_library?.author,
+        myRating: myBook.rating,
+        theirRating: theirBook?.rating,
+      };
+    });
+
+  // Differences in taste (genres present in one but not the other)
+  const myGenreSet = new Set(myGenreNames.map(norm));
+  const differencesInTaste = theirGenreNames
+    .filter((g) => !myGenreSet.has(norm(g)))
+    .slice(0, 4);
+
+  // Natural narrative explanation
+  let narrativeExplanation = "";
+  if (sharedGenres.length > 0 && sharedMoods.length > 0) {
+    narrativeExplanation = `Your reading tastes align because you both enjoy ${sharedGenres.slice(0, 3).join(", ")} with ${sharedMoods.slice(0, 2).join(" and ")} tones${paceMatch ? " at a similar reading pace" : ""}.`;
+  } else if (sharedGenres.length > 0) {
+    narrativeExplanation = `You share a strong interest in ${sharedGenres.slice(0, 3).join(", ")}${paceMatch ? " and read at a compatible pace" : ""}.`;
+  } else if (sharedMoods.length > 0 || sharedThemes.length > 0) {
+    const tones = [...sharedMoods, ...sharedThemes].slice(0, 3).join(" and ");
+    narrativeExplanation = `While your genre selections differ, you both connect with ${tones} stories.`;
+  } else {
+    narrativeExplanation = `You have distinct literary styles, offering fresh perspectives and cross-genre discoveries.`;
+  }
+
+  return {
+    score,
+    confidence,
+    sharedGenres,
+    sharedMoods,
+    sharedThemes,
+    paceMatch,
+    overlappingBooks,
+    narrativeExplanation,
+    differencesInTaste,
+  };
 };
