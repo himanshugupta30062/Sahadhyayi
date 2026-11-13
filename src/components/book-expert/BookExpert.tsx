@@ -320,11 +320,18 @@ const BookExpert = () => {
 
   const handleClose = useCallback(() => {
     stopSpeech();
+    setIsMinimized(false);
     closeChat();
   }, [closeChat, stopSpeech]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (isOpen) {
+      setIsMinimized(false);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || isMinimized) return;
 
     const previousBodyOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -389,7 +396,7 @@ const BookExpert = () => {
       inertedElements.forEach((element) => { element.inert = false; element.removeAttribute("inert"); });
       document.body.style.overflow = previousBodyOverflow;
     };
-  }, [isOpen, handleClose]);
+  }, [isOpen, isMinimized, handleClose]);
 
   const handleSend = (prompt?: string) => {
     const text = (prompt ?? input).trim();
@@ -439,8 +446,8 @@ const BookExpert = () => {
       ref={launcherRef}
       type="button"
       onClick={() => {
-        if (minimized) setIsMinimized(false);
-        else toggleChat();
+        setIsMinimized(false);
+        if (!minimized) toggleChat();
       }}
       aria-label={minimized ? "Restore Reading Room AI" : "Open the Sahadhyayi Reading Room & Book Expert AI"}
       aria-expanded={minimized ? false : isOpen}
@@ -539,7 +546,7 @@ const BookExpert = () => {
       aria-labelledby="book-expert-title"
       tabIndex={-1}
       className={cn(
-        "reader-room-panel-enter fixed inset-x-2 bottom-[calc(env(safe-area-inset-bottom,0px)_+_0.5rem)] z-50 flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border/70 bg-background text-foreground shadow-2xl shadow-black/25 transition-[width,height] duration-300 sm:left-1/2 sm:top-1/2 sm:bottom-auto sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-3xl",
+        "reader-room-panel-enter fixed inset-x-2 bottom-[calc(env(safe-area-inset-bottom,0px)_+_0.5rem)] z-50 flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border/70 bg-background text-foreground shadow-2xl shadow-black/25 transition-[width,height] duration-300 sm:inset-0 sm:m-auto sm:max-h-[calc(100dvh-2rem)] sm:max-w-[calc(100vw-2rem)] sm:rounded-3xl",
         isExpanded
           ? "h-[min(92dvh,900px)] sm:w-[min(1040px,calc(100vw-4rem))]"
           : "h-[min(82dvh,780px)] sm:w-[min(900px,calc(100vw-4rem))]"
