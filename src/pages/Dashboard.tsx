@@ -142,7 +142,7 @@ const DashboardContent = () => {
 
           {/* Stats Overview */}
           <DashboardStats />
-          <div className="flex justify-end"><Button variant="outline" asChild><Link to="/reading-stats">View My Reading Stats <ChevronRight className="ml-1 h-4 w-4" /></Link></Button>
+          <div className="flex justify-end"><Button variant="outline" asChild><Link to="/reading-stats">View My Reading Stats <ChevronRight className="ml-1 h-4 w-4" /></Link></Button></div>
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

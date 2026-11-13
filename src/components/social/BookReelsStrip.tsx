@@ -116,7 +116,21 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
     setSelectedReelIndex((selectedReelIndex - 1 + displayedReels.length) % displayedReels.length);
   };
 
-  const handleSaveReel = async (reelId: string) => {\n    const { data: { user } } = await supabase.auth.getUser();\n    if (!user) { toast.error('Sign in to save reels.'); return; }\n    if (savedReels[reelId]) {\n      const { error } = await supabase.from('book_reel_saves').delete().eq('reel_id', reelId).eq('user_id', user.id);\n      if (error) { toast.error('Could not remove saved reel.'); return; }\n      setSavedReels(prev => { const next = { ...prev }; delete next[reelId]; return next; }); toast.success('Reel removed from saved.');\n    } else {\n      const { error } = await supabase.from('book_reel_saves').insert({ reel_id: reelId, user_id: user.id });\n      if (error) { toast.error('Could not save reel. Apply the saved reels migration first.'); return; }\n      setSavedReels(prev => ({ ...prev, [reelId]: true })); toast.success('Reel saved.');\n    }\n  };\n\n  const handleReaction = async (reelId: string, emoji: string) => {
+  const handleSaveReel = async (reelId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { toast.error('Sign in to save reels.'); return; }
+    if (savedReels[reelId]) {
+      const { error } = await supabase.from('book_reel_saves').delete().eq('reel_id', reelId).eq('user_id', user.id);
+      if (error) { toast.error('Could not remove saved reel.'); return; }
+      setSavedReels(prev => { const next = { ...prev }; delete next[reelId]; return next; }); toast.success('Reel removed from saved.');
+    } else {
+      const { error } = await supabase.from('book_reel_saves').insert({ reel_id: reelId, user_id: user.id });
+      if (error) { toast.error('Could not save reel. Apply the saved reels migration first.'); return; }
+      setSavedReels(prev => ({ ...prev, [reelId]: true })); toast.success('Reel saved.');
+    }
+  };
+
+  const handleReaction = async (reelId: string, emoji: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { toast.error('Sign in to react to reels.'); return; }
     const existing = activeReaction[reelId];
