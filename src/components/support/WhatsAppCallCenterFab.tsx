@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { PhoneCall, LifeBuoy, Headset, X, ExternalLink, Clock } from 'lucide-react';
+import { PhoneCall, X, ExternalLink, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   SAHADHYAYI_PHONE_RAW,
@@ -67,29 +67,28 @@ export const WhatsAppCallCenterFab: React.FC = () => {
         onClick={() => setIsOpen((prev) => !prev)}
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
-        aria-label="Open Sahadhyayi support"
+        aria-label="Call Center and WhatsApp Support"
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         data-testid="whatsapp-callcenter-fab"
         className={cn(
-          'group fixed z-40 flex items-center justify-center rounded-full shadow-[0_8px_28px_-8px_rgba(15,23,42,0.45)] transition-all duration-300 hover:-translate-y-1 hover:scale-[1.04] hover:shadow-[0_12px_32px_-8px_rgba(15,23,42,0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2',
+          'group fixed z-40 flex items-center justify-center rounded-full shadow-[0_8px_24px_rgba(37,211,102,0.35)] transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:shadow-[0_12px_28px_rgba(37,211,102,0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2',
           // Exactly matching Book Reader launcher dimensions: 48px (w-12 h-12) on mobile, 56px (sm:w-14 sm:h-14) on sm+
           'w-12 h-12 sm:w-14 sm:h-14',
           // Positioned directly above Book Reader: right-4 sm:right-5 lg:right-6 (vertically aligned)
           'bottom-[76px] right-4 sm:bottom-[88px] sm:right-5 lg:bottom-[96px] lg:right-6',
-          // Deep emerald & radiant gold styling
-          'bg-gradient-to-br from-[#263548] via-[#172333] to-[#101827] text-white border border-white/15 hover:from-[#33465d] hover:via-[#1d2d40] hover:to-[#152033]'
+          // Standard authentic WhatsApp Green styling seen on modern websites
+          'bg-[#25D366] text-white border-2 border-white/90 hover:bg-[#20BA5A]'
         )}
       >
         {/* Radar ping ring */}
         <span
-          className="pointer-events-none absolute inset-0 rounded-full bg-white/10 opacity-30 animate-ping [animation-duration:3.2s]"
+          className="pointer-events-none absolute inset-0 rounded-full bg-white/25 opacity-40 animate-ping [animation-duration:3s]"
           aria-hidden="true"
         />
-        {/* Support / Help Icon matching Book Reader icon scale */}
-        <span className="pointer-events-none absolute inset-[3px] rounded-full border border-white/10" aria-hidden="true" />
-        <Headset className="relative h-[26px] w-[26px] sm:h-7 sm:w-7 stroke-[1.8] transition-transform duration-300 group-hover:scale-105" aria-hidden="true" />
-        <span className="absolute bottom-0.5 right-0.5 h-3 w-3 rounded-full border-2 border-[#172333] bg-emerald-400" aria-label="Support available" />
+        {/* Authentic WhatsApp Icon matching standard support button */}
+        <WhatsAppIcon className="relative h-6 w-6 sm:h-7 sm:w-7 transition-transform duration-300 group-hover:scale-110" />
+        <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-[#16A34A]" aria-label="Support available" />
 
         {/* Desktop Tooltip */}
         <span
@@ -98,7 +97,7 @@ export const WhatsAppCallCenterFab: React.FC = () => {
             showTooltip && !isOpen ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'
           )}
         >
-          Chat with a Support Agent
+          Chat with Sahadhyayi
         </span>
       </button>
 
@@ -122,8 +121,8 @@ export const WhatsAppCallCenterFab: React.FC = () => {
             <div className="relative border-b border-border/70 bg-[#111614] p-4 text-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1C442D] text-[#D5B16D] border border-[#D5B16D]/30 shadow-sm">
-                    <LifeBuoy className="h-5 w-5" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25D366] text-white shadow-sm">
+                    <WhatsAppIcon className="h-5 w-5" />
                   </div>
                   <div>
                     <h3 className="font-serif text-base font-semibold leading-tight text-white">
