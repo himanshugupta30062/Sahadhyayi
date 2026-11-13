@@ -97,50 +97,81 @@ export function MapplsMap({
     setStatus('loading');
     setErrorMessage('');
 
-    loadMappls(apiKey)
-      .then(() => {
-        if (cancelled || !mapElement.current || mapInstance.current) return;
-        const initialCenter = center ?? { lat: 22.9734, lng: 78.6569 };
-        // The Web SDK examples initialize the map using the container element's ID.
-        let map: any;
-        try {
-          map = new window.mappls!.Map(containerId, {
-            center: { lat: initialCenter.lat, lng: initialCenter.lng },
-            zoom: center ? 10 : 4,
-          });
-          mapInstance.current = map;
-        } catch (error) {
-          setErrorMessage(error instanceof Error ? error.message : 'Map initialization failed.');
-          setStatus('error');
-          return;
-        }
+    let observer: ResizeObserver | undefined;
+    let initializationStarted = false;
 
-        let markedReady = false;
-        const markReady = () => {
-          if (cancelled || markedReady) return;
-          markedReady = true;
-          setStatus('ready');
-        };
+    const initializeMap = () => {
+      const container = mapElement.current;
+      // Mappls needs a measurable container. Social tabs/dialogs often mount maps
+      // while hidden (0×0); initialize only after the panel becomes visible.
+      if (cancelled || initializationStarted || mapInstance.current || !container ||
+          container.clientWidth === 0 || container.clientHeight === 0) return;
+      initializationStarted = true;
 
-        if (typeof map?.on === 'function') {
-          if (typeof map?.loaded === 'function' && map.loaded()) {
-            markReady();
+      loadMappls(apiKey)
+        .then(() => {
+          if (cancelled || !mapElement.current || mapInstance.current) return;
+          const initialCenter = center ?? { lat: 22.9734, lng: 78.6569 };
+          let map: any;
+          try {
+            map = new window.mappls!.Map(containerId, {
+              center: { lat: initialCenter.lat, lng: initialCenter.lng },
+              zoom: center ? 10 : 4,
+            });
+            mapInstance.current = map;
+          } catch (error) {
+            setErrorMessage(error instanceof Error ? error.message : 'Map initialization failed.');
+            setStatus('error');
+            return;
+          }
+
+          let markedReady = false;
+          const markReady = () => {
+            if (cancelled || markedReady) return;
+            markedReady = true;
+            setStatus('ready');
+            // A panel may have resized between SDK load and map load.
+            requestAnimationFrame(() => map.resize?.());
+          };
+
+          if (typeof map?.on === 'function') {
+            if (typeof map?.loaded === 'function' && map.loaded()) {
+              markReady();
+            } else {
+              map.on('load', markReady);
+            }
           } else {
-            map.on('load', markReady);
-            setTimeout(markReady, 1000);
+            markReady();
+          }
+        })
+        .catch((error: unknown) => {
+          if (cancelled) return;
+          setErrorMessage(error instanceof Error ? error.message : 'Map could not be loaded.');
+          setStatus('error');
+        });
+    };
+
+    if (typeof ResizeObserver !== 'undefined' && mapElement.current) {
+      observer = new ResizeObserver(() => {
+        const container = mapElement.current;
+        if (!container || container.clientWidth === 0 || container.clientHeight === 0) return;
+        if (mapInstance.current) {
+          try {
+            mapInstance.current.resize?.();
+          } catch {
+            // Ignore SDK-specific resize differences.
           }
         } else {
-          markReady();
+          initializeMap();
         }
-      })
-      .catch((error: unknown) => {
-        if (cancelled) return;
-        setErrorMessage(error instanceof Error ? error.message : 'Map could not be loaded.');
-        setStatus('error');
       });
+      observer.observe(mapElement.current);
+    }
+    initializeMap();
 
     return () => {
       cancelled = true;
+      observer?.disconnect();
       markers.current.forEach((marker) => {
         try {
           marker.remove?.();
@@ -170,25 +201,7 @@ export function MapplsMap({
     }
   }, [center, status]);
 
-  // Handle container resizing (e.g., when switching tabs in tabbed map views)
-  useEffect(() => {
-    const map = mapInstance.current;
-    const container = mapElement.current;
-    if (status !== 'ready' || !map || !container || typeof ResizeObserver === 'undefined') return;
 
-    const observer = new ResizeObserver(() => {
-      try {
-        map.resize?.();
-      } catch {
-        // Some SDK versions do not expose resize
-      }
-    });
-
-    observer.observe(container);
-    return () => {
-      observer.disconnect();
-    };
-  }, [status]);
 
   useEffect(() => {
     const map = mapInstance.current;
