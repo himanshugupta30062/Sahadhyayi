@@ -11,7 +11,7 @@ export interface BookshelfItem {
   user_id: string;
   book_id: string;
   status: 'want_to_read' | 'reading' | 'completed' | 'dnf';
-  added_at: string;
+  added_at: string;\n  completed_at?: string | null;
   notes?: string;
   rating?: number;
   progress?: number;

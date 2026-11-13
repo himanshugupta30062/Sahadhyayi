@@ -37,7 +37,10 @@ import DeleteProfileDialog from "./DeleteProfileDialog";
 import { useReadingDna } from "@/hooks/useReadingDna";
 import { ReadingDnaCard } from "@/components/social/dna/ReadingDnaCard";
 import { AppearanceSettingsCard } from "./AppearanceSettingsCard";
+import ReadingPassportCard from "./ReadingPassportCard";
 import ProfileReadingStats from "./ProfileReadingStats";
+import ReadingYearReview from "./ReadingYearReview";
+import ReadingActivityCalendar from "./ReadingActivityCalendar";
 
 type EditMode = "view" | "edit" | "delete";
 
@@ -237,6 +240,12 @@ export const ProfileView: React.FC = () => {
             </div>
 
             <ProfileReadingStats books={bookshelf} />
+
+            <ReadingActivityCalendar />
+
+            <ReadingYearReview books={bookshelf} />
+
+            <ReadingPassportCard name={profile?.name} username={profile?.username} books={bookshelf} />
 
             {/* Tags / Life phases */}
             <ProfileTags life_tags={profile?.life_tags ?? []} />

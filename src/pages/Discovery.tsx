@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,11 +9,12 @@ import SEO from '@/components/SEO';
 import { trackUiEvent } from '@/lib/analytics';
 import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
 import { useBookRecommendations } from '@/hooks/useBookRecommendations';
+import { useAddToBookshelf, useUserBookshelf } from '@/hooks/useUserBookshelf';
 import { useReadingProgress } from '@/hooks/useReadingProgress';
 import { useReadingGoal } from '@/hooks/useReadingGoal';
-import { useAddToBookshelf, useUserBookshelf } from '@/hooks/useUserBookshelf';
+import { rankPersonalizedBooks } from '@/utils/personalizedBookRecommendations';
 import { useAuth } from '@/contexts/authHelpers';
-import { BookOpen, Plus, Search, Sparkles, RotateCcw } from 'lucide-react';
+import { BookOpen, Plus, Search, Sparkles, RotateCcw, BookmarkCheck } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import SemanticBookDiscovery from '@/components/discovery/SemanticBookDiscovery';
 
@@ -21,38 +22,30 @@ const Discovery = () => {
   const { user } = useAuth();
   const { data: books = [], isLoading, isError } = useAllLibraryBooks();
   const { data: recommendations = [] } = useBookRecommendations(user?.id);
-  const addToShelf = useAddToBookshelf();
-  const { data: shelfItems = [] } = useUserBookshelf();
+  const { data: shelf = [] } = useUserBookshelf();
   const { data: readingProgress = [] } = useReadingProgress({ enabled: !!user });
   const { goal, currentYear } = useReadingGoal();
-  const completedThisYear = shelfItems.filter((item) => item.status === 'completed' && item.added_at && new Date(item.added_at).getFullYear() === currentYear).length;
+  const completedThisYear = shelf.filter((item) => item.status === 'completed' && item.completed_at && new Date(item.completed_at).getFullYear() === currentYear).length;
   const goalProgress = Math.min(100, Math.round((completedThisYear / Math.max(1, goal)) * 100));
+  const currentlyReading = shelf.filter((item) => item.status === 'reading');
   const progressByBook = useMemo(() => new Map(readingProgress.map((item) => [item.book_id, item.total_pages > 0 ? Math.min(1, item.current_page / item.total_pages) : 0])), [readingProgress]);
-  const personalizedRecommendations = useMemo(() => {
-    const shelfBookIds = new Set(shelfItems.map((item) => item.book_id));
-    const genreCounts = new Map<string, number>();
-    const activeGenres = new Set<string>();
-    shelfItems.forEach((item) => {
-      const genre = item.books_library?.genre?.trim().toLowerCase();
-      if (genre && (item.status === 'reading' || item.status === 'completed' || item.rating)) {
-        genreCounts.set(genre, (genreCounts.get(genre) ?? 0) + (item.rating ? Math.max(1, item.rating) : 1));
-      }
-    });
-    return recommendations
-      .filter((book) => !shelfBookIds.has(book.id))
-      .map((book) => ({ book, preferenceScore: genreCounts.get(book.genre?.trim().toLowerCase() ?? '') ?? 0 }))
-      .sort((a, b) => b.preferenceScore - a.preferenceScore)
-      .map(({ book, preferenceScore }) => ({ book, reason: activeGenres.has(book.genre?.trim().toLowerCase() ?? '') ? 'Inspired by your current read' : preferenceScore > 0 ? 'Matches your reading interests' : 'Suggested for your bookshelf' }));
-  }, [recommendations, shelfItems, progressByBook]);
+  const personalized = useMemo(() => rankPersonalizedBooks(books, shelf, 8), [books, shelf]);
+  const addToShelf = useAddToBookshelf();
   const [searchQuery, setSearchQuery] = useState('');
   const [languageFilter, setLanguageFilter] = useState('all');
-  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+  const [genreFilter, setGenreFilter] = useState('all');
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
-  const [publicationPeriodFilter, setPublicationPeriodFilter] = useState('all');
-  const [minimumRatingFilter, setMinimumRatingFilter] = useState('all');
-  const [bookLengthFilter, setBookLengthFilter] = useState('all');
-  const [sortBy, setSortBy] = useState<'relevance' | 'newest' | 'title_asc' | 'quality' | 'rating' | 'author_asc'>('relevance');
-  const [visibleCount, setVisibleCount] = useState(24);
+  const [paceFilter, setPaceFilter] = useState('all');
+  const [lengthFilter, setLengthFilter] = useState('all');
+  const [sortBy, setSortBy] = useState<'relevance' | 'newest' | 'title_asc'>('relevance');
+  const [readingMood, setReadingMood] = useState<string | null>(null);
+  const moodPresets = [
+    { id: 'comfort', label: '☕ Comfort & cozy', terms: ['fiction', 'romance', 'poetry', 'classic'] },
+    { id: 'curious', label: '🧠 Learn something', terms: ['science', 'history', 'philosophy', 'non-fiction', 'education'] },
+    { id: 'adventure', label: '🗺️ Adventure', terms: ['adventure', 'fantasy', 'travel', 'thriller', 'mystery'] },
+    { id: 'reflect', label: '🌙 Reflect & unwind', terms: ['poetry', 'philosophy', 'spiritual', 'self-help', 'memoir'] },
+    { id: 'inspire', label: '✨ Feel inspired', terms: ['biography', 'motivation', 'self-help', 'business', 'inspiration'] },
+  ];
 
   const filteredTrendingBooks = useMemo(() => {
     let list = [...books];
@@ -67,60 +60,40 @@ const Discovery = () => {
     }
 
     if (languageFilter !== 'all') list = list.filter((book) => book.language === languageFilter);
-    if (selectedGenres.length > 0) list = list.filter((book) => selectedGenres.includes(book.genre ?? ''));
+    if (genreFilter !== 'all') list = list.filter((book) => book.genre === genreFilter);
     if (availabilityFilter === 'readable') list = list.filter((book) => Boolean(book.pdf_url));
-    if (bookLengthFilter !== 'all') {
-      list = list.filter((book) => {
-        const pages = Number(book.pages);
-        if (!Number.isFinite(pages) || pages <= 0) return bookLengthFilter === 'unknown';
-        if (bookLengthFilter === 'short') return pages <= 200;
-        if (bookLengthFilter === 'medium') return pages > 200 && pages <= 400;
-        if (bookLengthFilter === 'long') return pages > 400;
-        return false;
-      });
-    }
-    if (minimumRatingFilter !== 'all') {
-      const minimumRating = Number(minimumRatingFilter);
-      list = list.filter((book) => typeof book.rating === 'number' && book.rating >= minimumRating);
-    }
-    if (publicationPeriodFilter !== 'all') {
-      list = list.filter((book) => {
-        const year = Number(book.publication_year);
-        if (!Number.isFinite(year) || year <= 0) return publicationPeriodFilter === 'unknown';
-        if (publicationPeriodFilter === 'before_2000') return year < 2000;
-        if (publicationPeriodFilter === '2000s') return year >= 2000 && year < 2010;
-        if (publicationPeriodFilter === '2010s') return year >= 2010 && year < 2020;
-        if (publicationPeriodFilter === '2020s') return year >= 2020 && year < 2030;
-        return false;
-      });
+    // Session estimates use ~40 pages/session; only books with page metadata qualify.
+    if (paceFilter === 'quick') list = list.filter((book) => book.pages && book.pages <= 120);
+    if (paceFilter === 'steady') list = list.filter((book) => book.pages && book.pages > 120 && book.pages <= 320);
+    if (paceFilter === 'immersive') list = list.filter((book) => book.pages && book.pages > 320);
+    if (lengthFilter === 'short') list = list.filter((book) => book.pages && book.pages <= 200);
+    if (lengthFilter === 'medium') list = list.filter((book) => book.pages && book.pages > 200 && book.pages <= 400);
+    if (lengthFilter === 'long') list = list.filter((book) => book.pages && book.pages > 400);
+    if (readingMood) {
+      const mood = moodPresets.find((preset) => preset.id === readingMood);
+      if (mood) list = list.filter((book) => mood.terms.some((term) => `${book.genre || ''} ${book.title || ''} ${book.description || ''}`.toLowerCase().includes(term)));
     }
 
     if (sortBy === 'newest') list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     if (sortBy === 'title_asc') list.sort((a, b) => a.title.localeCompare(b.title));
-    if (sortBy === 'author_asc') list.sort((a, b) => (a.author || '').localeCompare(b.author || ''));
-    if (sortBy === 'rating') list.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
-    if (sortBy === 'quality' || sortBy === 'relevance') list.sort((a, b) => (b.qualityScore ?? 0) - (a.qualityScore ?? 0) || (b.rating ?? 0) - (a.rating ?? 0) || new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-    return list;
-  }, [availabilityFilter, books, selectedGenres, languageFilter, minimumRatingFilter, bookLengthFilter, publicationPeriodFilter, searchQuery, sortBy]);
-
-  useEffect(() => { setVisibleCount(24); }, [searchQuery, languageFilter, selectedGenres, availabilityFilter, minimumRatingFilter, bookLengthFilter, publicationPeriodFilter, sortBy]);
-  const visibleBooks = filteredTrendingBooks.slice(0, visibleCount);
+    return list.slice(0, 24);
+  }, [availabilityFilter, books, genreFilter, languageFilter, lengthFilter, paceFilter, searchQuery, sortBy, readingMood]);
 
   const genres = useMemo(
     () => [...new Set(books.map((book) => book.genre).filter(Boolean))].sort((a, b) => (a ?? '').localeCompare(b ?? '')),
     [books],
   );
-  const hasActiveFilters = Boolean(searchQuery.trim()) || languageFilter !== 'all' || selectedGenres.length > 0 || availabilityFilter !== 'all' || publicationPeriodFilter !== 'all' || minimumRatingFilter !== 'all' || bookLengthFilter !== 'all' || sortBy !== 'relevance';
+  const hasActiveFilters = Boolean(searchQuery.trim()) || languageFilter !== 'all' || genreFilter !== 'all' || availabilityFilter !== 'all' || lengthFilter !== 'all' || paceFilter !== 'all' || sortBy !== 'relevance' || readingMood !== null;
   const clearFilters = () => {
     setSearchQuery('');
     setLanguageFilter('all');
-    setSelectedGenres([]);
+    setGenreFilter('all');
     setAvailabilityFilter('all');
-    setPublicationPeriodFilter('all');
-    setMinimumRatingFilter('all');
-    setBookLengthFilter('all');
+    setLengthFilter('all');
+    setPaceFilter('all');
     setSortBy('relevance');
+    setReadingMood(null);
     void trackUiEvent('discovery_filters_reset');
   };
 
@@ -137,6 +110,8 @@ const Discovery = () => {
         url="https://sahadhyayi.com/discovery"
       />
       <h1 className="text-3xl font-bold mb-6 text-center">Discover New Books</h1>
+      {user && <Card className="mb-8 border-border"><CardContent className="p-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-semibold">{currentYear} reading goal</h2><p className="text-sm text-muted-foreground">{completedThisYear} / {goal} books completed · {Math.max(0, goal - completedThisYear)} to go</p></div><Badge variant="secondary">{goalProgress}%</Badge></div><div className="mt-3 h-2 rounded-full bg-muted overflow-hidden" role="progressbar" aria-label="Annual reading goal progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={goalProgress}><div className="h-full bg-brand-primary" style={{ width: goalProgress + "%" }} /></div><div className="mt-4"><h3 className="font-medium mb-2">Continue reading <Badge variant="outline">{currentlyReading.length}</Badge></h3>{currentlyReading.length ? <div className="flex flex-wrap gap-2">{currentlyReading.slice(0, 3).map((item) => { const p = progressByBook.get(item.book_id); return <Link key={item.id} to={item.books_library?.id ? "/book/" + item.books_library.id : "/dashboard"} className="rounded-lg border border-border p-3 min-w-[150px] flex-1 hover:border-brand-primary/50"><p className="text-sm font-medium line-clamp-1">{item.books_library?.title ?? item.book?.title ?? "Current book"}</p>{p !== undefined ? <><div className="mt-2 h-1.5 rounded bg-muted overflow-hidden"><div className="h-full bg-brand-primary" style={{ width: Math.round(p * 100) + "%" }} /></div><p className="text-xs text-muted-foreground mt-1">{Math.round(p * 100)}% read</p></> : <p className="text-xs text-muted-foreground mt-1">Reading · progress not recorded</p>}</Link>; })}</div> : <p className="text-sm text-muted-foreground">Mark a shelf book as Reading to track it here.</p>}</div></CardContent></Card>}
+
 
       <div className="mb-10">
         <SemanticBookDiscovery />
@@ -153,7 +128,7 @@ const Discovery = () => {
                 void trackUiEvent('discovery_filter_changed', { filter: 'search' });
               }}
             />
-            <Select value={sortBy} onValueChange={(value: 'relevance' | 'newest' | 'title_asc' | 'quality' | 'rating' | 'author_asc') => {
+            <Select value={sortBy} onValueChange={(value: 'relevance' | 'newest' | 'title_asc') => {
               setSortBy(value);
               void trackUiEvent('discovery_filter_changed', { filter: 'sort', value });
             }}>
@@ -161,10 +136,7 @@ const Discovery = () => {
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="relevance">Sort: Recommended</SelectItem>
-                <SelectItem value="quality">Sort: Catalog quality</SelectItem>
-                <SelectItem value="rating">Sort: Rating</SelectItem>
-                <SelectItem value="author_asc">Sort: Author A-Z</SelectItem>
+                <SelectItem value="relevance">Sort: Relevance</SelectItem>
                 <SelectItem value="newest">Sort: Newest added</SelectItem>
                 <SelectItem value="title_asc">Sort: Title A-Z</SelectItem>
               </SelectContent>
@@ -183,6 +155,22 @@ const Discovery = () => {
             </Select>
           </div>
 
+          <div className="space-y-2">
+            <p className="text-sm font-medium">What are you in the mood to read?</p>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Reading mood">
+              {moodPresets.map((mood) => (
+                <Button key={mood.id} type="button" size="sm" variant={readingMood === mood.id ? 'default' : 'outline'} aria-pressed={readingMood === mood.id}
+                  onClick={() => {
+                    setReadingMood(readingMood === mood.id ? null : mood.id);
+                    void trackUiEvent('discovery_filter_changed', { filter: 'reading_mood', value: readingMood === mood.id ? 'all' : mood.id });
+                  }}>
+                  {mood.label}
+                </Button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">Choose a vibe to narrow the library—or tap it again to show every book.</p>
+          </div>
+
           <div className="grid md:grid-cols-3 gap-3">
             <Select value={languageFilter} onValueChange={(value) => {
               setLanguageFilter(value);
@@ -194,59 +182,26 @@ const Discovery = () => {
                 {languages.map((language) => <SelectItem key={language} value={language}>{language}</SelectItem>)}
               </SelectContent>
             </Select>
-            <div className="md:col-span-3 space-y-2">
-              <p className="text-sm font-medium">Genres <span className="text-muted-foreground font-normal">(select multiple)</span></p>
-              <div className="flex flex-wrap gap-2">
-                {genres.map((genre) => {
-                  const active = selectedGenres.includes(genre ?? '');
-                  return <Button key={genre} type="button" size="sm" variant={active ? 'default' : 'outline'} aria-pressed={active}
-                    onClick={() => {
-                      const value = genre ?? '';
-                      setSelectedGenres((current) => active ? current.filter((item) => item !== value) : [...current, value]);
-                      void trackUiEvent('discovery_filter_changed', { filter: 'genre', value, action: active ? 'remove' : 'add' });
-                    }}>{genre}</Button>;
-                })}
-                {selectedGenres.length > 0 && <Button type="button" size="sm" variant="ghost" onClick={() => setSelectedGenres([])}>Clear genres</Button>}
-              </div>
-            </div>
-            <Select value={publicationPeriodFilter} onValueChange={(value) => {
-              setPublicationPeriodFilter(value);
-              void trackUiEvent('discovery_filter_changed', { filter: 'publication_period', value });
+            <Select value={genreFilter} onValueChange={(value) => {
+              setGenreFilter(value);
+              void trackUiEvent('discovery_filter_changed', { filter: 'genre', value });
             }}>
-              <SelectTrigger><SelectValue placeholder="Publication period" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Genre" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Any publication year</SelectItem>
-                <SelectItem value="before_2000">Before 2000</SelectItem>
-                <SelectItem value="2000s">2000–2009</SelectItem>
-                <SelectItem value="2010s">2010–2019</SelectItem>
-                <SelectItem value="2020s">2020–2029</SelectItem>
-                <SelectItem value="unknown">Year not listed</SelectItem>
+                <SelectItem value="all">All genres</SelectItem>
+                {genres.map((genre) => <SelectItem key={genre} value={genre}>{genre}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Select value={bookLengthFilter} onValueChange={(value) => {
-              setBookLengthFilter(value);
+            <Select value={lengthFilter} onValueChange={(value) => {
+              setLengthFilter(value);
               void trackUiEvent('discovery_filter_changed', { filter: 'book_length', value });
             }}>
               <SelectTrigger><SelectValue placeholder="Book length" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Any book length</SelectItem>
+                <SelectItem value="all">Any length</SelectItem>
                 <SelectItem value="short">Short · up to 200 pages</SelectItem>
                 <SelectItem value="medium">Medium · 201–400 pages</SelectItem>
-                <SelectItem value="long">Long · over 400 pages</SelectItem>
-                <SelectItem value="unknown">Pages not listed</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={minimumRatingFilter} onValueChange={(value) => {
-              setMinimumRatingFilter(value);
-              void trackUiEvent('discovery_filter_changed', { filter: 'minimum_rating', value });
-            }}>
-              <SelectTrigger><SelectValue placeholder="Minimum rating" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Any rating</SelectItem>
-                <SelectItem value="3">3+ stars</SelectItem>
-                <SelectItem value="3.5">3.5+ stars</SelectItem>
-                <SelectItem value="4">4+ stars</SelectItem>
-                <SelectItem value="4.5">4.5+ stars</SelectItem>
+                <SelectItem value="long">Long · 400+ pages</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -254,24 +209,52 @@ const Discovery = () => {
         </CardContent>
       </Card>
 
-      {user && personalizedRecommendations.length > 0 && (
+      {user && personalized.length > 0 && (
+        <section className="mb-10" aria-labelledby="personalized-heading">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="w-5 h-5 text-brand-primary" />
+            <h2 id="personalized-heading" className="text-2xl font-semibold">Picked for your reading taste</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">Suggestions shaped by books you are reading or have completed, including your ratings.</p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {personalized.slice(0, 4).map((book) => (
+              <Link key={book.id} to={`/book/${book.id}`} className="block">
+                <Card className="h-full border-border hover:border-brand-primary/50 transition-colors">
+                  <CardContent className="p-4">
+                    <p className="text-xs text-brand-primary font-medium mb-2">{book.reason}</p>
+                    <h3 className="font-semibold line-clamp-2">{book.title}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">{book.author || 'Unknown author'}</p>
+                    {book.genre && <Badge variant="outline" className="mt-2">{book.genre}</Badge>}
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {user && recommendations.length > 0 && (
         <section className="mb-10" aria-labelledby="recommended-heading">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-5 h-5 text-brand-primary" />
             <h2 id="recommended-heading" className="text-2xl font-semibold">Recommended for you</h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {personalizedRecommendations.slice(0, 4).map(({ book, reason }) => (
-              <Link key={book.id} to={`/book/${book.id}`} className="block">
-                <Card className="h-full border-border hover:border-brand-primary/50 transition-colors">
-                  <CardContent className="p-4">
-                    <p className="text-xs text-brand-primary font-medium mb-2">{reason}</p>
-                    <h3 className="font-semibold line-clamp-2">{book.title}</h3>
+            {recommendations.slice(0, 4).map((book) => (
+              <Card key={book.id} className="h-full border-border hover:border-brand-primary/50 transition-colors">
+                <CardContent className="p-4 flex flex-col h-full">
+                  <Link to={`/book/${book.id}`} className="group">
+                    <div className="flex items-center gap-1.5 text-xs text-brand-primary font-medium mb-2"><Sparkles className="w-3.5 h-3.5" /> Picked from your bookshelf activity</div>
+                    <h3 className="font-semibold line-clamp-2 group-hover:text-brand-primary">{book.title}</h3>
                     <p className="text-sm text-muted-foreground mt-1">{book.author || 'Unknown author'}</p>
                     {book.genre && <Badge variant="outline" className="mt-2 text-xs">{book.genre}</Badge>}
-                  </CardContent>
-                </Card>
-              </Link>
+                  </Link>
+                  <div className="mt-auto pt-3 flex gap-2">
+                    <Button size="sm" variant="outline" className="flex-1" asChild><Link to={`/book/${book.id}`}>Details</Link></Button>
+                    <Button size="sm" variant="ghost" className="flex-1 text-brand-primary" disabled={addToShelf.isPending} onClick={() => addToShelf.mutate({ bookId: book.id, status: 'want_to_read' })}><BookmarkCheck className="w-4 h-4 mr-1" /> Save</Button>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </section>
@@ -282,7 +265,7 @@ const Discovery = () => {
         {isLoading && <div className="flex justify-center py-16"><LoadingSpinner /></div>}
         {isError && <p className="text-center text-destructive py-12">Books could not be loaded. Please try again.</p>}
         {!isLoading && !isError && <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {visibleBooks.map((book) => (
+          {filteredTrendingBooks.map((book) => (
             <Card key={book.id} className="border-border overflow-hidden">
               <CardContent className="p-4 flex gap-4">
                 <Link to={`/book/${book.id}`} className="w-20 h-28 bg-muted rounded overflow-hidden shrink-0 flex items-center justify-center">
@@ -295,11 +278,7 @@ const Discovery = () => {
                   <p className="text-sm text-muted-foreground truncate mt-1">{book.author}</p>
                   <div className="flex flex-wrap gap-1 mt-2">
                     {book.genre && <Badge variant="outline" className="text-xs">{book.genre}</Badge>}
-                    {book.publication_year && <Badge variant="outline" className="text-xs">{book.publication_year}</Badge>}
-                    {typeof book.rating === 'number' && <Badge variant="secondary" className="text-xs" aria-label={`Rating ${book.rating} out of 5`}>★ {book.rating.toFixed(1)}</Badge>}
-                    {typeof book.pages === 'number' && book.pages > 0 && <Badge variant="outline" className="text-xs">{book.pages} pages</Badge>}
                     {book.pdf_url && <Badge variant="secondary" className="text-xs">Read online</Badge>}
-                    {(book.qualityScore ?? 0) >= 9000 && <Badge className="text-xs">Featured catalog</Badge>}
                   </div>
                   {user ? (
                     <Button size="sm" variant="ghost" className="mt-2 px-0 text-brand-primary" disabled={addToShelf.isPending} onClick={() => addToShelf.mutate({ bookId: book.id, status: 'want_to_read' })}>
@@ -313,7 +292,6 @@ const Discovery = () => {
             </Card>
           ))}
         </div>}
-        {filteredTrendingBooks.length > visibleBooks.length && <div className="mt-6 text-center"><p className="mb-3 text-sm text-muted-foreground">Showing {visibleBooks.length} of {filteredTrendingBooks.length} books</p><Button variant="outline" onClick={() => setVisibleCount((count) => count + 24)}>Load 24 more books</Button></div>}
         {filteredTrendingBooks.length === 0 && (
           <Card className="border-dashed border-2 border-border">
             <CardContent className="py-12 text-center space-y-2">
