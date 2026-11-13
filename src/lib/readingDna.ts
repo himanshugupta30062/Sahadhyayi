@@ -205,11 +205,11 @@ export const getCompatibilityBreakdown = (
       : "emerging";
 
   // Book overlap on shelves
-  const theirBookMap = new Map(
-    theirShelf
-      .map((b) => [b.book_id || b.id || b.books_library?.id, b])
-      .filter(([id]) => Boolean(id))
-  );
+  const theirBookMap = new Map<string, ShelfBookItem>();
+  theirShelf.forEach((b) => {
+    const id = b.book_id || b.id || b.books_library?.id;
+    if (id) theirBookMap.set(id, b);
+  });
 
   const overlappingBooks = myShelf
     .filter((myBook) => {

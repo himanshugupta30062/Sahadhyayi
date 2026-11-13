@@ -29,7 +29,26 @@ const quickLinks = [
 ];
 
 export default function HomeFeatureUniverse() {
+  const sectionRef = useRef<HTMLElement>(null);
   const [mood, setMood] = useState("Inspire me");
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const elements = el.querySelectorAll<HTMLElement>("[data-home-reveal]");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("home-revealed");
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    elements.forEach((child) => observer.observe(child));
+    return () => observer.disconnect();
+  }, []);
   const moodMessage = useMemo(() => {
     const selected = moods.find((item) => item.label === mood);
     const copy: Record<string, string> = {

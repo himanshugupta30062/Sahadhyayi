@@ -6,14 +6,17 @@ export interface ReadingLogEntry {
   id: string;
   user_id: string;
   book_id: string;
-  pages_read: number | null;
-  current_page: number | null;
-  total_pages: number | null;
-  minutes_read: number | null;
-  percentage: number | null;
-  journal_note: string | null;
+  book_title?: string | null;
+  pages_read?: number | null;
+  current_page?: number | null;
+  total_pages?: number | null;
+  minutes_read?: number | null;
+  percentage?: number | null;
+  journal_note?: string | null;
   logged_at: string;
 }
+
+export type ReadingLog = ReadingLogEntry;
 
 export interface CreateReadingLogInput {
   bookId: string;

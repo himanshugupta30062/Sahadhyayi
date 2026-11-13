@@ -22,7 +22,8 @@ describe('Library BookReader Modal Dialog', () => {
   });
 
   const sampleBook: Book = {
-    id: 42,
+    id: '42',
+    created_at: '2026-01-01T00:00:00Z',
     title: 'Gitanjali',
     author: 'Rabindranath Tagore',
     description: 'Song offerings of timeless poetry.',
@@ -72,7 +73,8 @@ describe('Library BookReader Modal Dialog', () => {
 
   it('renders non-PDF books with interactive page navigation, view modes, and dark mode', () => {
     const nonPdfBook: Book = {
-      id: 99,
+      id: '99',
+      created_at: '2026-01-01T00:00:00Z',
       title: 'Untouchable',
       author: 'Mulk Raj Anand',
       description: 'A day in the life of Bakha, an outcast sweeper.',

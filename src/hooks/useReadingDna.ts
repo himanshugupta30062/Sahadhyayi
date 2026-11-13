@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/authHelpers";
 import { matchScore, type ReadingDna, type ShelfBookItem } from "@/lib/readingDna";
 
+export type { ReadingDna, ShelfBookItem };
+
 export const useReadingDna = (userId?: string) => {
   const { user } = useAuth();
   const target = userId ?? user?.id;

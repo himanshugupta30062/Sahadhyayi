@@ -19,6 +19,7 @@ import {
   Sun,
   Users,
   X,
+  type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -148,7 +149,7 @@ const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
   NAVIGATION_SECTIONS[4],
 ];
 
-const SOCIAL_ITEM_ICONS: Record<string, ComponentType<{ className?: string; "aria-hidden"?: boolean }>> = {
+const SOCIAL_ITEM_ICONS: Record<string, LucideIcon> = {
   "Friends Feed": UsersRound,
   "Discover Friends": Users,
   "Reader Map": MapPin,
@@ -448,7 +449,7 @@ const Navigation = () => {
             : "text-foreground hover:bg-muted hover:text-[hsl(var(--brand-primary))]")
         }
       >
-        {SocialItemIcon && <SocialItemIcon className={"mr-2 h-4 w-4 shrink-0 " + (active ? "text-[hsl(var(--brand-primary))]" : "text-muted-foreground")} aria-hidden="true" />}
+        {SocialItemIcon && <SocialItemIcon className={"mr-2 h-4 w-4 shrink-0 " + (active ? "text-[hsl(var(--brand-primary))]" : "text-muted-foreground")} aria-hidden />}
         <span className="min-w-0">{item.name}</span>
       </Link>
     );
@@ -743,7 +744,7 @@ const Navigation = () => {
                                               ? "bg-[hsl(var(--brand-primary)/0.10)] font-semibold text-[hsl(var(--brand-primary))]"
                                               : "text-foreground hover:bg-muted")}
                                           >
-                                            {SocialItemIcon && <SocialItemIcon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
+                                            {SocialItemIcon && <SocialItemIcon className="mr-2 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />}
                                             <span>{item.name}</span>
                                           </Link>
                                         </DropdownMenuItem>

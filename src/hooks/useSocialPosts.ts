@@ -679,7 +679,7 @@ export const useCreatePost = () => {
       // Single-table insert to minimize query complexity and prevent schema-select failure
       let insertResult = await supabase
         .from('posts')
-        .insert(payload)
+        .insert(payload as any)
         .select('*')
         .single();
 
@@ -695,7 +695,7 @@ export const useCreatePost = () => {
         const baselinePayload = buildPayload(false);
         insertResult = await supabase
           .from('posts')
-          .insert(baselinePayload)
+          .insert(baselinePayload as any)
           .select('*')
           .single();
       } else if (!insertResult.error && !cachedCaps.checked && useExtended) {

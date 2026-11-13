@@ -431,6 +431,7 @@ export const useCreateStory = () => {
       story_type: 'standalone' | 'series';
       status?: 'draft' | 'published';
       completion_status?: 'ongoing' | 'completed';
+      author_name?: string | null;
       audio_url?: string | null;
       format?: string | null;
       initial_part?: {
@@ -441,7 +442,7 @@ export const useCreateStory = () => {
     }) => {
       if (!user) throw new Error('Authentication required');
 
-      const authorName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Reader';
+      const authorName = payload.author_name?.trim() || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Reader';
       const isPublished = payload.status === 'published';
       const initialMinutes = payload.initial_part?.content ? estimateReadingMinutes(payload.initial_part.content) : 1;
 
