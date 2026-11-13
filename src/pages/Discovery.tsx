@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ const Discovery = () => {
   const [genreFilter, setGenreFilter] = useState('all');
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
   const [sortBy, setSortBy] = useState<'relevance' | 'newest' | 'title_asc'>('relevance');
+  const [visibleCount, setVisibleCount] = useState(24);
 
   const filteredTrendingBooks = useMemo(() => {
     let list = [...books];
@@ -45,8 +46,11 @@ const Discovery = () => {
     if (sortBy === 'newest') list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     if (sortBy === 'title_asc') list.sort((a, b) => a.title.localeCompare(b.title));
 
-    return list.slice(0, 24);
+    return list;
   }, [availabilityFilter, books, genreFilter, languageFilter, searchQuery, sortBy]);
+
+  useEffect(() => { setVisibleCount(24); }, [searchQuery, languageFilter, genreFilter, availabilityFilter, sortBy]);
+  const visibleBooks = filteredTrendingBooks.slice(0, visibleCount);
 
   const genres = useMemo(
     () => [...new Set(books.map((book) => book.genre).filter(Boolean))].sort((a, b) => (a ?? '').localeCompare(b ?? '')),
@@ -171,7 +175,7 @@ const Discovery = () => {
         {isLoading && <div className="flex justify-center py-16"><LoadingSpinner /></div>}
         {isError && <p className="text-center text-destructive py-12">Books could not be loaded. Please try again.</p>}
         {!isLoading && !isError && <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredTrendingBooks.map((book) => (
+          {visibleBooks.map((book) => (
             <Card key={book.id} className="border-border overflow-hidden">
               <CardContent className="p-4 flex gap-4">
                 <Link to={`/book/${book.id}`} className="w-20 h-28 bg-muted rounded overflow-hidden shrink-0 flex items-center justify-center">
@@ -198,6 +202,7 @@ const Discovery = () => {
             </Card>
           ))}
         </div>}
+        {filteredTrendingBooks.length > visibleBooks.length && <div className="mt-6 text-center"><p className="mb-3 text-sm text-muted-foreground">Showing {visibleBooks.length} of {filteredTrendingBooks.length} books</p><Button variant="outline" onClick={() => setVisibleCount((count) => count + 24)}>Load 24 more books</Button></div>}
         {filteredTrendingBooks.length === 0 && (
           <Card className="border-dashed border-2 border-border">
             <CardContent className="py-12 text-center space-y-2">
