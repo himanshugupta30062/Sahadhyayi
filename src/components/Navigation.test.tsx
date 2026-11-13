@@ -192,6 +192,29 @@ describe('Primary Navigation (5 core sections)', () => {
     expect(disclosure).toHaveAttribute('aria-expanded', 'false');
   });
 
+  it('toggles the mobile Social submenu with keyboard activation', async () => {
+    const { fireEvent } = await import('@testing-library/react');
+    vi.mocked(useIsMobile).mockReturnValue(true);
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Navigation />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open navigation menu' }));
+    const disclosure = screen.getByRole('button', { name: 'Social submenu' });
+    expect(disclosure).toHaveAttribute('aria-expanded', 'false');
+
+    disclosure.focus();
+    fireEvent.keyDown(disclosure, { key: 'Enter', code: 'Enter' });
+    expect(disclosure).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('link', { name: 'Friends Feed' })).toBeInTheDocument();
+
+    fireEvent.keyDown(disclosure, { key: 'Space', code: 'Space' });
+    expect(disclosure).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('link', { name: 'Friends Feed' })).not.toBeInTheDocument();
+  });
+
   it('renders Social menu with Connect & Friends, Interactive Map, Live Circles, and Discussions', async () => {
     const { fireEvent } = await import('@testing-library/react');
     render(
