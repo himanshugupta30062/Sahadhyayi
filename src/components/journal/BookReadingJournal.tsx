@@ -18,6 +18,7 @@ import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { UnifiedJournalEntry, useReadingJournal } from '@/hooks/useReadingJournal';
 import { useDeleteReaderHighlight } from '@/hooks/useReaderHighlights';
+import { useDeleteMarginNote } from '@/hooks/useMarginNotes';
 import { useQuotes } from '@/contexts/quotesHelpers';
 import { useToast } from '@/hooks/use-toast';
 
@@ -38,6 +39,7 @@ export const BookReadingJournal: React.FC<Props> = ({
 }) => {
   const { entries, bookSummaries, isLoading } = useReadingJournal(bookId);
   const deleteHighlight = useDeleteReaderHighlight();
+  const deleteMarginNote = useDeleteMarginNote();
   const { removeQuote } = useQuotes();
   const { toast } = useToast();
 
@@ -79,7 +81,12 @@ export const BookReadingJournal: React.FC<Props> = ({
   };
 
   const handleDelete = (entry: UnifiedJournalEntry) => {
-    if (entry.type === 'highlight') {
+    if (entry.type === 'reflection') {
+      const raw = entry.rawItem as { id: string };
+      if (window.confirm('Delete this private reflection permanently?')) {
+        deleteMarginNote.mutate(raw.id, { onSuccess: () => toast({ title: 'Reflection deleted' }), onError: () => toast({ title: 'Could not delete reflection', variant: 'destructive' }) });
+      }
+    } else if (entry.type === 'highlight') {
       const raw = entry.rawItem as { id: string };
       deleteHighlight.mutate({ id: raw.id, bookId });
     } else if (entry.type === 'quote') {
@@ -169,7 +176,7 @@ export const BookReadingJournal: React.FC<Props> = ({
                 </div>
                 <div className="flex items-center gap-1">
                   <Button size="icon" variant="ghost" onClick={() => void handleCopy(entry)} className="h-6 w-6 text-muted-foreground hover:text-foreground" title="Copy entry">{copiedId === entry.id ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}</Button>
-                  {(entry.type === 'highlight' || entry.type === 'quote') && <Button size="icon" variant="ghost" onClick={() => handleDelete(entry)} className="h-6 w-6 text-muted-foreground hover:text-destructive" title="Delete entry"><Trash2 className="h-3 w-3" /></Button>}
+                  {(entry.type === 'reflection' || entry.type === 'highlight' || entry.type === 'quote') && <Button size="icon" variant="ghost" onClick={() => handleDelete(entry)} className="h-6 w-6 text-muted-foreground hover:text-destructive" title={entry.type === 'reflection' ? 'Delete private reflection' : 'Delete entry'}><Trash2 className="h-3 w-3" /></Button>}
                 </div>
               </div>
               <p className="text-[10px] text-muted-foreground">{Number.isNaN(new Date(entry.createdAt).getTime()) ? '' : new Date(entry.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</p>
