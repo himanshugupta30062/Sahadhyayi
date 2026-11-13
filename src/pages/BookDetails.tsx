@@ -22,10 +22,9 @@ import { useBookRatings, useRateBook } from '@/hooks/useBookRatings';
 import { useAuth } from '@/contexts/authHelpers';
 import StarRating from '@/components/StarRating';
 import { generateBookSchema, generateBreadcrumbSchema } from '@/utils/schema';
-import { useToast } from '@/hooks/use-toast';
 import { logBookEvent } from '@/lib/supabase/events';
 import { BookEditionTransparency } from '@/components/books/BookEditionTransparency';
-import BookReviews from '@/components/books/BookReviews';\nimport BookExperienceTags from '@/components/books/BookExperienceTags';
+import BookReviews from '@/components/books/BookReviews';
 import BookLiteraryVoices from '@/components/books/BookLiteraryVoices';
 import BookAIReader from '@/components/books/BookAIReader';
 import AIReadingToolkit from '@/components/books/AIReadingToolkit';
@@ -44,7 +43,6 @@ const BookDetails = () => {
   const { data: book, isLoading, error } = useBookById(id);
   const { data: ratingData, isLoading: ratingLoading } = useBookRatings(id);
   const rateMutation = useRateBook(id);
-  const { toast } = useToast();
 
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -283,10 +281,7 @@ const BookDetails = () => {
                   ) : (
                     <StarRating
                       value={userRating || 0}
-                      onChange={(val) => rateMutation.mutate(val, {
-                        onSuccess: () => toast({ title: 'Rating saved', description: `You rated ${book?.title || 'this book'} ${val} out of 5.` }),
-                        onError: () => toast({ title: 'Could not save rating', description: 'Please try again in a moment.', variant: 'destructive' }),
-                      })}
+                      onChange={(val) => rateMutation.mutate(val)}
                       readOnly={rateMutation.isPending}
                     />
                   )}
@@ -383,7 +378,7 @@ const BookDetails = () => {
           <Separator className="my-8" />
 
           <div className="mb-8">
-            <BookExperienceTags bookId={book.id} />\n                  <BookReviews bookId={book.id} />
+            <BookReviews bookId={book.id} />
           <BookLiteraryVoices bookId={book.id} />
           </div>
 
