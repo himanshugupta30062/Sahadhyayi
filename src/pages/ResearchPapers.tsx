@@ -142,6 +142,7 @@ const ResearchPapers = () => {
   const [activeTopic, setActiveTopic] = useState('');
   const [year, setYear] = useState(searchParams.get('year') || 'all');
   const [category, setCategory] = useState(searchParams.get('category') || 'all');
+  const [sort, setSort] = useState(searchParams.get('sort') || 'cited_by_count');
   const [categories, setCategories] = useState<ResearchPaperCategory[]>(DEFAULT_CATEGORIES);
   const [page, setPage] = useState(() => Math.max(1, Math.min(MAX_NUMBERED_PAGES, Number(searchParams.get('page')) || 1)));
   const [papers, setPapers] = useState<OpenAlexWork[]>([]);
@@ -242,6 +243,7 @@ const ResearchPapers = () => {
     setSearchQuery(urlParams.get('search') || '');
     setYear(urlParams.get('year') || 'all');
     setCategory(urlParams.get('category') || 'all');
+    setSort(['cited_by_count', 'publication_date', 'relevance_score'].includes(urlParams.get('sort') || '') ? urlParams.get('sort')! : 'cited_by_count');
     setPage(Math.max(1, Math.min(MAX_NUMBERED_PAGES, Number(urlParams.get('page')) || 1)));
   }, [serializedSearchParams]);
 
@@ -258,7 +260,7 @@ const ResearchPapers = () => {
       else next.delete('page');
       return next.toString() === currentParams.toString() ? currentParams : next;
     }, { replace: true });
-  }, [searchQuery, year, category, page, setSearchParams]);
+  }, [searchQuery, year, category, sort, page, setSearchParams]);
 
   useEffect(() => {
     let active = true;
@@ -267,7 +269,7 @@ const ResearchPapers = () => {
       setError('');
       try {
         const { data, error: functionError } = await supabase.functions.invoke('search-research-papers', {
-          body: { query: debouncedQuery, year, category, page, perPage: PAGE_SIZE },
+          body: { query: debouncedQuery, year, category, sort, page, perPage: PAGE_SIZE },
         });
         if (functionError) throw functionError;
         const payload: unknown = data;
@@ -287,7 +289,7 @@ const ResearchPapers = () => {
     }
     void loadPapers();
     return () => { active = false; };
-  }, [debouncedQuery, year, category, page, retry]);
+  }, [debouncedQuery, year, category, sort, page, retry]);
 
   const totalPages = Math.max(1, Math.min(MAX_NUMBERED_PAGES, Math.ceil(totalCount / PAGE_SIZE)));
   const pageNumbers = useMemo(() => {
@@ -387,6 +389,14 @@ const ResearchPapers = () => {
                 <select id="research-category-filter" aria-label="Filter by research category" value={category} onChange={(event) => { setCategory(event.target.value); setPage(1); }} className="min-w-0 bg-transparent font-medium outline-none">
                   <option value="all">All categories</option>
                   {categories.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}
+                </select>
+              </div>
+              <div className="flex h-12 items-center gap-2 rounded-lg border border-[#E8E8E3] bg-[#FAFAF8] px-3 text-sm dark:border-[#26302A] dark:bg-[#0B0D0C]">
+                <label htmlFor="research-sort-filter" className="whitespace-nowrap text-xs text-[#737B74]">Sort</label>
+                <select id="research-sort-filter" aria-label="Sort research papers" value={sort} onChange={(event) => { setSort(event.target.value); setPage(1); }} className="min-w-0 bg-transparent font-medium outline-none">
+                  <option value="cited_by_count">Most cited</option>
+                  <option value="publication_date">Newest</option>
+                  <option value="relevance_score">Most relevant</option>
                 </select>
               </div>
               <Button type="button" variant="outline" onClick={resetFilters} className="h-12 gap-2 border-[#E8E8E3] dark:border-[#344039]">
