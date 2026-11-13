@@ -22,7 +22,7 @@ const Discovery = () => {
   const addToShelf = useAddToBookshelf();
   const [searchQuery, setSearchQuery] = useState('');
   const [languageFilter, setLanguageFilter] = useState('all');
-  const [genreFilter, setGenreFilter] = useState('all');
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
   const [publicationPeriodFilter, setPublicationPeriodFilter] = useState('all');
   const [sortBy, setSortBy] = useState<'relevance' | 'newest' | 'title_asc' | 'quality' | 'rating' | 'author_asc'>('relevance');
@@ -41,7 +41,7 @@ const Discovery = () => {
     }
 
     if (languageFilter !== 'all') list = list.filter((book) => book.language === languageFilter);
-    if (genreFilter !== 'all') list = list.filter((book) => book.genre === genreFilter);
+    if (selectedGenres.length > 0) list = list.filter((book) => selectedGenres.includes(book.genre ?? ''));
     if (availabilityFilter === 'readable') list = list.filter((book) => Boolean(book.pdf_url));
     if (publicationPeriodFilter !== 'all') {
       list = list.filter((book) => {
@@ -62,20 +62,20 @@ const Discovery = () => {
     if (sortBy === 'quality' || sortBy === 'relevance') list.sort((a, b) => (b.qualityScore ?? 0) - (a.qualityScore ?? 0) || (b.rating ?? 0) - (a.rating ?? 0) || new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     return list;
-  }, [availabilityFilter, books, genreFilter, languageFilter, publicationPeriodFilter, searchQuery, sortBy]);
+  }, [availabilityFilter, books, selectedGenres, languageFilter, publicationPeriodFilter, searchQuery, sortBy]);
 
-  useEffect(() => { setVisibleCount(24); }, [searchQuery, languageFilter, genreFilter, availabilityFilter, publicationPeriodFilter, sortBy]);
+  useEffect(() => { setVisibleCount(24); }, [searchQuery, languageFilter, selectedGenres, availabilityFilter, publicationPeriodFilter, sortBy]);
   const visibleBooks = filteredTrendingBooks.slice(0, visibleCount);
 
   const genres = useMemo(
     () => [...new Set(books.map((book) => book.genre).filter(Boolean))].sort((a, b) => (a ?? '').localeCompare(b ?? '')),
     [books],
   );
-  const hasActiveFilters = Boolean(searchQuery.trim()) || languageFilter !== 'all' || genreFilter !== 'all' || availabilityFilter !== 'all' || publicationPeriodFilter !== 'all' || sortBy !== 'relevance';
+  const hasActiveFilters = Boolean(searchQuery.trim()) || languageFilter !== 'all' || selectedGenres.length > 0 || availabilityFilter !== 'all' || publicationPeriodFilter !== 'all' || sortBy !== 'relevance';
   const clearFilters = () => {
     setSearchQuery('');
     setLanguageFilter('all');
-    setGenreFilter('all');
+    setSelectedGenres([]);
     setAvailabilityFilter('all');
     setPublicationPeriodFilter('all');
     setSortBy('relevance');
@@ -152,16 +152,21 @@ const Discovery = () => {
                 {languages.map((language) => <SelectItem key={language} value={language}>{language}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Select value={genreFilter} onValueChange={(value) => {
-              setGenreFilter(value);
-              void trackUiEvent('discovery_filter_changed', { filter: 'genre', value });
-            }}>
-              <SelectTrigger><SelectValue placeholder="Genre" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All genres</SelectItem>
-                {genres.map((genre) => <SelectItem key={genre} value={genre}>{genre}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <div className="md:col-span-3 space-y-2">
+              <p className="text-sm font-medium">Genres <span className="text-muted-foreground font-normal">(select multiple)</span></p>
+              <div className="flex flex-wrap gap-2">
+                {genres.map((genre) => {
+                  const active = selectedGenres.includes(genre ?? '');
+                  return <Button key={genre} type="button" size="sm" variant={active ? 'default' : 'outline'} aria-pressed={active}
+                    onClick={() => {
+                      const value = genre ?? '';
+                      setSelectedGenres((current) => active ? current.filter((item) => item !== value) : [...current, value]);
+                      void trackUiEvent('discovery_filter_changed', { filter: 'genre', value, action: active ? 'remove' : 'add' });
+                    }}>{genre}</Button>;
+                })}
+                {selectedGenres.length > 0 && <Button type="button" size="sm" variant="ghost" onClick={() => setSelectedGenres([])}>Clear genres</Button>}
+              </div>
+            </div>
             <Select value={publicationPeriodFilter} onValueChange={(value) => {
               setPublicationPeriodFilter(value);
               void trackUiEvent('discovery_filter_changed', { filter: 'publication_period', value });
