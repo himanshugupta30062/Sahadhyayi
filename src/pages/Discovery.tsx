@@ -9,7 +9,8 @@ import SEO from '@/components/SEO';
 import { trackUiEvent } from '@/lib/analytics';
 import { useAllLibraryBooks } from '@/hooks/useLibraryBooks';
 import { useBookRecommendations } from '@/hooks/useBookRecommendations';
-import { useAddToBookshelf } from '@/hooks/useUserBookshelf';
+import { useAddToBookshelf, useUserBookshelf } from '@/hooks/useUserBookshelf';
+import { rankPersonalizedBooks } from '@/utils/personalizedBookRecommendations';
 import { useAuth } from '@/contexts/authHelpers';
 import { BookOpen, Plus, Search, Sparkles, RotateCcw, BookmarkCheck } from 'lucide-react';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -19,6 +20,8 @@ const Discovery = () => {
   const { user } = useAuth();
   const { data: books = [], isLoading, isError } = useAllLibraryBooks();
   const { data: recommendations = [] } = useBookRecommendations(user?.id);
+  const { data: shelf = [] } = useUserBookshelf();
+  const personalized = useMemo(() => rankPersonalizedBooks(books, shelf, 8), [books, shelf]);
   const addToShelf = useAddToBookshelf();
   const [searchQuery, setSearchQuery] = useState('');
   const [languageFilter, setLanguageFilter] = useState('all');
@@ -156,6 +159,30 @@ const Discovery = () => {
           {hasActiveFilters && <div className="flex justify-end"><Button type="button" variant="ghost" size="sm" onClick={clearFilters}><RotateCcw className="w-4 h-4 mr-2" />Clear filters</Button></div>}
         </CardContent>
       </Card>
+
+      {user && personalized.length > 0 && (
+        <section className="mb-10" aria-labelledby="personalized-heading">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="w-5 h-5 text-brand-primary" />
+            <h2 id="personalized-heading" className="text-2xl font-semibold">Picked for your reading taste</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">Suggestions shaped by books you are reading or have completed, including your ratings.</p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {personalized.slice(0, 4).map((book) => (
+              <Link key={book.id} to={`/book/${book.id}`} className="block">
+                <Card className="h-full border-border hover:border-brand-primary/50 transition-colors">
+                  <CardContent className="p-4">
+                    <p className="text-xs text-brand-primary font-medium mb-2">{book.reason}</p>
+                    <h3 className="font-semibold line-clamp-2">{book.title}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">{book.author || 'Unknown author'}</p>
+                    {book.genre && <Badge variant="outline" className="mt-2">{book.genre}</Badge>}
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {user && recommendations.length > 0 && (
         <section className="mb-10" aria-labelledby="recommended-heading">
