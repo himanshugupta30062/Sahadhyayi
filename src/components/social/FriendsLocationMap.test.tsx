@@ -1,5 +1,77 @@
-import { describe, expect, it } from 'vitest';
-import { createFriendInfoContent } from '@/components/social/FriendsLocationMap';
+import React from 'react';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { FriendsLocationMap, createFriendInfoContent } from '@/components/social/FriendsLocationMap';
+import { useAuth } from '@/contexts/authHelpers';
+import { useFriends } from '@/hooks/useFriends';
+import { supabase } from '@/integrations/supabase/client-universal';
+import { getCurrentLocation } from '@/lib/locationService';
+import { toast } from 'sonner';
+
+vi.mock('@/contexts/authHelpers', () => ({
+  useAuth: vi.fn(),
+}));
+
+vi.mock('@/hooks/useFriends', () => ({
+  useFriends: vi.fn(),
+}));
+
+vi.mock('@/lib/locationService', () => ({
+  getCurrentLocation: vi.fn(),
+}));
+
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
+vi.mock('@/components/maps/MapplsMap', () => ({
+  MapplsMap: ({ points, emptyMessage }: any) => (
+    <div data-testid="mappls-map">
+      <span>Points: {points.length}</span>
+      {points.length === 0 && <span>{emptyMessage}</span>}
+    </div>
+  ),
+}));
+
+vi.mock('./LocationConsentModal', () => ({
+  LocationConsentModal: ({ isOpen, onConsentGiven, onClose }: any) =>
+    isOpen ? (
+      <div data-testid="consent-modal">
+        <button onClick={onConsentGiven}>Agree & Share</button>
+        <button onClick={onClose}>Cancel Consent</button>
+      </div>
+    ) : null,
+}));
+
+vi.mock('./LocationPermissionModal', () => ({
+  LocationPermissionModal: ({ isOpen, onRequestLocation, onClose, errorMessage }: any) =>
+    isOpen ? (
+      <div data-testid="permission-modal">
+        {errorMessage && <span>{errorMessage}</span>}
+        <button onClick={onRequestLocation}>Grant Permission</button>
+        <button onClick={onClose}>Close Permission</button>
+      </div>
+    ) : null,
+}));
+
+vi.mock('@/integrations/supabase/client-universal', () => {
+  const channelMock = {
+    on: vi.fn().mockReturnThis(),
+    subscribe: vi.fn().mockReturnThis(),
+  };
+
+  return {
+    supabase: {
+      from: vi.fn(),
+      rpc: vi.fn(),
+      channel: vi.fn(() => channelMock),
+      removeChannel: vi.fn(),
+    },
+  };
+});
 
 describe('createFriendInfoContent', () => {
   it('renders a full name and initial as text rather than interpreting profile HTML', () => {
@@ -37,5 +109,156 @@ describe('createFriendInfoContent', () => {
     const content = createFriendInfoContent({ full_name: 'Reader', bio: '  Loves classic books  ' });
 
     expect(content.querySelectorAll('p')[1]?.textContent).toBe('Loves classic books');
+  });
+});
+
+describe('FriendsLocationMap component', () => {
+  const mockRefetch = vi.fn();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    (useAuth as any).mockReturnValue({
+      user: { id: 'user-self', email: 'reader@example.com' },
+    });
+
+    (useFriends as any).mockReturnValue({
+      data: [
+        {
+          id: 'friend-1',
+          friend_profile: {
+            id: 'friend-user-1',
+            full_name: 'Aarav',
+            location_sharing: true,
+            location_lat: 28.6139,
+            location_lng: 77.209,
+          },
+        },
+      ],
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+    });
+
+    (supabase.from as any).mockImplementation((table: string) => {
+      if (table === 'profiles') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: { location_sharing: false, location_lat: null, location_lng: null },
+            error: null,
+          }),
+          update: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ error: null }),
+          }),
+          insert: vi.fn().mockResolvedValue({ error: null }),
+        };
+      }
+      if (table === 'user_locations') {
+        return {
+          upsert: vi.fn().mockResolvedValue({ error: null }),
+          update: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ error: null }),
+          }),
+        };
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+      };
+    });
+
+    (supabase.rpc as any).mockResolvedValue({ data: true, error: null });
+    (getCurrentLocation as any).mockResolvedValue({ lat: 28.7, lng: 77.1 });
+  });
+
+  it('renders friend markers and count correctly', async () => {
+    render(<FriendsLocationMap />);
+
+    expect(screen.getByText('Friends Map')).toBeInTheDocument();
+    expect(await screen.findByText('1 friend is sharing location')).toBeInTheDocument();
+    expect(screen.getByTestId('mappls-map')).toHaveTextContent('Points: 1');
+  });
+
+  it('handles Center on me button click', async () => {
+    render(<FriendsLocationMap />);
+
+    const centerBtn = await screen.findByRole('button', { name: /center on me/i });
+    fireEvent.click(centerBtn);
+
+    await waitFor(() => {
+      expect(getCurrentLocation).toHaveBeenCalled();
+    });
+  });
+
+  it('allows user to start sharing location through consent modal flow', async () => {
+    render(<FriendsLocationMap />);
+
+    // Click "Share my location" button
+    const shareBtn = await screen.findByRole('button', { name: /share my location/i });
+    fireEvent.click(shareBtn);
+
+    // Consent modal should appear
+    expect(screen.getByTestId('consent-modal')).toBeInTheDocument();
+
+    // Give consent
+    const agreeBtn = screen.getByRole('button', { name: /agree & share/i });
+    fireEvent.click(agreeBtn);
+
+    await waitFor(() => {
+      expect(getCurrentLocation).toHaveBeenCalled();
+      expect(toast.success).toHaveBeenCalledWith(
+        expect.stringContaining('Location sharing enabled')
+      );
+    });
+  });
+
+  it('allows user to stop sharing location', async () => {
+    // Mock user as already sharing location
+    (supabase.from as any).mockImplementation((table: string) => {
+      if (table === 'profiles') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({
+            data: { location_sharing: true, location_lat: 28.5, location_lng: 77.2 },
+            error: null,
+          }),
+          update: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ error: null }),
+          }),
+        };
+      }
+      if (table === 'user_locations') {
+        return {
+          update: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ error: null }),
+          }),
+        };
+      }
+      return { select: vi.fn().mockReturnThis() };
+    });
+
+    render(<FriendsLocationMap />);
+
+    const stopSharingBtn = await screen.findByRole('button', { name: /stop sharing/i });
+    fireEvent.click(stopSharingBtn);
+
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith('Location sharing disabled.');
+    });
+  });
+
+  it('shows empty message when no friends are sharing location', async () => {
+    (useFriends as any).mockReturnValue({
+      data: [],
+      isLoading: false,
+      error: null,
+      refetch: mockRefetch,
+    });
+
+    render(<FriendsLocationMap />);
+
+    expect(await screen.findByText('No friends are currently sharing their location with you')).toBeInTheDocument();
   });
 });

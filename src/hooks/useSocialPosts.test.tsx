@@ -591,4 +591,86 @@ describe('useSocialPosts', () => {
     })).rejects.toThrow('The referenced book or profile could not be found. Please try again.');
   });
 
+  it('useTogglePostLike toggles like and unlike states properly', async () => {
+    mocks.user = { id: 'reader-1' };
+    setResponses({
+      post_likes: [
+        { data: null, error: null }, // for like insert
+        { data: null, error: null }, // for unlike delete
+      ],
+    });
+
+    const { result } = renderHook(() => useTogglePostLike());
+
+    // 1. Like post (isLiked is false -> likes it)
+    const likeRes = await (result.current as any).mutationFn({ postId: 'post-1', isLiked: false });
+    expect(likeRes).toEqual({ postId: 'post-1', isLiked: true });
+
+    // 2. Unlike post (isLiked is true -> unlikes it)
+    const unlikeRes = await (result.current as any).mutationFn({ postId: 'post-1', isLiked: true });
+    expect(unlikeRes).toEqual({ postId: 'post-1', isLiked: false });
+  });
+
+  it('useToggleRepost handles reposting and removing repost', async () => {
+    mocks.user = { id: 'reader-1' };
+    setResponses({
+      posts: [
+        { data: { id: 'repost-1', user_id: 'reader-1', repost_of_id: 'post-1' }, error: null }, // insert repost
+        { data: { id: 'repost-existing' }, error: null }, // find existing for deletion
+      ],
+    });
+
+    const { result } = renderHook(() => useToggleRepost());
+
+    // 1. Repost when not yet reposted
+    const repostRes = await (result.current as any).mutationFn({
+      post: { id: 'post-1' },
+      isReposted: false,
+      comment: 'Must read!',
+    });
+    expect(repostRes).toEqual({ targetId: 'post-1', isReposted: true });
+
+    // 2. Undo repost when already reposted
+    const undoRes = await (result.current as any).mutationFn({
+      post: { id: 'post-1' },
+      isReposted: true,
+    });
+    expect(undoRes).toEqual({ targetId: 'post-1', isReposted: false });
+  });
+
+  it('usePostComments queries comments for a given post', async () => {
+    const mockComments = [
+      { id: 'c1', post_id: 'post-1', user_id: 'user-2', content: 'Great review!', created_at: '2026-01-01' },
+    ];
+    setResponses({
+      post_comments: [{ data: mockComments, error: null }],
+      comment_likes: [{ data: [], error: null }],
+    });
+
+    renderHook(() => usePostComments('post-1'));
+    const comments = await mocks.queryOptions?.queryFn();
+    expect(comments).toHaveLength(1);
+    expect(comments[0].content).toBe('Great review!');
+  });
+
+  it('resolves reposted posts in social feed when present', async () => {
+    mocks.user = { id: 'reader-1' };
+    const origPost = post({ id: 'orig-1', user_id: 'orig-user', content: 'Original thought' });
+    const repostPost = post({ id: 'repost-1', user_id: 'reader-1', content: 'Check this out', repost_of_id: 'orig-1' });
+
+    setResponses({
+      posts: [
+        { data: [repostPost], error: null },
+        { data: [origPost], error: null },
+      ],
+      profiles: [{ data: [{ id: 'orig-user', full_name: 'Author Reader' }], error: null }],
+      books_library: [{ data: [], error: null }],
+    });
+
+    renderHook(() => useSocialPosts('latest'));
+    const feed = await mocks.queryOptions?.queryFn();
+    expect(feed[0].reposted_post).toBeDefined();
+    expect(feed[0].reposted_post?.content).toBe('Original thought');
+  });
+
 });

@@ -113,10 +113,20 @@ export const ReadingActivityCalendar: React.FC = () => {
           {cells.map((date, i) => {
             const active = !!date && activeDates.has(keyOf(date));
             const isToday = !!date && keyOf(date) === keyOf(new Date());
-            return <button type="button" key={i} disabled={!date} onClick={() => date && setSelectedDay(keyOf(date))} aria-pressed={!!date && selectedDay === keyOf(date)} aria-label={date ? `${keyOf(date)}${active ? ", reading activity" : ""}` : undefined} className={`relative flex h-9 w-full items-center justify-center rounded-md text-xs ${active ? "bg-[hsl(var(--brand-primary)/0.16)] font-semibold text-foreground" : "text-muted-foreground"} ${isToday ? "ring-1 ring-[hsl(var(--brand-primary))]" : ""} ${selectedDay === (date ? keyOf(date) : "") ? "outline outline-2 outline-[hsl(var(--brand-primary))]" : ""}`}>
-              {date?.getDate() ?? ""}
-              {active && <span className="absolute bottom-1 h-1 w-1 rounded-full bg-[hsl(var(--brand-primary))]" />}
-            </div>;
+            return (
+              <button
+                type="button"
+                key={i}
+                disabled={!date}
+                onClick={() => date && setSelectedDay(keyOf(date))}
+                aria-pressed={!!date && selectedDay === keyOf(date)}
+                aria-label={date ? `${keyOf(date)}${active ? ", reading activity" : ""}` : undefined}
+                className={`relative flex h-9 w-full items-center justify-center rounded-md text-xs ${active ? "bg-[hsl(var(--brand-primary)/0.16)] font-semibold text-foreground" : "text-muted-foreground"} ${isToday ? "ring-1 ring-[hsl(var(--brand-primary))]" : ""} ${selectedDay === (date ? keyOf(date) : "") ? "outline outline-2 outline-[hsl(var(--brand-primary))]" : ""}`}
+              >
+                {date?.getDate() ?? ""}
+                {active && <span className="absolute bottom-1 h-1 w-1 rounded-full bg-[hsl(var(--brand-primary))]" />}
+              </button>
+            );
           })}
         </div>
         {selectedDay && <div className="rounded-md bg-muted/40 px-3 py-2 text-xs" aria-live="polite">

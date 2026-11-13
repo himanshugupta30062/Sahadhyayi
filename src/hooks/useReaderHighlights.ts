@@ -46,3 +46,36 @@ export const useDeleteReaderHighlight = () => {
     onSuccess: bookId => qc.invalidateQueries({ queryKey: ["reader-highlights", user?.id, bookId] }),
   });
 };
+
+export const useUpdateReaderHighlight = () => {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; bookId?: string; text?: string; location?: string; page?: number; color?: ReaderHighlight["color"] }) => {
+      if (!user?.id) throw new Error("Sign in to update reader highlights.");
+      const updates: Record<string, any> = {};
+      if (input.text !== undefined) {
+        const text = input.text.trim();
+        if (!text || text.length > 10000) throw new Error("Highlight text must be between 1 and 10,000 characters.");
+        updates.text = text;
+      }
+      if (input.location !== undefined) updates.location = input.location;
+      if (input.page !== undefined) updates.page = Math.max(1, Math.floor(input.page));
+      if (input.color !== undefined) updates.color = input.color;
+
+      const { data, error } = await supabase
+        .from("reader_highlights")
+        .update(updates)
+        .eq("id", input.id)
+        .eq("user_id", user.id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as ReaderHighlight;
+    },
+    onSuccess: (data, input) => {
+      qc.invalidateQueries({ queryKey: ["reader-highlights", user?.id, input.bookId] });
+      qc.invalidateQueries({ queryKey: ["reader-highlights", user?.id] });
+    },
+  });
+};

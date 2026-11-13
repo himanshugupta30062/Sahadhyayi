@@ -19,8 +19,8 @@ export const FriendsMap = ({
 }: FriendsMapProps) => {
   const friendsMapRef = useRef<HTMLDivElement>(null);
   const [friendsMap, setFriendsMap] = useState<any>(null);
-  const [friendMarkers, setFriendMarkers] = useState<any[]>([]);
-  const [infoWindows, setInfoWindows] = useState<any[]>([]);
+  const friendMarkersRef = useRef<any[]>([]);
+  const infoWindowsRef = useRef<any[]>([]);
   const [currentUserLocation, setCurrentUserLocation] = useState<{ lat: number; lng: number } | null>(userLocation || null);
 
   useEffect(() => {
@@ -57,8 +57,8 @@ export const FriendsMap = ({
     if (!friendsMap || !mapsLoaded || !window.google?.maps) return;
 
     // Clear existing markers and info windows
-    friendMarkers.forEach(marker => marker.setMap(null));
-    infoWindows.forEach(infoWindow => infoWindow.close());
+    friendMarkersRef.current.forEach(marker => marker.setMap(null));
+    infoWindowsRef.current.forEach(infoWindow => infoWindow.close());
     
     const newMarkers: any[] = [];
     const newInfoWindows: any[] = [];
@@ -219,8 +219,8 @@ export const FriendsMap = ({
       }
     });
 
-    setFriendMarkers(newMarkers);
-    setInfoWindows(newInfoWindows);
+    friendMarkersRef.current = newMarkers;
+    infoWindowsRef.current = newInfoWindows;
 
     // Fit bounds if multiple friends
     if (newMarkers.length > 1) {
@@ -242,7 +242,7 @@ export const FriendsMap = ({
       console.log('Viewing friend profile:', friendId);
     };
 
-  }, [friends, friendsMap, mapsLoaded, friendMarkers, infoWindows, currentUserLocation]);
+  }, [friends, friendsMap, mapsLoaded, currentUserLocation]);
 
   if (friendsLoading) {
     return (
