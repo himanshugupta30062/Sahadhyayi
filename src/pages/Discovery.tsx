@@ -24,6 +24,7 @@ const Discovery = () => {
   const [languageFilter, setLanguageFilter] = useState('all');
   const [genreFilter, setGenreFilter] = useState('all');
   const [availabilityFilter, setAvailabilityFilter] = useState('all');
+  const [publicationPeriodFilter, setPublicationPeriodFilter] = useState('all');
   const [sortBy, setSortBy] = useState<'relevance' | 'newest' | 'title_asc' | 'quality' | 'rating' | 'author_asc'>('relevance');
   const [visibleCount, setVisibleCount] = useState(24);
 
@@ -42,6 +43,17 @@ const Discovery = () => {
     if (languageFilter !== 'all') list = list.filter((book) => book.language === languageFilter);
     if (genreFilter !== 'all') list = list.filter((book) => book.genre === genreFilter);
     if (availabilityFilter === 'readable') list = list.filter((book) => Boolean(book.pdf_url));
+    if (publicationPeriodFilter !== 'all') {
+      list = list.filter((book) => {
+        const year = Number(book.publication_year);
+        if (!Number.isFinite(year) || year <= 0) return publicationPeriodFilter === 'unknown';
+        if (publicationPeriodFilter === 'before_2000') return year < 2000;
+        if (publicationPeriodFilter === '2000s') return year >= 2000 && year < 2010;
+        if (publicationPeriodFilter === '2010s') return year >= 2010 && year < 2020;
+        if (publicationPeriodFilter === '2020s') return year >= 2020 && year < 2030;
+        return false;
+      });
+    }
 
     if (sortBy === 'newest') list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     if (sortBy === 'title_asc') list.sort((a, b) => a.title.localeCompare(b.title));
@@ -50,21 +62,22 @@ const Discovery = () => {
     if (sortBy === 'quality' || sortBy === 'relevance') list.sort((a, b) => (b.qualityScore ?? 0) - (a.qualityScore ?? 0) || (b.rating ?? 0) - (a.rating ?? 0) || new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     return list;
-  }, [availabilityFilter, books, genreFilter, languageFilter, searchQuery, sortBy]);
+  }, [availabilityFilter, books, genreFilter, languageFilter, publicationPeriodFilter, searchQuery, sortBy]);
 
-  useEffect(() => { setVisibleCount(24); }, [searchQuery, languageFilter, genreFilter, availabilityFilter, sortBy]);
+  useEffect(() => { setVisibleCount(24); }, [searchQuery, languageFilter, genreFilter, availabilityFilter, publicationPeriodFilter, sortBy]);
   const visibleBooks = filteredTrendingBooks.slice(0, visibleCount);
 
   const genres = useMemo(
     () => [...new Set(books.map((book) => book.genre).filter(Boolean))].sort((a, b) => (a ?? '').localeCompare(b ?? '')),
     [books],
   );
-  const hasActiveFilters = Boolean(searchQuery.trim()) || languageFilter !== 'all' || genreFilter !== 'all' || availabilityFilter !== 'all' || sortBy !== 'relevance';
+  const hasActiveFilters = Boolean(searchQuery.trim()) || languageFilter !== 'all' || genreFilter !== 'all' || availabilityFilter !== 'all' || publicationPeriodFilter !== 'all' || sortBy !== 'relevance';
   const clearFilters = () => {
     setSearchQuery('');
     setLanguageFilter('all');
     setGenreFilter('all');
     setAvailabilityFilter('all');
+    setPublicationPeriodFilter('all');
     setSortBy('relevance');
     void trackUiEvent('discovery_filters_reset');
   };
@@ -147,6 +160,20 @@ const Discovery = () => {
               <SelectContent>
                 <SelectItem value="all">All genres</SelectItem>
                 {genres.map((genre) => <SelectItem key={genre} value={genre}>{genre}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={publicationPeriodFilter} onValueChange={(value) => {
+              setPublicationPeriodFilter(value);
+              void trackUiEvent('discovery_filter_changed', { filter: 'publication_period', value });
+            }}>
+              <SelectTrigger><SelectValue placeholder="Publication period" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Any publication year</SelectItem>
+                <SelectItem value="before_2000">Before 2000</SelectItem>
+                <SelectItem value="2000s">2000–2009</SelectItem>
+                <SelectItem value="2010s">2010–2019</SelectItem>
+                <SelectItem value="2020s">2020–2029</SelectItem>
+                <SelectItem value="unknown">Year not listed</SelectItem>
               </SelectContent>
             </Select>
           </div>
