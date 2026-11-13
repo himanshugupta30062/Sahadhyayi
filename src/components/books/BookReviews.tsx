@@ -1,19 +1,22 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageSquareText, Pencil, Trash2, Eye, EyeOff } from 'lucide-react';
+import { MessageSquareText, Pencil, Trash2, Eye, EyeOff, ThumbsUp } from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { REVIEW_DIMENSIONS, type ReviewDimension, type ReaderReaction } from '@/hooks/useBookReviews';
-import { useBookReviews, useDeleteBookReview, useSaveBookReview } from '@/hooks/useBookReviews';
+import { useBookReviews, useDeleteBookReview, useSaveBookReview, useReviewHelpfulVotes, useToggleReviewHelpfulVote } from '@/hooks/useBookReviews';
 import { useToast } from '@/hooks/use-toast';
 
 export default function BookReviews({ bookId }: { bookId: string }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const { data: reviews = [], isLoading, error } = useBookReviews(bookId);
+  const reviewIds = reviews.filter(review => review.user_id !== user?.id).map(review => review.id);
+  const { data: helpfulVotes = [] } = useReviewHelpfulVotes(reviewIds);
+  const toggleHelpful = useToggleReviewHelpfulVote();
   const saveReview = useSaveBookReview(bookId);
   const deleteReview = useDeleteBookReview(bookId);
   const myReview = reviews.find((review) => review.user_id === user?.id);
@@ -26,6 +29,7 @@ export default function BookReviews({ bookId }: { bookId: string }) {
   const [readerReaction, setReaderReaction] = useState<ReaderReaction | ''>('');
   const [dimensionScores, setDimensionScores] = useState<Record<ReviewDimension, number>>({ writing: 0, characters: 0, plot: 0, pacing: 0, worldbuilding: 0, originality: 0 });
   const [showSpoilers, setShowSpoilers] = useState<Record<string, boolean>>({});
+  const [showOwnSpoilers, setShowOwnSpoilers] = useState(false);
   const [editing, setEditing] = useState(false);
   const [reviewOrder, setReviewOrder] = useState<'newest' | 'oldest' | 'highest'>('newest');
   const [spoilerFilter, setSpoilerFilter] = useState<'all' | 'clean'>('all');
@@ -108,7 +112,23 @@ export default function BookReviews({ bookId }: { bookId: string }) {
             <h3 className="font-medium">{myReview && !editing ? 'Your review' : myReview ? 'Edit your review' : 'Share your thoughts'}</h3>
             {myReview && !editing ? (
               <>
-                <p className="whitespace-pre-wrap text-sm text-gray-700">{myReview.review_text}</p>
+                {myReview.contains_spoilers && !showOwnSpoilers ? (
+                  <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                    <p className="mb-2">Your review is marked as containing spoilers.</p>
+                    <Button type="button" size="sm" variant="outline" onClick={() => setShowOwnSpoilers(true)}>
+                      <Eye className="mr-1 h-4 w-4" />Reveal my review
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <p className="whitespace-pre-wrap text-sm text-gray-700">{myReview.review_text}</p>
+                    {myReview.contains_spoilers && (
+                      <Button type="button" size="sm" variant="ghost" onClick={() => setShowOwnSpoilers(false)}>
+                        <EyeOff className="mr-1 h-4 w-4" />Hide my review
+                      </Button>
+                    )}
+                  </>
+                )}
                 <p className="text-sm text-amber-700">★ {myReview.overall_rating || '—'}/5 overall{myReview.plot_rating ? ` · Plot ${myReview.plot_rating}/5` : ''}{myReview.characters_rating ? ` · Characters ${myReview.characters_rating}/5` : ''}{myReview.writing_rating ? ` · Writing ${myReview.writing_rating}/5` : ''}</p>
                 {myReview.contains_spoilers && <p className="text-xs text-amber-800">Marked as containing spoilers</p>}
                 <div className="flex flex-wrap gap-2">
@@ -159,6 +179,8 @@ export default function BookReviews({ bookId }: { bookId: string }) {
           {!isLoading && !error && otherReviews.length > 0 && <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3"><span className="text-sm text-muted-foreground">{visibleReviews.length} of {otherReviews.length} reviews</span><div className="flex gap-2"><select aria-label="Sort reviews" className="h-9 rounded-md border bg-background px-2 text-sm" value={reviewOrder} onChange={(event)=>setReviewOrder(event.target.value as typeof reviewOrder)}><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="highest">Highest rated</option></select><select aria-label="Filter reviews" className="h-9 rounded-md border bg-background px-2 text-sm" value={spoilerFilter} onChange={(event)=>setSpoilerFilter(event.target.value as typeof spoilerFilter)}><option value="all">All reviews</option><option value="clean">Hide spoilers</option></select></div></div>}
           {visibleReviews.map((review) => {
             const revealed = showSpoilers[review.id] === true;
+            const votes = helpfulVotes.filter(vote => vote.review_id === review.id);
+            const votedHelpful = votes.some(vote => vote.user_id === user?.id);
             const name = review.reviewer?.full_name || (review.reviewer?.username ? `@${review.reviewer.username}` : 'Reader');
             return (
               <article key={review.id} className="border-t border-gray-100 pt-4 space-y-2">
@@ -172,6 +194,7 @@ export default function BookReviews({ bookId }: { bookId: string }) {
                 {review.reader_reaction && <p className="text-xs text-emerald-700">Felt: {review.reader_reaction}</p>}
                 {!!review.dimensions?.length && <div className="flex flex-wrap gap-2">{review.dimensions.map(item => <span key={item.dimension} className="rounded-full bg-muted px-2 py-1 text-xs capitalize">{item.dimension}: {item.score}/5</span>)}</div>}
                 {review.contains_spoilers && !revealed ? <p className="text-sm text-amber-800 italic">Spoiler hidden — reveal only if you want to continue.</p> : <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{review.review_text}</p>}
+                <Button type="button" size="sm" variant={votedHelpful ? "secondary" : "outline"} disabled={!user || toggleHelpful.isPending} onClick={async () => { try { await toggleHelpful.mutateAsync({ reviewId: review.id, helpful: votedHelpful }); } catch (err) { toast({ title: 'Could not update helpful vote', description: err instanceof Error ? err.message : 'Please try again.', variant: 'destructive' }); } }} aria-pressed={votedHelpful}><ThumbsUp className="mr-1 h-4 w-4" />{votedHelpful ? 'Helpful' : 'Mark helpful'} · {votes.length}</Button>
               </article>
             );
           })}

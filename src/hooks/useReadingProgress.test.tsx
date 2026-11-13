@@ -95,6 +95,30 @@ describe('useSaveReadingProgress', () => {
     expect(mocks.upsert).not.toHaveBeenCalled();
   });
 
+  it('rejects invalid total pages before looking up or writing progress', async () => {
+    const { result } = renderProgressHook();
+    for (const totalPages of [0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
+      await expect(result.current.mutateAsync({
+        bookId: 'book-1', bookTitle: 'Book', currentPage: 1, totalPages,
+      })).rejects.toThrow('Total pages must be a positive number');
+    }
+    expect(mocks.lookupSelect).not.toHaveBeenCalled();
+    expect(mocks.upsert).not.toHaveBeenCalled();
+  });
+
+  it('normalizes fractional page inputs to positive whole pages', async () => {
+    const { result } = renderProgressHook();
+    await act(async () => {
+      await result.current.mutateAsync({
+        bookId: 'book-2', bookTitle: 'Book', currentPage: 0.8, totalPages: 5.9,
+      });
+    });
+    const payload = mocks.upsert.mock.calls[0][0];
+    expect(payload.current_page).toBe(1);
+    expect(payload.total_pages).toBe(5);
+    expect(payload.completed_at).toBeNull();
+  });
+
   it('surfaces Supabase write errors', async () => {
     mocks.single.mockResolvedValue({ data: null, error: new Error('Write failed') });
     const { result } = renderProgressHook();

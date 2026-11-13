@@ -111,3 +111,23 @@ export function useDeleteBookReview(bookId: string | undefined) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['book-reviews', bookId] }),
   });
 }
+
+export interface ReviewHelpfulVote { review_id: string; user_id: string; }
+
+export function useReviewHelpfulVotes(reviewIds: string[]) {
+ const { user } = useAuth();
+ return useQuery({ queryKey: ['review-helpful-votes', reviewIds, user?.id], enabled: !!user?.id && reviewIds.length > 0, queryFn: async (): Promise<ReviewHelpfulVote[]> => {
+  if (!reviewIds.length) return [];
+  const { data, error } = await supabase.from('book_review_helpful_votes').select('review_id,user_id').in('review_id',reviewIds);
+  if (error) throw error; return (data || []) as ReviewHelpfulVote[];
+ }});
+}
+
+export function useToggleReviewHelpfulVote() {
+ const queryClient=useQueryClient(); const { user }=useAuth();
+ return useMutation({ mutationFn: async ({reviewId,helpful}:{reviewId:string;helpful:boolean})=>{
+  if(!user?.id) throw new Error('Please sign in to mark a review helpful.');
+  if(helpful){const {error}=await supabase.from('book_review_helpful_votes').delete().eq('review_id',reviewId).eq('user_id',user.id);if(error)throw error;}
+  else {const {error}=await supabase.from('book_review_helpful_votes').insert({review_id:reviewId,user_id:user.id});if(error)throw error;}
+ },onSuccess:()=>queryClient.invalidateQueries({queryKey:['review-helpful-votes']})});
+}
