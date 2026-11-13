@@ -38,7 +38,13 @@ describe('BookReadingJournal', () => {
     expect(screen.queryByText(/Personal reflection on truth/i)).not.toBeInTheDocument();
   });
 
-  it('offers deletion for private reflections', () => {\n    vi.spyOn(window, 'confirm').mockReturnValue(true);\n    renderJournal();\n    expect(screen.getByTitle('Delete private reflection')).toBeInTheDocument();\n  });\n\n  it('opens an editor for private reflections', () => {
+  it('offers deletion for private reflections', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    renderJournal();
+    expect(screen.getByTitle('Delete private reflection')).toBeInTheDocument();
+  });
+
+  it('opens an editor for private reflections', () => {
     renderJournal();
     fireEvent.click(screen.getByTitle('Edit private reflection'));
     expect(screen.getByRole('textbox', { name: 'Edit reflection quote' })).toHaveValue('Truth alone triumphs.');
