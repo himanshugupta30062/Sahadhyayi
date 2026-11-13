@@ -61,6 +61,19 @@ export const ReadingActivityCalendar: React.FC = () => {
     return day > 0 && day <= totalDays ? new Date(month.getFullYear(), month.getMonth(), day) : null;
   });
   const monthCount = cells.reduce((count, date) => count + (date && activeDates.has(keyOf(date)) ? 1 : 0), 0);
+  const todayKey = keyOf(new Date());
+  const recentDays = Array.from({ length: 30 }, (_, index) => shiftDay(todayKey, -index));
+  const last30Count = recentDays.filter((date) => activeDates.has(date)).length;
+  const yearPrefix = `${new Date().getFullYear()}-`;
+  const yearCount = [...activeDates].filter((date) => date.startsWith(yearPrefix)).length;
+  const consistency = Math.round((last30Count / 30) * 100);
+  const monthlyTrend = Array.from({ length: 12 }, (_, index) => {
+    const date = new Date(new Date().getFullYear(), new Date().getMonth() - 11 + index, 1);
+    const count = [...activeDates].filter((key) => key.startsWith(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-`)).length;
+    return { label: date.toLocaleDateString(undefined, { month: "short" }), count };
+  });
+  const trendMax = Math.max(1, ...monthlyTrend.map((item) => item.count));
+
 
   return (
     <Card className="border-border/70">
@@ -86,6 +99,8 @@ export const ReadingActivityCalendar: React.FC = () => {
           <Progress value={milestoneProgress} className="h-1.5" />
           <p className="text-xs text-muted-foreground">{nextMilestone ? `${nextMilestone - streaks.current} more ${nextMilestone - streaks.current === 1 ? "day" : "days"} to your next milestone` : "You have completed the 7, 30, 100 and 365-day streak milestones."}</p>
         </div>}
+        <div className="grid grid-cols-3 gap-2 text-center text-xs"><div className="rounded-lg bg-muted/50 p-2"><p className="text-muted-foreground">Last 30 days</p><p className="font-semibold">{last30Count}/30</p></div><div className="rounded-lg bg-muted/50 p-2"><p className="text-muted-foreground">Consistency</p><p className="font-semibold">{consistency}%</p></div><div className="rounded-lg bg-muted/50 p-2"><p className="text-muted-foreground">This year</p><p className="font-semibold">{yearCount} days</p></div></div>
+        <div className="rounded-lg border border-border/60 p-3"><p className="mb-2 text-xs font-medium">Monthly activity · last 12 months</p><div className="grid grid-cols-12 items-end gap-1" style={{height:72}}>{monthlyTrend.map((item,index)=><div key={index} className="flex h-full flex-col justify-end gap-1"><div title={`${item.label}: ${item.count} days`} className="min-h-1 rounded-t bg-[hsl(var(--brand-primary))]" style={{height:`${Math.max(4,item.count/trendMax*56)}px`}}/><span className="text-center text-[9px] text-muted-foreground">{item.label.slice(0,1)}</span></div>)}</div></div>
         <div className="flex items-center justify-between">
           <Button variant="ghost" size="icon" aria-label="Previous month" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}><ChevronLeft className="h-4 w-4" /></Button>
           <span className="text-sm font-medium">{monthLabel(month)}</span>
