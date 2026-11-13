@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useReadingDna, useGenerateReadingDna } from "@/hooks/useReadingDna";
+import { useReadingDna, useGenerateReadingDna, useUpdateReadingDnaVisibility } from "@/hooks/useReadingDna";
 import { matchScore, type ReadingDna } from "@/lib/readingDna";
 import { useAuth } from "@/contexts/authHelpers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -129,6 +129,7 @@ export const ReadingDnaPanel: React.FC = () => {
   const { user } = useAuth();
   const { data: dna, isLoading, error } = useReadingDna();
   const generate = useGenerateReadingDna();
+  const updateVisibility = useUpdateReadingDnaVisibility();
   const { toast } = useToast();
 
   const handleGenerate = async () => {
@@ -214,8 +215,9 @@ export const ReadingDnaPanel: React.FC = () => {
         </Card>
       )}
 
+      {dna && user && <Card><CardContent className="p-4 flex items-center justify-between gap-3"><div><p className="text-sm font-medium">DNA visibility: {dna.visibility === "private" ? "Private" : "Public"}</p><p className="text-xs text-muted-foreground">{dna.visibility === "private" ? "Only you can view your DNA." : "Visible to signed-in readers."}</p></div><Button size="sm" variant="outline" disabled={updateVisibility.isPending} onClick={() => updateVisibility.mutate(dna.visibility === "private" ? "public" : "private")}>Make {dna.visibility === "private" ? "Public" : "Private"}</Button></CardContent></Card>}
       {dna && <ReadingDnaCard dna={dna} mine />}
-      {dna && <FriendMatchesList myDna={dna} />}
+      {dna && dna.visibility !== "private" && <FriendMatchesList myDna={dna} />}
     </div>
   );
 };
