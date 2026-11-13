@@ -42,7 +42,15 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
     const load = async () => {
       const { data } = await supabase.from('book_reels').select('id,user_id,video_url,caption,book_title,book_author,created_at').order('created_at', { ascending: false }).limit(50);
       if (!active || !data) return;
-      setCommunityReels(data.map((item: any) => ({ id: item.id, tag: '📚 COMMUNITY REEL', tagColor: 'bg-emerald-700/80 text-white', readerName: 'Sahadhyayi Reader', readerHandle: 'reader', readerAvatar: '', bookTitle: item.book_title || 'A reader moment', bookAuthor: item.book_author || '', hook: item.caption, fullQuote: item.caption, moodAudio: 'Community video', imageUrl: '', videoUrl: item.video_url, likesCount: 0, commentsCount: 0 })));
+      const userIds = [...new Set(data.map((item: any) => item.user_id))];
+      const { data: profiles } = userIds.length ? await supabase.from('profiles_public').select('id,full_name,username,profile_photo_url').in('id', userIds) : { data: [] };
+      const profileMap = new Map((profiles || []).map((profile: any) => [profile.id, profile]));
+      const { data: reactions } = await supabase.from('book_reel_reactions').select('reel_id,user_id,emoji').in('reel_id', data.map((item: any) => item.id));
+      if (!active) return;
+      const currentUser = (await supabase.auth.getUser()).data.user?.id;
+      setActiveReaction(Object.fromEntries((reactions || []).filter((reaction: any) => reaction.user_id === currentUser).map((reaction: any) => [reaction.reel_id, reaction.emoji])));
+      setCommunityReels(data.map((item: any) => { const profile: any = profileMap.get(item.user_id); const count = (reactions || []).filter((reaction: any) => reaction.reel_id === item.id).length; return { id: item.id, tag: '📚 COMMUNITY REEL', tagColor: 'bg-emerald-700/80 text-white', readerName: profile?.full_name || profile?.username || 'Sahadhyayi Reader', readerHandle: profile?.username || 'reader', readerAvatar: profile?.profile_photo_url || '', bookTitle: item.book_title || 'A reader moment', bookAuthor: item.book_author || '', hook: item.caption, fullQuote: item.caption, moodAudio: 'Community video', imageUrl: '', videoUrl: item.video_url, likesCount: count, commentsCount: 0 }; }));
+
     };
     void load();
     const refresh = () => void load();
@@ -72,9 +80,21 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
     setSelectedReelIndex((selectedReelIndex - 1 + displayedReels.length) % displayedReels.length);
   };
 
-  const handleReaction = (reelId: string, emoji: string) => {
+  const handleReaction = async (reelId: string, emoji: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { toast.error('Sign in to react to reels.'); return; }
+    const existing = activeReaction[reelId];
+    if (existing === emoji) {
+      const { error } = await supabase.from('book_reel_reactions').delete().eq('reel_id', reelId).eq('user_id', user.id);
+      if (error) { toast.error('Could not remove reaction.'); return; }
+      setActiveReaction((prev) => { const next = { ...prev }; delete next[reelId]; return next; });
+      setExtraLikes((prev) => ({ ...prev, [reelId]: Math.max(0, (prev[reelId] || 0) - 1) }));
+      return;
+    }
+    const { error } = await supabase.from('book_reel_reactions').upsert({ reel_id: reelId, user_id: user.id, emoji }, { onConflict: 'reel_id,user_id' });
+    if (error) { toast.error('Could not save reaction. Apply the reactions migration first.'); return; }
     setActiveReaction((prev) => ({ ...prev, [reelId]: emoji }));
-    setExtraLikes((prev) => ({ ...prev, [reelId]: (prev[reelId] || 0) + 1 }));
+    setExtraLikes((prev) => ({ ...prev, [reelId]: (prev[reelId] || 0) + (existing ? 0 : 1) }));
   };
 
   return (
