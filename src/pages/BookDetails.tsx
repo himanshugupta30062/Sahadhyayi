@@ -24,7 +24,7 @@ import StarRating from '@/components/StarRating';
 import { generateBookSchema, generateBreadcrumbSchema } from '@/utils/schema';
 import { logBookEvent } from '@/lib/supabase/events';
 import { BookEditionTransparency } from '@/components/books/BookEditionTransparency';
-import BookReviews from '@/components/books/BookReviews';
+import BookReviews from '@/components/books/BookReviews';\nimport BookExperienceTags from '@/components/books/BookExperienceTags';
 import BookLiteraryVoices from '@/components/books/BookLiteraryVoices';
 import BookAIReader from '@/components/books/BookAIReader';
 import AIReadingToolkit from '@/components/books/AIReadingToolkit';
@@ -378,7 +378,7 @@ const BookDetails = () => {
           <Separator className="my-8" />
 
           <div className="mb-8">
-            <BookReviews bookId={book.id} />
+            <BookExperienceTags bookId={book.id} />\n                  <BookReviews bookId={book.id} />
           <BookLiteraryVoices bookId={book.id} />
           </div>
 
