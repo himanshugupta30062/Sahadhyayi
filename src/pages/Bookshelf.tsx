@@ -24,8 +24,10 @@ import {
   FileSpreadsheet,
   ArrowUpDown,
   Play,
-  X
+  X,
+  Upload,
 } from 'lucide-react';
+import { ReadingImportExportDialog } from '@/components/books/ReadingImportExportDialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,6 +65,7 @@ const Bookshelf = () => {
   const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [ownedOnly, setOwnedOnly] = useState(false);
+  const [isImportExportOpen, setIsImportExportOpen] = useState(false);
 
   // Stats
   const stats = useMemo(() => {
@@ -320,6 +323,16 @@ const Bookshelf = () => {
               >
                 <Share2 className="w-4 h-4 mr-1.5 text-muted-foreground" />
                 Share Shelf
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsImportExportOpen(true)}
+                className="border-border hover:border-[hsl(var(--brand-primary))] text-foreground"
+              >
+                <Upload className="w-4 h-4 mr-1.5 text-[hsl(var(--brand-primary))]" />
+                Import / Export
               </Button>
 
               <Button
@@ -736,6 +749,11 @@ const Bookshelf = () => {
           )}
         </div>
       </div>
+
+      <ReadingImportExportDialog
+        open={isImportExportOpen}
+        onOpenChange={setIsImportExportOpen}
+      />
     </>
   );
 };
