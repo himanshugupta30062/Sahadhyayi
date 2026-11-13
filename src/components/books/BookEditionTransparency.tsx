@@ -8,6 +8,7 @@ import { BookQualityBadge } from '@/components/library/BookQualityBadge';
 import { useWorkEditions } from '@/hooks/useWorkEditions';
 import { evaluateBookQuality } from '@/utils/catalog/qualityScoring';
 import { toast } from '@/hooks/use-toast';
+import { BookEditionPicker } from './BookEditionPicker';
 import {
   Dialog,
   DialogContent,
@@ -107,11 +108,13 @@ export const BookEditionTransparency: React.FC<BookEditionTransparencyProps> = (
             ))}
           </div>
 
-          {/* Action Row: Report Button */}
-          <div className="pt-2 flex items-center justify-between border-t border-gray-100 text-xs text-gray-500">
+          {/* Action Row: Report Button & Edition Details */}
+          <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 text-xs text-gray-500">
             <span>Score: <strong className="text-gray-900">{evaluation.score}/100</strong> (Quality evaluated against 7 standards)</span>
 
-            <Dialog open={reportOpen} onOpenChange={setReportOpen}>
+            <div className="flex items-center gap-2">
+              <BookEditionPicker book={book} triggerSize="sm" triggerVariant="ghost" triggerClassName="h-7 text-xs text-gray-600 hover:text-blue-600 px-2" />
+              <Dialog open={reportOpen} onOpenChange={setReportOpen}>
               <DialogTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-7 text-xs text-gray-500 hover:text-red-600 gap-1 px-2">
                   <Flag className="w-3 h-3" /> Report link or error
@@ -143,6 +146,7 @@ export const BookEditionTransparency: React.FC<BookEditionTransparencyProps> = (
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+            </div>
           </div>
         </CardContent>
       </Card>
