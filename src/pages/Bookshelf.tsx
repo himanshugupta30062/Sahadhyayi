@@ -23,7 +23,8 @@ import {
   Share2,
   FileSpreadsheet,
   ArrowUpDown,
-  Play
+  Play,
+  X
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -44,7 +45,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import SEO from '@/components/SEO';
 import { trackUiEvent } from '@/lib/analytics';
 
-type StatusFilter = 'all' | 'reading' | 'completed' | 'want_to_read' | 'did_not_finish';
+type StatusFilter = 'all' | 'reading' | 'completed' | 'want_to_read' | 'dnf';
 type SortOption = 'recent' | 'progress' | 'title' | 'author';
 
 const Bookshelf = () => {
@@ -60,16 +61,17 @@ const Bookshelf = () => {
   const [activeFilter, setActiveFilter] = useState<StatusFilter>('all');
   const [sortBy, setSortBy] = useState<SortOption>('recent');
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [ownedOnly, setOwnedOnly] = useState(false);
 
   // Stats
   const stats = useMemo(() => {
-    if (!bookshelfData) return { all: 0, reading: 0, completed: 0, want_to_read: 0, did_not_finish: 0 };
+    if (!bookshelfData) return { all: 0, reading: 0, completed: 0, want_to_read: 0, dnf: 0 };
     return {
       all: bookshelfData.length,
       reading: bookshelfData.filter(b => b.status === 'reading').length,
       completed: bookshelfData.filter(b => b.status === 'completed').length,
       want_to_read: bookshelfData.filter(b => b.status === 'want_to_read').length,
-      did_not_finish: bookshelfData.filter(b => b.status === 'did_not_finish').length,
+      dnf: bookshelfData.filter(b => b.status === 'dnf').length,
     };
   }, [bookshelfData]);
 
@@ -123,6 +125,8 @@ const Bookshelf = () => {
       filtered = filtered.filter((book) => book.is_favorite === true);
     }
 
+    if (ownedOnly) filtered = filtered.filter((book) => book.is_owned === true);
+
     // Sort
     filtered.sort((a, b) => {
       if (sortBy === 'progress') {
@@ -139,9 +143,9 @@ const Bookshelf = () => {
     });
     
     return filtered;
-  }, [booksWithProgress, activeFilter, searchQuery, sortBy, favoritesOnly]);
+  }, [booksWithProgress, activeFilter, searchQuery, sortBy, favoritesOnly, ownedOnly]);
 
-  const handleStatusChange = (itemId: string, newStatus: 'reading' | 'completed' | 'want_to_read' | 'did_not_finish') => {
+  const handleStatusChange = (itemId: string, newStatus: 'reading' | 'completed' | 'want_to_read' | 'dnf') => {
     updateBookshelf.mutate({ id: itemId, updates: { status: newStatus } });
   };
 
@@ -223,12 +227,12 @@ const Bookshelf = () => {
         label: 'Completed', 
         bg: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
       },
+      dnf: { icon: BookOpen, label: 'Did Not Finish', bg: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20' },
       want_to_read: { 
         icon: BookMarked, 
         label: 'Want to Read', 
         bg: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20' 
       },
-      did_not_finish: { icon: BookOpen, label: 'Did Not Finish', bg: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20' },
     };
     const badge = badges[status as keyof typeof badges] || badges.want_to_read;
     const Icon = badge.icon;
@@ -343,7 +347,7 @@ const Bookshelf = () => {
               { key: 'reading', label: 'Reading Now', icon: Clock, color: 'text-blue-500 dark:text-blue-400', bg: 'bg-blue-500/10' },
               { key: 'completed', label: 'Completed', icon: CheckCircle, color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-emerald-500/10' },
               { key: 'want_to_read', label: 'Want to Read', icon: BookMarked, color: 'text-amber-500 dark:text-amber-400', bg: 'bg-amber-500/10' },
-              { key: 'did_not_finish', label: 'DNF', icon: BookOpen, color: 'text-rose-500 dark:text-rose-400', bg: 'bg-rose-500/10' },
+              { key: 'dnf', label: 'Did Not Finish', icon: BookOpen, color: 'text-rose-500 dark:text-rose-400', bg: 'bg-rose-500/10' },
             ].map(({ key, label, icon: Icon, color, bg }) => (
               <Card 
                 key={key} 
@@ -410,41 +414,41 @@ const Bookshelf = () => {
               </div>
             </div>
 
+            <Button type="button" size="sm" variant={ownedOnly ? "default" : "outline"} aria-pressed={ownedOnly} aria-label="Owned books only" onClick={() => setOwnedOnly((current) => !current)} className="h-9 shrink-0 gap-1.5 border-border">
+              <BookMarked className="w-3.5 h-3.5" /> Owned ({booksWithProgress.filter((book) => book.is_owned === true).length})
+            </Button>
+
+            {(searchQuery.trim() || activeFilter !== 'all' || favoritesOnly || ownedOnly) && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => { setSearchQuery(''); setActiveFilter('all'); setFavoritesOnly(false); setOwnedOnly(false); }}
+                className="h-9 shrink-0 gap-1.5 text-xs"
+                aria-label="Clear bookshelf search and filters"
+              >
+                <X className="h-3.5 w-3.5" /> Clear all
+              </Button>
+            )}
+
             <Tabs value={activeFilter} onValueChange={(v) => setActiveFilter(v as StatusFilter)} className="w-full md:w-auto">
               <TabsList className="grid grid-cols-5 w-full md:w-auto h-9">
                 <TabsTrigger value="all" className="text-xs">All ({stats.all})</TabsTrigger>
                 <TabsTrigger value="reading" className="text-xs">Reading ({stats.reading})</TabsTrigger>
                 <TabsTrigger value="completed" className="text-xs">Done ({stats.completed})</TabsTrigger>
                 <TabsTrigger value="want_to_read" className="text-xs">To Read ({stats.want_to_read})</TabsTrigger>
-                <TabsTrigger value="did_not_finish" className="text-xs">DNF ({stats.did_not_finish})</TabsTrigger>
+                <TabsTrigger value="dnf" className="text-xs">DNF ({stats.dnf})</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
 
           {/* Five-book personal Up Next queue */}
           {booksWithProgress.some((book) => book.up_next_rank) && (
-            <Card className="border-amber-500/20 bg-amber-500/5">
-              <CardContent className="p-4 sm:p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h2 className="font-semibold text-foreground flex items-center gap-2"><BookMarked className="w-4 h-4 text-amber-500" />Up Next</h2>
-                    <p className="text-xs text-muted-foreground mt-0.5">Your personal queue · up to 5 books</p>
-                  </div>
-                  <span className="text-xs text-muted-foreground">{booksWithProgress.filter((book) => book.up_next_rank).length}/5</span>
-                </div>
-                <div className="flex gap-3 overflow-x-auto pb-1">
-                  {booksWithProgress.filter((book) => book.up_next_rank).sort((a, b) => (a.up_next_rank || 99) - (b.up_next_rank || 99)).map((item) => (
-                    <Link key={item.id} to={`/book/${item.book_id}`} className="flex items-center gap-2 min-w-[190px] max-w-[230px] rounded-lg border border-border bg-card p-2 hover:border-amber-500/50 transition-colors">
-                      <span className="text-xs font-semibold text-amber-600">{item.up_next_rank}</span>
-                      {item.books_library?.cover_image_url ? <img src={item.books_library.cover_image_url} alt="" className="w-8 h-11 rounded object-cover" /> : <div className="w-8 h-11 rounded bg-muted flex items-center justify-center"><BookOpen className="w-4 h-4" /></div>}
-                      <span className="text-sm font-medium text-foreground line-clamp-2">{item.books_library?.title || 'Untitled'}</span>
-                    </Link>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <Card className="border-amber-500/20 bg-amber-500/5"><CardContent className="p-4 sm:p-5">
+              <div className="flex items-center justify-between mb-3"><div><h2 className="font-semibold text-foreground flex items-center gap-2"><BookMarked className="w-4 h-4 text-amber-500" />Up Next</h2><p className="text-xs text-muted-foreground mt-0.5">Your personal queue · up to 5 books</p></div><span className="text-xs text-muted-foreground">{booksWithProgress.filter((book) => book.up_next_rank).length}/5</span></div>
+              <div className="flex gap-3 overflow-x-auto pb-1">{booksWithProgress.filter((book) => book.up_next_rank).sort((a, b) => (a.up_next_rank || 99) - (b.up_next_rank || 99)).map((item) => (<Link key={item.id} to={`/book/${item.book_id}`} className="flex items-center gap-2 min-w-[190px] max-w-[230px] rounded-lg border border-border bg-card p-2 hover:border-amber-500/50 transition-colors"><span className="text-xs font-semibold text-amber-600">{item.up_next_rank}</span>{item.books_library?.cover_image_url ? <img src={item.books_library.cover_image_url} alt="" className="w-8 h-11 rounded object-cover" /> : <div className="w-8 h-11 rounded bg-muted flex items-center justify-center"><BookOpen className="w-4 h-4" /></div>}<span className="text-sm font-medium text-foreground line-clamp-2">{item.books_library?.title || 'Untitled'}</span></Link>))}</div>
+            </CardContent></Card>
           )}
-
           {/* Empty State */}
           {(!bookshelfData || bookshelfData.length === 0) && (
             <Card className="border-dashed border-2 border-border bg-muted/30">
@@ -631,35 +635,27 @@ const Bookshelf = () => {
                                 <BookMarked className="w-4 h-4 mr-2" />
                                 Want to Read
                               </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleStatusChange(item.id, 'did_not_finish')}
-                                disabled={item.status === 'did_not_finish'}
-                              >
-                                <BookOpen className="w-4 h-4 mr-2 text-rose-500" />
-                                Mark Did Not Finish
+                              <DropdownMenuItem onClick={() => handleStatusChange(item.id, 'dnf')} disabled={item.status === 'dnf'}>
+                                <BookOpen className="w-4 h-4 mr-2" />
+                                Did Not Finish
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => {
+                                if (item.up_next_rank) { updateBookshelf.mutate({ id: item.id, updates: { up_next_rank: null } }); return; }
+                                const ranks = booksWithProgress.map((book) => book.up_next_rank).filter((rank): rank is number => typeof rank === 'number');
+                                const nextRank = [1, 2, 3, 4, 5].find((rank) => !ranks.includes(rank));
+                                if (!nextRank) { toast({ title: 'Up Next is full', description: 'Remove a book from your five-book queue first.', variant: 'destructive' }); return; }
+                                updateBookshelf.mutate({ id: item.id, updates: { up_next_rank: nextRank } });
+                              }}>
+                                <BookMarked className="w-4 h-4 mr-2 text-amber-500" />{item.up_next_rank ? 'Remove from Up Next' : 'Add to Up Next'}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  if (item.up_next_rank) {
-                                    updateBookshelf.mutate({ id: item.id, updates: { up_next_rank: null } });
-                                    return;
-                                  }
-                                  const ranks = booksWithProgress.map((book) => book.up_next_rank).filter((rank): rank is number => typeof rank === 'number');
-                                  const nextRank = [1, 2, 3, 4, 5].find((rank) => !ranks.includes(rank));
-                                  if (!nextRank) {
-                                    toast({ title: 'Up Next is full', description: 'Remove a book from your five-book queue first.', variant: 'destructive' });
-                                    return;
-                                  }
-                                  updateBookshelf.mutate({ id: item.id, updates: { up_next_rank: nextRank } });
-                                }}
-                              >
-                                <BookMarked className="w-4 h-4 mr-2 text-amber-500" />
-                                {item.up_next_rank ? 'Remove from Up Next' : 'Add to Up Next'}
+                              <DropdownMenuItem onClick={() => updateBookshelf.mutate({ id: item.id, updates: { is_owned: !item.is_owned } })}>
+                                <BookMarked className="w-4 h-4 mr-2" />
+                                {item.is_owned ? 'Remove Owned Mark' : 'Mark as Owned'}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
-                                onClick={() => handleRemove(item.id)}
+                                onClick={() => handleRemove(item.id)
                                 className="text-destructive focus:text-destructive"
                               >
                                 <Trash2 className="w-4 h-4 mr-2" />
@@ -692,6 +688,8 @@ const Bookshelf = () => {
                             </div>
                           </div>
                         )}
+
+                        {item.is_owned && <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-400"><BookMarked className="w-3 h-3" /> Owned</span>}
 
                         {/* Genre Tag */}
                         {book.genre && (
