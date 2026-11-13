@@ -632,9 +632,13 @@ const Bookshelf = () => {
                                 <BookOpen className="w-4 h-4 mr-2" />
                                 Did Not Finish
                               </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => updateBookshelf.mutate({ id: item.id, updates: { is_owned: !item.is_owned } })}>
+                                <BookMarked className="w-4 h-4 mr-2" />
+                                {item.is_owned ? 'Remove Owned Mark' : 'Mark as Owned'}
+                              </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
-                                onClick={() => handleRemove(item.id)}
+                                onClick={() => handleRemove(item.id)
                                 className="text-destructive focus:text-destructive"
                               >
                                 <Trash2 className="w-4 h-4 mr-2" />
@@ -667,6 +671,8 @@ const Bookshelf = () => {
                             </div>
                           </div>
                         )}
+
+                        {item.is_owned && <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-400"><BookMarked className="w-3 h-3" /> Owned</span>}
 
                         {/* Genre Tag */}
                         {book.genre && (
