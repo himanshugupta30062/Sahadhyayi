@@ -1,3 +1,20 @@
+export const useUpdateMarginNote = () => {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ noteId, quote, note, page }: { noteId: string; quote: string; note: string; page: number }) => {
+      if (!user) throw new Error("Sign in first.");
+      const { data, error } = await supabase.from("margin_notes")
+        .update({ quote: quote.trim(), note: note.trim(), page })
+        .eq("id", noteId).eq("user_id", user.id).eq("visibility", "private")
+        .select("id").single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => { void qc.invalidateQueries({ queryKey: ["margin-notes"] }); },
+  });
+};
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/authHelpers";
@@ -184,7 +201,7 @@ export const useDeleteMarginNote = () => {
   return useMutation({
     mutationFn: async (noteId: string) => {
       if (!user) throw new Error("Sign in first.");
-      const { error } = await supabase.from("margin_notes").delete().eq("id", noteId).eq("user_id", user.id).eq("visibility", "private");
+      const { error } = await supabase.from("margin_notes").delete().eq("id", noteId).eq("user_id", user.id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["margin-notes"] }),
