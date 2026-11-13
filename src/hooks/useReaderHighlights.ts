@@ -35,6 +35,21 @@ export const useAddReaderHighlight = () => {
     onSuccess: (_, input) => qc.invalidateQueries({ queryKey: ["reader-highlights", user?.id, input.bookId] }),
   });
 };
+export const useUpdateReaderHighlight = () => {
+  const { user } = useAuth(); const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; bookId: string; text: string; page: number; color: ReaderHighlight["color"] }) => {
+      if (!user?.id) throw new Error("Sign in first.");
+      const text = input.text.trim();
+      if (!text || text.length > 10000) throw new Error("Highlight text must be between 1 and 10,000 characters.");
+      const { data, error } = await supabase.from("reader_highlights").update({
+        text, page: Math.max(1, Math.floor(input.page)), color: input.color,
+      }).eq("id", input.id).eq("user_id", user.id).select().single();
+      if (error) throw error; return data as ReaderHighlight;
+    },
+    onSuccess: (_, input) => qc.invalidateQueries({ queryKey: ["reader-highlights", user?.id, input.bookId] }),
+  });
+};
 export const useDeleteReaderHighlight = () => {
   const { user } = useAuth(); const qc = useQueryClient();
   return useMutation({
