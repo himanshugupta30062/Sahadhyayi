@@ -14,6 +14,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      book_experience_tags: {
+        Row: { id: string; user_id: string; book_id: string; moods: string[]; pacing: string | null; content_warnings: string[]; custom_warning: string | null; created_at: string; updated_at: string }
+        Insert: { id?: string; user_id: string; book_id: string; moods?: string[]; pacing?: string | null; content_warnings?: string[]; custom_warning?: string | null; created_at?: string; updated_at?: string }
+        Update: { id?: string; user_id?: string; book_id?: string; moods?: string[]; pacing?: string | null; content_warnings?: string[]; custom_warning?: string | null; created_at?: string; updated_at?: string }
+        Relationships: []
+      }
       saved_quotes: {
         Row: { id: string; user_id: string; client_id: string; quote_text: string; source: string | null; note: string | null; book_id: string | null; page: number | null; location: string | null; created_at: string; updated_at: string }
         Insert: { id?: string; user_id: string; client_id: string; quote_text: string; source?: string | null; note?: string | null; book_id?: string | null; page?: number | null; location?: string | null; created_at?: string; updated_at?: string }
