@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from "react";
-import { CalendarDays, BookCheck, Star, TrendingUp } from "lucide-react";
+import { CalendarDays, BookCheck, Star, TrendingUp, Share2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BookshelfItem } from "@/hooks/useUserBookshelf";
 
@@ -13,6 +15,7 @@ const ReadingYearReview: React.FC<Props> = ({ books }) => {
     return [...new Set(values)].sort((a, b) => b - a);
   }, [books]);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const { toast } = useToast();
   const yearBooks = useMemo(() => books.filter((book) => {
     if (book.status !== "completed" || !book.completed_at) return false;
     const date = new Date(book.completed_at);
@@ -30,12 +33,20 @@ const ReadingYearReview: React.FC<Props> = ({ books }) => {
     acc[genre] = (acc[genre] || 0) + 1;
     return acc;
   }, {})).sort((a, b) => b[1] - a[1])[0];
+  const shareSummary = `My ${selectedYear} reading year on Sahadhyayi: ${yearBooks.length} books completed${average !== "—" ? `, average rating ${average}/5` : ""}${topGenre?.[0] ? `, favorite genre ${topGenre[0]}` : ""}. Discover your reading journey at sahadhyayi.com`;
+  const shareYear = async () => {
+    try {
+      if (typeof navigator.share === "function") await navigator.share({ title: `${selectedYear} Reading Year`, text: shareSummary, url: "https://sahadhyayi.com" });
+      else if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(shareSummary); toast({ title: "Reading recap copied", description: "Share it with fellow readers." }); }
+      else toast({ title: "Sharing unavailable", description: "Your browser does not support sharing or clipboard access.", variant: "destructive" });
+    } catch (error) { if (error instanceof Error && error.name !== "AbortError") toast({ title: "Could not share recap", description: error.message, variant: "destructive" }); }
+  };
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between gap-3">
+      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
         <CardTitle className="flex items-center gap-2"><CalendarDays className="h-5 w-5 text-primary" />Year in Reading</CardTitle>
-        <select aria-label="Reading year" className="rounded-md border bg-background px-2 py-1 text-sm" value={selectedYear} onChange={(event) => setSelectedYear(Number(event.target.value))}>
+        <div className="flex items-center gap-2"><Button type="button" variant="outline" size="sm" onClick={shareYear}><Share2 className="mr-1 h-4 w-4" />Share recap</Button><select aria-label="Reading year" className="rounded-md border bg-background px-2 py-1 text-sm" value={selectedYear} onChange={(event) => setSelectedYear(Number(event.target.value))}>
           {[...new Set([new Date().getFullYear(), ...years])].sort((a, b) => b - a).map((year) => <option key={year} value={year}>{year}</option>)}
         </select>
       </CardHeader>
