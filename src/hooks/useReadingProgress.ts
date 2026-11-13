@@ -105,6 +105,15 @@ export const useSaveReadingProgress = () => {
 
       const safeTotal = Math.max(1, Math.floor(totalPages));
       const safePage = Math.min(safeTotal, Math.max(1, Math.floor(currentPage)));
+
+      // Preserve the original start/completion timestamps when saving the same book again.
+      const { data: existingProgress, error: lookupError } = await supabase
+        .from('reading_progress')
+        .select('started_at, completed_at')
+        .eq('user_id', user.id)
+        .eq('book_id', normalizedBookId)
+        .maybeSingle();
+      if (lookupError) throw lookupError;
       const { data, error } = await supabase
         .from('reading_progress')
         .upsert(
