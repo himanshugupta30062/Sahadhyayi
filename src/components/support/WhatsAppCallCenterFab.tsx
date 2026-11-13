@@ -14,6 +14,23 @@ export const WhatsAppIcon = ({ className = 'w-6 h-6' }: { className?: string }) 
   </svg>
 );
 
+const SupportAgentIcon = ({ className = 'h-7 w-7' }: { className?: string }) => (
+  <svg viewBox="0 0 42 32" className={className} fill="none" aria-hidden="true">
+    {/* Headband and ear cups */}
+    <path d="M4.5 15v-1.2a9.5 9.5 0 0 1 19 0V15" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/>
+    <rect x="2.5" y="13.5" width="6" height="10" rx="2.8" fill="currentColor" fillOpacity=".22" stroke="currentColor" strokeWidth="1.6"/>
+    <rect x="20" y="13.5" width="6" height="10" rx="2.8" fill="currentColor" fillOpacity=".22" stroke="currentColor" strokeWidth="1.6"/>
+    {/* Friendly agent face */}
+    <path d="M8.5 13.5a5.5 5.5 0 0 1 11 0v4a5.5 5.5 0 0 1-11 0v-4Z" fill="currentColor" fillOpacity=".96"/>
+    <path d="M11.2 17h.1m4.9 0h.1" stroke="#172333" strokeWidth="1.8" strokeLinecap="round"/>
+    <path d="M12 19.4c1.2.8 2.4.8 3.6 0" stroke="#172333" strokeWidth="1.2" strokeLinecap="round"/>
+    {/* Boom deliberately extends beyond the circular button edge */}
+    <path d="M23.5 20.5c2.5 2.4 5.1 2.8 7.7 2.1 1.5-.4 2.3-1.4 3-2.8" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"/>
+    <rect x="32.2" y="16.5" width="8.2" height="5.3" rx="2.65" fill="#102235" stroke="currentColor" strokeWidth="1.5" transform="rotate(-18 32.2 16.5)"/>
+    <path d="M35 17.9l.8 2.2m1.7-2.7.8 2.2" stroke="#34D399" strokeWidth="1.2" strokeLinecap="round"/>
+  </svg>
+);
+
 export const WhatsAppCallCenterFab: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -72,13 +89,13 @@ export const WhatsAppCallCenterFab: React.FC = () => {
         aria-haspopup="dialog"
         data-testid="whatsapp-callcenter-fab"
         className={cn(
-          'group fixed z-40 flex items-center justify-center rounded-full shadow-2xl transition-all duration-300 hover:-translate-y-0.5 hover:scale-105 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D5B16D] focus-visible:ring-offset-2',
+          'group fixed z-40 flex items-center justify-center rounded-full shadow-[0_8px_28px_-8px_rgba(15,23,42,0.45)] transition-all duration-300 hover:-translate-y-1 hover:scale-[1.04] hover:shadow-[0_12px_32px_-8px_rgba(15,23,42,0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2',
           // Exactly matching Book Reader launcher dimensions: 48px (w-12 h-12) on mobile, 56px (sm:w-14 sm:h-14) on sm+
           'w-12 h-12 sm:w-14 sm:h-14',
           // Positioned directly above Book Reader: right-4 sm:right-5 lg:right-6 (vertically aligned)
           'bottom-[76px] right-4 sm:bottom-[88px] sm:right-5 lg:bottom-[96px] lg:right-6',
           // Deep emerald & radiant gold styling
-          'bg-[#1C442D] text-[#D5B16D] border border-[#D5B16D]/50 hover:bg-[#153422] hover:border-[#D5B16D]'
+          'bg-gradient-to-br from-[#263548] via-[#172333] to-[#101827] text-white border border-white/15 hover:from-[#33465d] hover:via-[#1d2d40] hover:to-[#152033]'
         )}
       >
         {/* Radar ping ring */}
@@ -87,7 +104,7 @@ export const WhatsAppCallCenterFab: React.FC = () => {
           aria-hidden="true"
         />
         {/* Support / Help Icon matching Book Reader icon scale */}
-        <LifeBuoy className="relative h-6 w-6 sm:h-7 sm:w-7 transition-transform group-hover:scale-110" aria-hidden="true" />
+        <span className="pointer-events-none absolute inset-[3px] rounded-full border border-white/[0.07]" aria-hidden="true" />\n        <SupportAgentIcon className="relative h-7 w-7 sm:h-8 sm:w-8 transition-transform duration-300 group-hover:scale-105" />\n        <span className="absolute bottom-[2px] right-[2px] flex h-[17px] w-[17px] items-center justify-center rounded-full border-[2.5px] border-[#172333] bg-emerald-500" aria-hidden="true"><span className="h-1.5 w-1.5 rounded-full bg-white" /></span>
 
         {/* Desktop Tooltip */}
         <span
@@ -96,7 +113,7 @@ export const WhatsAppCallCenterFab: React.FC = () => {
             showTooltip && !isOpen ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'
           )}
         >
-          Call Center & WhatsApp Support
+          Chat with a Support Agent
         </span>
       </button>
 
