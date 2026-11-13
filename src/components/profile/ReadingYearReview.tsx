@@ -48,7 +48,7 @@ const ReadingYearReview: React.FC<Props> = ({ books }) => {
         <CardTitle className="flex items-center gap-2"><CalendarDays className="h-5 w-5 text-primary" />Year in Reading</CardTitle>
         <div className="flex items-center gap-2"><Button type="button" variant="outline" size="sm" onClick={shareYear}><Share2 className="mr-1 h-4 w-4" />Share recap</Button><select aria-label="Reading year" className="rounded-md border bg-background px-2 py-1 text-sm" value={selectedYear} onChange={(event) => setSelectedYear(Number(event.target.value))}>
           {[...new Set([new Date().getFullYear(), ...years])].sort((a, b) => b - a).map((year) => <option key={year} value={year}>{year}</option>)}
-        </select>
+        </select></div>
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="grid grid-cols-3 gap-2">
