@@ -298,3 +298,229 @@ export function useAssignEntryCollection() {
     },
   });
 }
+
+// -------------------------------------------------------------
+// Entry Metadata (Favorites, Pins, Tags) Persistence Hooks
+// -------------------------------------------------------------
+
+export interface JournalEntryMeta {
+  favorite?: boolean;
+  pinned?: boolean;
+  tags?: string[];
+  collection?: string;
+}
+
+const LOCAL_META_KEY = 'journal-entry-meta';
+
+function getLocalMeta(): Record<string, JournalEntryMeta> {
+  try {
+    const raw = localStorage.getItem(LOCAL_META_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveLocalMeta(meta: Record<string, JournalEntryMeta>): void {
+  try {
+    localStorage.setItem(LOCAL_META_KEY, JSON.stringify(meta));
+  } catch {
+    // ignore
+  }
+}
+
+export function useJournalEntryMeta() {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['journal-entry-meta', user?.id || 'guest'],
+    queryFn: async (): Promise<Record<string, JournalEntryMeta>> => {
+      if (!user) {
+        return getLocalMeta();
+      }
+
+      const { data, error } = await supabase
+        .from('journal_entry_metadata')
+        .select('entry_id, is_favorite, is_pinned, tags')
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.warn('Could not load entry metadata from Supabase, falling back to local storage:', error);
+        return getLocalMeta();
+      }
+
+      const metaMap: Record<string, JournalEntryMeta> = getLocalMeta();
+      data?.forEach((row: { entry_id: string; is_favorite?: boolean; is_pinned?: boolean; tags?: string[] }) => {
+        metaMap[row.entry_id] = {
+          ...metaMap[row.entry_id],
+          favorite: Boolean(row.is_favorite),
+          pinned: Boolean(row.is_pinned),
+          tags: row.tags || [],
+        };
+      });
+
+      return metaMap;
+    },
+  });
+}
+
+export function useUpdateJournalEntryMeta() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      entryId,
+      meta,
+    }: {
+      entryId: string;
+      meta: Partial<JournalEntryMeta>;
+    }) => {
+      // Always update local cache
+      const local = getLocalMeta();
+      const updatedItem = { ...(local[entryId] || {}), ...meta };
+      local[entryId] = updatedItem;
+      saveLocalMeta(local);
+
+      if (!user) return updatedItem;
+
+      const { data, error } = await supabase
+        .from('journal_entry_metadata')
+        .upsert(
+          {
+            user_id: user.id,
+            entry_id: entryId,
+            is_favorite: updatedItem.favorite ?? false,
+            is_pinned: updatedItem.pinned ?? false,
+            tags: updatedItem.tags || [],
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'user_id,entry_id' }
+        )
+        .select()
+        .single();
+
+      if (error) {
+        console.warn('Could not persist entry metadata to Supabase:', error);
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['journal-entry-meta'] });
+    },
+  });
+}
+
+// -------------------------------------------------------------
+// Bulk Actions
+// -------------------------------------------------------------
+
+export function useBulkAssignEntriesCollection() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      entryIds,
+      collectionId,
+    }: {
+      entryIds: string[];
+      collectionId: string | null;
+    }) => {
+      if (entryIds.length === 0) return;
+
+      if (!user) {
+        const mappings = getLocalMappings();
+        entryIds.forEach((id) => {
+          if (!collectionId) {
+            delete mappings[id];
+          } else {
+            mappings[id] = collectionId;
+          }
+        });
+        saveLocalMappings(mappings);
+        return;
+      }
+
+      if (!collectionId) {
+        const { error } = await supabase
+          .from('journal_entry_collections')
+          .delete()
+          .eq('user_id', user.id)
+          .in('entry_id', entryIds);
+
+        if (error) throw error;
+      } else {
+        const rows = entryIds.map((id) => ({
+          user_id: user.id,
+          collection_id: collectionId,
+          entry_id: id,
+        }));
+
+        const { error } = await supabase
+          .from('journal_entry_collections')
+          .upsert(rows, { onConflict: 'collection_id,entry_id' });
+
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['journal-entry-collections'] });
+      toast({
+        title: 'Bulk Assignment Complete',
+        description: 'Selected entries updated.',
+      });
+    },
+  });
+}
+
+export function useBulkTagEntries() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      entryIds,
+      tagsToAdd,
+    }: {
+      entryIds: string[];
+      tagsToAdd: string[];
+    }) => {
+      if (entryIds.length === 0 || tagsToAdd.length === 0) return;
+
+      const local = getLocalMeta();
+      const sanitizedTags = tagsToAdd.map((t) => t.trim().replace(/^#/, '')).filter(Boolean);
+
+      for (const id of entryIds) {
+        const currentTags = local[id]?.tags || [];
+        const merged = Array.from(new Set([...currentTags, ...sanitizedTags])).slice(0, 15);
+        local[id] = { ...(local[id] || {}), tags: merged };
+
+        if (user) {
+          await supabase.from('journal_entry_metadata').upsert(
+            {
+              user_id: user.id,
+              entry_id: id,
+              is_favorite: local[id]?.favorite ?? false,
+              is_pinned: local[id]?.pinned ?? false,
+              tags: merged,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'user_id,entry_id' }
+          );
+        }
+      }
+
+      saveLocalMeta(local);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['journal-entry-meta'] });
+      toast({
+        title: 'Tags Applied',
+        description: 'Applied tags to selected journal entries.',
+      });
+    },
+  });
+}
+

@@ -45,3 +45,28 @@ CREATE INDEX IF NOT EXISTS journal_entry_collections_user_entry_idx
 
 COMMENT ON TABLE public.journal_collections IS 'Private reader-created collections for organizing reading notes, reflections, and quotes.';
 COMMENT ON TABLE public.journal_entry_collections IS 'Join table linking journal entries to user collections.';
+
+-- Entry metadata table for unified journal entries (favorites, pins, tags)
+CREATE TABLE IF NOT EXISTS public.journal_entry_metadata (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  entry_id TEXT NOT NULL,
+  is_favorite BOOLEAN DEFAULT FALSE,
+  is_pinned BOOLEAN DEFAULT FALSE,
+  tags TEXT[] DEFAULT '{}',
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(user_id, entry_id)
+);
+
+ALTER TABLE public.journal_entry_metadata ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users manage their own journal entry metadata" ON public.journal_entry_metadata;
+CREATE POLICY "Users manage their own journal entry metadata"
+  ON public.journal_entry_metadata FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS journal_entry_metadata_user_entry_idx
+  ON public.journal_entry_metadata (user_id, entry_id);
+
+COMMENT ON TABLE public.journal_entry_metadata IS 'Private user metadata (favorites, pins, tags) for reading journal entries.';

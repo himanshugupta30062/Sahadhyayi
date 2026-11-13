@@ -10,6 +10,9 @@ const mockRenameCollection = vi.fn().mockResolvedValue({ id: 'col-1', name: 'Ren
 const mockDeleteCollection = vi.fn().mockResolvedValue(undefined);
 const mockAssignCollection = vi.fn().mockResolvedValue(undefined);
 const mockUpdateHighlight = vi.fn().mockResolvedValue(undefined);
+const mockUpdateMeta = vi.fn().mockResolvedValue(undefined);
+const mockBulkAssign = vi.fn().mockResolvedValue(undefined);
+const mockBulkTag = vi.fn().mockResolvedValue(undefined);
 
 vi.mock('@/hooks/useReadingJournal', () => ({
   useReadingJournal: () => ({
@@ -35,8 +38,8 @@ vi.mock('@/hooks/useReadingJournal', () => ({
       },
     ],
     bookSummaries: [
-      { bookId: 'book-1', bookTitle: 'Meditations' },
-      { bookId: 'book-2', bookTitle: 'Atomic Habits' },
+      { bookId: 'book-1', bookTitle: 'Meditations', totalEntriesCount: 1 },
+      { bookId: 'book-2', bookTitle: 'Atomic Habits', totalEntriesCount: 1 },
     ],
     isLoading: false,
   }),
@@ -68,6 +71,17 @@ vi.mock('@/hooks/useJournalCollections', () => ({
     },
     isLoading: false,
   }),
+  useJournalEntryMeta: () => ({
+    data: {
+      'hl-1': { favorite: true, pinned: false, tags: ['stoic'] },
+      'note-1': { favorite: false, pinned: true, tags: ['habits'] },
+    },
+    isLoading: false,
+  }),
+  useUpdateJournalEntryMeta: () => ({
+    mutateAsync: mockUpdateMeta,
+    isPending: false,
+  }),
   useCreateJournalCollection: () => ({
     mutateAsync: mockCreateCollection,
     isPending: false,
@@ -82,6 +96,14 @@ vi.mock('@/hooks/useJournalCollections', () => ({
   }),
   useAssignEntryCollection: () => ({
     mutateAsync: mockAssignCollection,
+    isPending: false,
+  }),
+  useBulkAssignEntriesCollection: () => ({
+    mutateAsync: mockBulkAssign,
+    isPending: false,
+  }),
+  useBulkTagEntries: () => ({
+    mutateAsync: mockBulkTag,
     isPending: false,
   }),
 }));
@@ -145,5 +167,75 @@ describe('ReadingJournalPage', () => {
     await waitFor(() => {
       expect(mockCreateCollection).toHaveBeenCalledWith({ name: 'Poetry' });
     });
+  });
+
+  it('switches between Timeline View and By Book view', () => {
+    render(
+      <BrowserRouter>
+        <ReadingJournalPage />
+      </BrowserRouter>
+    );
+
+    const byBookBtn = screen.getByRole('button', { name: /By Book/i });
+    fireEvent.click(byBookBtn);
+
+    expect(screen.getAllByText(/Export Book Notes/i).length).toBeGreaterThan(0);
+
+    const timelineBtn = screen.getByRole('button', { name: /Timeline View/i });
+    fireEvent.click(timelineBtn);
+
+    expect(screen.queryByText(/Export Book Notes/i)).not.toBeInTheDocument();
+  });
+
+  it('supports selecting entries and reveals sticky bulk action toolbar', async () => {
+    render(
+      <BrowserRouter>
+        <ReadingJournalPage />
+      </BrowserRouter>
+    );
+
+    const selectEntryBtn = screen.getByLabelText('Select entry hl-1');
+    fireEvent.click(selectEntryBtn);
+
+    expect(screen.getByText('1 selected')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Add Tags/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Export Selected/i })).toBeInTheDocument();
+
+    const clearBtn = screen.getByRole('button', { name: /Clear/i });
+    fireEvent.click(clearBtn);
+
+    expect(screen.queryByText('1 selected')).not.toBeInTheDocument();
+  });
+
+  it('filters entries when toggling Favorites only and Pinned only', () => {
+    render(
+      <BrowserRouter>
+        <ReadingJournalPage />
+      </BrowserRouter>
+    );
+
+    const favBtn = screen.getByRole('button', { name: /Favorites/i });
+    fireEvent.click(favBtn);
+
+    // Only hl-1 is favorite
+    expect(
+      screen.getByText(/The soul becomes dyed with the color of its thoughts/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/Habits are the compound interest/i)
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(favBtn); // uncheck favorites
+
+    const pinBtn = screen.getByRole('button', { name: /Pinned/i });
+    fireEvent.click(pinBtn);
+
+    // Only note-1 is pinned
+    expect(
+      screen.getByText(/Habits are the compound interest/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/The soul becomes dyed with the color of its thoughts/i)
+    ).not.toBeInTheDocument();
   });
 });
