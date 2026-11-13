@@ -21,12 +21,14 @@ export function CreateBookReelDialog({ onPublished }: CreateBookReelDialogProps)
   const [bookAuthor, setBookAuthor] = useState('');
   const [busy, setBusy] = useState(false);
   const [checkingDuration, setCheckingDuration] = useState(false);
+  const [videoDuration, setVideoDuration] = useState<number | null>(null);
 
-  const reset = () => { setFile(null); setCaption(''); setBookTitle(''); setBookAuthor(''); };
+  const reset = () => { setFile(null); setVideoDuration(null); setCaption(''); setBookTitle(''); setBookAuthor(''); };
 
   const selectVideo = (selected: File | undefined) => {
+    setFile(null); setVideoDuration(null);
     if (!selected) return;
-    if (!ALLOWED_TYPES.includes(selected.type)) { toast.error('Use an MP4, WebM, or MOV video.'); return; }
+    if (!ALLOWED_TYPES.includes(selected.type) { toast.error('Use an MP4, WebM, or MOV video.'); return; }
     if (selected.size > MAX_VIDEO_BYTES) { toast.error('Video must be 50 MB or smaller.'); return; }
     setCheckingDuration(true);
     const video = document.createElement('video');
@@ -38,6 +40,7 @@ export function CreateBookReelDialog({ onPublished }: CreateBookReelDialogProps)
       if (!Number.isFinite(video.duration) || video.duration <= 0) { toast.error('Could not read video duration. Try another file.'); return; }
       if (video.duration > MAX_VIDEO_SECONDS + 0.05) { setFile(null); if (fileRef.current) fileRef.current.value = ''; toast.error('Book reels must be 10 seconds or shorter. Trim your video and try again.'); return; }
       setFile(selected);
+      setVideoDuration(video.duration);
       toast.success('Video ready (10 seconds max).');
     };
     video.onerror = () => { URL.revokeObjectURL(objectUrl); setCheckingDuration(false); toast.error('Could not read video duration. Try another file.'); };
@@ -80,7 +83,7 @@ export function CreateBookReelDialog({ onPublished }: CreateBookReelDialogProps)
       <div className="space-y-4">
         <input ref={fileRef} type="file" accept="video/mp4,video/webm,video/quicktime" className="sr-only" onChange={(e) => selectVideo(e.target.files?.[0])} />
         <button type="button" onClick={() => fileRef.current?.click()} className="flex w-full flex-col items-center gap-2 rounded-xl border border-dashed p-6 text-sm hover:bg-muted/50">
-          <Upload className="h-6 w-6" /><span>{file ? file.name : 'Choose video (MP4, WebM, MOV)'}</span><span className="text-xs text-muted-foreground">Maximum 50 MB · 10 seconds</span>
+          <Upload className="h-6 w-6" /><span>{file ? file.name : checkingDuration ? 'Checking video duration…' : 'Choose video (MP4, WebM, MOV)'}</span><span className="text-xs text-muted-foreground">Maximum 50 MB · 10 seconds</span>{videoDuration !== null && <span className="text-xs font-medium text-emerald-600">{videoDuration.toFixed(2)}s / 10s</span>}
         </button>
         <Textarea value={caption} onChange={(e) => setCaption(e.target.value)} maxLength={500} placeholder="What did this book make you feel? (required)" />
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
