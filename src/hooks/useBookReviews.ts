@@ -7,7 +7,7 @@ export interface BookReview {
   book_id: string;
   user_id: string;
   review_text: string;
-  contains_spoilers: boolean;
+  contains_spoilers: boolean;\n  overall_rating?: number | null;\n  plot_rating?: number | null;\n  characters_rating?: number | null;\n  writing_rating?: number | null;
   created_at: string;
   updated_at: string;
   reviewer?: { id: string; full_name?: string | null; username?: string | null; profile_photo_url?: string | null } | null;
@@ -21,7 +21,7 @@ export function useBookReviews(bookId: string | undefined) {
     queryFn: async (): Promise<BookReview[]> => {
       if (!bookId) return [];
       const { data, error } = await supabase.from('book_reviews')
-        .select('id, book_id, user_id, review_text, contains_spoilers, created_at, updated_at')
+        .select('id, book_id, user_id, review_text, contains_spoilers, overall_rating, plot_rating, characters_rating, writing_rating, created_at, updated_at')
         .eq('book_id', bookId)
         .order('created_at', { ascending: false })
         .limit(50);
@@ -51,7 +51,7 @@ export function useSaveBookReview(bookId: string | undefined) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: async (input: { reviewText: string; containsSpoilers: boolean }) => {
+    mutationFn: async (input: { reviewText: string; containsSpoilers: boolean; overallRating: number; plotRating: number | null; charactersRating: number | null; writingRating: number | null }) => {
       if (!bookId) throw new Error('Missing book');
       if (!user?.id) throw new Error('Please sign in to write a review.');
       const reviewText = input.reviewText.trim();
@@ -60,7 +60,7 @@ export function useSaveBookReview(bookId: string | undefined) {
         book_id: bookId,
         user_id: user.id,
         review_text: reviewText,
-        contains_spoilers: input.containsSpoilers,
+        contains_spoilers: input.containsSpoilers,\n        overall_rating: input.overallRating,\n        plot_rating: input.plotRating,\n        characters_rating: input.charactersRating,\n        writing_rating: input.writingRating,
       }, { onConflict: 'book_id,user_id' })
         .select('id, book_id, user_id, review_text, contains_spoilers, created_at, updated_at')
         .single();
