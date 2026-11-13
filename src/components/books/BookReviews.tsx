@@ -127,6 +127,8 @@ export default function BookReviews({ bookId }: { bookId: string }) {
                   </div>
                   {review.contains_spoilers && <Button size="sm" variant="outline" onClick={() => setShowSpoilers((current) => ({ ...current, [review.id]: !revealed }))}>{revealed ? <EyeOff className="h-4 w-4 mr-1" /> : <Eye className="h-4 w-4 mr-1" />}{revealed ? 'Hide spoilers' : 'Reveal spoilers'}</Button>}
                 </div>
+                {review.reader_reaction && <p className="text-xs text-emerald-700">Felt: {review.reader_reaction}</p>}
+                {!!review.dimensions?.length && <div className="flex flex-wrap gap-2">{review.dimensions.map((item) => <span key={item.dimension} className="rounded-full bg-muted px-2 py-1 text-xs capitalize">{item.dimension}: {item.score}/5</span>)}</div>}
                 {review.contains_spoilers && !revealed ? <p className="text-sm text-amber-800 italic">Spoiler hidden — reveal only if you want to continue.</p> : <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{review.review_text}</p>}
               </article>
             );
