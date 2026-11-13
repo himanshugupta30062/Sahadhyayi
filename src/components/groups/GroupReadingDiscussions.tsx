@@ -598,6 +598,11 @@ const GroupReadingDiscussions = ({ groupId, canModerate }: GroupReadingDiscussio
             <MessageCircle className="mx-auto mb-2 h-7 w-7 text-muted-foreground/60" />
             <p className="font-medium text-foreground">No discussions yet</p>
             <p className="mt-1 text-sm text-muted-foreground">Start with a question or a favourite passage from the current read.</p>
+            <div className="mx-auto mt-4 max-w-lg rounded-lg bg-muted/40 p-3 text-left">
+              <Badge variant="outline" className="mb-2">Example prompt</Badge>
+              <p className="text-sm font-medium">Which idea from this book challenged your point of view?</p>
+              <p className="mt-1 text-xs text-muted-foreground">Use this as inspiration—your group’s real discussions will appear here.</p>
+            </div>
           </div>
         ) : (
           <div className="space-y-3">
