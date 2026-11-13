@@ -83,56 +83,37 @@ export const HomeReadingPeopleSection: React.FC = () => {
           </Link>
         </div>
 
-        {/* 4 Connection Pillars Grid */}
+        {/* Signature feature: readers map */}
+        <Link to="/map" className="group relative mb-8 block overflow-hidden rounded-[2rem] border border-[#D9E4D8] bg-gradient-to-br from-[#EAF2E8] via-[#F8F7F1] to-[#E8EFEA] p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-[#2C4034] dark:from-[#14251B] dark:via-[#111614] dark:to-[#18221D] sm:p-10 lg:p-12">
+          <div className="pointer-events-none absolute -right-12 -top-20 h-72 w-72 rounded-full border border-[#5B8064]/20 dark:border-[#A6C9A8]/20" aria-hidden="true"/>
+          <div className="pointer-events-none absolute right-8 top-8 h-52 w-52 rounded-full border border-dashed border-[#5B8064]/25 dark:border-[#A6C9A8]/20" aria-hidden="true"/>
+          <div className="relative z-10 grid items-center gap-8 lg:grid-cols-[1.05fr_.95fr]">
+            <div className="max-w-xl">
+              <span className="inline-flex items-center gap-2 rounded-full border border-[#C8D9C8] bg-white/70 px-3 py-1 text-[10px] font-bold uppercase tracking-[.18em] text-[#42684A] dark:border-[#36513C] dark:bg-white/[.05] dark:text-[#B8D7B7]"><MapPin size={13}/> Sahadhyayi signature feature</span>
+              <h3 className="mt-5 font-serif text-3xl font-bold leading-tight text-[#1C3423] dark:text-[#E9F2E7] sm:text-4xl lg:text-5xl">Books connect us.<br/><span className="text-[#527B5C] dark:text-[#B8D7B7]">See readers around you.</span></h3>
+              <p className="mt-4 max-w-lg text-sm leading-7 text-[#536657] dark:text-[#A8B9AA] sm:text-base">Discover fellow readers by city, find people reading the same book, and turn shared shelves into real connections—without revealing anyone’s exact location.</p>
+              <span className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#244B31] px-5 py-3 text-sm font-semibold text-white transition-transform group-hover:translate-x-1 dark:bg-[#D5B16D] dark:text-[#182018]">Explore the Readers Map <ArrowRight size={16}/></span>
+            </div>
+            <div className="relative mx-auto aspect-[4/3] w-full max-w-[520px] overflow-hidden rounded-3xl border border-white/70 bg-[#DCE9DC]/80 shadow-inner dark:border-white/10 dark:bg-[#1B2C20]/60" aria-hidden="true">
+              <div className="absolute inset-0 opacity-50" style={{backgroundImage:"linear-gradient(rgba(75,110,80,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(75,110,80,.12) 1px,transparent 1px)",backgroundSize:"26px 26px"}}/>
+              <svg viewBox="0 0 520 340" className="absolute inset-0 h-full w-full" fill="none">
+                <path d="M-20 90 C80 40 120 145 205 100 S360 45 540 120 M-10 240 C100 190 145 290 250 220 S390 190 530 280 M90 -20 C120 80 60 170 130 360 M340 -20 C300 100 390 180 330 360" stroke="#9AB59C" strokeWidth="2" opacity=".45"/>
+                <path d="M100 95 Q220 55 310 145 T430 245 M125 260 Q230 170 380 95" stroke="#648B6A" strokeDasharray="5 7" strokeWidth="2" opacity=".65"/>
+                {[[100,95],[205,100],[310,145],[430,245],[125,260],[230,205],[380,95]].map(([x,y],i)=><g key={i}><circle cx={x} cy={y} r="18" fill="#6F9875" opacity=".16"/><circle cx={x} cy={y} r="8" fill="#47734F" stroke="#F7FBF5" strokeWidth="3"/><circle cx={x} cy={y} r="3" fill="#F7FBF5"/></g>)}
+                <g transform="translate(252 156)"><rect x="-32" y="-19" width="64" height="38" rx="12" fill="#244B31"/><path d="M-8 -9V9L0 5L8 9V-9" stroke="#F7FBF5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></g>
+              </svg>
+              <div className="absolute bottom-3 left-3 rounded-full border border-white/70 bg-white/85 px-3 py-1.5 text-[10px] font-semibold text-[#47664A] shadow-sm dark:border-white/10 dark:bg-[#101A13]/85 dark:text-[#B8D7B7]">Illustrative map preview · not live user locations</div>
+            </div>
+          </div>
+        </Link>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {/* Pillar 1: Reader Map */}
-          <Link
-            to="/map"
-            className="group flex flex-col justify-between rounded-2xl bg-white dark:bg-[#111413] border border-[#E8E8E3] hover:border-[#BDA56B]/60 dark:border-[#222824] dark:hover:border-[#D5B16D]/50 p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
-          >
-            <div>
-              <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
-                <MapPin className="w-5 h-5" />
-              </div>
-              <h3 className="font-serif text-lg font-bold text-[#1C201D] dark:text-[#F3F0E7] group-hover:text-[#1C442D] dark:group-hover:text-[#D5B16D] transition-colors">
-                Local Reader Map
-              </h3>
-              <p className="text-xs font-semibold text-[#8F681C] dark:text-[#D5B16D] mt-0.5 mb-2">
-                Readers in your city
-              </p>
-              <p className="text-xs text-[#636B65] dark:text-[#A5ADA6] leading-relaxed">
-                Explore local readers nearby, discover popular books in your region, and build real-life literary connections.
-              </p>
-            </div>
-            <div className="mt-5 pt-3 border-t border-[#E8E8E3] dark:border-[#222824] flex items-center text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">
-              <span>Open Reader Map</span>
-              <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-1" />
-            </div>
+          <Link to="/map" className="group flex flex-col justify-between rounded-2xl bg-white dark:bg-[#111413] border border-[#E8E8E3] hover:border-[#BDA56B]/60 dark:border-[#222824] dark:hover:border-[#D5B16D]/50 p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+            <div><div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center mb-4"><MapPin className="w-5 h-5"/></div><h3 className="font-serif text-lg font-bold">Local Reader Map</h3><p className="text-xs font-semibold text-[#8F681C] mt-1 mb-2">Readers in your city</p><p className="text-xs text-[#636B65] dark:text-[#A5ADA6] leading-relaxed">Meet nearby readers and discover books popular in your region.</p></div><div className="mt-5 pt-3 border-t flex items-center text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">Open map <ArrowRight className="w-3.5 h-3.5 ml-1"/></div>
           </Link>
-
-          {/* Pillar 2: Reader Map by Book */}
-          <Link
-            to="/reader-map"
-            className="group flex flex-col justify-between rounded-2xl bg-white dark:bg-[#111413] border border-[#E8E8E3] hover:border-[#BDA56B]/60 dark:border-[#222824] dark:hover:border-[#D5B16D]/50 p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
-          >
-            <div>
-              <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60 flex items-center justify-center mb-4 transition-transform group-hover:scale-105">
-                <BookOpen className="w-5 h-5" />
-              </div>
-              <h3 className="font-serif text-lg font-bold text-[#1C201D] dark:text-[#F3F0E7] group-hover:text-[#1C442D] dark:group-hover:text-[#D5B16D] transition-colors">
-                Reader Map by Book
-              </h3>
-              <p className="text-xs font-semibold text-[#8F681C] dark:text-[#D5B16D] mt-0.5 mb-2">
-                Same-book readers
-              </p>
-              <p className="text-xs text-[#636B65] dark:text-[#A5ADA6] leading-relaxed">
-                Select any book from the library to see who else in the world is turning the same pages right now.
-              </p>
-            </div>
-            <div className="mt-5 pt-3 border-t border-[#E8E8E3] dark:border-[#222824] flex items-center text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">
-              <span>Find Book Mates</span>
-              <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-1" />
-            </div>
+          <Link to="/reader-map" className="group flex flex-col justify-between rounded-2xl bg-white dark:bg-[#111413] border border-[#E8E8E3] hover:border-[#BDA56B]/60 dark:border-[#222824] dark:hover:border-[#D5B16D]/50 p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+            <div><div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60 flex items-center justify-center mb-4"><BookOpen className="w-5 h-5"/></div><h3 className="font-serif text-lg font-bold">Same-book readers</h3><p className="text-xs font-semibold text-[#8F681C] mt-1 mb-2">Find your book mates</p><p className="text-xs text-[#636B65] dark:text-[#A5ADA6] leading-relaxed">Find readers across the world who share the book you are reading.</p></div><div className="mt-5 pt-3 border-t flex items-center text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">Explore book map <ArrowRight className="w-3.5 h-3.5 ml-1"/></div>
           </Link>
 
           {/* Pillar 3: Reading DNA */}
