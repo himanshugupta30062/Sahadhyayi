@@ -44,18 +44,22 @@ export const BookReadingJournal: React.FC<Props> = ({
   const [activeFilter, setActiveFilter] = useState<'all' | 'reflection' | 'highlight' | 'quote'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<'recent' | 'page'>('recent');
 
   const bookSummary = useMemo(() => bookSummaries.find((b) => b.bookId === bookId), [bookSummaries, bookId]);
 
   const filteredEntries = useMemo(() => {
     const term = searchTerm.trim().toLocaleLowerCase();
-    return entries.filter((entry) => {
+    const matching = entries.filter((entry) => {
       const matchesType = activeFilter === 'all' || entry.type === activeFilter;
       const searchable = [entry.text, entry.note, entry.bookTitle, String(entry.page)]
         .filter(Boolean).join(' ').toLocaleLowerCase();
       return matchesType && (!term || searchable.includes(term));
     });
-  }, [entries, activeFilter, searchTerm]);
+    return [...matching].sort((a, b) => sortOrder === 'page'
+      ? a.page - b.page || new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [entries, activeFilter, searchTerm, sortOrder]);
 
   const handleCopy = async (entry: UnifiedJournalEntry) => {
     const textToCopy = [
@@ -133,6 +137,14 @@ export const BookReadingJournal: React.FC<Props> = ({
         <Button size="sm" variant={activeFilter === 'quote' ? 'secondary' : 'ghost'} onClick={() => setActiveFilter('quote')} className="h-7 text-xs px-2.5 gap-1"><QuoteIcon className="h-3 w-3" />Quotes ({counts.quote})</Button>
       </div>
 
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs text-muted-foreground">{filteredEntries.length} {filteredEntries.length === 1 ? 'entry' : 'entries'}</span>
+        <div className="flex items-center gap-1" role="group" aria-label="Sort journal entries">
+          <Button size="sm" variant={sortOrder === 'recent' ? 'secondary' : 'ghost'} onClick={() => setSortOrder('recent')} className="h-7 px-2 text-xs">Newest</Button>
+          <Button size="sm" variant={sortOrder === 'page' ? 'secondary' : 'ghost'} onClick={() => setSortOrder('page')} className="h-7 px-2 text-xs">Page order</Button>
+        </div>
+      </div>
+
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input aria-label="Search journal entries" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search notes, quotes, or page number…" className="pl-9" />
@@ -160,6 +172,7 @@ export const BookReadingJournal: React.FC<Props> = ({
                   {(entry.type === 'highlight' || entry.type === 'quote') && <Button size="icon" variant="ghost" onClick={() => handleDelete(entry)} className="h-6 w-6 text-muted-foreground hover:text-destructive" title="Delete entry"><Trash2 className="h-3 w-3" /></Button>}
                 </div>
               </div>
+              <p className="text-[10px] text-muted-foreground">{Number.isNaN(new Date(entry.createdAt).getTime()) ? '' : new Date(entry.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</p>
               {entry.text && <p className="text-xs italic leading-relaxed text-foreground/90 font-serif whitespace-pre-wrap">“{entry.text}”</p>}
               {entry.note && <div className="rounded-md border border-border/60 bg-background/60 p-2 text-xs text-foreground"><p className="font-sans whitespace-pre-wrap">{entry.note}</p></div>}
               <div className="flex justify-end pt-1">
