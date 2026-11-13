@@ -44,7 +44,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import SEO from '@/components/SEO';
 import { trackUiEvent } from '@/lib/analytics';
 
-type StatusFilter = 'all' | 'reading' | 'completed' | 'want_to_read';
+type StatusFilter = 'all' | 'reading' | 'completed' | 'want_to_read' | 'did_not_finish';
 type SortOption = 'recent' | 'progress' | 'title' | 'author';
 
 const Bookshelf = () => {
@@ -63,12 +63,13 @@ const Bookshelf = () => {
 
   // Stats
   const stats = useMemo(() => {
-    if (!bookshelfData) return { all: 0, reading: 0, completed: 0, want_to_read: 0 };
+    if (!bookshelfData) return { all: 0, reading: 0, completed: 0, want_to_read: 0, did_not_finish: 0 };
     return {
       all: bookshelfData.length,
       reading: bookshelfData.filter(b => b.status === 'reading').length,
       completed: bookshelfData.filter(b => b.status === 'completed').length,
       want_to_read: bookshelfData.filter(b => b.status === 'want_to_read').length,
+      did_not_finish: bookshelfData.filter(b => b.status === 'did_not_finish').length,
     };
   }, [bookshelfData]);
 
@@ -140,7 +141,7 @@ const Bookshelf = () => {
     return filtered;
   }, [booksWithProgress, activeFilter, searchQuery, sortBy, favoritesOnly]);
 
-  const handleStatusChange = (itemId: string, newStatus: 'reading' | 'completed' | 'want_to_read') => {
+  const handleStatusChange = (itemId: string, newStatus: 'reading' | 'completed' | 'want_to_read' | 'did_not_finish') => {
     updateBookshelf.mutate({ id: itemId, updates: { status: newStatus } });
   };
 
@@ -227,6 +228,7 @@ const Bookshelf = () => {
         label: 'Want to Read', 
         bg: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20' 
       },
+      did_not_finish: { icon: BookOpen, label: 'Did Not Finish', bg: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20' },
     };
     const badge = badges[status as keyof typeof badges] || badges.want_to_read;
     const Icon = badge.icon;
@@ -341,6 +343,7 @@ const Bookshelf = () => {
               { key: 'reading', label: 'Reading Now', icon: Clock, color: 'text-blue-500 dark:text-blue-400', bg: 'bg-blue-500/10' },
               { key: 'completed', label: 'Completed', icon: CheckCircle, color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-emerald-500/10' },
               { key: 'want_to_read', label: 'Want to Read', icon: BookMarked, color: 'text-amber-500 dark:text-amber-400', bg: 'bg-amber-500/10' },
+              { key: 'did_not_finish', label: 'DNF', icon: BookOpen, color: 'text-rose-500 dark:text-rose-400', bg: 'bg-rose-500/10' },
             ].map(({ key, label, icon: Icon, color, bg }) => (
               <Card 
                 key={key} 
@@ -408,11 +411,12 @@ const Bookshelf = () => {
             </div>
 
             <Tabs value={activeFilter} onValueChange={(v) => setActiveFilter(v as StatusFilter)} className="w-full md:w-auto">
-              <TabsList className="grid grid-cols-4 w-full md:w-auto h-9">
+              <TabsList className="grid grid-cols-5 w-full md:w-auto h-9">
                 <TabsTrigger value="all" className="text-xs">All ({stats.all})</TabsTrigger>
                 <TabsTrigger value="reading" className="text-xs">Reading ({stats.reading})</TabsTrigger>
                 <TabsTrigger value="completed" className="text-xs">Done ({stats.completed})</TabsTrigger>
                 <TabsTrigger value="want_to_read" className="text-xs">To Read ({stats.want_to_read})</TabsTrigger>
+                <TabsTrigger value="did_not_finish" className="text-xs">DNF ({stats.did_not_finish})</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
@@ -603,9 +607,35 @@ const Bookshelf = () => {
                                 <BookMarked className="w-4 h-4 mr-2" />
                                 Want to Read
                               </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleStatusChange(item.id, 'did_not_finish')}
+                                disabled={item.status === 'did_not_finish'}
+                              >
+                                <BookOpen className="w-4 h-4 mr-2 text-rose-500" />
+                                Mark Did Not Finish
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  if (item.up_next_rank) {
+                                    updateBookshelf.mutate({ id: item.id, updates: { up_next_rank: null } });
+                                    return;
+                                  }
+                                  const ranks = booksWithProgress.map((book) => book.up_next_rank).filter((rank): rank is number => typeof rank === 'number');
+                                  const nextRank = [1, 2, 3, 4, 5].find((rank) => !ranks.includes(rank));
+                                  if (!nextRank) {
+                                    toast({ title: 'Up Next is full', description: 'Remove a book from your five-book queue first.', variant: 'destructive' });
+                                    return;
+                                  }
+                                  updateBookshelf.mutate({ id: item.id, updates: { up_next_rank: nextRank } });
+                                }}
+                              >
+                                <BookMarked className="w-4 h-4 mr-2 text-amber-500" />
+                                {item.up_next_rank ? 'Remove from Up Next' : 'Add to Up Next'}
+                              </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
-                                onClick={() => handleRemove(item.id)}
+                                onClick={() => handleRemove(item.id)
                                 className="text-destructive focus:text-destructive"
                               >
                                 <Trash2 className="w-4 h-4 mr-2" />
