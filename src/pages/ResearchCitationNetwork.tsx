@@ -57,9 +57,9 @@ const ResearchCitationNetwork = () => {
     return () => { active = false; };
   }, [workId, refresh]);
 
-  const PaperCard = ({ work, relation }: { work: Work; relation: 'reference' | 'citing' }) => (
+  const PaperCard = ({ work, relation }: { work: Work; relation: 'reference' | 'citing' | 'related' }) => (
     <article className="group rounded-xl border border-border/70 bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md">
-      <div className="mb-2 flex items-center justify-between gap-2"><span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{relation === 'reference' ? 'This paper references' : 'Cites this paper'}</span><span className="rounded-full bg-muted px-2 py-0.5 text-xs">{work.publication_year || '—'}</span></div>
+      <div className="mb-2 flex items-center justify-between gap-2"><span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{relation === 'reference' ? 'This paper references' : relation === 'citing' ? 'Cites this paper' : 'Related research'}</span><span className="rounded-full bg-muted px-2 py-0.5 text-xs">{work.publication_year || '—'}</span></div>
       <h3 className="line-clamp-3 font-semibold leading-snug group-hover:text-primary">{safeTitle(work)}</h3>
       {authorNames(work) && <p className="mt-2 line-clamp-1 text-xs text-muted-foreground">{authorNames(work)}</p>}
       <p className="mt-2 text-xs text-muted-foreground"><Quote className="mr-1 inline h-3 w-3"/>{Number(work.cited_by_count || 0).toLocaleString()} citations</p>
