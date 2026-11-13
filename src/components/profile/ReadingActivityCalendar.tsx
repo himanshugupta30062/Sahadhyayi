@@ -38,7 +38,7 @@ const streakMetrics = (dates: Set<string>) => {
 
 export const ReadingActivityCalendar: React.FC = () => {
   const { user } = useAuth();
-  const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));\n  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const { data: days = [], isLoading } = useQuery({
     queryKey: ["reading-activity-days", user?.id],
     enabled: !!user?.id,
@@ -48,7 +48,7 @@ export const ReadingActivityCalendar: React.FC = () => {
       return (data ?? []) as ActivityDay[];
     },
   });
-  const activeDates = useMemo(() => new Set(days.map((day) => day.activity_date)), [days]);\n  const selectedActivity = days.find((day) => day.activity_date === selectedDay);
+  const activeDates = useMemo(() => new Set(days.map((day) => day.activity_date)), [days]);
   const streaks = useMemo(() => streakMetrics(activeDates), [activeDates]);
   const nextMilestone = milestones.find((value) => value > streaks.current) ?? null;
   const milestoneBase = milestones.filter((value) => value <= streaks.current).at(-1) ?? 0;
@@ -111,16 +111,12 @@ export const ReadingActivityCalendar: React.FC = () => {
           {cells.map((date, i) => {
             const active = !!date && activeDates.has(keyOf(date));
             const isToday = !!date && keyOf(date) === keyOf(new Date());
-            return <button type="button" key={i} disabled={!date} onClick={() => date && setSelectedDay(keyOf(date))} aria-pressed={!!date && selectedDay === keyOf(date)} aria-label={date ? `${keyOf(date)}${active ? ", reading activity" : ""}` : undefined} className={`relative flex h-9 w-full items-center justify-center rounded-md text-xs ${active ? "bg-[hsl(var(--brand-primary)/0.16)] font-semibold text-foreground" : "text-muted-foreground"} ${isToday ? "ring-1 ring-[hsl(var(--brand-primary))]" : ""} ${selectedDay === (date ? keyOf(date) : "") ? "outline outline-2 outline-[hsl(var(--brand-primary))]" : ""}`}>
+            return <div key={i} aria-label={date ? `${keyOf(date)}${active ? ", reading activity" : ""}` : undefined} className={`relative flex h-9 items-center justify-center rounded-md text-xs ${active ? "bg-[hsl(var(--brand-primary)/0.16)] font-semibold text-foreground" : "text-muted-foreground"} ${isToday ? "ring-1 ring-[hsl(var(--brand-primary))]" : ""}`}>
               {date?.getDate() ?? ""}
               {active && <span className="absolute bottom-1 h-1 w-1 rounded-full bg-[hsl(var(--brand-primary))]" />}
             </div>;
           })}
         </div>
-        {selectedDay && <div className="rounded-md bg-muted/40 px-3 py-2 text-xs" aria-live="polite">
-          <div className="flex items-center justify-between"><span className="font-medium">{selectedDay}</span><button type="button" className="text-muted-foreground underline" onClick={() => setSelectedDay(null)}>Clear</button></div>
-          <p className="mt-1 text-muted-foreground">{selectedActivity ? `Reading activity recorded${selectedActivity.source ? ` · ${selectedActivity.source.replace(/_/g, " ")}` : ""}.` : "No activity recorded for this date."}</p>
-        </div>}
         <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
           <span>{isLoading ? "Loading activity…" : `${monthCount} active ${monthCount === 1 ? "day" : "days"} this month`}</span>
           <span>● Reading day</span>
