@@ -15,6 +15,38 @@ export interface ReadingProgressItem {
   completed_at?: string | null;
 }
 
+
+// Keep the legacy bookshelf percentage in sync with the canonical page progress.
+// DNF is intentionally preserved; completion is driven by reaching the final page.
+async function syncBookshelfProgress(userId: string, bookId: string, currentPage: number, totalPages: number) {
+  const progress = Math.round((currentPage / totalPages) * 100);
+  const { data: shelf, error: lookupError } = await supabase
+    .from('user_bookshelf')
+    .select('id,status')
+    .eq('user_id', userId)
+    .eq('book_id', bookId)
+    .maybeSingle();
+  if (lookupError) throw lookupError;
+  if (!shelf) return;
+
+  const status = shelf.status === 'dnf'
+    ? 'dnf'
+    : currentPage >= totalPages
+      ? 'completed'
+      : shelf.status === 'want_to_read' || shelf.status === 'completed'
+        ? 'reading'
+        : shelf.status;
+  const updates: Record<string, unknown> = { progress, status };
+  if (status === 'reading') updates.started_at = new Date().toISOString();
+  if (status === 'completed') updates.completed_at = new Date().toISOString();
+  const { error } = await supabase
+    .from('user_bookshelf')
+    .update(updates)
+    .eq('id', shelf.id)
+    .eq('user_id', userId);
+  if (error) throw error;
+}
+
 export const useReadingProgress = (options: { enabled?: boolean } = {}) => {
   const { user } = useAuth();
 
@@ -64,11 +96,14 @@ export const useUpdateReadingProgress = () => {
         .single();
 
       if (error) throw error;
+      const saved = data as ReadingProgressItem;
+      if (saved.book_id && saved.total_pages > 0) await syncBookshelfProgress(user.id, saved.book_id, saved.current_page, saved.total_pages);
       await recordReadingActivity(user.id, 'progress_save');
-      return data as ReadingProgressItem;
+      return saved;
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['reading-progress'] });
+      void queryClient.invalidateQueries({ queryKey: ['user-bookshelf', user?.id] });
     },
   });
 };
@@ -135,11 +170,14 @@ export const useSaveReadingProgress = () => {
         .single();
 
       if (error) throw error;
+      const saved = data as ReadingProgressItem;
+      await syncBookshelfProgress(user.id, normalizedBookId, safePage, safeTotal);
       await recordReadingActivity(user.id, 'progress_save');
-      return data as ReadingProgressItem;
+      return saved;
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['reading-progress', user?.id] });
+      void queryClient.invalidateQueries({ queryKey: ['user-bookshelf', user?.id] });
     },
   });
 };
