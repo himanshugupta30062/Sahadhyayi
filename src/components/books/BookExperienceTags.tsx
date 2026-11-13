@@ -8,16 +8,19 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/authHelpers';
 import { CONTENT_WARNINGS, READER_MOODS, useBookExperience, type BookExperienceInput, type ReaderMood, type ContentWarning } from '@/hooks/useBookExperience';
 
 export default function BookExperienceTags({bookId}:{bookId:string}) {
- const {data, isLoading, save}=useBookExperience(bookId); const {toast}=useToast();
+ const {user}=useAuth(); const {data, isLoading, save}=useBookExperience(bookId); const {toast}=useToast();
  const [moods,setMoods]=useState<ReaderMood[]>([]); const [pacing,setPacing]=useState<'fast'|'medium'|'slow'|''>('');
  const [warnings,setWarnings]=useState<ContentWarning[]>([]); const [custom,setCustom]=useState('');
  useEffect(()=>{if(data){setMoods(data.moods||[]);setPacing(data.pacing||'');setWarnings(data.content_warnings||[]);setCustom(data.custom_warning||'');}},[data]);
  const toggleMood=(m:ReaderMood)=>setMoods(old=>old.includes(m)?old.filter(x=>x!==m):[...old,m]);
  const toggleWarning=(w:ContentWarning)=>setWarnings(old=>old.includes(w)?old.filter(x=>x!==w):[...old,w]);
  const submit=async()=>{const input:BookExperienceInput={moods,pacing:pacing||null,content_warnings:warnings,custom_warning:custom.trim()||null};try{await save.mutateAsync(input);toast({title:'Reading tags saved',description:'These tags are private to you.'});}catch(e){toast({title:'Could not save tags',description:e instanceof Error?e.message:'Please try again.',variant:'destructive'});}};
+ if(!user) return <Card className="my-6 border-border/70"><CardContent className="flex items-center justify-between gap-3 p-5"><p className="text-sm text-muted-foreground">Sign in to privately track this book’s mood, pacing, and content warnings.</p><Button asChild size="sm"><Link to="/signin">Sign in</Link></Button></CardContent></Card>;
  return <Card className="my-6 border-border/70"><CardHeader><CardTitle className="flex items-center gap-2"><BookHeart className="h-5 w-5"/>Your reading experience</CardTitle><p className="text-sm text-muted-foreground">Capture how this book felt to you. Your selections are private.</p></CardHeader><CardContent className="space-y-5">
  <section><Label className="mb-2 block">Mood (select any)</Label><div className="flex flex-wrap gap-2">{READER_MOODS.map(m=><Badge key={m} variant={moods.includes(m)?'default':'outline'} className="cursor-pointer capitalize" role="button" tabIndex={0} onClick={()=>toggleMood(m)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' ')toggleMood(m)}}>{m}</Badge>)}</div></section>
  <section><Label className="mb-2 block">Pacing</Label><Select value={pacing||'unset'} onValueChange={v=>setPacing(v==='unset'?'':v as 'fast'|'medium'|'slow')}><SelectTrigger><SelectValue placeholder="How did it read?" /></SelectTrigger><SelectContent><SelectItem value="unset">Not set</SelectItem><SelectItem value="fast">Fast-paced</SelectItem><SelectItem value="medium">Medium-paced</SelectItem><SelectItem value="slow">Slow-paced</SelectItem></SelectContent></Select></section>
