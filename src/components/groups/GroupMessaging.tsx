@@ -7,11 +7,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Send, Users, X } from 'lucide-react';
 import { useGroupMessages, useSendMessage, useGroupMembers } from '@/hooks/useGroupMessaging';
-import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
-import { uniqueChannelName } from '@/lib/realtime';
 
 interface GroupMessagingProps {
   groupId: string;
@@ -42,7 +40,6 @@ const GroupMessaging: React.FC<GroupMessagingProps> = ({
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [showMemberList, setShowMemberList] = useState(false);
   const [mentionSuggestions, setMentionSuggestions] = useState<any[]>([]);
@@ -51,53 +48,10 @@ const GroupMessaging: React.FC<GroupMessagingProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { data: initialMessages } = useGroupMessages(groupId);
+  const { data: initialMessages = [] } = useGroupMessages(groupId);
+  const messages = initialMessages;
   const { data: members } = useGroupMembers(groupId);
   const sendMessage = useSendMessage();
-
-  // Set up real-time subscription for messages
-  useEffect(() => {
-    if (!groupId) return;
-
-    const channel = supabase
-      .channel(uniqueChannelName(`group-messages-${groupId}`))
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'group_messages',
-          filter: `group_id=eq.${groupId}`
-        },
-        async (payload) => {
-          // Fetch the complete message with sender details
-          const { data: newMessage } = await supabase
-            .from('group_messages')
-            .select(`
-              *,
-              sender:profiles!sender_id(id, full_name, profile_photo_url, username)
-            `)
-            .eq('id', payload.new.id)
-            .single();
-
-          if (newMessage) {
-            setMessages(prev => [...prev, newMessage]);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      void supabase.removeChannel(channel);
-    };
-  }, [groupId]);
-
-  // Load initial messages
-  useEffect(() => {
-    if (initialMessages) {
-      setMessages(initialMessages);
-    }
-  }, [initialMessages]);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {

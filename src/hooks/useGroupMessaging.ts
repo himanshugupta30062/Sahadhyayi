@@ -175,8 +175,11 @@ export const useSendMessage = () => {
       return data;
     },
     onSuccess: (data) => {
-      // Don't invalidate - real-time subscription will handle updates
-      console.log('Message sent successfully:', data.id);
+      // Insert immediately; realtime deduplicates the same row.
+      queryClient.setQueryData<GroupMessage[]>(['group-messages', data.group_id, data.sender_id], (old = []) => {
+        if (old.some((message) => message.id === data.id)) return old;
+        return [...old, data];
+      });
     },
     onError: (error) => {
       console.error('Error sending message:', error);
