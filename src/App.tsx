@@ -43,6 +43,7 @@ const ConfirmEmail = lazy(() => import('./pages/ConfirmEmail'));
 const AuthCallback = lazy(() => import('./pages/AuthCallback'));
 const BookDetails = lazy(() => import('./pages/BookDetails'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));\nconst MyReadingStats = lazy(() => import('./pages/MyReadingStats'));
+const ReadingJournalPage = lazy(() => import('./pages/ReadingJournalPage'));
 const BookExpert = lazy(() => import('./components/book-expert/BookExpert'));
 const WhatsAppCallCenterFab = lazy(() => import('./components/support/WhatsAppCallCenterFab'));
 const StructuredFooter = lazy(() => import("./components/footer/StructuredFooter"));
@@ -882,7 +883,7 @@ const App = memo(() => {
                         />
                         <Route path="/investors" element={<Suspense fallback={<LoadingFallback />}><Investors /></Suspense>} />
                         <Route path="/quotes" element={<Suspense fallback={<LoadingFallback />}><QuotesPage /></Suspense>} />
-                        <Route path="/journal" element={<Suspense fallback={<LoadingFallback message="Loading your reading journal..." />}><QuotesPage /></Suspense>} />
+                        <Route path="/journal" element={<ProtectedRoute><Suspense fallback={<LoadingFallback message="Loading your reading journal..." />}><ReadingJournalPage /></Suspense></ProtectedRoute>} />
                         <Route path="/community-stories" element={<Navigate to="/stories" replace />} />
                         <Route path="/life-stories/:slug?" element={<Suspense fallback={<LoadingFallback message="Loading life stories..." />}><LifeStories /></Suspense>} />
                         <Route path="/book-library" element={<Suspense fallback={<LoadingFallback />}><BookLibrary /></Suspense>} />
