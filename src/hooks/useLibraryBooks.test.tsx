@@ -491,11 +491,13 @@ describe('useLibraryBooks React Query Hooks', () => {
       created_at: '2026-01-01',
     }];
     const initialQuery: any = {
+      or: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
       then: (resolve: any, reject?: any) =>
         Promise.resolve({ data: null, error: { message: 'column mismatch' } }).then(resolve, reject),
     };
     const fallbackQuery: any = {
+      or: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
       then: (resolve: any, reject?: any) =>
         Promise.resolve({ data: fallbackBooks, error: null }).then(resolve, reject),
