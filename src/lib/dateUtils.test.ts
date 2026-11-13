@@ -16,7 +16,7 @@ describe("safeFormatDistanceToNow", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-11-13T12:00:00Z"));
     expect(safeFormatDistanceToNow("2026-11-13T11:55:00Z", { addSuffix: true })).toBe("5 minutes ago");
-    expect(safeFormatDistanceToNow(new Date("2026-11-13T12:00:30Z"), { includeSeconds: true })).toBe("less than a minute");
+    expect(safeFormatDistanceToNow(new Date("2026-11-13T12:00:30Z"), { includeSeconds: true })).toBe("half a minute");
   });
 
   it("accepts timestamps and honors a custom fallback", () => {
