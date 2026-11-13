@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageSquareText, Pencil, Trash2, Eye, EyeOff } from 'lucide-react';
+import { MessageSquareText, Pencil, Trash2, Eye, EyeOff, ThumbsUp } from 'lucide-react';
 import { useAuth } from '@/contexts/authHelpers';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { REVIEW_DIMENSIONS, type ReviewDimension, type ReaderReaction } from '@/hooks/useBookReviews';
-import { useBookReviews, useDeleteBookReview, useSaveBookReview } from '@/hooks/useBookReviews';
+import { useBookReviews, useDeleteBookReview, useSaveBookReview, useReviewHelpfulVotes, useToggleReviewHelpfulVote } from '@/hooks/useBookReviews';
 import { useToast } from '@/hooks/use-toast';
 
 export default function BookReviews({ bookId }: { bookId: string }) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { data: reviews = [], isLoading, error } = useBookReviews(bookId);
+  const { data: reviews = [], isLoading, error } = useBookReviews(bookId);\n  const reviewIds = reviews.filter(review => review.user_id !== user?.id).map(review => review.id);\n  const { data: helpfulVotes = [] } = useReviewHelpfulVotes(reviewIds);\n  const toggleHelpful = useToggleReviewHelpfulVote();
   const saveReview = useSaveBookReview(bookId);
   const deleteReview = useDeleteBookReview(bookId);
   const myReview = reviews.find((review) => review.user_id === user?.id);
@@ -159,7 +159,7 @@ export default function BookReviews({ bookId }: { bookId: string }) {
         <div className="space-y-4">
           {!isLoading && !error && otherReviews.length > 0 && <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3"><span className="text-sm text-muted-foreground">{visibleReviews.length} of {otherReviews.length} reviews</span><div className="flex gap-2"><select aria-label="Sort reviews" className="h-9 rounded-md border bg-background px-2 text-sm" value={reviewOrder} onChange={(event)=>setReviewOrder(event.target.value as typeof reviewOrder)}><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="highest">Highest rated</option></select><select aria-label="Filter reviews" className="h-9 rounded-md border bg-background px-2 text-sm" value={spoilerFilter} onChange={(event)=>setSpoilerFilter(event.target.value as typeof spoilerFilter)}><option value="all">All reviews</option><option value="clean">Hide spoilers</option></select></div></div>}
           {visibleReviews.map((review) => {
-            const revealed = showSpoilers[review.id] === true;
+            const revealed = showSpoilers[review.id] === true;\n            const votes = helpfulVotes.filter(vote => vote.review_id === review.id);\n            const votedHelpful = votes.some(vote => vote.user_id === user?.id);
             const name = review.reviewer?.full_name || (review.reviewer?.username ? `@${review.reviewer.username}` : 'Reader');
             return (
               <article key={review.id} className="border-t border-gray-100 pt-4 space-y-2">
@@ -173,6 +173,7 @@ export default function BookReviews({ bookId }: { bookId: string }) {
                 {review.reader_reaction && <p className="text-xs text-emerald-700">Felt: {review.reader_reaction}</p>}
                 {!!review.dimensions?.length && <div className="flex flex-wrap gap-2">{review.dimensions.map(item => <span key={item.dimension} className="rounded-full bg-muted px-2 py-1 text-xs capitalize">{item.dimension}: {item.score}/5</span>)}</div>}
                 {review.contains_spoilers && !revealed ? <p className="text-sm text-amber-800 italic">Spoiler hidden — reveal only if you want to continue.</p> : <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{review.review_text}</p>}
+                <Button type="button" size="sm" variant={votedHelpful ? "secondary" : "outline"} disabled={!user || toggleHelpful.isPending} onClick={async () => { try { await toggleHelpful.mutateAsync({ reviewId: review.id, helpful: votedHelpful }); } catch (err) { toast({ title: 'Could not update helpful vote', description: err instanceof Error ? err.message : 'Please try again.', variant: 'destructive' }); } }} aria-pressed={votedHelpful}><ThumbsUp className="mr-1 h-4 w-4" />{votedHelpful ? 'Helpful' : 'Mark helpful'} · {votes.length}</Button>
               </article>
             );
           })}
