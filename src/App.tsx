@@ -63,6 +63,7 @@ const AuthorDetails = lazy(() => import('./pages/AuthorDetails'));
 const ReadingGroups = lazy(() => import('./pages/ReadingGroups'));
 const GroupDetails = lazy(() => import('./pages/GroupDetails'));
 const SavedGroupDiscussions = lazy(() => import('./components/groups/SavedGroupDiscussions'));
+const SavedBookReels = lazy(() => import('./pages/SavedBookReels'));
 const MapPage = lazy(() => import('./pages/Map'));
 const About = lazy(() => import('./pages/About'));
 const Blog = lazy(() => import('./pages/Blog'));
@@ -883,6 +884,7 @@ const App = memo(() => {
                         <Route path="/dmca" element={<Suspense fallback={<LoadingFallback />}><DmcaPolicy /></Suspense>} />
                         <Route path="/dmca-policy" element={<Navigate to="/dmca" replace />} />
                         <Route path="/open-source-licenses" element={<Suspense fallback={<LoadingFallback />}><OpenSourceLicenses /></Suspense>} />
+                        <Route path="/social/reels/saved" element={<ProtectedRoute><Suspense fallback={<LoadingFallback message="Loading saved reels..." />}><SavedBookReels /></Suspense></ProtectedRoute>} />
                         <Route path="*" element={<NotFound />} />
                         </Routes>
                       </RouteErrorBoundary>
