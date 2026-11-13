@@ -12,6 +12,7 @@ export interface BookReelItem {
   fullQuote: string;
   moodAudio: string;
   imageUrl: string;\n  videoUrl?: string;
+  durationSeconds?: number | null;
   likesCount: number;
   commentsCount: number;
 }
