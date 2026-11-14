@@ -23,9 +23,6 @@ const SahadhyayiJourney = lazy(() =>
 // NEW Section 04: Reading Universe feature discovery
 const HomeFeatureUniverse = lazy(() => import("@/components/home/HomeFeatureUniverse"));
 
-// Existing final join section
-const HomeFinalCtaSection = lazy(() => import("@/components/home/HomeFinalCtaSection"));
-
 const Index = () => {
   const { user } = useAuth();
 
@@ -137,16 +134,6 @@ const Index = () => {
         >
           <ErrorBoundary fallback={<div className="px-6 py-8 text-center text-sm text-muted-foreground">Explore all the ways to read, connect and create on Sahadhyayi.</div>}>
             <HomeFeatureUniverse />
-          </ErrorBoundary>
-        </DeferredSection>
-
-        {/* 05. Existing Final Join Sahadhyayi */}
-        <DeferredSection
-          fallback={<div className="min-h-[380px] bg-[#F5F3EC] dark:bg-[#0B0D0C]" aria-hidden="true" />}
-          minHeightClassName="min-h-[380px]"
-        >
-          <ErrorBoundary fallback={null}>
-            <HomeFinalCtaSection />
           </ErrorBoundary>
         </DeferredSection>
       </div>
