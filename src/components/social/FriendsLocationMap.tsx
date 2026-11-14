@@ -246,13 +246,15 @@ export const FriendsLocationMap: React.FC = () => {
     else setShowConsentModal(true);
   };
 
-  const mapPoints = useMemo<MapplsPoint[]>(() => {
-    const friendsWithLocation = friends.filter((friend) =>
+  const friendsWithLocation = useMemo(() => {
+    return friends.filter((friend) =>
       friend.friend_profile?.location_sharing === true &&
       friend.friend_profile.location_lat != null &&
       friend.friend_profile.location_lng != null
     );
+  }, [friends]);
 
+  const mapPoints = useMemo<MapplsPoint[]>(() => {
     return [
       ...(isSharingLocation && userLocation ? [{
         id: 'self',
@@ -269,7 +271,7 @@ export const FriendsLocationMap: React.FC = () => {
         avatarUrl: friend.friend_profile!.avatar_img_url ?? friend.friend_profile!.profile_photo_url ?? null,
       })).filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng)),
     ];
-  }, [friends, isSharingLocation, userLocation, userAvatar?.avatar_img_url]);
+  }, [friendsWithLocation, isSharingLocation, userLocation, userAvatar?.avatar_img_url]);
 
 
   return (

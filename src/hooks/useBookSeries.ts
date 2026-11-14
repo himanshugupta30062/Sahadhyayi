@@ -31,6 +31,15 @@ export interface BookSeriesHookResult {
   isStandalone: boolean;
 }
 
+interface SeriesBookRow {
+  id: string;
+  title: string;
+  description?: string | null;
+  author?: string | null;
+  cover_image_url?: string | null;
+  publication_year?: number | null;
+}
+
 export function useBookSeries(book?: UseBookSeriesParams | null): BookSeriesHookResult {
   const parsedSeries = book?.title ? parseBookSeries(book.title, book.description) : null;
   const seriesName = parsedSeries?.seriesName;
@@ -53,7 +62,7 @@ export function useBookSeries(book?: UseBookSeriesParams | null): BookSeriesHook
 
       const { data, error } = await dbQuery.limit(20);
 
-      const rows = !error && Array.isArray(data) ? filterPublicBooks(data) : [];
+      const rows = !error && Array.isArray(data) ? filterPublicBooks<SeriesBookRow>(data as unknown as SeriesBookRow[]) : [];
 
       // Convert rows to SeriesVolume
       const rawVolumes: SeriesVolume[] = [];

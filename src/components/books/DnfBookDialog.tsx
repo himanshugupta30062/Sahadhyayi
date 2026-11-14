@@ -131,7 +131,7 @@ export const DnfBookDialog: React.FC<DnfBookDialogProps> = ({
                 className="h-9 text-xs"
                 required
               />
-              {totalPages && (
+              {Boolean(totalPages) && (
                 <span className="text-[10px] text-muted-foreground">of {totalPages} pages</span>
               )}
             </div>

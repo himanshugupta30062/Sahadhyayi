@@ -274,7 +274,7 @@ export const detectImportFormat = (
  */
 export const cleanIsbn = (val?: string | null): string => {
   if (!val) return '';
-  return val.replace(/^[="']+/, '').replace(/["']+$/, '').replace(/[^0-9Xx]/g, '').trim();
+  return val.replace(/[^0-9Xx]/g, '');
 };
 
 export const normalizeString = (str?: string | null): string =>

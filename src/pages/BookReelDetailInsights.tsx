@@ -8,7 +8,7 @@ type Reel = { reel_id:string; book_title:string; created_at:string; view_count:n
 type Point = { day:string; views:number };
 type Watch = { session_count:number; completed_sessions:number; total_watched_seconds:number; average_watched_seconds:number; completion_rate:number };
 const duration=(seconds:number)=>{const n=Math.max(0,Math.round(seconds||0));return n<60?`${n}s`:`${Math.floor(n/60)}m ${n%60}s`;};
-const Stat = ({icon:Icon,label,value}:{icon:React.ElementType;label:string;value:number})=><div className="rounded-xl border bg-card p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground"><Icon className="h-4 w-4"/>{label}</div><p className="mt-2 text-2xl font-semibold tabular-nums">{value.toLocaleString()}</p></div>;
+const Stat = ({icon:Icon,label,value}:{icon:React.ElementType;label:string;value:number|string})=><div className="rounded-xl border bg-card p-4"><div className="flex items-center gap-2 text-xs text-muted-foreground"><Icon className="h-4 w-4"/>{label}</div><p className="mt-2 text-2xl font-semibold tabular-nums">{typeof value === 'number' ? value.toLocaleString() : value}</p></div>;
 
 export default function BookReelDetailInsights(){
  const {reelId}=useParams(); const [reel,setReel]=useState<Reel|null>(null);const [points,setPoints]=useState<Point[]>([]);const [watch,setWatch]=useState<Watch|null>(null);const [loading,setLoading]=useState(true);const [error,setError]=useState('');const [range,setRange]=useState(14);
