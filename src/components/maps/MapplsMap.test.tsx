@@ -1,61 +1,62 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MapplsMap } from '@/components/maps/MapplsMap';
-import { createFriendInfoContent } from '@/components/social/FriendsLocationMap';
-
-vi.mock('@/components/ui/card', () => ({ Card: ({ children }: any) => <div>{children}</div>, CardContent: ({ children }: any) => <div>{children}</div>, CardHeader: ({ children }: any) => <div>{children}</div>, CardTitle: ({ children }: any) => <h2>{children}</h2> }));
-vi.mock('@/components/ui/button', () => ({ Button: ({ children, ...props }: any) => <button {...props}>{children}</button> }));
-vi.mock('@/hooks/useFriends', () => ({ useFriends: () => ({ friends: [], loading: false, refresh: vi.fn() }) }));
-vi.mock('@/contexts/authHelpers', () => ({ useAuth: () => ({ user: null }) }));
-vi.mock('@/lib/locationService', () => ({ getCurrentLocation: vi.fn() }));
-vi.mock('@/components/social/LocationConsentModal', () => ({ LocationConsentModal: () => null }));
-vi.mock('@/components/social/LocationPermissionModal', () => ({ LocationPermissionModal: () => null }));
 
 describe('MapplsMap', () => {
   afterEach(() => {
     cleanup();
     delete window.mappls;
     delete window.mapplsLoadingPromise;
+    delete window.mapplsLoadingKey;
+    document.querySelectorAll('script[data-mappls-sdk="true"]').forEach((script) => script.remove());
   });
 
   it('explains missing configuration without attempting to load the SDK', () => {
     render(<MapplsMap apiKey=" " points={[]} />);
     expect(screen.getByText('Mappls is not configured yet')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Open Mappls developer console' })).toHaveAttribute('href', 'https://auth.mappls.com/console');
+    expect(document.querySelector('script[data-mappls-sdk="true"]')).toBeNull();
   });
 
-  it('initializes the map, places valid markers and fits multiple points', async () => {
+  it('uses the documented Map constructor, load events, marker API and fitBounds API', async () => {
+    const listeners: Record<string, (event?: unknown) => void> = {};
     const setCenter = vi.fn();
     const setZoom = vi.fn();
+    const removeMap = vi.fn();
+    const addListener = vi.fn((eventName: string, callback: (event?: unknown) => void) => {
+      listeners[eventName] = callback;
+    });
+    const map = { addListener, loaded: () => true, setCenter, setZoom, remove: removeMap };
+    const Map = vi.fn().mockImplementation(function () { return map; });
+    const Marker = vi.fn().mockImplementation(function () { return {}; });
     const fitBounds = vi.fn();
-    const extend = vi.fn();
-    const remove = vi.fn();
-    const Map = vi.fn().mockImplementation(function () {
-      return { setCenter, setZoom, fitBounds, remove };
-    });
-    const Marker = vi.fn().mockImplementation(function () {
-      return { remove };
-    });
-    const LatLngBounds = vi.fn().mockImplementation(function () {
-      return { extend };
-    });
-    window.mappls = { Map, Marker, LatLngBounds };
+    const removeLayer = vi.fn();
+    window.mappls = { Map, Marker, fitBounds, remove: removeLayer };
 
     render(<MapplsMap apiKey="valid-key" points={[
       { id: 'a', lat: 28.6, lng: 77.2, title: 'Delhi' },
-      { id: 'b', lat: 19.0, lng: 72.8, title: 'Mumbai' },
+      { id: 'b', lat: 19, lng: 72.8, title: 'Mumbai' },
       { id: 'invalid', lat: 0, lng: 0, title: 'Invalid' },
     ]} />);
 
-    await waitFor(() => expect(Map).toHaveBeenCalledTimes(1));
-    expect(Map).toHaveBeenCalledWith(expect.stringMatching(/^mappls-map-/), {
-      center: { lat: 22.9734, lng: 78.6569 }, zoom: 4,
-    });
-    expect(Marker).toHaveBeenCalledTimes(2);
-    expect(extend).toHaveBeenCalledTimes(2);
-    expect(fitBounds).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(Marker).toHaveBeenCalledTimes(2));
+    expect(Map).toHaveBeenCalledWith(expect.stringMatching(/^mappls-map-/), expect.objectContaining({
+      center: { lat: 22.9734, lng: 78.6569 },
+      zoom: 5,
+      token_callback: expect.any(Function),
+    }));
+    expect(addListener).toHaveBeenCalledWith('load', expect.any(Function));
+    expect(addListener).toHaveBeenCalledWith('idle', expect.any(Function));
+    expect(addListener).toHaveBeenCalledWith('error', expect.any(Function));
+    expect(fitBounds).toHaveBeenCalledWith(expect.objectContaining({
+      map,
+      cType: 0,
+      bounds: [[77.2, 28.6], [72.8, 19]],
+      options: { padding: 80, duration: 700 },
+    }));
     expect(screen.getByLabelText('Interactive Mappls map')).toBeInTheDocument();
+    expect(screen.queryByText('Loading Mappls map…')).not.toBeInTheDocument();
   });
 
   it('centers and zooms for a single point and responds to center updates', async () => {
@@ -63,33 +64,104 @@ describe('MapplsMap', () => {
     const setZoom = vi.fn();
     window.mappls = {
       Map: vi.fn().mockImplementation(function () {
-        return { setCenter, setZoom, remove: vi.fn() };
+        return { addListener: vi.fn(), loaded: () => true, setCenter, setZoom, remove: vi.fn() };
       }),
-      Marker: vi.fn(),
+      Marker: vi.fn().mockImplementation(function () { return {}; }),
+      remove: vi.fn(),
     };
-    const { rerender } = render(<MapplsMap apiKey="valid-key" points={[
-      { id: 'one', lat: 12.9, lng: 77.6, title: 'Bengaluru' },
-    ]} center={{ lat: 12.9, lng: 77.6 }} />);
+
+    const points = [{ id: 'one', lat: 12.9, lng: 77.6, title: 'Bengaluru' }];
+    const { rerender } = render(<MapplsMap apiKey="valid-key" points={points} center={{ lat: 12.9, lng: 77.6 }} />);
+
     await waitFor(() => expect(setZoom).toHaveBeenCalledWith(10));
-    rerender(<MapplsMap apiKey="valid-key" points={[
-      { id: 'one', lat: 12.9, lng: 77.6, title: 'Bengaluru' },
-    ]} center={{ lat: 13, lng: 78 }} />);
+    rerender(<MapplsMap apiKey="valid-key" points={points} center={{ lat: 13, lng: 78 }} />);
     await waitFor(() => expect(setCenter).toHaveBeenCalledWith({ lat: 13, lng: 78 }));
   });
 
-  it('renders an SDK failure as an accessible error', async () => {
+  it('uses Mappls token_callback to explain rejected credentials', async () => {
+    let mapOptions: Record<string, unknown> | undefined;
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function (_container: string, options: Record<string, unknown>) {
+        mapOptions = options;
+        return { addListener: vi.fn(), loaded: () => true, remove: vi.fn() };
+      }),
+      Marker: vi.fn(),
+      remove: vi.fn(),
+    };
+
+    render(<MapplsMap apiKey="restricted-key" points={[]} />);
+    await waitFor(() => expect(mapOptions).toBeDefined());
+    (mapOptions?.token_callback as (event: unknown) => void)({ code: 401, error: 'IP/Domain validation failed' });
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Mappls rejected the static key (401)');
+    expect(screen.getByText(/allowed domain\/IP restrictions/)).toBeInTheDocument();
+  });
+
+  it('surfaces map resource errors reported by the official error event', async () => {
+    const listeners: Record<string, (event?: unknown) => void> = {};
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () {
+        return {
+          addListener: (eventName: string, callback: (event?: unknown) => void) => {
+            listeners[eventName] = callback;
+          },
+          loaded: () => false,
+          remove: vi.fn(),
+        };
+      }),
+      Marker: vi.fn(),
+    };
+
+    render(<MapplsMap apiKey="valid-key" points={[]} />);
+    await waitFor(() => expect(listeners.error).toBeDefined());
+    listeners.error?.({ error: { status: 403 } });
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Mappls map resources were rejected (403)');
+  });
+
+  it('allows retry after an SDK script request fails', async () => {
     window.mappls = {};
-    render(<MapplsMap apiKey="invalid-key" points={[]} />);
-    const script = document.querySelector<HTMLScriptElement>('script[data-mappls-sdk="true"]');
-    expect(script).not.toBeNull();
-    script!.onerror?.(new Event('error'));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Mappls SDK could not be downloaded');
+    render(<MapplsMap apiKey="valid-key" points={[]} />);
+
+    const firstScript = document.querySelector<HTMLScriptElement>('script[data-mappls-sdk="true"]');
+    expect(firstScript).not.toBeNull();
+    firstScript!.onerror?.(new Event('error'));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Mappls SDK request failed');
+    fireEvent.click(screen.getByRole('button', { name: 'Retry map' }));
+
+    await waitFor(() => {
+      expect(document.querySelectorAll('script[data-mappls-sdk="true"]')).toHaveLength(1);
+    });
+    expect(document.querySelector('script[data-mappls-sdk="true"]')).not.toBe(firstScript);
+  });
+
+  it('uses documented Mappls removal for markers and map.remove for teardown', async () => {
+    const removeMap = vi.fn();
+    const removeLayer = vi.fn();
+    const marker = {};
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () {
+        return { addListener: vi.fn(), loaded: () => true, remove: removeMap };
+      }),
+      Marker: vi.fn().mockImplementation(function () { return marker; }),
+      remove: removeLayer,
+    };
+
+    const points = [{ id: 'one', lat: 12.9, lng: 77.6, title: 'Bengaluru' }];
+    const { unmount, rerender } = render(<MapplsMap apiKey="valid-key" points={points} />);
+    await waitFor(() => expect(removeLayer).not.toHaveBeenCalled());
+
+    rerender(<MapplsMap apiKey="valid-key" points={[]} />);
+    await waitFor(() => expect(removeLayer).toHaveBeenCalledWith(expect.objectContaining({ layer: marker })));
+    unmount();
+    expect(removeMap).toHaveBeenCalledTimes(1);
   });
 
   it('shows an empty-location hint after the map becomes ready', async () => {
     window.mappls = {
       Map: vi.fn().mockImplementation(function () {
-        return { remove: vi.fn() };
+        return { addListener: vi.fn(), loaded: () => true, remove: vi.fn() };
       }),
       Marker: vi.fn(),
     };
@@ -97,4 +169,3 @@ describe('MapplsMap', () => {
     expect(await screen.findByText('No readers nearby')).toBeInTheDocument();
   });
 });
-
