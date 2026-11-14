@@ -59,20 +59,51 @@ serve(async (req) => {
   if (action === "approve" || action === "reject" || action === "request_changes") {
     if (action === "approve" && !submission.rights_attested) return json({ error: "A contributor rights attestation is required." }, 409);
     const status = action === "approve" ? "approved" : action === "reject" ? "rejected" : "needs_review";
+    let autoBookId: string | null = null;
+    let catalogueAction = "pending";
+    if (action === "approve") {
+      const metadata = (submission.detected_metadata && typeof submission.detected_metadata === "object"
+        ? submission.detected_metadata : {}) as Record<string, unknown>;
+      const title = String(metadata.detected_title || submission.submitted_title || "").trim().slice(0, 300);
+      const author = String(metadata.detected_author || submission.submitted_author || "").trim().slice(0, 200);
+      if (!title) return json({ error: "Gemini did not identify a title. Send this submission to manual review instead." }, 409);
+      // Exact title + author match only; never attach a contributor PDF to a fuzzy/ambiguous edition.
+      let matchesQuery = admin.from("books_library").select("id,title,author,pdf_url").ilike("title", title).limit(3);
+      if (author) matchesQuery = matchesQuery.ilike("author", author);
+      const { data: matches, error: matchError } = await matchesQuery;
+      if (matchError) return json({ error: "Could not safely match this PDF to the catalogue." }, 503);
+      const available = (matches || []).filter((book) => !book.pdf_url);
+      if (available.length === 1) {
+        autoBookId = available[0].id;
+        catalogueAction = "matched";
+      } else if (!matches?.length) {
+        const { data: created, error: createError } = await admin.from("books_library").insert({
+          title, author: author || null,
+          description: typeof metadata.description === "string" ? metadata.description.slice(0, 2000) : null,
+          language: typeof metadata.language === "string" ? metadata.language.slice(0, 80) : "English",
+          publication_year: Number.isInteger(metadata.publication_year) ? metadata.publication_year : null,
+          pages: Number.isInteger(metadata.pages) ? metadata.pages : null,
+          isbn: typeof metadata.isbn === "string" ? metadata.isbn.slice(0, 32) : null,
+        }).select("id").single();
+        if (createError || !created) return json({ error: "Could not create the catalogue entry automatically." }, 503);
+        autoBookId = created.id;
+        catalogueAction = "created";
+      } else {
+        catalogueAction = "ambiguous_or_pdf_exists";
+      }
+    }
     const { error: updateError } = await admin.from("book_pdf_submissions").update({
-      status,
-      reviewed_by: authData.user.id,
-      reviewed_at: new Date().toISOString(),
+      status, reviewed_by: authData.user.id, reviewed_at: new Date().toISOString(),
       rejection_reason: action === "reject" ? reason : null,
+      ...(autoBookId ? { published_book_id: autoBookId } : {}),
     }).eq("id", submissionId);
     if (updateError) return json({ error: "Could not save the review decision." }, 503);
     await admin.from("book_pdf_review_audit").insert({
-      submission_id: submissionId,
-      reviewer_id: authData.user.id,
+      submission_id: submissionId, reviewer_id: authData.user.id,
       action: action === "approve" ? "approved" : action === "reject" ? "rejected" : "changes_requested",
-      reason: reason || null,
+      reason: reason || null, details: action === "approve" ? { catalogue_action: catalogueAction, book_id: autoBookId } : {},
     });
-    return json({ success: true, status });
+    return json({ success: true, status, catalogueAction, targetBookId: autoBookId });
   }
 
   if (submission.status !== "approved") return json({ error: "Approve the submission before publishing it." }, 409);
