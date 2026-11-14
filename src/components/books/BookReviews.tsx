@@ -187,8 +187,10 @@ export default function BookReviews({ bookId }: { bookId: string }) {
         )}
 
         {isLoading ? <p className="text-sm text-gray-500">Loading reviews…</p> : null}
-        {error ? <p className="text-sm text-red-600">Reviews could not be loaded. Please try again.</p> : null}
-        {!isLoading && !error && visibleReviews.length === 0 && <p className="text-sm text-gray-500">No other reviews yet. Be the first to share a thoughtful take.</p>}
+        {error && user ? (
+          <p className="text-sm text-amber-700 dark:text-amber-400">Reviews are temporarily unavailable. Please refresh to try again.</p>
+        ) : null}
+        {!isLoading && (!error || !user) && visibleReviews.length === 0 && <p className="text-sm text-gray-500">No other reviews yet. Be the first to share a thoughtful take.</p>}
         <div className="space-y-4">
           {!isLoading && !error && otherReviews.length > 0 && <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3"><span className="text-sm text-muted-foreground">{visibleReviews.length} of {otherReviews.length} reviews</span><div className="flex gap-2"><select aria-label="Sort reviews" className="h-9 rounded-md border bg-background px-2 text-sm" value={reviewOrder} onChange={(event)=>setReviewOrder(event.target.value as typeof reviewOrder)}><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="highest">Highest rated</option><option value="helpful">Most helpful</option></select><select aria-label="Filter reviews" className="h-9 rounded-md border bg-background px-2 text-sm" value={spoilerFilter} onChange={(event)=>setSpoilerFilter(event.target.value as typeof spoilerFilter)}><option value="all">All reviews</option><option value="clean">Hide spoilers</option></select></div></div>}
           {visibleReviews.map((review) => {
