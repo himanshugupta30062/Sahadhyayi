@@ -81,8 +81,8 @@ serve(async (req) => {
           title, author: author || null,
           description: typeof metadata.description === "string" ? metadata.description.slice(0, 2000) : null,
           language: typeof metadata.language === "string" ? metadata.language.slice(0, 80) : "English",
-          publication_year: Number.isInteger(metadata.publication_year) ? metadata.publication_year : null,
-          pages: Number.isInteger(metadata.pages) ? metadata.pages : null,
+          publication_year: typeof metadata.publication_year === "number" && Number.isInteger(metadata.publication_year) ? metadata.publication_year : null,
+          pages: typeof metadata.pages === "number" && Number.isInteger(metadata.pages) ? metadata.pages : null,
           isbn: typeof metadata.isbn === "string" ? metadata.isbn.slice(0, 32) : null,
         }).select("id").single();
         if (createError || !created) return json({ error: "Could not create the catalogue entry automatically." }, 503);
