@@ -9,7 +9,7 @@
  * - Returns null for invalid, non-positive, or missing durations.
  */
 export function formatReelDuration(seconds: number | null | undefined): string | null {
-  if (seconds == null || isNaN(seconds) || seconds <= 0) {
+  if (seconds == null || Number.isNaN(seconds) || seconds <= 0) {
     return null;
   }
   const num = Number(seconds);
@@ -23,7 +23,7 @@ export function formatReelDuration(seconds: number | null | undefined): string |
  * Formats seconds into a standard mm:ss display (e.g., 4 -> "00:04", 65 -> "01:05").
  */
 export function formatReelTime(seconds: number): string {
-  if (isNaN(seconds) || seconds < 0) {
+  if (Number.isNaN(seconds) || seconds < 0) {
     return '00:00';
   }
   const total = Math.floor(seconds);
