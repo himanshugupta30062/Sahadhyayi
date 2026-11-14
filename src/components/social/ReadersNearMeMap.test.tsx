@@ -52,7 +52,8 @@ vi.mock('@/lib/locationSharingService', () => ({
 }));
 
 vi.mock('@/hooks/useUserAvatar', () => ({
-  useUserAvatar: () => ({ data: { avatar_img_url: 'https://cdn.sahadhyayi.com/avatars/current.svg' } }),
+  useUserAvatar: () => ({ data: { avatar_img_url: 'https://cdn.sahadhyayi.com/avatars/current.svg' }, isLoading: false }),
+  useUpdateUserAvatar: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
 vi.mock('@/hooks/useFriends', () => ({
@@ -80,6 +81,10 @@ vi.mock('@/components/social/LocationPermissionModal', () => ({
 
 vi.mock('@/components/social/ChatWindow', () => ({
   ChatWindow: ({ friendId }: { friendId: string }) => <div data-testid="chat-window">Chat with {friendId}</div>,
+}));
+
+vi.mock('@/components/social/BitmojiCreator', () => ({
+  BitmojiCreator: ({ isOpen }: { isOpen: boolean }) => isOpen ? <div role="dialog">Create your reading avatar</div> : null,
 }));
 
 vi.mock('@/components/maps/MapplsMap', () => ({
