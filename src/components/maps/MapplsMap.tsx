@@ -51,6 +51,7 @@ interface MapplsMapProps {
   points: MapplsPoint[];
   center?: { lat: number; lng: number } | null;
   emptyMessage?: string;
+  onMarkerClick?: (point: MapplsPoint) => void;
 }
 
 const SDK_URL = 'https://sdk.mappls.com/map/sdk/web?v=3.0';
@@ -66,7 +67,7 @@ const loadMappls = (apiKey: string): Promise<void> => {
   }
 
   const loadingPromise = window.mapplsLoadingPromise;
-  if (loadingPromise) {
+  if (loadingPromise !== undefined && loadingPromise !== null) {
     const existingKey = window.mapplsLoadingKey;
     if (typeof existingKey === 'string' && existingKey !== apiKey) {
       return Promise.reject(new Error('A Mappls SDK request is already loading with a different key. Reload the page and try again.'));
@@ -272,6 +273,7 @@ export function MapplsMap({
   points,
   center,
   emptyMessage = 'No shared reader locations are available yet.',
+  onMarkerClick,
 }: MapplsMapProps) {
   const generatedId = useId().replace(/:/g, '');
   const containerId = `mappls-map-${generatedId}`;
@@ -279,6 +281,8 @@ export function MapplsMap({
   const mapInstance = useRef<MapplsRuntimeMap | null>(null);
   const markers = useRef<Map<string, MapplsMarkerRecord>>(new Map());
   const lastBoundsSignature = useRef('');
+  const onMarkerClickRef = useRef(onMarkerClick);
+  onMarkerClickRef.current = onMarkerClick;
   const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'missing-key'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
   const [retryCount, setRetryCount] = useState(0);
@@ -425,6 +429,7 @@ export function MapplsMap({
       observer.observe(mapElement.current);
     }
 
+    const currentMarkers = markers.current;
     initializeMap();
 
     return () => {
@@ -433,7 +438,7 @@ export function MapplsMap({
 
       const map = mapInstance.current;
       if (map) {
-        removeMarkers(map, markers.current);
+        removeMarkers(map, currentMarkers);
         lastBoundsSignature.current = '';
         try {
           // Mappls documents map.remove() as the map teardown method.
@@ -498,6 +503,11 @@ export function MapplsMap({
           offset: [0, -12],
           popupHtml,
         });
+        if (typeof marker.addListener === 'function') {
+          marker.addListener('click', () => {
+            onMarkerClickRef.current?.(point);
+          });
+        }
         markers.current.set(point.id, { marker, signature: getMarkerSignature(point) });
       } catch (error) {
         console.error('Mappls could not create a reader avatar marker:', error);
