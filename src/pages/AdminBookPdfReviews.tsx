@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useToast } from '@/hooks/use-toast';
@@ -10,7 +10,10 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertCircle, BookOpen, CheckCircle2, ExternalLink, FileSearch, LoaderCircle, PlusCircle, RefreshCw, ShieldCheck, Sparkles, XCircle } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { AlertCircle, BookOpen, CheckCircle2, ExternalLink, FileSearch, LoaderCircle, PlusCircle, RefreshCw, ShieldCheck, Sparkles, XCircle, Search, ChevronDown, ChevronUp, FileText, Check, X, Eye, Download, RotateCw, Filter, FileUp } from 'lucide-react';
+import { CatalogueSelector, CatalogueBook } from '@/components/library/CatalogueSelector';
 
 type Submission = {
   id: string;
@@ -30,8 +33,17 @@ type Submission = {
   verification_model: string | null;
   verification_completed_at: string | null;
   published_book_id: string | null;
+  target_book_id: string | null;
+  catalogue_match_status: string | null;
+  pdf_sha256: string | null;
+  pdf_page_count: number | null;
+  malware_scan_status: string | null;
+  rights_basis: string | null;
+  rights_evidence_url: string | null;
 };
+
 type Book = { id: string; title: string; author: string | null; pdf_url: string | null };
+
 async function getFunctionErrorMessage(error: unknown, fallback: string): Promise<string> {
   const candidate = error as { message?: string; context?: Response } | null;
   const response = candidate?.context;
@@ -61,14 +73,30 @@ const statusVariant = (status: string) => status === 'rejected' || status === 'f
   ? 'destructive' as const
   : status === 'approved' ? 'default' as const : 'secondary' as const;
 
+const statusIcon: Record<string, React.ComponentType<{ className?: string }>> = {
+  uploaded: FileUp,
+  queued: LoaderCircle,
+  scanning: ShieldCheck,
+  extracting: FileSearch,
+  matching: RotateCw,
+  needs_review: AlertCircle,
+  approved: CheckCircle2,
+  rejected: XCircle,
+  failed: XCircle,
+};
+
+function formatFileSize(bytes: number | null): string {
+  if (!bytes) return 'Size unavailable';
+  const mb = bytes / (1024 * 1024);
+  return mb >= 1 ? `${mb.toFixed(1)} MB` : `${(bytes / 1024).toFixed(0)} KB`;
+}
+
 export default function AdminBookPdfReviews() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedId, setSelectedId] = useState('');
   const [busyAction, setBusyAction] = useState('');
   const [reason, setReason] = useState('');
-  const [bookSearch, setBookSearch] = useState('');
-  const [targetBookId, setTargetBookId] = useState('');
   const [rightsBasis, setRightsBasis] = useState<RightsBasis>('public_domain');
   const [evidenceUrl, setEvidenceUrl] = useState('');
   const [publishMode, setPublishMode] = useState<'existing' | 'new'>('existing');
@@ -78,31 +106,32 @@ export default function AdminBookPdfReviews() {
   const [newBookDescription, setNewBookDescription] = useState('');
   const [newBookLanguage, setNewBookLanguage] = useState('English');
   const [updateAlias, setUpdateAlias] = useState(true);
+  const [showCatalogueSelector, setShowCatalogueSelector] = useState(false);
+  const [catalogueSearchQuery, setCatalogueSearchQuery] = useState('');
+  const [cataloguePage, setCataloguePage] = useState(1);
+  const [catalogueBooks, setCatalogueBooks] = useState<CatalogueBook[]>([]);
+  const [catalogueTotal, setCatalogueTotal] = useState(0);
+  const [catalogueLoading, setCatalogueLoading] = useState(false);
+  const [catalogueHasMore, setCatalogueHasMore] = useState(true);
+  const [catalogueFilter, setCatalogueFilter] = useState<'all' | 'with_pdf' | 'without_pdf'>('without_pdf');
+  const [targetBookId, setTargetBookId] = useState('');
+  const [selectedCatalogueBook, setSelectedCatalogueBook] = useState<CatalogueBook | null>(null);
 
   const submissionsQuery = useQuery({
     queryKey: ['admin-book-pdf-review-queue'],
     queryFn: async () => {
       const { data, error } = await supabase.from('book_pdf_submissions' as any)
-        .select('id,user_id,original_filename,storage_path,file_size_bytes,submitted_title,submitted_author,status,rights_attested,detected_metadata,validation_findings,match_confidence,rejection_reason,created_at,verification_model,verification_completed_at,published_book_id')
+        .select('id,user_id,original_filename,storage_path,file_size_bytes,submitted_title,submitted_author,status,rights_attested,detected_metadata,validation_findings,match_confidence,rejection_reason,created_at,verification_model,verification_completed_at,published_book_id,target_book_id,catalogue_match_status,pdf_sha256,pdf_page_count,malware_scan_status,rights_basis,rights_evidence_url')
         .order('created_at', { ascending: false }).limit(200);
       if (error) throw error;
       return (data || []) as Submission[];
     },
   });
 
-  const booksQuery = useQuery({
-    queryKey: ['admin-pdf-review-books'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('books_library')
-        .select('id,title,author,pdf_url').order('title', { ascending: true }).limit(2000);
-      if (error) throw error;
-      return (data || []) as Book[];
-    },
-  });
-
   const submissions = submissionsQuery.data || [];
   const selected = submissions.find((item) => item.id === selectedId) || submissions[0] || null;
 
+  // Reset form state when selection changes
   useEffect(() => {
     if (selected) {
       const rep = (selected.detected_metadata || {}) as Record<string, any>;
@@ -113,43 +142,23 @@ export default function AdminBookPdfReviews() {
       setNewBookLanguage(rep.language || 'English');
       if (selected.published_book_id) {
         setTargetBookId(selected.published_book_id);
+      } else if (selected.target_book_id) {
+        setTargetBookId(selected.target_book_id);
       }
+      setReason('');
+      setEvidenceUrl('');
+      setRightsBasis('public_domain');
+      setUpdateAlias(true);
+      setPublishMode('existing');
+      setShowCatalogueSelector(false);
+      setCatalogueSearchQuery('');
+      setCataloguePage(1);
+      setCatalogueBooks([]);
+      setSelectedCatalogueBook(null);
+    } else {
+      setTargetBookId('');
     }
   }, [selected]);
-
-  const eligibleBooks = useMemo(() => {
-    const books = booksQuery.data || [];
-    const query = bookSearch.trim().toLowerCase();
-    if (!query) {
-      return books.filter((book) => !book.pdf_url).slice(0, 100);
-    }
-    const tokens = query.split(/\s+/).filter(Boolean);
-    return books.filter((book) => {
-      if (book.pdf_url) return false;
-      const combined = `${book.title} ${book.author || ''}`.toLowerCase();
-      return combined.includes(query) || tokens.every((t) => combined.includes(t));
-    }).slice(0, 100);
-  }, [booksQuery.data, bookSearch]);
-
-  const suggestedCandidates = useMemo(() => {
-    if (!selected) return [];
-    const books = booksQuery.data || [];
-    const rep = (selected.detected_metadata || {}) as Record<string, any>;
-    const title = (selected.submitted_title || rep.detected_title || '').toLowerCase();
-    const author = (selected.submitted_author || rep.detected_author || '').toLowerCase();
-    const authorTokens = author.split(/\s+/).filter((w: string) => w.length > 2);
-    const titleTokens = title.split(/\s+/).filter((w: string) => w.length > 3 && !['poems', 'songs', 'book', 'edition'].includes(w));
-    const allTokens = [...authorTokens, ...titleTokens];
-    if (allTokens.length === 0) return [];
-
-    return books
-      .filter((book) => !book.pdf_url)
-      .filter((book) => {
-        const text = `${book.title} ${book.author || ''}`.toLowerCase();
-        return allTokens.some((tok) => text.includes(tok));
-      })
-      .slice(0, 4);
-  }, [selected, booksQuery.data]);
 
   const refresh = async () => {
     await Promise.all([
@@ -159,6 +168,69 @@ export default function AdminBookPdfReviews() {
       queryClient.invalidateQueries({ queryKey: ['admin-book-pdf-manager-books'] }),
     ]);
   };
+
+  const searchCatalogue = useCallback(async (query: string, page: number = 1, append: boolean = false) => {
+    if (!query.trim() && page === 1) {
+      setCatalogueBooks([]);
+      setCatalogueTotal(0);
+      setCatalogueHasMore(false);
+      return;
+    }
+    setCatalogueLoading(true);
+    try {
+      const cleanQuery = query.trim().replace(/[,()]/g, ' ').replace(/\s+/g, ' ').slice(0, 200);
+      const { data, error } = await supabase.functions.invoke('review-book-pdf', {
+        body: { action: 'search_catalogue', query: cleanQuery, page, pageSize: 20 },
+      });
+      if (error) throw error;
+      if (data?.success && data?.books) {
+        const books = data.books as CatalogueBook[];
+        const filtered = catalogueFilter === 'with_pdf'
+          ? books.filter(b => b.pdf_url)
+          : catalogueFilter === 'without_pdf'
+            ? books.filter(b => !b.pdf_url)
+            : books;
+
+        if (append) {
+          setCatalogueBooks(prev => [...prev, ...filtered]);
+        } else {
+          setCatalogueBooks(filtered);
+        }
+        setCatalogueTotal(data.total || books.length);
+        setCatalogueHasMore(data.hasMore || false);
+      } else {
+        if (!append) setCatalogueBooks([]);
+        setCatalogueTotal(0);
+        setCatalogueHasMore(false);
+      }
+    } catch (error) {
+      console.error('Catalogue search failed:', error);
+      toast({ title: 'Search failed', description: 'Could not search the catalogue.', variant: 'destructive' });
+      if (!append) setCatalogueBooks([]);
+    } finally {
+      setCatalogueLoading(false);
+    }
+  }, [catalogueFilter, toast]);
+
+  useEffect(() => {
+    if (showCatalogueSelector) {
+      searchCatalogue(catalogueSearchQuery, 1, false);
+    }
+  }, [showCatalogueSelector, catalogueSearchQuery, searchCatalogue]);
+
+  const loadMoreCatalogue = useCallback(() => {
+    if (!catalogueLoading && catalogueHasMore) {
+      searchCatalogue(catalogueSearchQuery, cataloguePage + 1, true);
+      setCataloguePage(prev => prev + 1);
+    }
+  }, [catalogueLoading, catalogueHasMore, cataloguePage, catalogueSearchQuery, searchCatalogue]);
+
+  const handleCatalogueScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    if (target.scrollTop + target.clientHeight >= target.scrollHeight - 100) {
+      loadMoreCatalogue();
+    }
+  }, [loadMoreCatalogue]);
 
   const invokeReview = async (action: 'preview' | 'approve' | 'reject' | 'request_changes' | 'publish', extra: Record<string, unknown> = {}) => {
     if (!selected) return;
@@ -219,6 +291,26 @@ export default function AdminBookPdfReviews() {
   const report = selected?.detected_metadata || {};
   const findings = Array.isArray(selected?.validation_findings) ? selected.validation_findings : [];
 
+  const suggestedCandidates = useMemo(() => {
+    if (!selected) return [];
+    const books = catalogueBooks;
+    const rep = (selected.detected_metadata || {}) as Record<string, any>;
+    const title = (selected.submitted_title || rep.detected_title || '').toLowerCase();
+    const author = (selected.submitted_author || rep.detected_author || '').toLowerCase();
+    const authorTokens = author.split(/\s+/).filter((w: string) => w.length > 2);
+    const titleTokens = title.split(/\s+/).filter((w: string) => w.length > 3 && !['poems', 'songs', 'book', 'edition'].includes(w));
+    const allTokens = [...authorTokens, ...titleTokens];
+    if (allTokens.length === 0) return [];
+
+    return books
+      .filter((book) => !book.pdf_url)
+      .filter((book) => {
+        const text = `${book.title} ${book.author || ''}`.toLowerCase();
+        return allTokens.some((tok) => text.includes(tok));
+      })
+      .slice(0, 4);
+  }, [selected, catalogueBooks]);
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <SEO title="PDF Verification Review | Sahadhyayi Admin" description="Review AI-assisted book PDF submissions before publication." noIndex={true} />
@@ -245,21 +337,53 @@ export default function AdminBookPdfReviews() {
         ) : submissions.length === 0 ? (
           <div className="rounded-xl border border-dashed p-10 text-center"><FileSearch className="mx-auto h-8 w-8 text-muted-foreground" /><h2 className="mt-3 font-semibold">No submissions yet</h2><p className="mt-1 text-sm text-muted-foreground">User contributions will appear here after upload.</p></div>
         ) : (
-          <div className="grid items-start gap-5 lg:grid-cols-[minmax(280px,0.85fr)_minmax(0,1.5fr)]">
+          <div className="grid items-start gap-5 lg:grid-cols-[minmax(320px,0.85fr)_minmax(0,1.5fr)]">
             <section className="space-y-2">
-              <h2 className="font-semibold">Submissions ({submissions.length})</h2>
-              {submissions.map((item) => (
-                <button type="button" key={item.id} onClick={() => { setSelectedId(item.id); setTargetBookId(''); }}
-                  className={`w-full rounded-xl border p-3 text-left transition hover:border-primary ${selected?.id === item.id ? 'border-primary bg-primary/5' : 'bg-card'}`}>
-                  <div className="flex items-start justify-between gap-2"><span className="line-clamp-2 font-medium">{item.submitted_title || item.original_filename}</span><Badge variant={statusVariant(item.status)}>{item.status.replace(/_/g, ' ')}</Badge></div>
-                  <p className="mt-1 text-xs text-muted-foreground">{item.submitted_author || 'Author not supplied'} · {new Date(item.created_at).toLocaleDateString()}</p>
-                </button>
-              ))}
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold">Submissions ({submissions.length})</h2>
+                <Badge variant="outline" className="text-xs">{submissionsQuery.isFetching ? 'Refreshing…' : 'Up to date'}</Badge>
+              </div>
+              <ScrollArea className="h-[calc(100vh-320px)] min-h-[400px] max-h-[600px]" style={{ scrollbarWidth: 'thin' }}>
+                <div className="space-y-2">
+                  {submissions.map((item) => {
+                    const StatusIcon = statusIcon[item.status] || FileUp;
+                    return (
+                      <button
+                        type="button"
+                        key={item.id}
+                        onClick={() => { setSelectedId(item.id); setTargetBookId(''); }}
+                        className={`w-full rounded-xl border p-3 text-left transition hover:border-primary ${selected?.id === item.id ? 'border-primary bg-primary/5' : 'bg-card'}`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <StatusIcon className={`h-4 w-4 flex-shrink-0 ${item.status === 'approved' ? 'text-green-600' : item.status === 'rejected' || item.status === 'failed' ? 'text-destructive' : 'text-muted-foreground'}`} />
+                            <span className="line-clamp-2 font-medium truncate">{item.submitted_title || item.original_filename}</span>
+                          </div>
+                          <Badge variant={statusVariant(item.status)}>{item.status.replace(/_/g, ' ')}</Badge>
+                        </div>
+                        <p className="mt-1 text-xs text-muted-foreground flex items-center gap-1">
+                          <FileText className="h-3 w-3" /> {item.original_filename}
+                          <span>·</span>
+                          {item.submitted_author || 'Author not supplied'}
+                          <span>·</span>
+                          {new Date(item.created_at).toLocaleDateString()}
+                        </p>
+                        {item.match_confidence && item.match_confidence > 0 && (
+                          <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                            <Sparkles className="h-3 w-3" />
+                            <span>Match confidence: {Math.round(item.match_confidence * 100)}%</span>
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
             </section>
 
             {selected && <section className="space-y-5 rounded-xl border bg-card p-4 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div><h2 className="text-xl font-semibold">{selected.submitted_title || selected.original_filename}</h2><p className="text-sm text-muted-foreground">{selected.submitted_author || 'Unknown author'} · {(selected.file_size_bytes || 0) / (1024 * 1024) > 0 ? `${((selected.file_size_bytes || 0) / (1024 * 1024)).toFixed(1)} MB` : 'Size unavailable'}</p></div>
+                <div><h2 className="text-xl font-semibold">{selected.submitted_title || selected.original_filename}</h2><p className="text-sm text-muted-foreground">{selected.submitted_author || 'Unknown author'} · {formatFileSize(selected.file_size_bytes)}</p></div>
                 <Badge variant={statusVariant(selected.status)}>{selected.status.replace(/_/g, ' ')}</Badge>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -286,7 +410,7 @@ export default function AdminBookPdfReviews() {
                   </dl>
                 )}
                 {findings.length > 0 && <div className="mt-4 rounded-md bg-muted p-3"><p className="text-sm font-medium">Warnings</p><ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-muted-foreground">{findings.map((finding, index) => <li key={index}>{typeof finding === 'string' ? finding : JSON.stringify(finding)}</li>)}</ul></div>}
-                {Array.isArray(report.catalogue_candidates) && report.catalogue_candidates.length > 0 && <div className="mt-4 rounded-md border p-3"><p className="text-sm font-medium">Possible catalogue matches</p><ul className="mt-2 space-y-2">{(report.catalogue_candidates as Record<string, unknown>[]).map((candidate, index) => <li key={String(candidate.id || index)} className="flex flex-wrap items-center justify-between gap-2 text-sm"><span><strong>{String(candidate.title || 'Untitled')}</strong>{candidate.author ? ` — ${String(candidate.author)}` : ''}</span><Badge variant={candidate.pdf_url ? 'secondary' : 'outline'}>{candidate.pdf_url ? 'PDF already linked' : 'No PDF linked'}</Badge></li>)}</ul><p className="mt-2 text-xs text-muted-foreground">Check title, author, ISBN and edition before linking this submission.</p></div>}
+                {Array.isArray(report.catalogue_candidates) && report.catalogue_candidates.length > 0 && <div className="mt-4 rounded-md border p-3"><p className="text-sm font-medium">Possible catalogue matches (from AI)</p><ul className="mt-2 space-y-2">{(report.catalogue_candidates as Record<string, unknown>[]).map((candidate, index) => <li key={String(candidate.id || index)} className="flex flex-wrap items-center justify-between gap-2 text-sm"><span><strong>{String(candidate.title || 'Untitled')}</strong>{candidate.author ? ` — ${String(candidate.author)}` : ''}</span><Badge variant={candidate.pdf_url ? 'secondary' : 'outline'}>{candidate.pdf_url ? 'PDF already linked' : 'No PDF linked'}</Badge></li>)}</ul><p className="mt-2 text-xs text-muted-foreground">Check title, author, ISBN and edition before linking this submission.</p></div>}
                 <p className="mt-3 text-xs text-muted-foreground">AI findings are advisory only. They do not confirm malware-free status, authenticity, completeness, or copyright clearance.</p>
               </div>
 
@@ -336,7 +460,7 @@ export default function AdminBookPdfReviews() {
                     type="button"
                     role="tab"
                     aria-selected={publishMode === 'existing'}
-                    onClick={() => setPublishMode('existing')}
+                    onClick={() => { setPublishMode('existing'); setShowCatalogueSelector(true); }}
                     className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${publishMode === 'existing' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                   >
                     Link to Existing Catalogue Book
@@ -345,7 +469,7 @@ export default function AdminBookPdfReviews() {
                     type="button"
                     role="tab"
                     aria-selected={publishMode === 'new'}
-                    onClick={() => setPublishMode('new')}
+                    onClick={() => { setPublishMode('new'); setShowCatalogueSelector(false); }}
                     className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${publishMode === 'new' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                   >
                     Publish as New Library Book
@@ -357,7 +481,7 @@ export default function AdminBookPdfReviews() {
                     {suggestedCandidates.length > 0 && (
                       <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm">
                         <div className="flex items-center gap-1.5 font-medium text-primary">
-                          <Sparkles className="h-4 w-4" /> Suggested catalogue matches
+                          <Sparkles className="h-4 w-4" /> AI-suggested catalogue matches
                         </div>
                         <div className="mt-2 flex flex-wrap gap-2">
                           {suggestedCandidates.map((candidate) => (
@@ -366,7 +490,7 @@ export default function AdminBookPdfReviews() {
                               variant={targetBookId === candidate.id ? 'default' : 'outline'}
                               size="sm"
                               className="text-xs"
-                              onClick={() => setTargetBookId(candidate.id)}
+                              onClick={() => { setTargetBookId(candidate.id); setSelectedCatalogueBook(candidate); }}
                             >
                               {candidate.title.slice(0, 35)}{candidate.title.length > 35 ? '…' : ''} {candidate.author ? `(${candidate.author})` : ''}
                             </Button>
@@ -376,56 +500,137 @@ export default function AdminBookPdfReviews() {
                     )}
 
                     <div className="space-y-1">
-                      <Label htmlFor="pdf-book-search">Find book (without an existing PDF)</Label>
-                      <Input id="pdf-book-search" value={bookSearch} onChange={(e) => setBookSearch(e.target.value)} placeholder="Search title or author…" />
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="pdf-book-search">Find catalogue book (without an existing PDF)</Label>
+                        <div className="flex items-center gap-2">
+                          <Select value={catalogueFilter} onValueChange={(v) => { setCatalogueFilter(v as any); searchCatalogue(catalogueSearchQuery, 1, false); }}>
+                            <SelectTrigger className="w-auto"><SelectValue placeholder="Filter" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="without_pdf">Missing PDF</SelectItem>
+                              <SelectItem value="with_pdf">Has PDF</SelectItem>
+                              <SelectItem value="all">All Books</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Button variant="outline" size="sm" onClick={() => setShowCatalogueSelector(!showCatalogueSelector)} className="gap-1">
+                            {showCatalogueSelector ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                            {showCatalogueSelector ? 'Hide' : 'Show'} Search
+                          </Button>
+                        </div>
+                      </div>
+                      <Input id="pdf-book-search" value={catalogueSearchQuery} onChange={(e) => { setCatalogueSearchQuery(e.target.value); setCataloguePage(1); }} placeholder="Search title, author, ISBN, or book ID…" />
                     </div>
+
+                    {showCatalogueSelector && (
+                      <div className="space-y-2">
+                        <CatalogueSelector
+                          selectedIds={targetBookId ? [targetBookId] : []}
+                          onSelectionChange={(ids) => {
+                            setTargetBookId(ids[0] || '');
+                            const book = catalogueBooks.find(b => b.id === ids[0]);
+                            if (book) setSelectedCatalogueBook(book);
+                          }}
+                          showCovers={true}
+                          showISBN={true}
+                          showPDFAvailability={true}
+                          onlyMissingPDF={catalogueFilter === 'without_pdf'}
+                          searchPlaceholder="Search catalogue…"
+                          maxHeight="300px"
+                          debounceMs={300}
+                          label=""
+                          helpText={`${catalogueBooks.length} of ${catalogueTotal} results shown. Scroll for more.`}
+                          showPDFFilter={false}
+                          disabled={catalogueLoading}
+                        />
+
+                        {catalogueBooks.length > 0 && (
+                          <div className="border-t pt-2">
+                            <ScrollArea className="max-h-60" onScroll={handleCatalogueScroll}>
+                              <div className="space-y-1">
+                                {catalogueBooks.map((book) => (
+                                  <button
+                                    key={book.id}
+                                    type="button"
+                                    onClick={() => { setTargetBookId(book.id); setSelectedCatalogueBook(book); }}
+                                    className={`w-full rounded-lg border p-3 text-left transition ${targetBookId === book.id ? 'border-primary bg-primary/5' : 'hover:bg-muted/50'}`}
+                                  >
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="flex items-center gap-2 min-w-0">
+                                        {book.cover_image_url && (
+                                          <img src={book.cover_image_url} alt="" className="w-10 h-14 object-cover rounded border flex-shrink-0" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                        )}
+                                        <div>
+                                          <p className="font-medium truncate">{book.title}</p>
+                                          <p className="text-xs text-muted-foreground">{book.author || 'Unknown author'}</p>
+                                        </div>
+                                      </div>
+                                      <Badge variant={book.pdf_url ? 'secondary' : 'outline'} className="flex-shrink-0">
+                                        {book.pdf_url ? <><Check className="h-3 w-3 mr-1" /> Has PDF</> : <><FileText className="h-3 w-3 mr-1" /> No PDF</>}
+                                      </Badge>
+                                    </div>
+                                    <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                                      {book.isbn && <span>ISBN {book.isbn}</span>}
+                                      {book.publication_year && <span>· {book.publication_year}</span>}
+                                      {book.language && <span>· {book.language}</span>}
+                                      {book.pdf_page_count && <span>· {book.pdf_page_count} pp</span>}
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+                            </ScrollArea>
+                            {catalogueHasMore && (
+                              <Button variant="outline" size="sm" className="w-full" onClick={loadMoreCatalogue} disabled={catalogueLoading}>
+                                {catalogueLoading ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : 'Load more…'}
+                              </Button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     <div className="space-y-1">
                       <Label>Target catalogue book</Label>
-                      <Select value={targetBookId} onValueChange={setTargetBookId}>
-                        <SelectTrigger>
-                          <SelectValue placeholder={booksQuery.isLoading ? 'Loading books…' : 'Choose a catalogue book'} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {eligibleBooks.map((book) => (
-                            <SelectItem key={book.id} value={book.id}>
-                              {book.title}{book.author ? ` — ${book.author}` : ''}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      {targetBookId && selectedCatalogueBook ? (
+                        <div className="rounded-lg border bg-green-50 p-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-medium text-green-800">{selectedCatalogueBook.title}</p>
+                              <p className="text-sm text-green-700">{selectedCatalogueBook.author || 'Unknown author'}</p>
+                              <div className="mt-1 flex flex-wrap gap-2 text-xs text-green-600">
+                                {selectedCatalogueBook.isbn && <span>ISBN {selectedCatalogueBook.isbn}</span>}
+                                {selectedCatalogueBook.publication_year && <span>· {selectedCatalogueBook.publication_year}</span>}
+                                {selectedCatalogueBook.language && <span>· {selectedCatalogueBook.language}</span>}
+                              </div>
+                            </div>
+                            <Button variant="ghost" size="sm" onClick={() => { setTargetBookId(''); setSelectedCatalogueBook(null); }}>
+                              <X className="h-3 w-3" /> Clear
+                            </Button>
+                          </div>
+                          {selectedCatalogueBook.pdf_url && (
+                            <p className="mt-2 text-xs text-amber-700 flex items-center gap-1">
+                              <AlertCircle className="h-3 w-3" /> This book already has a PDF. Publishing will replace it (audit trail preserved).
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <Select value={targetBookId} onValueChange={setTargetBookId} disabled={!targetBookId}>
+                          <SelectTrigger>
+                            <SelectValue placeholder={catalogueLoading ? 'Loading books…' : targetBookId ? 'Selected' : 'Choose a catalogue book'} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {catalogueBooks.slice(0, 50).map((book) => (
+                              <SelectItem key={book.id} value={book.id}>
+                                {book.title}{book.author ? ` — ${book.author}` : ''} {book.pdf_url ? '(has PDF)' : ''}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     </div>
 
                     <label className="flex items-center gap-2 pt-1 text-xs text-muted-foreground">
                       <Checkbox checked={updateAlias} onCheckedChange={(c) => setUpdateAlias(c === true)} />
                       <span>Add submitted title &ldquo;{selected.submitted_title}&rdquo; as searchable alias if catalogue title differs</span>
                     </label>
-
-                    <div className="space-y-1">
-                      <Label>Distribution-rights basis</Label>
-                      <Select value={rightsBasis} onValueChange={(v) => setRightsBasis(v as RightsBasis)}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {RIGHTS_OPTIONS.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-1">
-                      <Label htmlFor="pdf-rights-evidence">HTTPS licence / permission evidence URL</Label>
-                      <Input id="pdf-rights-evidence" type="url" value={evidenceUrl} onChange={(e) => setEvidenceUrl(e.target.value)} placeholder="https://example.org/licence-or-permission" />
-                    </div>
-
-                    <Button
-                      className="w-full"
-                      onClick={() => void invokeReview('publish', { targetBookId, rightsBasis, evidenceUrl, updateBookTitleWithAlias: updateAlias })}
-                      disabled={Boolean(busyAction) || selected.status !== 'approved' || !targetBookId || !evidenceUrl.trim() || booksQuery.isLoading}
-                    >
-                      {busyAction === 'publish' ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
-                      Publish approved PDF to Library Book
-                    </Button>
                   </div>
                 ) : (
                   <div className="space-y-3 pt-2">
@@ -472,22 +677,44 @@ export default function AdminBookPdfReviews() {
                       </div>
                     </div>
 
+                    {/* Publish button for new book mode */}
                     <Button
                       className="w-full"
-                      onClick={() => void invokeReview('publish', {
-                        createNewBook: true,
-                        newBookTitle,
-                        newBookAuthor,
-                        newBookGenre,
-                        newBookDescription,
-                        newBookLanguage,
-                        rightsBasis,
-                        evidenceUrl,
-                      })}
+                      onClick={() => void invokeReview('publish', { createNewBook: true, newBookTitle, newBookAuthor, newBookGenre, newBookLanguage, newBookDescription, rightsBasis, evidenceUrl })}
                       disabled={Boolean(busyAction) || selected.status !== 'approved' || !newBookTitle.trim() || !evidenceUrl.trim()}
                     >
-                      {busyAction === 'publish' ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
-                      Create Catalogue Book & Publish PDF
+                      {busyAction === 'publish' ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
+                      Publish approved PDF to Library Book
+                    </Button>
+                  </div>
+                )}
+
+                {publishMode === 'existing' && (
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <Label>Distribution-rights basis</Label>
+                      <Select value={rightsBasis} onValueChange={(v) => setRightsBasis(v as RightsBasis)}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {RIGHTS_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label htmlFor="pdf-rights-evidence">HTTPS licence / permission evidence URL</Label>
+                      <Input id="pdf-rights-evidence" type="url" value={evidenceUrl} onChange={(e) => setEvidenceUrl(e.target.value)} placeholder="https://example.org/licence-or-permission" />
+                    </div>
+
+                    <Button
+                      className="w-full"
+                      onClick={() => void invokeReview('publish', { targetBookId, rightsBasis, evidenceUrl, updateBookTitleWithAlias: updateAlias })}
+                      disabled={Boolean(busyAction) || selected.status !== 'approved' || !targetBookId || !evidenceUrl.trim()}
+                    >
+                      {busyAction === 'publish' ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
+                      Publish approved PDF to Library Book
                     </Button>
                   </div>
                 )}

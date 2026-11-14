@@ -170,13 +170,26 @@ export const PdfCanvasViewer: React.FC<PdfCanvasViewerProps> = ({
   }, [pdfDoc, currentPage, scale, renderStatus, renderCurrentPage]);
 
   // Capture text selection for Quotes & Margin notes
-  const handleMouseUp = () => {
-    const selection = window.getSelection();
-    const text = selection ? selection.toString().trim() : '';
-    if (text && onTextSelected) {
-      onTextSelected(text);
-    }
-  };
+  useEffect(() => {
+    const handleSelectionEnd = () => {
+      const selection = window.getSelection();
+      const text = selection ? selection.toString().trim() : '';
+      if (text && onTextSelected && containerRef.current && selection?.anchorNode && containerRef.current.contains(selection.anchorNode)) {
+        onTextSelected(text);
+      }
+    };
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.addEventListener('mouseup', handleSelectionEnd);
+    container.addEventListener('touchend', handleSelectionEnd);
+
+    return () => {
+      container.removeEventListener('mouseup', handleSelectionEnd);
+      container.removeEventListener('touchend', handleSelectionEnd);
+    };
+  }, [onTextSelected]);
 
   const handleZoomIn = () => setScale((prev) => Math.min(prev + 0.2, 2.5));
   const handleZoomOut = () => setScale((prev) => Math.max(prev - 0.2, 0.6));
@@ -203,7 +216,6 @@ export const PdfCanvasViewer: React.FC<PdfCanvasViewerProps> = ({
   return (
     <div
       ref={containerRef}
-      onMouseUp={handleMouseUp}
       className={`relative w-full flex flex-col items-center justify-start rounded-2xl border border-border shadow-sm overflow-hidden select-text ${backdropBg} ${
         isFullscreen ? 'min-h-screen py-6' : 'min-h-[650px] py-4'
       }`}

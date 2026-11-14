@@ -151,21 +151,21 @@ describe('AdminBookPdfReviews', () => {
     expect(screen.getByText('Confidence').parentElement).toHaveTextContent('91%');
     expect(screen.getByText('Check the edition')).toBeInTheDocument();
     expect(screen.getByText('{"source":"automated"}')).toBeInTheDocument();
-    expect(screen.getByText('Possible catalogue matches')).toBeInTheDocument();
+    expect(screen.getByText('Possible catalogue matches (from AI)')).toBeInTheDocument();
     expect(screen.getByText('No PDF linked')).toBeInTheDocument();
   });
 
-  it('loads both query sources and surfaces query errors', async () => {
+  it('loads the review queue and surfaces query errors', async () => {
     renderPage();
     const queueQuery = mocks.queryOptions.find((item) => item.queryKey[0] === 'admin-book-pdf-review-queue');
-    const booksQuery = mocks.queryOptions.find((item) => item.queryKey[0] === 'admin-pdf-review-books');
 
-    await expect(queueQuery.queryFn()).resolves.toEqual(mocks.submissions);
-    await expect(booksQuery.queryFn()).resolves.toEqual(mocks.books);
+    expect(queueQuery).toBeDefined();
+
+    if (queueQuery) {
+      await expect(queueQuery.queryFn()).resolves.toEqual(mocks.submissions);
+    }
     expect(mocks.from).toHaveBeenCalledWith('book_pdf_submissions');
-    expect(mocks.from).toHaveBeenCalledWith('books_library');
     expect(mocks.limit).toHaveBeenCalledWith(200);
-    expect(mocks.limit).toHaveBeenCalledWith(2000);
   });
 
   it('opens a temporary preview and shows the expiry notice', async () => {
@@ -275,10 +275,10 @@ describe('AdminBookPdfReviews', () => {
 
   it('filters out books that already have PDFs and supports searching by title or author', () => {
     renderPage();
-    const search = screen.getByLabelText(/Find book/);
+    const search = screen.getByLabelText(/Find catalogue book/);
     fireEvent.change(search, { target: { value: 'other author' } });
     expect(screen.queryByText('Already linked')).not.toBeInTheDocument();
-    expect(screen.getByLabelText(/Find book/)).toHaveValue('other author');
+    expect(screen.getByLabelText(/Find catalogue book/)).toHaveValue('other author');
   });
 
   it('displays pending publishing banner when approved but not yet published', () => {
@@ -301,10 +301,18 @@ describe('AdminBookPdfReviews', () => {
     // Switch to "Publish as New Library Book" tab
     fireEvent.click(screen.getByRole('tab', { name: /Publish as New Library Book/i }));
 
+    // Fill in required fields for new book
+    const titleInput = screen.getByLabelText(/Book Title/i);
+    fireEvent.change(titleInput, { target: { value: 'A Test Book' } });
+
     const evidenceInput = screen.getByLabelText(/HTTPS licence \/ permission evidence URL/i);
     fireEvent.change(evidenceInput, { target: { value: 'https://en.wikipedia.org/wiki/Songs_of_Kabir' } });
 
-    fireEvent.click(screen.getByRole('button', { name: /Create Catalogue Book & Publish PDF/i }));
+    // Fill in author if present
+    const authorInput = screen.getByLabelText(/Author/i);
+    fireEvent.change(authorInput, { target: { value: 'Test Author' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Publish approved PDF to Library Book/i }));
 
     await waitFor(() => expect(mocks.invoke).toHaveBeenCalledWith('review-book-pdf', {
       body: expect.objectContaining({

@@ -78,6 +78,19 @@ function renderDialog() {
   fireEvent.click(screen.getByRole('button', { name: /Contribute a PDF/i }));
 }
 
+async function goToUploadStep(title = 'Test Book') {
+  // Click "Skip → Upload PDF" to navigate from search step to upload step
+  const skipButton = screen.getByRole('button', { name: /Skip.*Upload PDF/i });
+  fireEvent.click(skipButton);
+  // Wait for the upload form to appear
+  await waitFor(() => expect(screen.getByLabelText(/PDF file/i)).toBeInTheDocument());
+  if (title) {
+    fireEvent.change(screen.getByLabelText(/Book title/i), {
+      target: { value: title },
+    });
+  }
+}
+
 beforeEach(() => {
   vi.stubGlobal('ResizeObserver', class ResizeObserverMock {
     observe() {}
@@ -118,8 +131,9 @@ describe('ContributeBookPdfDialog', () => {
     expect(screen.queryByLabelText(/PDF file/i)).not.toBeInTheDocument();
   });
 
-  it('requires a rights attestation before enabling submission', () => {
+  it('requires a rights attestation before enabling submission', async () => {
     renderDialog();
+    await goToUploadStep();
 
     expect(screen.getByRole('button', { name: /Submit for verification/i })).toBeDisabled();
     fireEvent.change(screen.getByLabelText(/PDF file/i), {
@@ -130,6 +144,7 @@ describe('ContributeBookPdfDialog', () => {
 
   it('rejects a file without a PDF signature before writing or uploading', async () => {
     renderDialog();
+    await goToUploadStep();
     fireEvent.change(screen.getByLabelText(/PDF file/i), {
       target: { files: [makePdf('not-a-pdf.pdf', 'NOTPDF')] },
     });
@@ -139,7 +154,7 @@ describe('ContributeBookPdfDialog', () => {
     fireEvent.submit(screen.getByLabelText(/PDF file/i).closest('form')!);
 
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
-      description: expect.stringMatching(/valid PDF signature/i),
+      description: expect.stringMatching(/%PDF-/i),
     })));
     expect(mocks.insert).not.toHaveBeenCalled();
     expect(mocks.upload).not.toHaveBeenCalled();
@@ -147,6 +162,7 @@ describe('ContributeBookPdfDialog', () => {
 
   it('creates an owner-scoped submission and uploads only to the quarantine bucket', async () => {
     renderDialog();
+    await goToUploadStep();
     fireEvent.change(screen.getByLabelText(/PDF file/i), {
       target: { files: [makePdf()] },
     });
@@ -186,8 +202,12 @@ describe('ContributeBookPdfDialog', () => {
 
   it('accepts a valid PDF when mobile browsers report application/octet-stream', async () => {
     renderDialog();
+    await goToUploadStep();
     fireEvent.change(screen.getByLabelText(/PDF file/i), {
       target: { files: [makePdf('mobile-book.pdf', '%PDF-1.7 valid body', 'application/octet-stream')] },
+    });
+    fireEvent.change(screen.getByLabelText(/Book title/i), {
+      target: { value: 'Test Book' },
     });
     fireEvent.click(screen.getByRole('checkbox'));
     await waitFor(() => expect(screen.getByRole('checkbox')).toBeChecked());
@@ -206,8 +226,12 @@ describe('ContributeBookPdfDialog', () => {
   it('does not upload when the database submission insert fails', async () => {
     mocks.insert.mockResolvedValueOnce({ error: new Error('database unavailable') });
     renderDialog();
+    await goToUploadStep();
     fireEvent.change(screen.getByLabelText(/PDF file/i), {
       target: { files: [makePdf()] },
+    });
+    fireEvent.change(screen.getByLabelText(/Book title/i), {
+      target: { value: 'Test Book' },
     });
     fireEvent.click(screen.getByRole('checkbox'));
     await waitFor(() => expect(screen.getByRole('checkbox')).toBeChecked());

@@ -23,7 +23,7 @@ export const loadPdfJs = async (): Promise<any> => {
     return pdfjs;
   }
 
-  if (pdfJsPromise) return pdfJsPromise;
+  if (pdfJsPromise !== null) return pdfJsPromise;
 
   pdfJsPromise = new Promise((resolve, reject) => {
     // Check if script tag already exists
@@ -36,7 +36,7 @@ export const loadPdfJs = async (): Promise<any> => {
         }
         resolve(lib);
       });
-      existingScript.addEventListener('error', (e) => reject(e));
+      existingScript.addEventListener('error', () => reject(new Error('Failed to load PDF.js script from CDN')));
       return;
     }
 
@@ -58,9 +58,9 @@ export const loadPdfJs = async (): Promise<any> => {
       }
     };
 
-    script.onerror = (err) => {
+    script.onerror = () => {
       pdfJsPromise = null;
-      reject(err);
+      reject(new Error('Failed to load PDF.js script from CDN'));
     };
 
     document.head.appendChild(script);

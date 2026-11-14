@@ -38,6 +38,11 @@ const ALLOWED_PROXY_SUFFIXES = [
   'edu',
 ];
 
+function cleanLog(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/[\r\n\t]/g, ' ');
+}
+
 function isProxyable(url) {
   try {
     const parsed = new URL(url);
@@ -49,7 +54,7 @@ function isProxyable(url) {
 }
 
 async function fetchLibraryBooks() {
-  console.log(`[audit] Fetching library books with pdf_url from ${SUPABASE_URL}...`);
+  console.log(`[audit] Fetching library books with pdf_url from ${cleanLog(SUPABASE_URL)}...`);
   const endpoint = `${SUPABASE_URL}/rest/v1/books_library?pdf_url=not.is.null&select=id,title,author,pdf_url,publication_year&limit=100`;
   const res = await fetch(endpoint, {
     headers: {
@@ -64,7 +69,8 @@ async function fetchLibraryBooks() {
   }
 
   const books = await res.json();
-  console.log(`[audit] Found ${books.length} library books to audit.`);
+  const count = Array.isArray(books) ? books.length : 0;
+  console.log(`[audit] Found ${cleanLog(count)} library books to audit.`);
   return books;
 }
 
@@ -143,7 +149,8 @@ async function run() {
     let brokenCount = 0;
 
     for (const [index, book] of books.entries()) {
-      process.stdout.write(`[${index + 1}/${books.length}] Auditing "${book.title.slice(0, 30)}"... `);
+      const sanitizedTitle = cleanLog(book?.title?.slice(0, 30) || 'Untitled');
+      process.stdout.write(`[${index + 1}/${books.length}] Auditing "${sanitizedTitle}"... `);
       const result = await verifyPdfUrl(book.pdf_url);
       const auditEntry = {
         bookId: book.id,
@@ -156,13 +163,13 @@ async function run() {
 
       if (result.status === 'VALID_PDF') {
         validCount++;
-        console.log(`✅ VALID PDF (${result.signature || 'ok'})`);
+        console.log(`✅ VALID PDF (${cleanLog(result.signature || 'ok')})`);
       } else if (result.status === 'HTML_LANDING_PAGE') {
         htmlCount++;
         console.log(`⚠️ HTML PAGE`);
       } else {
         brokenCount++;
-        console.log(`❌ ${result.status} (${result.error || ''})`);
+        console.log(`❌ ${cleanLog(result.status)} (${cleanLog(result.error || '')})`);
       }
     }
 
@@ -184,9 +191,14 @@ async function run() {
     console.log(`Broken / Unreachable:  ${summary.brokenOrUnreachable}`);
     console.log(`Report written to:     ${outPath}`);
   } catch (err) {
-    console.error('[audit] Error during link audit:', err);
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    console.error('[audit] Error during link audit:', cleanLog(errorMsg));
     process.exit(1);
   }
 }
 
-run();
+run().catch((err) => {
+  const fatalMsg = err instanceof Error ? err.message : String(err);
+  console.error('[audit] Fatal error during link audit:', cleanLog(fatalMsg));
+  process.exit(1);
+});
