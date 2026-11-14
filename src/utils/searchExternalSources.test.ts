@@ -44,7 +44,7 @@ describe('searchExternalSources', () => {
 
     expect(result).toHaveLength(1);
     expect(result[0]).toEqual({
-      id: '9780553208849',
+      id: '9780553208849-pdf',
       title: 'Siddhartha',
       author: 'Hermann Hesse',
       year: '1922',
@@ -54,6 +54,7 @@ describe('searchExternalSources', () => {
       md5: '9780553208849',
       downloadUrl: 'https://example.com/siddhartha.pdf',
       source: 'open_access',
+      format: 'pdf',
     });
   });
 
