@@ -11,7 +11,15 @@ interface MapplsRuntimeMap {
 }
 
 interface MapplsRuntimeMarker {
+  setPosition?: (position: { lat: number; lng: number }) => void;
+  addListener?: (eventName: string, callback: (event?: unknown) => void) => unknown;
+  remove?: () => void;
   [key: string]: unknown;
+}
+
+interface MapplsMarkerRecord {
+  marker: MapplsRuntimeMarker;
+  signature: string;
 }
 
 interface MapplsRuntime {
@@ -180,26 +188,73 @@ const getSafeAvatarUrl = (value?: string | null): string | null => {
   }
 };
 
-const createAvatarMarkerHtml = (point: MapplsPoint): string => {
+const createAvatarMarkerElement = (point: MapplsPoint): HTMLElement => {
   const avatarUrl = getSafeAvatarUrl(point.avatarUrl);
-  const initial = escapeHtml((point.title.trim().charAt(0) || 'R').toUpperCase());
-  const borderColor = point.id === 'self' ? '#D5B16D' : '#1C442D';
-  const avatarContent = avatarUrl
-    ? `<img src="${escapeHtml(avatarUrl)}" alt="" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
-    : `<span aria-hidden="true" style="display:flex;width:100%;height:100%;align-items:center;justify-content:center;border-radius:50%;background:#E8EFE9;color:#1C442D;font:700 16px/1 system-ui,sans-serif;">${initial}</span>`;
+  const isSelf = point.id === 'self';
+  const borderColor = isSelf ? '#D5B16D' : '#1C442D';
+  const root = document.createElement('div');
+  root.className = 'sahadhyayi-reader-map-marker';
+  root.setAttribute('role', 'img');
+  root.setAttribute('aria-label', isSelf ? 'Your reading avatar' : `${point.title} reading avatar`);
+  root.title = point.title;
+  root.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:58px;height:68px;overflow:visible;pointer-events:auto;';
 
-  return `<div title="${escapeHtml(point.title)}" style="box-sizing:border-box;width:44px;height:44px;overflow:hidden;border:3px solid ${borderColor};border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.28);">${avatarContent}</div>`;
+  const shell = document.createElement('div');
+  shell.style.cssText = `box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:52px;height:52px;padding:3px;border:3px solid ${borderColor};border-radius:50%;background:#fff;box-shadow:0 3px 12px rgba(20,35,25,.28),0 0 0 2px rgba(255,255,255,.96);overflow:hidden;`;
+
+  const fallback = document.createElement('span');
+  fallback.textContent = (point.title.trim().charAt(0) || 'R').toUpperCase();
+  fallback.setAttribute('aria-hidden', 'true');
+  fallback.style.cssText = 'display:flex;width:100%;height:100%;align-items:center;justify-content:center;border-radius:50%;background:#E8EFE9;color:#1C442D;font:700 18px/1 system-ui,sans-serif;';
+
+  if (avatarUrl) {
+    const image = document.createElement('img');
+    image.src = avatarUrl;
+    image.alt = '';
+    image.decoding = 'async';
+    image.referrerPolicy = 'no-referrer';
+    image.style.cssText = 'display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;';
+    image.addEventListener('error', () => {
+      if (image.parentElement === shell) image.replaceWith(fallback);
+    }, { once: true });
+    shell.appendChild(image);
+  } else {
+    shell.appendChild(fallback);
+  }
+
+  root.appendChild(shell);
+  if (isSelf) {
+    const label = document.createElement('span');
+    label.textContent = 'YOU';
+    label.style.cssText = 'margin-top:1px;padding:1px 5px;border-radius:999px;background:#1C442D;color:#fff;font:700 8px/1.4 system-ui,sans-serif;letter-spacing:.06em;box-shadow:0 1px 4px rgba(0,0,0,.2);';
+    root.appendChild(label);
+  }
+  return root;
 };
 
-const removeMarkers = (map: MapplsRuntimeMap, markers: MapplsRuntimeMarker[]) => {
-  markers.forEach((marker) => {
-    try {
-      // This is the removal API documented by Mappls Web Maps JS.
-      window.mappls?.remove?.({ map, layer: marker });
-    } catch {
-      // map.remove() on teardown also disposes any remaining marker layers.
-    }
-  });
+const getMarkerSignature = (point: MapplsPoint) => JSON.stringify([
+  point.lat,
+  point.lng,
+  point.title,
+  point.description ?? '',
+  point.avatarUrl ?? '',
+]);
+
+const getPointBoundsSignature = (points: MapplsPoint[]) => JSON.stringify(
+  points.map((point) => [point.id, point.lat, point.lng]).sort((a, b) => String(a[0]).localeCompare(String(b[0]))),
+);
+
+const removeMarker = (map: MapplsRuntimeMap, marker: MapplsRuntimeMarker) => {
+  try {
+    window.mappls?.remove?.({ map, layer: marker });
+  } catch {
+    try { marker.remove?.(); } catch { /* map teardown is the final fallback */ }
+  }
+};
+
+const removeMarkers = (map: MapplsRuntimeMap, markers: Map<string, MapplsMarkerRecord>) => {
+  markers.forEach(({ marker }) => removeMarker(map, marker));
+  markers.clear();
 };
 
 const isValidPoint = (point: MapplsPoint) =>
@@ -219,7 +274,8 @@ export function MapplsMap({
   const containerId = `mappls-map-${generatedId}`;
   const mapElement = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<MapplsRuntimeMap | null>(null);
-  const markers = useRef<MapplsRuntimeMarker[]>([]);
+  const markers = useRef<Map<string, MapplsMarkerRecord>>(new Map());
+  const lastBoundsSignature = useRef('');
   const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'missing-key'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
   const [retryCount, setRetryCount] = useState(0);
@@ -375,7 +431,7 @@ export function MapplsMap({
       const map = mapInstance.current;
       if (map) {
         removeMarkers(map, markers.current);
-        markers.current = [];
+        lastBoundsSignature.current = '';
         try {
           // Mappls documents map.remove() as the map teardown method.
           map.remove?.();
@@ -403,24 +459,24 @@ export function MapplsMap({
     const MarkerConstructor = window.mappls?.Marker;
     if (status !== 'ready' || !map || !MarkerConstructor) return;
 
-    removeMarkers(map, markers.current);
-    markers.current = [];
-
     const validPoints = points.filter(isValidPoint);
+    const desiredPoints = new Map(validPoints.map((point) => [point.id, point]));
+
+    // Keep stable markers in place. Only remove markers that disappeared or
+    // whose displayed data/position actually changed.
+    markers.current.forEach((record, id) => {
+      const nextPoint = desiredPoints.get(id);
+      if (!nextPoint || getMarkerSignature(nextPoint) !== record.signature) {
+        removeMarker(map, record.marker);
+        markers.current.delete(id);
+      }
+    });
 
     validPoints.forEach((point) => {
-      const escapedTitle = point.title
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-      const escapedDesc = (point.description || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+      if (markers.current.has(point.id)) return;
+
+      const escapedTitle = escapeHtml(point.title);
+      const escapedDesc = escapeHtml(point.description || '');
       const isSelf = point.id === 'self';
       const badgeHtml = isSelf
         ? '<span style="display:inline-block;padding:2px 6px;margin-bottom:4px;border-radius:9999px;font-size:10px;font-weight:700;background:#DCFCE7;color:#166534;letter-spacing:0.025em;text-transform:uppercase;">You</span>'
@@ -428,53 +484,56 @@ export function MapplsMap({
       const popupHtml = `<div style="font-family:sans-serif;padding:4px 6px;min-width:140px;color:#1C201D;">${badgeHtml}<strong style="font-size:13px;display:block;">${escapedTitle}</strong>${escapedDesc ? `<span style="font-size:12px;color:#636B65;display:block;margin-top:2px;">${escapedDesc}</span>` : ''}</div>`;
 
       try {
+        // Mappls markerProperties documents html as a DOM element, not an HTML string.
         const marker = new MarkerConstructor({
           map,
           position: { lat: point.lat, lng: point.lng },
           title: point.title,
-          html: createAvatarMarkerHtml(point),
-          width: 44,
-          height: 44,
+          html: createAvatarMarkerElement(point),
+          width: 58,
+          height: 68,
+          offset: [0, -12],
           popupHtml,
         });
-        markers.current.push(marker);
-      } catch {
-        setErrorMessage('The map loaded, but one or more reader markers could not be added.');
+        markers.current.set(point.id, { marker, signature: getMarkerSignature(point) });
+      } catch (error) {
+        console.error('Mappls could not create a reader avatar marker:', error);
+        setErrorMessage('The map loaded, but a reader avatar marker could not be created. Try reloading the map.');
         setStatus('error');
       }
     });
 
-    if (validPoints.length === 1) {
-      map.setCenter?.({ lat: validPoints[0].lat, lng: validPoints[0].lng });
-      map.setZoom?.(10);
-    } else if (validPoints.length > 1) {
-      const fitBounds = window.mappls?.fitBounds;
-      const bounds = validPoints.map((point) => [point.lng, point.lat]);
+    const boundsSignature = getPointBoundsSignature(validPoints);
+    if (boundsSignature !== lastBoundsSignature.current) {
+      lastBoundsSignature.current = boundsSignature;
 
-      if (fitBounds) {
-        try {
-          // Official Mappls Web Maps JS API: new mappls.fitBounds({ map, cType, bounds, options }).
-          new fitBounds({
-            map,
-            cType: 0,
-            bounds,
-            options: { padding: 80, duration: 700 },
-          });
-        } catch {
-          const averageCenter = validPoints.reduce(
-            (result, point) => ({ lat: result.lat + point.lat / validPoints.length, lng: result.lng + point.lng / validPoints.length }),
-            { lat: 0, lng: 0 },
-          );
-          map.setCenter?.(averageCenter);
-          map.setZoom?.(5);
+      if (validPoints.length === 1) {
+        map.setCenter?.({ lat: validPoints[0].lat, lng: validPoints[0].lng });
+        map.setZoom?.(13);
+      } else if (validPoints.length > 1) {
+        const fitBounds = window.mappls?.fitBounds;
+        const bounds = validPoints.map((point) => [point.lng, point.lat]);
+
+        if (fitBounds) {
+          try {
+            new fitBounds({
+              map,
+              cType: 0,
+              bounds,
+              options: { padding: 96, duration: 650 },
+            });
+          } catch {
+            const averageCenter = validPoints.reduce(
+              (result, point) => ({
+                lat: result.lat + point.lat / validPoints.length,
+                lng: result.lng + point.lng / validPoints.length,
+              }),
+              { lat: 0, lng: 0 },
+            );
+            map.setCenter?.(averageCenter);
+            map.setZoom?.(5);
+          }
         }
-      } else {
-        const averageCenter = validPoints.reduce(
-          (result, point) => ({ lat: result.lat + point.lat / validPoints.length, lng: result.lng + point.lng / validPoints.length }),
-          { lat: 0, lng: 0 },
-        );
-        map.setCenter?.(averageCenter);
-        map.setZoom?.(5);
       }
     }
   }, [points, status]);
