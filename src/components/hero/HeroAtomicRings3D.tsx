@@ -6,8 +6,47 @@ import type { ReactNode, KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import * as THREE from 'three';
+import HeroAtomicRings from './HeroAtomicRings';
+
+// Detect WebGL support safely
+function isWebGLSupported(): boolean {
+  if (typeof window === 'undefined') return false;
+  if (!window.WebGLRenderingContext) return false;
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    return Boolean(gl && gl instanceof WebGLRenderingContext);
+  } catch {
+    return false;
+  }
+}
+
+// Internal Error Boundary to catch any 3D/WebGL rendering errors and fall back gracefully
+class Hero3DErrorBoundary extends React.Component<
+  { fallback: ReactNode; children: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: unknown) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('HeroAtomicRings3D encountered an error and fell back to 2D HeroAtomicRings:', error);
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
+}
+
 
 // Reuse the same orbit configuration from the 2D version
 const toRadTop = (deg: number) => (deg - 90) * (Math.PI / 180);
@@ -395,89 +434,8 @@ const OrbitRing3D: React.FC<{ config: OrbitConfig; index: number; paused: boolea
   );
 };
 
-// Label component that uses Html with position prop (runs inside Canvas context)
-const OrbitLabel: React.FC<{ orbit: OrbitConfig; position: THREE.Vector3 }> = ({ orbit, position }) => (
-  <Html position={position} prepend center fullscreen zIndexRange={[100, 200]} style={{ pointerEvents: 'none' }}>
-    <motion.div
-      className="hero-orbit-label-3d"
-      style={{
-        pointerEvents: 'none',
-        transform: 'translate(-50%, -50%)',
-        opacity: 0,
-        transition: 'opacity 0.3s ease',
-      }}
-      animate={{ opacity: 1 }}
-      initial={{ opacity: 0 }}
-    >
-      <div
-        className="hero-orbit-label-badge"
-        style={{
-          background: 'rgba(250, 250, 248, 0.97)',
-          color: '#1C201D',
-          border: `1.5px solid ${orbit.atomColor}`,
-          borderRadius: '999px',
-          padding: '4px 14px',
-          fontSize: '14px',
-          fontWeight: '700',
-          letterSpacing: '0.15px',
-          whiteSpace: 'nowrap',
-          boxShadow: '0 4px 16px rgba(28, 32, 29, 0.12)',
-          backdropFilter: 'blur(8px)',
-        }}
-      >
-        {orbit.label}
-      </div>
-    </motion.div>
-  </Html>
-);
-
 // Main 3D Scene Component
-const HeroAtomicRings3DScene: React.FC<{ paused: boolean; children?: ReactNode }> = ({ paused, children }) => {
-  const { camera } = useThree();
-  const labelPositions = useRef<Map<string, THREE.Vector3>>(new Map());
-  const ringAngles = useRef(ORBITS.map(() => 0));
-  const atomProgress = useRef(ORBITS.map((orbit) => orbit.initialProgress));
-
-  // Update label positions every frame
-  useFrame((_state, delta) => {
-    if (paused) return;
-
-    // Update ring angles
-    ringAngles.current = ringAngles.current.map((angle, index) =>
-      norm(angle + (360 / ORBITS[index].duration) * ORBITS[index].direction * delta * 60),
-    );
-
-    // Update atom progress
-    atomProgress.current = atomProgress.current.map(
-      (progress) => (progress + ATOM_SPEED * delta) % SWEEP_DEG,
-    );
-
-    // Project 3D positions to 2D screen coordinates for HTML labels
-    ORBITS.forEach((orbit, index) => {
-      const angle = norm(orbit.start + ringAngles.current[index] + atomProgress.current[index]);
-      const angleRad = toRadTop(angle);
-
-      // 3D position on ring (ring is rotated -PI/2 on X, so it lies on XZ plane)
-      const x = orbit.radius * Math.cos(angleRad);
-      const z = orbit.radius * Math.sin(angleRad);
-      const y = 0;
-
-      const vector = new THREE.Vector3(x, y, z);
-      vector.project(camera);
-
-      // Offset label outward from atom
-      const labelOffset = 0.8; // world units
-      const labelVector = new THREE.Vector3(
-        x + Math.cos(angleRad) * labelOffset,
-        0,
-        z + Math.sin(angleRad) * labelOffset
-      );
-      labelVector.project(camera);
-
-      labelPositions.current.set(orbit.id, labelVector);
-    });
-  });
-
+const HeroAtomicRings3DScene: React.FC<{ paused: boolean }> = ({ paused }) => {
   return (
     <>
       {/* Lights */}
@@ -492,32 +450,16 @@ const HeroAtomicRings3DScene: React.FC<{ paused: boolean; children?: ReactNode }
           <OrbitRing3D key={orbit.id} config={orbit} index={index} paused={paused} />
         ))}
       </group>
-
-      {/* HTML Overlay Labels - positioned via @react-three/drei Html with position prop */}
-      {ORBITS.map((orbit) => (
-        <OrbitLabel key={orbit.id} orbit={orbit} position={labelPositions.current.get(orbit.id) || new THREE.Vector3()} />
-      ))}
-
-      {/* Center content area for children */}
-      {children && (
-        <Html fullscreen center zIndexRange={[50, 100]} style={{ pointerEvents: 'auto' }}>
-          <div className="absolute inset-0 flex items-center justify-center z-10 w-full max-w-[92%] sm:max-w-[88%]">
-            {children}
-          </div>
-        </Html>
-      )}
     </>
   );
 };
 
-// Main exported component matching the original HeroAtomicRings interface
-interface HeroAtomicRings3DProps {
-  size?: number | string;
-  className?: string;
-  children?: ReactNode;
-}
-
-export default function HeroAtomicRings3D({ size = 720, className = '', children }: HeroAtomicRings3DProps) {
+// Internal 3D canvas renderer
+const HeroAtomicRings3DContent: React.FC<HeroAtomicRings3DProps> = ({
+  size = 720,
+  className = '',
+  children,
+}) => {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   const [pausedForKeyboard, setPausedForKeyboard] = React.useState(false);
@@ -526,6 +468,7 @@ export default function HeroAtomicRings3D({ size = 720, className = '', children
 
   // Handle reduced motion
   useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(motionQuery.matches);
     const handler = (event: MediaQueryListEvent) => setPrefersReducedMotion(event.matches);
@@ -535,7 +478,7 @@ export default function HeroAtomicRings3D({ size = 720, className = '', children
 
   // Handle viewport visibility
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || typeof IntersectionObserver === 'undefined') return;
     const observer = new IntersectionObserver(
       ([entry]) => setIsInViewport(entry.isIntersecting),
       { rootMargin: '100px' }
@@ -544,18 +487,9 @@ export default function HeroAtomicRings3D({ size = 720, className = '', children
     return () => observer.disconnect();
   }, []);
 
-  // Handle document visibility
-  useEffect(() => {
-    const onVisibilityChange = () => {
-      // Could pause/resume based on visibility
-    };
-    document.addEventListener('visibilitychange', onVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
-  }, []);
-
   const isPaused = prefersReducedMotion || pausedForKeyboard || !isInViewport;
 
-  const handleNodeKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>, href: string) => {
+  const handleNodeKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>, href: string) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       navigate(href);
@@ -584,9 +518,17 @@ export default function HeroAtomicRings3D({ size = 720, className = '', children
           gl.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         }}
       >
-        <color attach="background" args={['#FAF9F5']} />
-        <HeroAtomicRings3DScene paused={isPaused} children={children} />
+        <HeroAtomicRings3DScene paused={isPaused} />
       </Canvas>
+
+      {/* Center content area for children (placed directly over canvas) */}
+      {children && (
+        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+          <div className="w-full max-w-[92%] sm:max-w-[88%] pointer-events-auto flex items-center justify-center">
+            {children}
+          </div>
+        </div>
+      )}
 
       {/* Keyboard-accessible fallback links (screen reader only) */}
       <div className="sr-only" aria-live="polite">
@@ -602,5 +544,45 @@ export default function HeroAtomicRings3D({ size = 720, className = '', children
         ))}
       </div>
     </div>
+  );
+};
+
+// Main exported component matching the original HeroAtomicRings interface with fallback
+interface HeroAtomicRings3DProps {
+  size?: number | string;
+  className?: string;
+  children?: ReactNode;
+}
+
+export default function HeroAtomicRings3D({ size = 720, className = '', children }: HeroAtomicRings3DProps) {
+  const [canRender3D, setCanRender3D] = useState(false);
+
+  useEffect(() => {
+    // Only attempt 3D in browser environments with WebGL and ResizeObserver support
+    if (typeof window !== 'undefined' && typeof ResizeObserver !== 'undefined' && isWebGLSupported()) {
+      setCanRender3D(true);
+    }
+  }, []);
+
+  if (!canRender3D) {
+    return (
+      <HeroAtomicRings size={size} className={className}>
+        {children}
+      </HeroAtomicRings>
+    );
+  }
+
+  return (
+    <Hero3DErrorBoundary
+      fallback={
+        <HeroAtomicRings size={size} className={className}>
+          {children}
+        </HeroAtomicRings>
+      }
+    >
+      <HeroAtomicRings3DContent size={size} className={className}>
+        {children}
+      </HeroAtomicRings3DContent>
+    </Hero3DErrorBoundary>
   );
 }
