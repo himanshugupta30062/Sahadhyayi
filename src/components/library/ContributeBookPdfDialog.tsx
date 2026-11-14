@@ -32,9 +32,11 @@ type Submission = {
 
 async function validatePdf(file: File) {
   if (file.size <= 0 || file.size > MAX_BYTES) throw new Error('Choose a PDF between 1 byte and 50 MB.');
-  if (file.type && file.type !== 'application/pdf') throw new Error('Only PDF files are accepted.');
+  // Browsers (especially mobile Safari/Android file pickers) frequently report
+  // application/octet-stream or an empty MIME type for genuine PDFs. Do not use
+  // file.type as the source of truth; the file's magic bytes are authoritative.
   const signature = new TextDecoder().decode(new Uint8Array(await file.slice(0, 5).arrayBuffer()));
-  if (signature !== '%PDF-') throw new Error('The file does not have a valid PDF signature.');
+  if (signature !== '%PDF-') throw new Error('The selected file is not a valid PDF (missing %PDF- signature).');
 }
 
 const statusLabel: Record<string, string> = {
