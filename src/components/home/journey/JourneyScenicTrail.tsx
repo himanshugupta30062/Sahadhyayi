@@ -291,6 +291,10 @@ export const JourneyScenicTrail: React.FC<JourneyScenicTrailProps> = ({
 
         <div className="journey-scenic-trail__start-label" aria-hidden="true">START</div>
         <div className="journey-scenic-trail__finish-label" aria-hidden="true">THE JOURNEY CONTINUES</div>
+
+        {/* Debug: visualize path endpoints */}
+        {/* <div className="absolute top-[9.4%] left-[35.7%] w-3 h-3 rounded-full bg-red-500 z-50" style={{transform: 'translate(-50%, -50%)'}} /> */}
+        {/* <div className="absolute top-[90.6%] left-[64.3%] w-3 h-3 rounded-full bg-blue-500 z-50" style={{transform: 'translate(-50%, -50%)'}} /> */}
       </div>
     </div>
   );

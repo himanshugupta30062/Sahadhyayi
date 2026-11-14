@@ -268,7 +268,7 @@ describe('HomeBookDiscovery component', () => {
     expect(screen.getByRole('button', { name: /pause book carousel animation/i })).toBeInTheDocument();
   });
 
-  it('renders the two book ribbons with opposite animation directions and matching duplicate sets', () => {
+  it('renders a single book ribbon with continuous animation and matching duplicate sets', () => {
     mockUseGenres.mockReturnValue({ data: [] });
     mockUseLibraryBooks.mockReturnValue({
       data: [
@@ -286,16 +286,12 @@ describe('HomeBookDiscovery component', () => {
     );
 
     const tracks = container.querySelectorAll('.sahadhyayi-marquee-track');
-    expect(tracks).toHaveLength(2);
-    expect(tracks[0]).toHaveClass('sahadhyayi-marquee-reverse');
-    expect(tracks[1]).not.toHaveClass('sahadhyayi-marquee-reverse');
+    // Single track implementation (reduced vertical space)
+    expect(tracks).toHaveLength(1);
 
-    const firstRibbon = tracks[0].querySelectorAll('a[href^="/book/"]');
-    const secondRibbon = tracks[1].querySelectorAll('a[href^="/book/"]');
-    expect(firstRibbon[0]).toHaveAttribute('href', '/book/ribbon-1');
-    expect(secondRibbon[0]).toHaveAttribute('href', '/book/ribbon-2');
-    expect(firstRibbon.length).toBeGreaterThan(2);
-    expect(secondRibbon.length).toBeGreaterThan(2);
+    const ribbonLinks = tracks[0].querySelectorAll('a[href^="/book/"]');
+    expect(ribbonLinks[0]).toHaveAttribute('href', '/book/ribbon-1');
+    expect(ribbonLinks.length).toBeGreaterThan(2);
   });
 
   it('renders all available database genres in the filter bar without capping at 5', () => {
