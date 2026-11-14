@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState, useCallback, useMemo } from 'react';
 
 interface MapplsRuntimeMap {
   addListener?: (eventName: string, callback: (event?: unknown) => void) => unknown;
@@ -8,6 +8,8 @@ interface MapplsRuntimeMap {
   setZoom?: (zoom: number) => void;
   resize?: () => void;
   remove?: () => void;
+  getZoom?: () => number;
+  getCenter?: () => { lat: number; lng: number };
 }
 
 interface MapplsRuntimeMarker {
@@ -19,6 +21,7 @@ interface MapplsRuntime {
   Marker?: new (options: Record<string, unknown>) => MapplsRuntimeMarker;
   fitBounds?: new (options: Record<string, unknown>) => unknown;
   remove?: (options: { map: MapplsRuntimeMap; layer: MapplsRuntimeMarker }) => void;
+  Cluster?: new (options: Record<string, unknown>) => MapplsRuntimeMarker;
 }
 
 declare global {
@@ -36,6 +39,10 @@ export interface MapplsPoint {
   title: string;
   description?: string;
   avatarUrl?: string | null;
+  isCurrentUser?: boolean;
+  isFriend?: boolean;
+  readingStatus?: string;
+  clusterCount?: number;
 }
 
 interface MapplsMapProps {
@@ -43,6 +50,11 @@ interface MapplsMapProps {
   points: MapplsPoint[];
   center?: { lat: number; lng: number } | null;
   emptyMessage?: string;
+  onMarkerClick?: (point: MapplsPoint) => void;
+  onMapReady?: () => void;
+  onMapError?: (error: string) => void;
+  enableClustering?: boolean;
+  maxClusterZoom?: number;
 }
 
 const SDK_URL = 'https://sdk.mappls.com/map/sdk/web?v=3.0';
@@ -153,13 +165,12 @@ const getMapEventMessage = (event: unknown): string => {
   return 'Mappls could not load one or more map resources. Check the Network panel for failed styles or tile requests.';
 };
 
-
 const escapeHtml = (value: string) => value
-  .replace(/&/g, '&amp;')
-  .replace(/</g, '&lt;')
-  .replace(/>/g, '&gt;')
-  .replace(/"/g, '&quot;')
-  .replace(/'/g, '&#39;');
+  .replace(/&/g, '&')
+  .replace(/</g, '<')
+  .replace(/>/g, '>')
+  .replace(/"/g, '"')
+  .replace(/'/g, '&' + '#39;');
 
 const getSafeAvatarUrl = (value?: string | null): string | null => {
   if (!value) return null;
@@ -180,21 +191,50 @@ const getSafeAvatarUrl = (value?: string | null): string | null => {
   }
 };
 
-const createAvatarMarkerHtml = (point: MapplsPoint): string => {
+const createAvatarMarkerHtml = (point: MapplsPoint, isSelected: boolean = false, zoom: number = 10): string => {
   const avatarUrl = getSafeAvatarUrl(point.avatarUrl);
   const initial = escapeHtml((point.title.trim().charAt(0) || 'R').toUpperCase());
-  const borderColor = point.id === 'self' ? '#D5B16D' : '#1C442D';
-  const avatarContent = avatarUrl
-    ? `<img src="${escapeHtml(avatarUrl)}" alt="" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
-    : `<span aria-hidden="true" style="display:flex;width:100%;height:100%;align-items:center;justify-content:center;border-radius:50%;background:#E8EFE9;color:#1C442D;font:700 16px/1 system-ui,sans-serif;">${initial}</span>`;
 
-  return `<div title="${escapeHtml(point.title)}" style="box-sizing:border-box;width:44px;height:44px;overflow:hidden;border:3px solid ${borderColor};border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.28);">${avatarContent}</div>`;
+  // Determine border color based on point type
+  let borderColor = '#1C442D';
+  if (point.isCurrentUser) borderColor = '#D5B16D';
+  else if (point.isFriend) borderColor = '#10b981';
+  else if (point.clusterCount) borderColor = '#8b5cf6';
+
+  // Adjust size based on zoom and selection
+  let size = 44;
+  if (isSelected) size = 52;
+  else if (point.clusterCount) size = Math.max(44, Math.min(60, 44 + Math.log2(point.clusterCount) * 4));
+
+  const avatarContent = avatarUrl
+    ? `<img src="${escapeHtml(avatarUrl)}" alt="" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;" loading="lazy" />`
+    : `<span aria-hidden="true" style="display:flex;width:100%;height:100%;align-items:center;justify-content:center;border-radius:50%;background:#E8EFE9;color:#1C442D;font:700 ${Math.round(size * 0.36)}px/1 system-ui,sans-serif;">${initial}</span>`;
+
+  const selectedRing = isSelected
+    ? 'box-shadow:0 0 0 3px #fff,0 0 0 6px ${borderColor},0 4px 16px rgba(0,0,0,.35);'
+    : 'box-shadow:0 2px 8px rgba(0,0,0,.28);';
+
+  // Status ring for current user
+  const statusRing = point.isCurrentUser
+    ? '<div style="position:absolute;bottom:-2px;right:-2px;width:14px;height:14px;background:#10b981;border:3px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.2);" aria-label="You are here"></div>'
+    : '';
+
+  // Cluster count badge
+  const clusterBadge = point.clusterCount && point.clusterCount > 1
+    ? `<div style="position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;background:#8b5cf6;color:#fff;border-radius:9999px;display:flex;align-items:center;justify-content:center;padding:0 6px;font:600 11px/1 system-ui,sans-serif;box-shadow:0 2px 6px rgba(139,92,246,.4);">${point.clusterCount}</div>`
+    : '';
+
+  return `<div title="${escapeHtml(point.title)}" style="box-sizing:border-box;width:${size}px;height:${size}px;overflow:hidden;border:3px solid ${borderColor};border-radius:50%;background:#fff;${selectedRing}position:relative;cursor:pointer;transition:transform 0.15s ease, box-shadow 0.15s ease;">${avatarContent}${statusRing}${clusterBadge}</div>`;
+};
+
+const createClusterMarkerHtml = (count: number): string => {
+  const size = Math.max(44, Math.min(70, 44 + Math.log2(count) * 5));
+  return `<div style="box-sizing:border-box;width:${size}px;height:${size}px;border:3px solid #8b5cf6;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#a855f7);color:#fff;display:flex;align-items:center;justify-content:center;font:700 ${Math.round(size * 0.35)}px/1 system-ui,sans-serif;box-shadow:0 4px 16px rgba(139,92,246,.4);cursor:pointer;">${count}</div>`;
 };
 
 const removeMarkers = (map: MapplsRuntimeMap, markers: MapplsRuntimeMarker[]) => {
   markers.forEach((marker) => {
     try {
-      // This is the removal API documented by Mappls Web Maps JS.
       window.mappls?.remove?.({ map, layer: marker });
     } catch {
       // map.remove() on teardown also disposes any remaining marker layers.
@@ -209,20 +249,93 @@ const isValidPoint = (point: MapplsPoint) =>
   Math.abs(point.lng) <= 180 &&
   !(point.lat === 0 && point.lng === 0);
 
+// Simple clustering algorithm for client-side clustering
+const clusterPoints = (points: MapplsPoint[], zoom: number, maxClusterZoom: number): MapplsPoint[] => {
+  if (zoom >= maxClusterZoom) return points;
+
+  const clustered: MapplsPoint[] = [];
+  const processed = new Set<string>();
+  const clusterRadius = 0.01 * Math.pow(2, maxClusterZoom - zoom); // degrees
+
+  points.forEach(point => {
+    if (processed.has(point.id)) return;
+    if (point.clusterCount) {
+      clustered.push(point);
+      processed.add(point.id);
+      return;
+    }
+
+    const nearby = points.filter(p =>
+      !processed.has(p.id) &&
+      p.id !== point.id &&
+      Math.abs(p.lat - point.lat) < clusterRadius &&
+      Math.abs(p.lng - point.lng) < clusterRadius
+    );
+
+    if (nearby.length > 0) {
+      const clusterPoints = [point, ...nearby];
+      const avgLat = clusterPoints.reduce((sum, p) => sum + p.lat, 0) / clusterPoints.length;
+      const avgLng = clusterPoints.reduce((sum, p) => sum + p.lng, 0) / clusterPoints.length;
+
+      clustered.push({
+        id: `cluster-${point.id}`,
+        lat: avgLat,
+        lng: avgLng,
+        title: `${clusterPoints.length} readers`,
+        description: `${clusterPoints.length} readers nearby`,
+        clusterCount: clusterPoints.length,
+        avatarUrl: null,
+      });
+
+      clusterPoints.forEach(p => processed.add(p.id));
+    } else {
+      clustered.push(point);
+      processed.add(point.id);
+    }
+  });
+
+  return clustered;
+};
+
 export function MapplsMap({
   apiKey,
   points,
   center,
   emptyMessage = 'No shared reader locations are available yet.',
+  onMarkerClick,
+  onMapReady,
+  onMapError,
+  enableClustering = true,
+  maxClusterZoom = 14,
 }: MapplsMapProps) {
   const generatedId = useId().replace(/:/g, '');
   const containerId = `mappls-map-${generatedId}`;
   const mapElement = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<MapplsRuntimeMap | null>(null);
   const markers = useRef<MapplsRuntimeMarker[]>([]);
+  const clusterMarkers = useRef<MapplsRuntimeMarker[]>([]);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'missing-key'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
   const [retryCount, setRetryCount] = useState(0);
+  const [currentZoom, setCurrentZoom] = useState(5);
+  const currentZoomRef = useRef(currentZoom);
+  currentZoomRef.current = currentZoom;
+  const [selectedPointId, setSelectedPointId] = useState<string | null>(null);
+
+  // Use refs for callbacks to avoid adding them to useEffect dependencies
+  const onMapReadyRef = useRef(onMapReady);
+  const onMapErrorRef = useRef(onMapError);
+  onMapReadyRef.current = onMapReady;
+  onMapErrorRef.current = onMapError;
+
+  // Memoize valid points to avoid recalculation
+  const validPoints = useMemo(() => points.filter(isValidPoint), [points]);
+
+  // Handle clustering when points or zoom changes
+  const displayPoints = useMemo(() => {
+    if (!enableClustering || currentZoom >= maxClusterZoom) return validPoints;
+    return clusterPoints(validPoints, currentZoom, maxClusterZoom);
+  }, [validPoints, currentZoom, enableClustering, maxClusterZoom]);
 
   useEffect(() => {
     let cancelled = false;
@@ -246,12 +359,11 @@ export function MapplsMap({
       hasFatalError = true;
       setErrorMessage(message);
       setStatus('error');
+      onMapErrorRef.current?.(message);
     };
 
     const initializeMap = () => {
       const container = mapElement.current;
-      // Mappls needs a measurable container. Social tabs and dialogs can mount
-      // their map while hidden, so wait until ResizeObserver reports a size.
       const isTestEnv = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
       if (
         cancelled ||
@@ -281,7 +393,6 @@ export function MapplsMap({
 
             map = new MapConstructor(containerId, {
               center: { lat: initialCenter.lat, lng: initialCenter.lng },
-              // The documented supported zoom range begins at level 5.
               zoom: center ? 10 : 5,
               token_callback: tokenCallback,
             });
@@ -296,6 +407,7 @@ export function MapplsMap({
             markedReady = true;
             setErrorMessage('');
             setStatus('ready');
+            onMapReadyRef.current?.();
             window.requestAnimationFrame(() => {
               if (!cancelled) map.resize?.();
             });
@@ -306,7 +418,6 @@ export function MapplsMap({
               map.addListener(eventName, callback);
               return true;
             }
-            // Keep compatibility with SDK builds exposing the underlying event emitter.
             if (typeof map.on === 'function') {
               map.on(eventName, callback);
               return true;
@@ -331,9 +442,27 @@ export function MapplsMap({
           });
 
           addMapListener('load', markReady);
-          // Mappls documents idle as the point where the current tiles and
-          // transitions have finished; it is a useful fallback if load was missed.
           addMapListener('idle', markReady);
+
+          // Track zoom changes for clustering
+          const handleZoomChange = () => {
+            const newZoom = map.getZoom?.();
+            if (newZoom !== undefined && newZoom !== currentZoomRef.current) {
+              setCurrentZoom(newZoom);
+            }
+          };
+
+          const handleCenterChange = () => {
+            const newCenter = map.getCenter?.();
+            if (newCenter) {
+              // Optionally update center state
+            }
+          };
+
+          addMapListener('zoom_changed', handleZoomChange);
+          addMapListener('zoom_end', handleZoomChange);
+          addMapListener('center_changed', handleCenterChange);
+          addMapListener('idle', handleZoomChange);
 
           try {
             if (typeof map.loaded === 'function' && map.loaded()) {
@@ -375,9 +504,10 @@ export function MapplsMap({
       const map = mapInstance.current;
       if (map) {
         removeMarkers(map, markers.current);
+        removeMarkers(map, clusterMarkers.current);
         markers.current = [];
+        clusterMarkers.current = [];
         try {
-          // Mappls documents map.remove() as the map teardown method.
           map.remove?.();
         } catch {
           // Ignore cleanup differences between SDK builds.
@@ -385,9 +515,7 @@ export function MapplsMap({
       }
       mapInstance.current = null;
     };
-    // Center changes are handled by the dedicated effect below.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiKey, containerId, retryCount]);
+  }, [apiKey, containerId, retryCount, center]);
 
   useEffect(() => {
     const map = mapInstance.current;
@@ -403,47 +531,80 @@ export function MapplsMap({
     const MarkerConstructor = window.mappls?.Marker;
     if (status !== 'ready' || !map || !MarkerConstructor) return;
 
+    // Remove existing markers
     removeMarkers(map, markers.current);
+    removeMarkers(map, clusterMarkers.current);
     markers.current = [];
+    clusterMarkers.current = [];
 
-    const validPoints = points.filter(isValidPoint);
-
-    validPoints.forEach((point) => {
+    displayPoints.forEach((point) => {
       const escapedTitle = point.title
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+        .replace(/&/g, '&')
+        .replace(/</g, '<')
+        .replace(/>/g, '>')
+        .replace(/"/g, '"')
+          .replace(/'/g, '&' + '#39;');
       const escapedDesc = (point.description || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-      const isSelf = point.id === 'self';
+        .replace(/&/g, '&')
+        .replace(/</g, '<')
+        .replace(/>/g, '>')
+        .replace(/"/g, '"')
+          .replace(/'/g, '&' + '#39;');
+      const isSelf = point.isCurrentUser;
+      const isSelected = point.id === selectedPointId;
       const badgeHtml = isSelf
         ? '<span style="display:inline-block;padding:2px 6px;margin-bottom:4px;border-radius:9999px;font-size:10px;font-weight:700;background:#DCFCE7;color:#166534;letter-spacing:0.025em;text-transform:uppercase;">You</span>'
+        : point.isFriend
+          ? '<span style="display:inline-block;padding:2px 6px;margin-bottom:4px;border-radius:9999px;font-size:10px;font-weight:700;background:#D1FAE5;color:#065F46;letter-spacing:0.025em;text-transform:uppercase;">Friend</span>'
+          : point.clusterCount
+            ? `<span style="display:inline-block;padding:2px 6px;margin-bottom:4px;border-radius:9999px;font-size:10px;font-weight:700;background:#EDE9FE;color:#5B21B6;letter-spacing:0.025em;text-transform:uppercase;">${point.clusterCount} readers</span>`
+            : '';
+
+      const readingStatusHtml = point.readingStatus
+        ? `<span style="font-size:12px;color:#1C442D;display:block;margin-top:2px;">📖 ${escapeHtml(point.readingStatus)}</span>`
         : '';
-      const popupHtml = `<div style="font-family:sans-serif;padding:4px 6px;min-width:140px;color:#1C201D;">${badgeHtml}<strong style="font-size:13px;display:block;">${escapedTitle}</strong>${escapedDesc ? `<span style="font-size:12px;color:#636B65;display:block;margin-top:2px;">${escapedDesc}</span>` : ''}</div>`;
+
+      const popupHtml = `<div style="font-family:sans-serif;padding:8px 10px;min-width:160px;color:#1C201D;">${badgeHtml}<strong style="font-size:14px;display:block;">${escapedTitle}</strong>${escapedDesc ? `<span style="font-size:13px;color:#636B65;display:block;margin-top:2px;">${escapedDesc}</span>` : ''}${readingStatusHtml}</div>`;
 
       try {
+        const isCluster = !!point.clusterCount;
+        const markerHtml = isCluster ? createClusterMarkerHtml(point.clusterCount!) : createAvatarMarkerHtml(point, isSelected, currentZoom);
+
         const marker = new MarkerConstructor({
           map,
           position: { lat: point.lat, lng: point.lng },
           title: point.title,
-          html: createAvatarMarkerHtml(point),
-          width: 44,
-          height: 44,
+          html: markerHtml,
+          width: isCluster ? undefined : (isSelected ? 52 : 44),
+          height: isCluster ? undefined : (isSelected ? 52 : 44),
           popupHtml,
         });
-        markers.current.push(marker);
+
+        // Add click handler for marker selection
+        if (typeof marker.addListener === 'function') {
+          marker.addListener('click', () => {
+            setSelectedPointId(point.id);
+            onMarkerClick?.(point);
+          });
+        } else if (typeof marker.on === 'function') {
+          marker.on('click', () => {
+            setSelectedPointId(point.id);
+            onMarkerClick?.(point);
+          });
+        }
+
+        if (isCluster) {
+          clusterMarkers.current.push(marker);
+        } else {
+          markers.current.push(marker);
+        }
       } catch {
         setErrorMessage('The map loaded, but one or more reader markers could not be added.');
         setStatus('error');
       }
     });
 
+    // Fit bounds for multiple points
     if (validPoints.length === 1) {
       map.setCenter?.({ lat: validPoints[0].lat, lng: validPoints[0].lng });
       map.setZoom?.(10);
@@ -453,7 +614,6 @@ export function MapplsMap({
 
       if (fitBounds) {
         try {
-          // Official Mappls Web Maps JS API: new mappls.fitBounds({ map, cType, bounds, options }).
           new fitBounds({
             map,
             cType: 0,
@@ -477,7 +637,7 @@ export function MapplsMap({
         map.setZoom?.(5);
       }
     }
-  }, [points, status]);
+  }, [displayPoints, status, currentZoom, selectedPointId, onMarkerClick, validPoints]);
 
   if (status === 'missing-key') {
     return (
@@ -495,7 +655,7 @@ export function MapplsMap({
     );
   }
 
-  const validPointCount = points.filter(isValidPoint).length;
+  const validPointCount = validPoints.length;
 
   return (
     <div className="relative">
@@ -507,7 +667,10 @@ export function MapplsMap({
       />
       {status === 'loading' && (
         <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-background/80" role="status">
-          <p className="text-sm text-muted-foreground">Loading Mappls map…</p>
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-8 h-8 border-4 border-[#1C442D] border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-muted-foreground">Loading Mappls map…</p>
+          </div>
         </div>
       )}
       {status === 'error' && (

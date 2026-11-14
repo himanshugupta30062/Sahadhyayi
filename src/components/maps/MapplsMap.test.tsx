@@ -169,4 +169,58 @@ describe('MapplsMap', () => {
     render(<MapplsMap apiKey="valid-key" points={[]} emptyMessage="No readers nearby" />);
     expect(await screen.findByText('No readers nearby')).toBeInTheDocument();
   });
+
+  it('filters out invalid coordinates (0,0) and marks valid points', async () => {
+    const listeners: Record<string, (event?: unknown) => void> = {};
+    const Marker = vi.fn().mockImplementation(function () { return {}; });
+    const map = {
+      addListener: (eventName: string, callback: (event?: unknown) => void) => { listeners[eventName] = callback; },
+      loaded: () => true,
+      setCenter: vi.fn(),
+      setZoom: vi.fn(),
+      remove: vi.fn()
+    };
+    const MapConstructor = vi.fn().mockImplementation(function () { return map; });
+    window.mappls = { Map: MapConstructor, Marker, remove: vi.fn() };
+
+    render(<MapplsMap apiKey="valid-key" points={[
+      { id: 'valid', lat: 12.9, lng: 77.6, title: 'Valid' },
+      { id: 'invalid', lat: 0, lng: 0, title: 'Invalid' },
+      { id: 'nan', lat: NaN, lng: 77.6, title: 'NaN' },
+    ]} />);
+
+    await waitFor(() => expect(Marker).toHaveBeenCalledTimes(1));
+  });
+
+  it('calls onMarkerClick when a marker is clicked', async () => {
+    const onMarkerClick = vi.fn();
+    const markerListeners: Record<string, (event?: unknown) => void> = {};
+    const mapListeners: Record<string, (event?: unknown) => void> = {};
+    const Marker = vi.fn().mockImplementation(function () {
+      return { addListener: (event: string, cb: () => void) => { markerListeners[event] = cb; } };
+    });
+    const map = {
+      addListener: (eventName: string, callback: (event?: unknown) => void) => { mapListeners[eventName] = callback; },
+      loaded: () => true,
+      setCenter: vi.fn(),
+      setZoom: vi.fn(),
+      remove: vi.fn(),
+      getZoom: () => 10,
+      getCenter: () => ({ lat: 12.9, lng: 77.6 }),
+    };
+    const MapConstructor = vi.fn().mockImplementation(function () { return map; });
+    window.mappls = { Map: MapConstructor, Marker, remove: vi.fn() };
+
+    render(<MapplsMap apiKey="valid-key" points={[
+      { id: 'point-1', lat: 12.9, lng: 77.6, title: 'Test Point' },
+    ]} onMarkerClick={onMarkerClick} />);
+
+    await waitFor(() => expect(Marker).toHaveBeenCalledTimes(1));
+
+    // Trigger the marker's click handler
+    if (markerListeners.click) {
+      markerListeners.click();
+    }
+    expect(onMarkerClick).toHaveBeenCalledWith(expect.objectContaining({ id: 'point-1' }));
+  });
 });
