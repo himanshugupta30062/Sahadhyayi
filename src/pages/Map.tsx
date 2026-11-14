@@ -13,6 +13,7 @@ import { MapplsMap, type MapplsPoint } from '@/components/maps/MapplsMap';
 import { BitmojiCreator } from '@/components/social/BitmojiCreator';
 import { useUserAvatar } from '@/hooks/useUserAvatar';
 import { MAPPLS_API_KEY } from '@/config/mappls';
+import { getMyLocationSharingState } from '@/lib/locationSharingService';
 import { useAuth } from '@/contexts/authHelpers';
 import {
   BookOpen,
@@ -36,6 +37,7 @@ interface ReaderLocation {
     full_name: string | null;
     username: string | null;
   };
+  avatar_img_url?: string | null;
   distance?: number;
   reading_since?: string | null;
 }
@@ -74,24 +76,10 @@ const MapPage = () => {
         setLocationConsentChecked(true);
         return;
       }
-      const [profileResult, consentResult] = await Promise.all([
-        supabase.from('profiles').select('location_lat, location_lng, location_sharing').eq('id', user.id).maybeSingle(),
-        supabase.rpc('has_location_consent', { user_uuid: user.id }),
-      ]);
+      const locationState = await getMyLocationSharingState(user.id);
       if (!active) return;
-      const enabled = !profileResult.error &&
-        !consentResult.error &&
-        consentResult.data === true &&
-        profileResult.data?.location_sharing === true &&
-        profileResult.data.location_lat != null &&
-        profileResult.data.location_lng != null;
-      setLocationSharingEnabled(enabled);
-      if (enabled) {
-        setCurrentLocation({
-          lat: Number(profileResult.data!.location_lat),
-          lng: Number(profileResult.data!.location_lng),
-        });
-      }
+      setLocationSharingEnabled(locationState.isSharing && locationState.location !== null);
+      setCurrentLocation(locationState.isSharing ? locationState.location : null);
       setLocationConsentChecked(true);
     };
     void loadSharingState().catch((error) => {
@@ -128,13 +116,13 @@ const MapPage = () => {
           return;
         }
 
-        // The current RPC intentionally returns distance but not coordinates. Do not fabricate
-        // map positions; the backend must provide privacy-preserving approximate coordinates
-        // before these readers can be pinned to a map.
+        // The RPC returns coarse coordinates and avatar URLs only for mutually
+        // consenting friends, so map pins never expose exact peer locations.
         const readerList = (data || []).map((reader: any) => ({
           user_id: reader.reader_id,
           latitude: reader.approximate_latitude == null ? null : Number(reader.approximate_latitude),
           longitude: reader.approximate_longitude == null ? null : Number(reader.approximate_longitude),
+          avatar_img_url: reader.avatar_img_url ?? null,
           profiles: {
             full_name: reader.reader_name ?? null,
             username: (reader.reader_name || 'reader').toLowerCase().replace(/\\s+/g, '_'),
@@ -192,6 +180,7 @@ const MapPage = () => {
         lng: currentLocation.lng,
         title: 'You (Your location)',
         description: selectedBook ? `Reading: ${selectedBook.title}` : 'Your shared location',
+        avatarUrl: userAvatar?.avatar_img_url ?? null,
       });
     }
     readers
@@ -210,10 +199,11 @@ const MapPage = () => {
           lng: reader.longitude!,
           title: reader.profiles?.full_name || reader.profiles?.username || 'Reader',
           description: reader.distance == null ? 'Reading this book' : `${reader.distance.toFixed(1)} km away`,
+          avatarUrl: reader.avatar_img_url ?? null,
         });
       });
     return points;
-  }, [readers, locationSharingEnabled, currentLocation, selectedBook]);
+  }, [readers, locationSharingEnabled, currentLocation, selectedBook, userAvatar?.avatar_img_url]);
 
   const friendPoints = useMemo<MapplsPoint[]>(() => {
     const points: MapplsPoint[] = [];
@@ -224,6 +214,7 @@ const MapPage = () => {
         lng: currentLocation.lng,
         title: 'You (Your location)',
         description: 'Your shared location',
+        avatarUrl: userAvatar?.avatar_img_url ?? null,
       });
     }
     const friends = friendsQuery.data || [];
@@ -248,10 +239,11 @@ const MapPage = () => {
         lng,
         title: profile.full_name || profile.username || 'Friend',
         description: 'Friend who has enabled location sharing',
+        avatarUrl: profile.avatar_img_url ?? profile.profile_photo_url ?? null,
       });
     });
     return points;
-  }, [friendsQuery.data, locationSharingEnabled, currentLocation]);
+  }, [friendsQuery.data, locationSharingEnabled, currentLocation, userAvatar?.avatar_img_url]);
 
   return (
     <>
@@ -452,7 +444,7 @@ const MapPage = () => {
         isOpen={showBitmojiCreator}
         onClose={() => setShowBitmojiCreator(false)}
         onSave={() => setShowBitmojiCreator(false)}
-        currentAvatar={userAvatar?.avatar_img_url || undefined}
+        initialFeatures={userAvatar?.avatar_json as Record<string, string> | null}
       />
     </>
   );

@@ -17,10 +17,6 @@ export const EnhancedReadingMap = () => {
   
   const { data: userAvatar } = useUserAvatar();
 
-  const handleSaveBitmoji = (avatarData: string) => {
-    // This will be handled by the BitmojiCreator component
-  };
-
   return (
     <>
       {/* Main Readers Near Me Map */}
@@ -84,8 +80,8 @@ export const EnhancedReadingMap = () => {
       <BitmojiCreator
         isOpen={showBitmojiCreator}
         onClose={() => setShowBitmojiCreator(false)}
-        onSave={handleSaveBitmoji}
-        currentAvatar={userAvatar?.avatar_img_url || undefined}
+        onSave={() => setShowBitmojiCreator(false)}
+        initialFeatures={userAvatar?.avatar_json as Record<string, string> | null}
       />
     </>
   );

@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MapPage from './Map';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
+import { getMyLocationSharingState } from '@/lib/locationSharingService';
 
 vi.mock('@/components/SEO', () => ({
   default: () => null,
@@ -21,9 +22,17 @@ vi.mock('@/hooks/useFriends', () => ({
   useFriends: () => ({ data: [], isLoading: false }),
 }));
 
+vi.mock('@/hooks/useUserAvatar', () => ({
+  useUserAvatar: () => ({ data: { avatar_img_url: 'https://cdn.sahadhyayi.com/avatars/self.svg', avatar_json: { hairStyle: 'curly' } } }),
+}));
+
+vi.mock('@/lib/locationSharingService', () => ({
+  getMyLocationSharingState: vi.fn(),
+}));
+
 vi.mock('@/components/maps/MapplsMap', () => ({
-  MapplsMap: ({ points, center }: { points: Array<{ id: string; title: string }>; center: any }) => (
-    <div data-testid="mappls-map" data-center={JSON.stringify(center)}>
+  MapplsMap: ({ points, center }: { points: Array<{ id: string; title: string; avatarUrl?: string | null }>; center: any }) => (
+    <div data-testid="mappls-map" data-center={JSON.stringify(center)} data-avatars={points.map((p) => p.avatarUrl || '').join(',')}>
       {points.map((p) => `${p.id}:${p.title}`).join('; ')}
     </div>
   ),
@@ -56,32 +65,20 @@ describe('MapPage', () => {
   it('renders user location on readers map and syncs book location when selected', async () => {
     vi.mocked(useAuth).mockReturnValue({ user: { id: 'user-me' } } as any);
 
-    vi.spyOn(supabase, 'from').mockImplementation(((table: string) => {
-      if (table === 'profiles') {
-        return {
-          select: () => ({
-            eq: () => ({
-              maybeSingle: vi.fn().mockResolvedValue({
-                data: { location_lat: 28.5, location_lng: 77.2, location_sharing: true },
-                error: null,
-              }),
-            }),
-          }),
-        };
-      }
-      return {};
-    }) as any);
+    vi.mocked(getMyLocationSharingState).mockResolvedValue({
+      hasConsent: true,
+      isSharing: true,
+      location: { lat: 28.5, lng: 77.2 },
+    });
 
     const rpcSpy = vi.spyOn(supabase, 'rpc').mockImplementation(((fn: string, args: any) => {
-      if (fn === 'has_location_consent') {
-        return Promise.resolve({ data: true, error: null });
-      }
       if (fn === 'get_nearby_book_readers') {
         return Promise.resolve({
           data: [
             {
               reader_id: 'friend-2',
               reader_name: 'Friend Two',
+              avatar_img_url: 'https://cdn.sahadhyayi.com/avatars/friend.svg',
               approximate_latitude: 28.52,
               approximate_longitude: 77.22,
               distance_km: 2.1,
@@ -127,6 +124,8 @@ describe('MapPage', () => {
       const mapEl = screen.getByTestId('mappls-map');
       expect(mapEl).toHaveTextContent('self:You (Your location)');
       expect(mapEl).toHaveTextContent('friend-2:Friend Two');
+      expect(mapEl.getAttribute('data-avatars')).toContain('https://cdn.sahadhyayi.com/avatars/self.svg');
+      expect(mapEl.getAttribute('data-avatars')).toContain('https://cdn.sahadhyayi.com/avatars/friend.svg');
     });
   });
 });

@@ -8,6 +8,12 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import { getCurrentLocation } from '@/lib/locationService';
 import { toast } from 'sonner';
 
+const locationMocks = vi.hoisted(() => ({
+  getMyLocationSharingState: vi.fn(),
+  saveMyLocation: vi.fn(),
+  disableMyLocationSharing: vi.fn(),
+}));
+
 vi.mock('@/contexts/authHelpers', () => ({
   useAuth: vi.fn(),
 }));
@@ -20,6 +26,16 @@ vi.mock('@/lib/locationService', () => ({
   getCurrentLocation: vi.fn(),
 }));
 
+vi.mock('@/lib/locationSharingService', () => ({
+  getMyLocationSharingState: locationMocks.getMyLocationSharingState,
+  saveMyLocation: locationMocks.saveMyLocation,
+  disableMyLocationSharing: locationMocks.disableMyLocationSharing,
+}));
+
+vi.mock('@/hooks/useUserAvatar', () => ({
+  useUserAvatar: () => ({ data: { avatar_img_url: 'https://cdn.sahadhyayi.com/avatars/self.svg' } }),
+}));
+
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
@@ -29,7 +45,7 @@ vi.mock('sonner', () => ({
 
 vi.mock('@/components/maps/MapplsMap', () => ({
   MapplsMap: ({ points, emptyMessage }: any) => (
-    <div data-testid="mappls-map">
+    <div data-testid="mappls-map" data-avatars={points.map((point: any) => point.avatarUrl || '').join(',')}>
       <span>Points: {points.length}</span>
       {points.length === 0 && <span>{emptyMessage}</span>}
     </div>
@@ -132,6 +148,7 @@ describe('FriendsLocationMap component', () => {
             location_sharing: true,
             location_lat: 28.6139,
             location_lng: 77.209,
+            avatar_img_url: 'https://cdn.sahadhyayi.com/avatars/friend.svg',
           },
         },
       ],
@@ -168,6 +185,11 @@ describe('FriendsLocationMap component', () => {
       };
     });
 
+    locationMocks.getMyLocationSharingState.mockReset().mockResolvedValue({
+      hasConsent: false, isSharing: false, location: null,
+    });
+    locationMocks.saveMyLocation.mockReset().mockResolvedValue(undefined);
+    locationMocks.disableMyLocationSharing.mockReset().mockResolvedValue(undefined);
     (supabase.rpc as any).mockResolvedValue({ data: true, error: null });
     (getCurrentLocation as any).mockResolvedValue({ lat: 28.7, lng: 77.1 });
   });
@@ -178,6 +200,7 @@ describe('FriendsLocationMap component', () => {
     expect(screen.getByText('Friends Map')).toBeInTheDocument();
     expect(await screen.findByText('1 friend is sharing location')).toBeInTheDocument();
     expect(screen.getByTestId('mappls-map')).toHaveTextContent('Points: 1');
+    expect(screen.getByTestId('mappls-map').getAttribute('data-avatars')).toContain('https://cdn.sahadhyayi.com/avatars/friend.svg');
   });
 
   it('handles Center on me button click', async () => {
@@ -207,36 +230,16 @@ describe('FriendsLocationMap component', () => {
 
     await waitFor(() => {
       expect(getCurrentLocation).toHaveBeenCalled();
+      expect(locationMocks.saveMyLocation).toHaveBeenCalledWith({ lat: 28.7, lng: 77.1 });
       expect(toast.success).toHaveBeenCalledWith(
-        expect.stringContaining('Location sharing enabled')
+        expect.stringContaining('Location saved')
       );
     });
   });
 
   it('allows user to stop sharing location', async () => {
-    // Mock user as already sharing location
-    (supabase.from as any).mockImplementation((table: string) => {
-      if (table === 'profiles') {
-        return {
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          maybeSingle: vi.fn().mockResolvedValue({
-            data: { location_sharing: true, location_lat: 28.5, location_lng: 77.2 },
-            error: null,
-          }),
-          update: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ error: null }),
-          }),
-        };
-      }
-      if (table === 'user_locations') {
-        return {
-          update: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({ error: null }),
-          }),
-        };
-      }
-      return { select: vi.fn().mockReturnThis() };
+    locationMocks.getMyLocationSharingState.mockResolvedValue({
+      hasConsent: true, isSharing: true, location: { lat: 28.5, lng: 77.2 },
     });
 
     render(<FriendsLocationMap />);
@@ -245,6 +248,7 @@ describe('FriendsLocationMap component', () => {
     fireEvent.click(stopSharingBtn);
 
     await waitFor(() => {
+      expect(locationMocks.disableMyLocationSharing).toHaveBeenCalledTimes(1);
       expect(toast.success).toHaveBeenCalledWith('Location sharing disabled.');
     });
   });

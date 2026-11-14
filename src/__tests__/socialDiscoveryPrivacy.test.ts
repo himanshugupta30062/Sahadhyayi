@@ -14,10 +14,17 @@ const nearbyDiscoveryMigration = readFileSync(
 );
 const readersMap = readFileSync(toPath('../../src/components/social/ReadersNearMeMap.tsx'), 'utf8');
 const friendsMap = readFileSync(toPath('../../src/components/social/FriendsLocationMap.tsx'), 'utf8');
+const mainMapPage = readFileSync(toPath('../../src/pages/Map.tsx'), 'utf8');
+const readerMapPage = readFileSync(toPath('../../src/pages/ReaderMap.tsx'), 'utf8');
 const consentModal = readFileSync(toPath('../../src/components/social/LocationConsentModal.tsx'), 'utf8');
 const permissionModal = readFileSync(toPath('../../src/components/social/LocationPermissionModal.tsx'), 'utf8');
 const userSearch = readFileSync(toPath('../../src/hooks/useUserSearch.ts'), 'utf8');
 const friendsManager = readFileSync(toPath('../../src/components/social/EnhancedFriendsManager.tsx'), 'utf8');
+const locationSharingService = readFileSync(toPath('../../src/lib/locationSharingService.ts'), 'utf8');
+const mapLocationMigration = readFileSync(
+  toPath('../../supabase/migrations/20261114120000_fix_map_location_save_and_reader_avatars.sql'),
+  'utf8',
+);
 
 describe('Social discovery and location privacy regressions', () => {
   it('keeps authenticated data hooks inside the authenticated social page', () => {
@@ -95,13 +102,37 @@ describe('Social discovery and location privacy regressions', () => {
     expect(nearbyDiscoveryMigration).toMatch(/GRANT EXECUTE ON FUNCTION public\.get_nearby_reader_matches\(uuid, numeric\) TO authenticated/);
   });
 
-  it('disables profile location sharing and clears stored coordinates on opt-out', () => {
-    expect(readersMap).toMatch(/location_sharing:\s*false/);
-    expect(readersMap).toMatch(/location_lat:\s*null/);
-    expect(readersMap).toMatch(/location_lng:\s*null/);
-    expect(friendsMap).toMatch(/location_sharing:\s*false/);
-    expect(friendsMap).toMatch(/location_lat:\s*null/);
-    expect(friendsMap).toMatch(/location_lng:\s*null/);
+  it('saves and reads private location fields only through owner-scoped RPCs', () => {
+    expect(readersMap).toMatch(/getMyLocationSharingState\(user\.id\)/);
+    expect(readersMap).toMatch(/saveMyLocation\(position\)/);
+    expect(friendsMap).toMatch(/getMyLocationSharingState\(user\.id\)/);
+    expect(friendsMap).toMatch(/saveMyLocation\(position\)/);
+    expect(locationSharingService).toMatch(/rpc\('get_my_profile'\)/);
+    expect(locationSharingService).toMatch(/rpc\('save_my_location'/);
+    expect(locationSharingService).toMatch(/rpc\('disable_my_location_sharing'/);
+    expect(readersMap).not.toMatch(/from\('profiles'\)[\s\S]{0,300}(location_lat|location_lng|location_sharing)/);
+    expect(friendsMap).not.toMatch(/from\('profiles'\)[\s\S]{0,300}(location_lat|location_lng|location_sharing)/);
+    expect(mainMapPage).not.toMatch(/from\('profiles'\)[\s\S]{0,300}(location_lat|location_lng|location_sharing)/);
+    expect(readerMapPage).not.toMatch(/from\('profiles'\)[\s\S]{0,300}(location_lat|location_lng|location_sharing)/);
+  });
+
+  it('requires consent before location is persisted or sharing is activated', () => {
+    expect(mapLocationMigration).toMatch(/CREATE OR REPLACE FUNCTION public\.record_location_consent\([\s\S]*?INSERT INTO public\.location_sharing_consent/);
+    expect(mapLocationMigration).toMatch(/CREATE OR REPLACE FUNCTION public\.save_my_location\([\s\S]*?internal_security\.has_location_consent\(v_user_id\)/);
+    expect(mapLocationMigration).toMatch(/location_sharing = true/);
+    expect(mapLocationMigration).not.toMatch(/UPDATE public\.profiles[\s\S]{0,100}SET location_sharing = true[\s\S]{0,100}record_location_consent/);
+  });
+
+  it('clears private coordinates, legacy locations, book locations and consent on opt-out', () => {
+    expect(readersMap).toMatch(/disableMyLocationSharing\(\)/);
+    expect(friendsMap).toMatch(/disableMyLocationSharing\(\)/);
+    expect(mapLocationMigration).toMatch(/CREATE OR REPLACE FUNCTION public\.disable_my_location_sharing\(\)[\s\S]*?location_sharing = false[\s\S]*?location_lat = NULL[\s\S]*?location_lng = NULL[\s\S]*?DELETE FROM public\.user_books_location[\s\S]*?DELETE FROM public\.location_sharing_consent/);
+  });
+
+  it('returns map avatars only through consent-scoped social and reader RPCs', () => {
+    expect(mapLocationMigration).toMatch(/get_profiles_for_social_context\(profile_ids uuid\[\]\)[\s\S]*?ua\.avatar_img_url/);
+    expect(mapLocationMigration).toMatch(/get_nearby_book_readers\([\s\S]*?ua\.avatar_img_url[\s\S]*?internal_security\.has_location_consent\(ubl\.user_id\)/);
+    expect(mapLocationMigration).toMatch(/get_friend_locations\(\)[\s\S]*?ua\.avatar_img_url[\s\S]*?internal_security\.has_location_consent\(p\.id\)/);
   });
 
   it('builds map popup content using safe text nodes rather than interpolated profile HTML', () => {
@@ -113,7 +144,7 @@ describe('Social discovery and location privacy regressions', () => {
   });
 
   it('describes location storage and mutual consent accurately', () => {
-    expect(consentModal).toMatch(/coordinates to your profile/);
+    expect(consentModal).toMatch(/coordinates are saved to your private profile/i);
     expect(consentModal).toMatch(/accepted friends/);
     expect(consentModal).toMatch(/does not submit an IP address/);
     expect(permissionModal).toMatch(/saved to your profile until you turn sharing off/);
@@ -146,10 +177,10 @@ describe('Social discovery and location privacy regressions', () => {
     expect(friendsManager).toMatch(/grid h-auto w-full grid-cols-4 gap-1/);
   });
 
-  it('rolls back location sharing if explicit GPS activation fails after consent', () => {
-    expect(readersMap).toMatch(/record_location_consent\(\) also sets location_sharing=true/);
-    expect(readersMap).toMatch(/update\(\{ location_sharing: false, location_lat: null, location_lng: null \}\)/);
-    expect(friendsMap).toMatch(/record_location_consent\(\) also sets location_sharing=true/);
-    expect(friendsMap).toMatch(/update\(\{ location_sharing: false, location_lat: null, location_lng: null \}\)/);
+  it('does not activate sharing until an explicit, consent-checked location save succeeds', () => {
+    expect(readersMap).toMatch(/await saveMyLocation\(position\)/);
+    expect(friendsMap).toMatch(/await saveMyLocation\(position\)/);
+    expect(mapLocationMigration).toMatch(/CREATE OR REPLACE FUNCTION public\.record_location_consent\([\s\S]*?INSERT INTO public\.location_sharing_consent[\s\S]*?END;/);
+    expect(mapLocationMigration).toMatch(/CREATE OR REPLACE FUNCTION public\.save_my_location\([\s\S]*?internal_security\.has_location_consent\(v_user_id\)[\s\S]*?location_sharing = true/);
   });
 });

@@ -4174,6 +4174,7 @@ export type Database = {
           full_name: string | null
           bio: string | null
           profile_photo_url: string | null
+          avatar_img_url: string | null
           location_lat: number | null
           location_lng: number | null
           location_sharing: boolean | null
@@ -4329,6 +4330,7 @@ export type Database = {
           id: string
           location_lat: number
           location_lng: number
+          avatar_img_url: string | null
         }[]
       }
       get_friend_profile_info: {
@@ -4377,6 +4379,7 @@ export type Database = {
         Returns: {
           approximate_latitude: number | null
           approximate_longitude: number | null
+          avatar_img_url: string | null
           distance_km: number
           is_friend: boolean
           reader_id: string
@@ -4512,6 +4515,18 @@ export type Database = {
           notification_title: string
           notification_type: string
         }
+        Returns: undefined
+      }
+      get_my_profile: {
+        Args: never
+        Returns: Json
+      }
+      save_my_location: {
+        Args: { p_lat: number; p_lng: number }
+        Returns: Json
+      }
+      disable_my_location_sharing: {
+        Args: never
         Returns: undefined
       }
       record_location_consent: {

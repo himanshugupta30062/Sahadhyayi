@@ -13,6 +13,7 @@ export interface FriendRequest {
     id: string;
     full_name: string;
     profile_photo_url?: string;
+    avatar_img_url?: string | null;
     username?: string;
   };
   addressee_profile?: {
@@ -32,6 +33,7 @@ export interface Friend {
     id: string;
     full_name: string;
     profile_photo_url?: string;
+    avatar_img_url?: string | null;
     username?: string;
     bio?: string;
     location_lat?: number | null;

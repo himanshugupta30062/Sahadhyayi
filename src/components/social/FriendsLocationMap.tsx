@@ -7,6 +7,8 @@ import { useFriends } from '@/hooks/useFriends';
 import { useAuth } from '@/contexts/authHelpers';
 import { toast } from 'sonner';
 import { getCurrentLocation, type LocationCoords } from '@/lib/locationService';
+import { disableMyLocationSharing, getMyLocationSharingState, saveMyLocation } from '@/lib/locationSharingService';
+import { useUserAvatar } from '@/hooks/useUserAvatar';
 import { uniqueChannelName } from '@/lib/realtime';
 import { LocationConsentModal } from './LocationConsentModal';
 import { LocationPermissionModal } from './LocationPermissionModal';
@@ -75,11 +77,13 @@ export function createFriendInfoContent(profile: SharedProfile): HTMLElement {
 export const FriendsLocationMap: React.FC = () => {
   const { user } = useAuth();
   const { data: friends = [], isLoading: isLoadingFriends, error: friendsError, refetch } = useFriends();
+  const { data: userAvatar } = useUserAvatar();
 
   const [mapCenter, setMapCenter] = useState<LocationCoords | null>(null);
 
   const [userLocation, setUserLocation] = useState<LocationCoords | null>(null);
   const [isSharingLocation, setIsSharingLocation] = useState(false);
+  const [hasLocationConsent, setHasLocationConsent] = useState(false);
   const [isCheckingSharing, setIsCheckingSharing] = useState(true);
   const [sharingStatusError, setSharingStatusError] = useState<string | null>(null);
   const [sharingStatusAttempt, setSharingStatusAttempt] = useState(0);
@@ -95,6 +99,7 @@ export const FriendsLocationMap: React.FC = () => {
       setIsCheckingSharing(false);
       setSharingStatusError(null);
       setIsSharingLocation(false);
+      setHasLocationConsent(false);
       setUserLocation(null);
       return;
     }
@@ -104,28 +109,16 @@ export const FriendsLocationMap: React.FC = () => {
       setIsCheckingSharing(true);
       setSharingStatusError(null);
       try {
-        const [profileResult, consentResult] = await Promise.all([
-          supabase
-            .from('profiles')
-            .select('location_sharing, location_lat, location_lng')
-            .eq('id', user.id)
-            .maybeSingle(),
-          supabase.rpc('has_location_consent', { user_uuid: user.id }),
-        ]);
-        if (profileResult.error) throw profileResult.error;
+        const locationState = await getMyLocationSharingState(user.id);
         if (!active) return;
-
-        const allowed = profileResult.data?.location_sharing === true && consentResult.data === true && !consentResult.error;
-        setIsSharingLocation(allowed);
-        setUserLocation(
-          allowed && profileResult.data?.location_lat != null && profileResult.data?.location_lng != null
-            ? { lat: Number(profileResult.data.location_lat), lng: Number(profileResult.data.location_lng) }
-            : null,
-        );
+        setHasLocationConsent(locationState.hasConsent);
+        setIsSharingLocation(locationState.isSharing && locationState.location !== null);
+        setUserLocation(locationState.isSharing ? locationState.location : null);
       } catch (error) {
         if (active) {
           console.error('Unable to read location-sharing status:', error);
           setSharingStatusError('Could not verify your saved location-sharing status. Retry before changing it.');
+          setHasLocationConsent(false);
           setIsSharingLocation(false);
           setUserLocation(null);
         }
@@ -165,16 +158,13 @@ export const FriendsLocationMap: React.FC = () => {
         if (!isOwnProfile) return;
 
         try {
-          const { data: consented, error } = await supabase.rpc('has_location_consent', { user_uuid: user.id });
-          const sharingAllowed = !error && consented === true && changedProfile.location_sharing === true;
-          setIsSharingLocation(sharingAllowed);
-          setUserLocation(
-            sharingAllowed && changedProfile.location_lat != null && changedProfile.location_lng != null
-              ? { lat: Number(changedProfile.location_lat), lng: Number(changedProfile.location_lng) }
-              : null,
-          );
+          const locationState = await getMyLocationSharingState(user.id);
+          setHasLocationConsent(locationState.hasConsent);
+          setIsSharingLocation(locationState.isSharing && locationState.location !== null);
+          setUserLocation(locationState.isSharing ? locationState.location : null);
         } catch (error) {
           console.error('Unable to refresh own location-sharing status:', error);
+          setHasLocationConsent(false);
           setIsSharingLocation(false);
           setUserLocation(null);
         }
@@ -209,64 +199,16 @@ export const FriendsLocationMap: React.FC = () => {
     setLocationError(null);
     try {
       const position = await getCurrentLocation();
-      const patch = {
-        location_lat: position.lat,
-        location_lng: position.lng,
-        location_sharing: true,
-        last_seen: new Date().toISOString(),
-      };
-      const { data: profile, error: lookupError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', user.id)
-        .maybeSingle();
-      if (lookupError) throw lookupError;
+      await saveMyLocation(position);
 
-      const writeResult = profile
-        ? await supabase.from('profiles').update(patch).eq('id', user.id)
-        : await supabase.from('profiles').insert({
-            ...patch,
-            id: user.id,
-            full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Reader',
-          });
-      if (writeResult.error) throw writeResult.error;
-
-      // Keep legacy user_locations row active and synced
-      try {
-        await supabase
-          .from('user_locations')
-          .upsert({
-            user_id: user.id,
-            latitude: position.lat,
-            longitude: position.lng,
-            is_active: true,
-            last_updated: new Date().toISOString(),
-          });
-      } catch (locationSyncErr) {
-        console.warn('Could not update user_locations row:', locationSyncErr);
-      }
-
+      setHasLocationConsent(true);
       setUserLocation(position);
       setMapCenter(position);
       setIsSharingLocation(true);
       setShowLocationModal(false);
-      toast.success('Location sharing enabled. Only friends with mutual consent can see it.');
+      toast.success('Location saved. Friends with mutual consent can now see it.');
       await refetch();
     } catch (error) {
-      // record_location_consent() also sets location_sharing=true. If geolocation or
-      // coordinate persistence fails, undo that side effect so the profile cannot
-      // appear as sharing with no validated coordinates.
-      try {
-        const { error: rollbackError } = await supabase
-          .from('profiles')
-          .update({ location_sharing: false, location_lat: null, location_lng: null })
-          .eq('id', user.id);
-        if (rollbackError) console.error('Could not roll back incomplete location sharing:', rollbackError);
-      } catch (rollbackError) {
-        console.error('Could not roll back incomplete location sharing:', rollbackError);
-      }
-      setIsSharingLocation(false);
-      setUserLocation(null);
       const message = error instanceof Error ? error.message : 'Unable to enable location sharing.';
       setLocationError(message);
       setShowLocationModal(true);
@@ -279,26 +221,10 @@ export const FriendsLocationMap: React.FC = () => {
     if (!user?.id || isSavingSharing) return;
     setIsSavingSharing(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          location_sharing: false,
-          location_lat: null,
-          location_lng: null,
-          last_seen: null,
-        })
-        .eq('id', user.id);
-      if (error) throw error;
-
-      // Keep the older locations table inactive as well. The canonical friend map reads
-      // coordinates from profiles, and its RLS additionally checks consent on both sides.
-      const { error: inactiveError } = await supabase
-        .from('user_locations')
-        .update({ is_active: false })
-        .eq('user_id', user.id);
-      if (inactiveError) console.warn('Could not deactivate the legacy location row:', inactiveError);
+      await disableMyLocationSharing();
 
       setIsSharingLocation(false);
+      setHasLocationConsent(false);
       setUserLocation(null);
       toast.success('Location sharing disabled.');
       await refetch();
@@ -315,7 +241,8 @@ export const FriendsLocationMap: React.FC = () => {
       toast.error('Sign in to share your location.');
       return;
     }
-    setShowConsentModal(true);
+    if (hasLocationConsent) setShowLocationModal(true);
+    else setShowConsentModal(true);
   };
 
   const friendsWithLocation = friends.filter((friend) =>
@@ -325,12 +252,19 @@ export const FriendsLocationMap: React.FC = () => {
   );
 
   const mapPoints: MapplsPoint[] = [
-    ...(isSharingLocation && userLocation ? [{ id: 'self', lat: userLocation.lat, lng: userLocation.lng, title: 'Your saved location' }] : []),
+    ...(isSharingLocation && userLocation ? [{
+      id: 'self',
+      lat: userLocation.lat,
+      lng: userLocation.lng,
+      title: 'Your saved location',
+      avatarUrl: userAvatar?.avatar_img_url ?? null,
+    }] : []),
     ...friendsWithLocation.map((friend) => ({
       id: friend.friend_profile!.id || friend.id,
       lat: Number(friend.friend_profile!.location_lat),
       lng: Number(friend.friend_profile!.location_lng),
       title: friend.friend_profile!.full_name || friend.friend_profile!.username || 'Friend',
+      avatarUrl: friend.friend_profile!.avatar_img_url ?? friend.friend_profile!.profile_photo_url ?? null,
     })).filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng)),
   ];
 
@@ -411,6 +345,7 @@ export const FriendsLocationMap: React.FC = () => {
         isOpen={showConsentModal}
         onClose={() => setShowConsentModal(false)}
         onConsentGiven={() => {
+          setHasLocationConsent(true);
           setShowConsentModal(false);
           void enableLocationSharing();
         }}

@@ -1,14 +1,13 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { User, Palette, Save, RotateCcw } from 'lucide-react';
+import { Palette, Save, RotateCcw } from 'lucide-react';
 import { useUpdateUserAvatar } from '@/hooks/useUserAvatar';
 import { toast } from 'sonner';
 import DOMPurify from 'dompurify';
 
-interface BitmojiFeatures {
+export interface BitmojiFeatures {
   skinTone: string;
   hairStyle: string;
   hairColor: string;
@@ -20,30 +19,54 @@ interface BitmojiFeatures {
   accessory: string;
 }
 
+const DEFAULT_AVATAR_FEATURES: BitmojiFeatures = {
+  skinTone: '#f4d1ae',
+  hairStyle: 'short',
+  hairColor: '#8b4513',
+  eyeShape: 'normal',
+  eyeColor: '#654321',
+  noseShape: 'normal',
+  mouthShape: 'smile',
+  outfit: 'casual',
+  accessory: 'none',
+};
+
+const normalizeAvatarFeatures = (value?: unknown): BitmojiFeatures => {
+  const settings = value && typeof value === 'object' ? value as Record<string, unknown> : {};
+  const pick = (candidate: unknown, allowed: readonly string[], fallback: string) =>
+    typeof candidate === 'string' && allowed.includes(candidate) ? candidate : fallback;
+
+  return {
+    skinTone: pick(settings.skinTone, ['#f4d1ae', '#deb887', '#d2691e', '#8b4513', '#654321', '#2f1b14'], DEFAULT_AVATAR_FEATURES.skinTone),
+    hairStyle: pick(settings.hairStyle, ['short', 'long', 'curly', 'bald', 'ponytail', 'buzz'], DEFAULT_AVATAR_FEATURES.hairStyle),
+    hairColor: pick(settings.hairColor, ['#000000', '#8b4513', '#daa520', '#ff6347', '#9370db', '#32cd32'], DEFAULT_AVATAR_FEATURES.hairColor),
+    eyeShape: pick(settings.eyeShape, ['normal', 'round', 'narrow', 'wide'], DEFAULT_AVATAR_FEATURES.eyeShape),
+    eyeColor: pick(settings.eyeColor, ['#654321', '#4169e1', '#228b22', '#808080', '#800080'], DEFAULT_AVATAR_FEATURES.eyeColor),
+    noseShape: pick(settings.noseShape, ['normal'], DEFAULT_AVATAR_FEATURES.noseShape),
+    mouthShape: pick(settings.mouthShape, ['smile', 'neutral', 'surprised'], DEFAULT_AVATAR_FEATURES.mouthShape),
+    outfit: pick(settings.outfit, ['casual', 'formal', 'sporty', 'trendy', 'book-lover'], DEFAULT_AVATAR_FEATURES.outfit),
+    accessory: pick(settings.accessory, ['none'], DEFAULT_AVATAR_FEATURES.accessory),
+  };
+};
+
 interface BitmojiCreatorProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (avatarData: string) => void;
-  currentAvatar?: string;
+  initialFeatures?: unknown;
 }
 
 export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
   isOpen,
   onClose,
   onSave,
-  currentAvatar
+  initialFeatures
 }) => {
-  const [features, setFeatures] = useState<BitmojiFeatures>({
-    skinTone: '#f4d1ae',
-    hairStyle: 'short',
-    hairColor: '#8b4513',
-    eyeShape: 'normal',
-    eyeColor: '#654321',
-    noseShape: 'normal',
-    mouthShape: 'smile',
-    outfit: 'casual',
-    accessory: 'none'
-  });
+  const [features, setFeatures] = useState<BitmojiFeatures>(() => normalizeAvatarFeatures(initialFeatures));
+
+  useEffect(() => {
+    if (isOpen) setFeatures(normalizeAvatarFeatures(initialFeatures));
+  }, [isOpen, initialFeatures]);
 
   const updateAvatarMutation = useUpdateUserAvatar();
 
@@ -162,17 +185,7 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
   };
 
   const resetToDefault = () => {
-    setFeatures({
-      skinTone: '#f4d1ae',
-      hairStyle: 'short',
-      hairColor: '#8b4513',
-      eyeShape: 'normal',
-      eyeColor: '#654321',
-      noseShape: 'normal',
-      mouthShape: 'smile',
-      outfit: 'casual',
-      accessory: 'none'
-    });
+    setFeatures(DEFAULT_AVATAR_FEATURES);
   };
 
   return (

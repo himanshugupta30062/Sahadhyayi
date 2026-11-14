@@ -9,6 +9,8 @@ import { LocationConsentModal } from './LocationConsentModal';
 import { LocationPermissionModal } from './LocationPermissionModal';
 import { BookFilterDropdown } from './BookFilterDropdown';
 import { getCurrentLocation, type LocationCoords } from '@/lib/locationService';
+import { disableMyLocationSharing, getMyLocationSharingState, saveMyLocation } from '@/lib/locationSharingService';
+import { useUserAvatar } from '@/hooks/useUserAvatar';
 import { ChatWindow } from './ChatWindow';
 import { MapplsMap, type MapplsPoint } from '@/components/maps/MapplsMap';
 import { NearbyReaderDiscovery } from './NearbyReaderDiscovery';
@@ -17,6 +19,7 @@ import { MAPPLS_API_KEY } from '@/config/mappls';
 interface NearbyReader {
   id: string;
   full_name: string;
+  avatar_img_url?: string | null;
   distance: number;
   approximate_lat?: number | null;
   approximate_lng?: number | null;
@@ -35,10 +38,12 @@ const MAX_DISTANCE_KM = 50;
 
 export const ReadersNearMeMap: React.FC = () => {
   const { user } = useAuth();
+  const { data: userAvatar } = useUserAvatar();
   const requestIdRef = useRef(0);
   const [mapCenter, setMapCenter] = useState<LocationCoords | null>(null);
   const [userLocation, setUserLocation] = useState<LocationCoords | null>(null);
   const [isLocationSharing, setIsLocationSharing] = useState(false);
+  const [hasLocationConsent, setHasLocationConsent] = useState(false);
   const [isLoadingSharingStatus, setIsLoadingSharingStatus] = useState(true);
   const [sharingStatusError, setSharingStatusError] = useState<string | null>(null);
   const [sharingStatusAttempt, setSharingStatusAttempt] = useState(0);
@@ -59,6 +64,7 @@ export const ReadersNearMeMap: React.FC = () => {
       setIsLoadingSharingStatus(false);
       setSharingStatusError(null);
       setIsLocationSharing(false);
+      setHasLocationConsent(false);
       setUserLocation(null);
       return;
     }
@@ -68,36 +74,15 @@ export const ReadersNearMeMap: React.FC = () => {
       setIsLoadingSharingStatus(true);
       setSharingStatusError(null);
       try {
-        const [profileResult, consentResult] = await Promise.all([
-          supabase
-            .from('profiles')
-            .select('location_sharing, location_lat, location_lng')
-            .eq('id', user.id)
-            .maybeSingle(),
-          supabase.rpc('has_location_consent', { user_uuid: user.id }),
-        ]);
-
-        if (profileResult.error) throw profileResult.error;
+        const locationState = await getMyLocationSharingState(user.id);
         if (!active) return;
 
-        const consented = !consentResult.error && consentResult.data === true;
-        const sharingEnabled = profileResult.data?.location_sharing === true && consented;
-        setIsLocationSharing(sharingEnabled);
-
-        if (
-          sharingEnabled &&
-          profileResult.data?.location_lat != null &&
-          profileResult.data?.location_lng != null
-        ) {
-          setUserLocation({
-            lat: Number(profileResult.data.location_lat),
-            lng: Number(profileResult.data.location_lng),
-          });
-        } else {
-          setUserLocation(null);
-        }
+        setHasLocationConsent(locationState.hasConsent);
+        setIsLocationSharing(locationState.isSharing && locationState.location !== null);
+        setUserLocation(locationState.isSharing ? locationState.location : null);
       } catch (error) {
         if (active) {
+          setHasLocationConsent(false);
           setIsLocationSharing(false);
           setUserLocation(null);
           setSharingStatusError('Could not verify your saved location-sharing status. Retry before changing it.');
@@ -114,8 +99,8 @@ export const ReadersNearMeMap: React.FC = () => {
     };
   }, [user?.id, sharingStatusAttempt]);
 
-  // The nearby-reader RPC deliberately returns distance, not another person's exact
-  // coordinates. Show these readers in the list; never pin them at fake 0,0 locations.
+  // The nearby-reader RPC returns coarse, rounded coordinates for map pins and never
+  // exposes another reader's exact position. Invalid or missing points stay off the map.
   const fetchNearbyReaders = useCallback(async () => {
     if (!user?.id || !selectedBook || !isLocationSharing || !userLocation) return;
 
@@ -135,6 +120,7 @@ export const ReadersNearMeMap: React.FC = () => {
       setNearbyReaders(((data || []) as unknown as Array<{
         reader_id: string;
         reader_name: string;
+        avatar_img_url?: string | null;
         approximate_latitude?: number | null;
         approximate_longitude?: number | null;
         distance_km: number;
@@ -143,6 +129,7 @@ export const ReadersNearMeMap: React.FC = () => {
       }>).map((reader) => ({
         id: reader.reader_id,
         full_name: reader.reader_name || 'Reader',
+        avatar_img_url: reader.avatar_img_url ?? null,
         approximate_lat: reader.approximate_latitude != null ? Number(reader.approximate_latitude) : null,
         approximate_lng: reader.approximate_longitude != null ? Number(reader.approximate_longitude) : null,
         distance: Number(reader.distance_km),
@@ -201,76 +188,24 @@ export const ReadersNearMeMap: React.FC = () => {
     setLocationError(null);
     try {
       const position = await getCurrentLocation();
-      const patch = {
-        location_lat: position.lat,
-        location_lng: position.lng,
-        location_sharing: true,
-        last_seen: new Date().toISOString(),
-      };
-
-      const { data: profile, error: profileLookupError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', user.id)
-        .maybeSingle();
-      if (profileLookupError) throw profileLookupError;
-
-      const profileWrite = profile
-        ? await supabase.from('profiles').update(patch).eq('id', user.id)
-        : await supabase.from('profiles').insert({
-            ...patch,
-            id: user.id,
-            full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Reader',
-          });
-      if (profileWrite.error) throw profileWrite.error;
-
-      // Keep legacy user_locations row active and synced
-      try {
-        await supabase
-          .from('user_locations')
-          .upsert({
-            user_id: user.id,
-            latitude: position.lat,
-            longitude: position.lng,
-            is_active: true,
-            last_updated: new Date().toISOString(),
-          });
-      } catch (locationSyncErr) {
-        console.warn('Could not update user_locations row:', locationSyncErr);
-      }
+      await saveMyLocation(position);
 
       if (selectedBook?.id) {
-        try {
-          await supabase.rpc('share_book_location', {
-            book_uuid: selectedBook.id,
-            lat: position.lat,
-            lng: position.lng,
-          });
-        } catch (bookSyncErr) {
-          console.warn('Could not sync user book location:', bookSyncErr);
-        }
+        const { error: bookSyncError } = await supabase.rpc('share_book_location', {
+          book_uuid: selectedBook.id,
+          lat: position.lat,
+          lng: position.lng,
+        });
+        if (bookSyncError) console.warn('Could not sync user book location:', bookSyncError);
       }
 
       setUserLocation(position);
       setMapCenter(position);
+      setHasLocationConsent(true);
       setIsLocationSharing(true);
       setShowLocationModal(false);
-      toast.success('Location sharing enabled. Only friends who also consent can see it.');
+      toast.success('Location saved. Friends with mutual consent can now see your approximate location.');
     } catch (error) {
-      // record_location_consent() also sets location_sharing=true. If the browser
-      // denies GPS or saving coordinates fails, roll that flag back so a failed
-      // consent flow cannot leave the UI claiming sharing is on.
-      try {
-        const { error: rollbackError } = await supabase
-          .from('profiles')
-          .update({ location_sharing: false, location_lat: null, location_lng: null })
-          .eq('id', user.id);
-        if (rollbackError) console.error('Could not roll back incomplete location sharing:', rollbackError);
-      } catch (rollbackError) {
-        console.error('Could not roll back incomplete location sharing:', rollbackError);
-      }
-      setIsLocationSharing(false);
-      setUserLocation(null);
       const message = error instanceof Error ? error.message : 'Unable to enable location sharing.';
       setLocationError(message);
       setShowLocationModal(true);
@@ -283,40 +218,10 @@ export const ReadersNearMeMap: React.FC = () => {
     if (!user?.id || isSavingLocation) return;
     setIsSavingLocation(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          location_sharing: false,
-          location_lat: null,
-          location_lng: null,
-          last_seen: null,
-        })
-        .eq('id', user.id);
-      if (error) throw error;
-
-      // Older map surfaces also read this table. Deactivate its row so it cannot
-      // appear as an active location after consent is withdrawn.
-      const { error: locationRowError } = await supabase
-        .from('user_locations')
-        .update({ is_active: false })
-        .eq('user_id', user.id);
-      if (locationRowError) {
-        console.warn('Could not deactivate legacy user location row:', locationRowError);
-      }
-
-      if (selectedBook?.id) {
-        try {
-          await supabase
-            .from('user_books_location')
-            .delete()
-            .eq('user_id', user.id)
-            .eq('book_id', selectedBook.id);
-        } catch (clearBookErr) {
-          console.warn('Could not clear user_books_location entry:', clearBookErr);
-        }
-      }
+      await disableMyLocationSharing();
 
       setIsLocationSharing(false);
+      setHasLocationConsent(false);
       setUserLocation(null);
       setNearbyReaders([]);
       setShowConsentModal(false);
@@ -375,6 +280,7 @@ export const ReadersNearMeMap: React.FC = () => {
               onClick={() => {
                 if (sharingStatusError) setSharingStatusAttempt((attempt) => attempt + 1);
                 else if (isLocationSharing) void handleStopSharing();
+                else if (hasLocationConsent) setShowLocationModal(true);
                 else setShowConsentModal(true);
               }}
               className="shrink-0 gap-2 bg-[#1C442D] text-white hover:bg-[#143221] disabled:opacity-60 dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:hover:bg-[#c49f5c]"
@@ -395,7 +301,13 @@ export const ReadersNearMeMap: React.FC = () => {
           <MapplsMap
             apiKey={MAPPLS_API_KEY}
             points={[
-              ...(userLocation && isLocationSharing ? [{ id: 'self', lat: userLocation.lat, lng: userLocation.lng, title: 'Your saved location' }] : []),
+              ...(userLocation && isLocationSharing ? [{
+                id: 'self',
+                lat: userLocation.lat,
+                lng: userLocation.lng,
+                title: 'Your saved location',
+                avatarUrl: userAvatar?.avatar_img_url ?? null,
+              }] : []),
               ...nearbyReaders
                 .filter(
                   (reader) =>
@@ -410,6 +322,7 @@ export const ReadersNearMeMap: React.FC = () => {
                   lat: reader.approximate_lat!,
                   lng: reader.approximate_lng!,
                   title: reader.full_name,
+                  avatarUrl: reader.avatar_img_url,
                   description: `${reader.distance.toFixed(1)} km away · ${selectedBook?.title || 'Selected book'}`,
                 })),
             ]}
@@ -500,6 +413,7 @@ export const ReadersNearMeMap: React.FC = () => {
         isOpen={showConsentModal}
         onClose={() => setShowConsentModal(false)}
         onConsentGiven={() => {
+          setHasLocationConsent(true);
           setShowConsentModal(false);
           void handleEnableSharing();
         }}
