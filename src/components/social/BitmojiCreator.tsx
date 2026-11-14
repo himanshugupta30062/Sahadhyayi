@@ -1,9 +1,8 @@
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { User, Palette, Save, RotateCcw } from 'lucide-react';
+import { Palette, Save, RotateCcw } from 'lucide-react';
 import { useUpdateUserAvatar } from '@/hooks/useUserAvatar';
 import { toast } from 'sonner';
 import DOMPurify from 'dompurify';
