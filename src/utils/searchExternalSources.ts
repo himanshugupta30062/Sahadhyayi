@@ -11,6 +11,7 @@ export interface ExternalBook {
   md5: string
   downloadUrl: string
   source?: 'libgen' | 'open_access'
+  format?: 'pdf' | 'epub' | 'html' | 'reader'
 }
 
 /**
@@ -27,20 +28,63 @@ export async function searchExternalSources(query: string): Promise<ExternalBook
 
     if (error) throw error
 
-    return (data?.books || [])
-      .filter((book: any) => book.pdf_url)
-      .map((book: any) => ({
-        id: book.isbn || book.title,
-        title: book.title || 'Unknown Title',
-        author: book.author,
-        year: book.publication_year ? String(book.publication_year) : undefined,
-        language: book.language,
-        extension: book.pdf_url ? 'pdf' : undefined,
-        size: book.pages ? `${book.pages} pages` : undefined,
-        md5: book.isbn || book.title,
-        downloadUrl: book.pdf_url,
-        source: 'open_access'
-      }))
+    const books = data?.books || []
+    const results: ExternalBook[] = []
+
+    for (const book of books) {
+      // Add PDF URL if available
+      if (book.pdf_url) {
+        results.push({
+          id: `${book.isbn || book.title}-pdf`,
+          title: book.title || 'Unknown Title',
+          author: book.author,
+          year: book.publication_year ? String(book.publication_year) : undefined,
+          language: book.language,
+          extension: 'pdf',
+          size: book.pages ? `${book.pages} pages` : undefined,
+          md5: book.isbn || book.title,
+          downloadUrl: book.pdf_url,
+          source: 'open_access',
+          format: 'pdf'
+        })
+      }
+
+      // Add EPUB URL if available
+      if (book.epub_url) {
+        results.push({
+          id: `${book.isbn || book.title}-epub`,
+          title: book.title || 'Unknown Title',
+          author: book.author,
+          year: book.publication_year ? String(book.publication_year) : undefined,
+          language: book.language,
+          extension: 'epub',
+          size: book.pages ? `${book.pages} pages` : undefined,
+          md5: book.isbn || book.title,
+          downloadUrl: book.epub_url,
+          source: 'open_access',
+          format: 'epub'
+        })
+      }
+
+      // Add reader URL if available (HTML/online reader)
+      if (book.reader_url && !book.pdf_url && !book.epub_url) {
+        results.push({
+          id: `${book.isbn || book.title}-reader`,
+          title: book.title || 'Unknown Title',
+          author: book.author,
+          year: book.publication_year ? String(book.publication_year) : undefined,
+          language: book.language,
+          extension: 'html',
+          size: book.pages ? `${book.pages} pages` : undefined,
+          md5: book.isbn || book.title,
+          downloadUrl: book.reader_url,
+          source: 'open_access',
+          format: 'reader'
+        })
+      }
+    }
+
+    return results
   } catch (err) {
     console.error('searchExternalSources error:', err)
     return []

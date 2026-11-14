@@ -180,7 +180,8 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
   }, [activeReadUrl]);
 
   // Determine book type and URLs
-  const isEpub = Boolean(epubUrl && epubUrl.length > 0);
+  // Check both the explicit epubUrl prop and the URL analysis for EPUB detection
+  const isEpub = Boolean(epubUrl && epubUrl.length > 0) || urlAnalysis.isEpub;
   const isGoogleBooks = urlAnalysis.isGoogleBooks;
   const googleBooksId = urlAnalysis.googleBooksId;
   const isArchive = Boolean(activeReadUrl && /archive\.org/i.test(activeReadUrl));
@@ -189,7 +190,7 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
   // unusual extensions still get a viewer instead of "Unsupported format".
   const isPdf = !isEpub && !isGoogleBooks && Boolean(activeReadUrl && (isExplicitPdf || isArchive || !!pdfUrl));
 
-  const bookUrl = isEpub ? epubUrl : activeReadUrl;
+  const bookUrl = isEpub ? (epubUrl || activeReadUrl) : activeReadUrl;
 
   // Probe Google Books API for embed restrictions
   useEffect(() => {

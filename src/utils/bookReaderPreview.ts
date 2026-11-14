@@ -52,6 +52,7 @@ export const validateReaderUrl = (rawUrl: string | null | undefined): {
   sanitizedUrl: string | null;
   isGoogleBooks: boolean;
   isPdf: boolean;
+  isEpub: boolean;
   googleBooksId: string | null;
 } => {
   if (!rawUrl || typeof rawUrl !== 'string') {
@@ -60,6 +61,7 @@ export const validateReaderUrl = (rawUrl: string | null | undefined): {
       sanitizedUrl: null,
       isGoogleBooks: false,
       isPdf: false,
+      isEpub: false,
       googleBooksId: null,
     };
   }
@@ -74,6 +76,7 @@ export const validateReaderUrl = (rawUrl: string | null | undefined): {
       sanitizedUrl: `https://books.google.com/books?id=${googleBooksId}`,
       isGoogleBooks: true,
       isPdf: false,
+      isEpub: false,
       googleBooksId,
     };
   }
@@ -87,14 +90,20 @@ export const validateReaderUrl = (rawUrl: string | null | undefined): {
         sanitizedUrl: null,
         isGoogleBooks: false,
         isPdf: false,
+        isEpub: false,
         googleBooksId: null,
       };
     }
 
     const hostname = parsed.hostname.toLowerCase();
     const isGoogleBooks = hostname.includes('books.google') || Boolean(googleBooksId);
+    const isEpub =
+      !isGoogleBooks &&
+      (/\.epub($|\?|#)/i.test(trimmed) ||
+        /\/epub\//i.test(trimmed));
     const isPdf =
       !isGoogleBooks &&
+      !isEpub &&
       (/\.pdf($|\?|#)/i.test(trimmed) ||
         /\/pdf\//i.test(trimmed) ||
         hostname.includes('archive.org') ||
@@ -105,6 +114,7 @@ export const validateReaderUrl = (rawUrl: string | null | undefined): {
       sanitizedUrl: trimmed,
       isGoogleBooks,
       isPdf,
+      isEpub,
       googleBooksId,
     };
   } catch {
@@ -113,6 +123,7 @@ export const validateReaderUrl = (rawUrl: string | null | undefined): {
       sanitizedUrl: null,
       isGoogleBooks: false,
       isPdf: false,
+      isEpub: false,
       googleBooksId: null,
     };
   }
