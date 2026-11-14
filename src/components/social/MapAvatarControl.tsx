@@ -7,6 +7,7 @@ import { Pencil, Sparkles, UserRound } from 'lucide-react';
 export function MapAvatarControl() {
   const { data: avatar, isLoading } = useUserAvatar();
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const hasCustomBitmoji = Boolean(avatar?.avatar_json && avatar.avatar_img_url);
 
   return (
     <>
@@ -27,12 +28,14 @@ export function MapAvatarControl() {
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-[#1C201D] dark:text-[#F3F0E7]">
-            {avatar?.avatar_img_url ? 'Your map Bitmoji' : 'Create your map Bitmoji'}
+            {hasCustomBitmoji ? 'Your map Bitmoji' : avatar?.avatar_img_url ? 'Your profile photo on the map' : 'Create your map Bitmoji'}
           </p>
           <p className="mt-0.5 text-xs text-[#636B65] dark:text-[#A5ADA6]">
-            {avatar?.avatar_img_url
+            {hasCustomBitmoji
               ? 'Your character appears on the reader map.'
-              : 'Give friends a recognizable character on the map.'}
+              : avatar?.avatar_img_url
+                ? 'Your profile photo is shown until you create a Bitmoji.'
+                : 'Give friends a recognizable character on the map.'}
           </p>
         </div>
         <Button
@@ -43,8 +46,8 @@ export function MapAvatarControl() {
           onClick={() => setIsEditorOpen(true)}
           className="shrink-0 gap-1.5 border-[#D5B16D] text-[#1C442D] hover:bg-[#FAF7F2] dark:text-[#D5B16D]"
         >
-          {avatar?.avatar_img_url ? <Pencil className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
-          {avatar?.avatar_img_url ? 'Edit' : 'Create'}
+          {hasCustomBitmoji ? <Pencil className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
+          {hasCustomBitmoji ? 'Edit' : 'Create Bitmoji'}
         </Button>
       </div>
       <BitmojiCreator
