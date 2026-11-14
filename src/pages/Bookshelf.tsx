@@ -39,6 +39,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { ReadingImportExportDialog } from '@/components/books/ReadingImportExportDialog';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -608,7 +609,18 @@ const Bookshelf = () => {
 
           {/* Modernized Book Grid */}
           {filteredBooks.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <ErrorBoundary
+              fallback={
+                <Card className="p-8 text-center border-dashed">
+                  <p className="text-sm font-semibold">Unable to display bookshelf books</p>
+                  <p className="text-xs text-muted-foreground mt-1">A temporary error occurred while rendering your bookshelf items.</p>
+                  <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="mt-3 text-xs">
+                    Reload Shelf
+                  </Button>
+                </Card>
+              }
+            >
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {filteredBooks.map((item) => {
                 const book = item.books_library;
                 if (!book) return null;
@@ -624,13 +636,23 @@ const Bookshelf = () => {
                 // Estimated completion date calculation
                 let estimatedFinishLabel: string | null = null;
                 if (isReading && item.hasKnownTotal && item.currentPage > 1 && item.currentPage < item.totalPages) {
-                  const startedTime = item.started_at ? new Date(item.started_at).getTime() : new Date(item.added_at).getTime();
-                  const daysElapsed = Math.max(1, (Date.now() - startedTime) / (1000 * 60 * 60 * 24));
-                  const pace = (item.currentPage - 1) / daysElapsed; // pages per day
-                  if (pace >= 0.5) {
-                    const daysRemaining = Math.ceil((item.totalPages - item.currentPage) / pace);
-                    const finishDate = new Date(Date.now() + daysRemaining * 86400000);
-                    estimatedFinishLabel = `Est. finish: ${finishDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} (${daysRemaining}d)`;
+                  const startedTime = item.started_at
+                    ? new Date(item.started_at).getTime()
+                    : item.added_at
+                    ? new Date(item.added_at).getTime()
+                    : Date.now();
+                  if (Number.isFinite(startedTime) && startedTime > 0) {
+                    const daysElapsed = Math.max(1, (Date.now() - startedTime) / (1000 * 60 * 60 * 24));
+                    const pace = (item.currentPage - 1) / daysElapsed; // pages per day
+                    if (Number.isFinite(pace) && pace >= 0.5) {
+                      const daysRemaining = Math.ceil((item.totalPages - item.currentPage) / pace);
+                      if (Number.isFinite(daysRemaining) && daysRemaining > 0 && daysRemaining < 10000) {
+                        const finishDate = new Date(Date.now() + daysRemaining * 86400000);
+                        if (!Number.isNaN(finishDate.getTime())) {
+                          estimatedFinishLabel = `Est. finish: ${finishDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} (${daysRemaining}d)`;
+                        }
+                      }
+                    }
                   }
                 }
 
@@ -976,7 +998,8 @@ const Bookshelf = () => {
                   </Card>
                 );
               })}
-            </div>
+              </div>
+            </ErrorBoundary>
           )}
         </div>
       </div>

@@ -33,6 +33,7 @@ import { useUserJoinedGroups } from '@/hooks/useUserGroups';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 import SignInLink from '@/components/SignInLink';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 type ActivityCategory = 'all' | 'events' | 'challenges' | 'games' | 'meetups';
 
@@ -365,6 +366,22 @@ export default function Activity() {
               </div>
             </div>
 
+            <ErrorBoundary
+              fallback={
+                <div className="rounded-2xl border border-border/70 bg-card p-8 text-center">
+                  <p className="text-sm font-semibold text-foreground">Activities could not be loaded</p>
+                  <p className="mt-1 text-xs text-muted-foreground">A temporary error occurred while rendering this section.</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.location.reload()}
+                    className="mt-4 text-xs"
+                  >
+                    Reload Activities
+                  </Button>
+                </div>
+              }
+            >
             {/* 1. READING CHALLENGES SECTION */}
             {(activeCategory === 'all' || activeCategory === 'challenges') && (
               <section className="space-y-4">
@@ -623,6 +640,7 @@ export default function Activity() {
                 )}
               </section>
             )}
+            </ErrorBoundary>
           </div>
         </div>
       </div>

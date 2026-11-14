@@ -9,7 +9,7 @@ import { Send, Users, X } from 'lucide-react';
 import { useGroupMessages, useSendMessage, useGroupMembers } from '@/hooks/useGroupMessaging';
 import { useAuth } from '@/contexts/authHelpers';
 import { useToast } from '@/hooks/use-toast';
-import { formatDistanceToNow } from 'date-fns';
+import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 
 interface GroupMessagingProps {
   groupId: string;
@@ -194,7 +194,7 @@ const GroupMessaging: React.FC<GroupMessagingProps> = ({
               {isOwnMessage ? 'You' : (message.sender?.full_name || 'Unknown')}
             </span>
             <span className="text-xs text-muted-foreground">
-              {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+              {safeFormatDistanceToNow(message.created_at, { addSuffix: true })}
             </span>
           </div>
           

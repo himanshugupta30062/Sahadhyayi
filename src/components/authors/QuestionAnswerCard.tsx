@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MessageSquare, Clock } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 import type { AuthorQuestion } from '@/hooks/useAuthorQuestions';
 
 interface QuestionAnswerCardProps {
@@ -20,7 +20,7 @@ export const QuestionAnswerCard = ({ qa }: QuestionAnswerCardProps) => {
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Clock className="w-3 h-3" />
             {qa.answered_at
-              ? formatDistanceToNow(new Date(qa.answered_at), { addSuffix: true })
+              ? safeFormatDistanceToNow(qa.answered_at, { addSuffix: true })
               : 'Pending'}
           </div>
         </div>

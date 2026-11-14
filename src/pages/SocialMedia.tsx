@@ -76,6 +76,21 @@ const TabLoader = () => (
   </div>
 );
 
+const TabErrorFallback = ({ title, message }: { title: string; message: string }) => (
+  <SocialSurface className="p-8 text-center">
+    <p className="text-sm font-semibold mb-2">{title}</p>
+    <p className="text-xs text-[#636B65] dark:text-[#A5ADA6] mb-4">{message}</p>
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={() => window.location.reload()}
+      className="border-[#E8E8E3] dark:border-[#29332D] bg-[#FAFAF8] dark:bg-[#111614] text-[#1C201D] dark:text-[#F3F0E7]"
+    >
+      Reload Section
+    </Button>
+  </SocialSurface>
+);
+
 // Feature pillar cards for guest landing (matching design mockups)
 const PILLARS = [
   {
@@ -711,7 +726,9 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                     <p className="mt-2 text-sm leading-6 text-muted-foreground">Honest reader experiences, connected to each book. Spoiler warnings stay visible.</p>
                     <div className="mt-4 flex flex-wrap gap-2"><Button asChild variant="outline"><Link to="/reviewers-critics">Discover reviewers & critics</Link></Button><Button asChild><Link to="/library">Find a book to review</Link></Button></div>
                   </section>
-                  <Suspense fallback={<TabLoader />}><BookReviewsFeed /></Suspense>
+                  <ErrorBoundary fallback={<TabErrorFallback title="Unable to load book reviews" message="A temporary issue occurred while loading reader reviews." />}>
+                    <Suspense fallback={<TabLoader />}><BookReviewsFeed /></Suspense>
+                  </ErrorBoundary>
                 </TabsContent>
 
                 {/* ── Reading Rooms Tab ── */}
@@ -725,9 +742,11 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                       </p>
                     </div>
                   </div>
-                  <Suspense fallback={<TabLoader />}>
-                    <ReadingRoomsPanel />
-                  </Suspense>
+                  <ErrorBoundary fallback={<TabErrorFallback title="Unable to load reading rooms" message="A temporary issue occurred while connecting to reading rooms." />}>
+                    <Suspense fallback={<TabLoader />}>
+                      <ReadingRoomsPanel />
+                    </Suspense>
+                  </ErrorBoundary>
                 </TabsContent>
 
                 {/* ── Spoiler Threads Tab ── */}
@@ -741,9 +760,11 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                       </p>
                     </div>
                   </div>
-                  <Suspense fallback={<TabLoader />}>
-                    <SpoilerThreadsFeed />
-                  </Suspense>
+                  <ErrorBoundary fallback={<TabErrorFallback title="Unable to load chapter discussions" message="A temporary issue occurred while loading spoiler-safe threads." />}>
+                    <Suspense fallback={<TabLoader />}>
+                      <SpoilerThreadsFeed />
+                    </Suspense>
+                  </ErrorBoundary>
                 </TabsContent>
 
                 {/* ── Margin Notes Tab ── */}
@@ -757,9 +778,11 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                       </p>
                     </div>
                   </div>
-                  <Suspense fallback={<TabLoader />}>
-                    <MarginNotesFeed />
-                  </Suspense>
+                  <ErrorBoundary fallback={<TabErrorFallback title="Unable to load margin notes" message="A temporary issue occurred while loading public marginalia." />}>
+                    <Suspense fallback={<TabLoader />}>
+                      <MarginNotesFeed />
+                    </Suspense>
+                  </ErrorBoundary>
                 </TabsContent>
 
                 {/* ── Reading DNA Tab ── */}
@@ -773,16 +796,20 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                       </p>
                     </div>
                   </div>
-                  <Suspense fallback={<TabLoader />}>
-                    <ReadingDnaPanel />
-                  </Suspense>
+                  <ErrorBoundary fallback={<TabErrorFallback title="Unable to load Reading DNA" message="A temporary issue occurred while calculating your reader profile." />}>
+                    <Suspense fallback={<TabLoader />}>
+                      <ReadingDnaPanel />
+                    </Suspense>
+                  </ErrorBoundary>
                 </TabsContent>
 
                 {/* ── Friends Tab ── */}
                 <TabsContent value="friends" className="mt-0">
-                  <Suspense fallback={<TabLoader />}>
-                    <EnhancedFriendsManager />
-                  </Suspense>
+                  <ErrorBoundary fallback={<TabErrorFallback title="Unable to load friends directory" message="A temporary issue occurred while loading reader connections." />}>
+                    <Suspense fallback={<TabLoader />}>
+                      <EnhancedFriendsManager />
+                    </Suspense>
+                  </ErrorBoundary>
                 </TabsContent>
 
                 {/* ── Map Tab ── */}
@@ -817,17 +844,21 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                   </div>
 
                   <Card className="border-[#E8E8E3] dark:border-[#29332D] bg-white dark:bg-[#111614] overflow-hidden text-[#1C201D] dark:text-[#F3F0E7] shadow-[0_2px_8px_rgba(28,32,29,0.04)] dark:shadow-none">
-                    <Suspense fallback={<TabLoader />}>
-                      {mapView === 'readers' ? <EnhancedReadingMap /> : <FriendsLocationMap />}
-                    </Suspense>
+                    <ErrorBoundary fallback={<TabErrorFallback title="Unable to render reader map" message="A temporary issue occurred while initializing the map view." />}>
+                      <Suspense fallback={<TabLoader />}>
+                        {mapView === 'readers' ? <EnhancedReadingMap /> : <FriendsLocationMap />}
+                      </Suspense>
+                    </ErrorBoundary>
                   </Card>
                 </TabsContent>
 
                 {/* ── Groups Tab ── */}
                 <TabsContent value="groups" className="mt-0">
-                  <Suspense fallback={<TabLoader />}>
-                    <ReadingGroups />
-                  </Suspense>
+                  <ErrorBoundary fallback={<TabErrorFallback title="Unable to load reading groups" message="A temporary issue occurred while loading reading groups." />}>
+                    <Suspense fallback={<TabLoader />}>
+                      <ReadingGroups />
+                    </Suspense>
+                  </ErrorBoundary>
                 </TabsContent>
               </section>
 

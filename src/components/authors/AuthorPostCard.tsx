@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { formatDistanceToNow } from 'date-fns';
+import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -77,7 +77,7 @@ const CommentItem = ({ comment, onReply }: CommentItemProps) => {
               {comment.profiles?.full_name || 'Anonymous'}
             </span>
             <span className="text-xs text-muted-foreground">
-              {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+              {safeFormatDistanceToNow(comment.created_at, { addSuffix: true })}
             </span>
           </div>
           <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
@@ -218,7 +218,7 @@ export const AuthorPostCard = ({ post }: AuthorPostCardProps) => {
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground">
-              {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+              {safeFormatDistanceToNow(post.created_at, { addSuffix: true })}
             </p>
           </div>
         </div>

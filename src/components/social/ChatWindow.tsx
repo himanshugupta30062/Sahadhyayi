@@ -10,7 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
 import SignInLink from '@/components/SignInLink';
-import { formatDistanceToNow } from 'date-fns';
+import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 
 interface ChatWindowProps {
   friendId: string;
@@ -158,7 +158,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ friendId, isOpen, onClos
                       msg.sender_id === user?.id ? 'justify-end' : 'justify-start'
                     }`}
                   >
-                    {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                    {safeFormatDistanceToNow(msg.created_at, { addSuffix: true })}
                     {msg.sender_id === user?.id && (
                       msg.is_read ? (
                         <CheckCheck className="w-3 h-3 ml-1 text-blue-500" />

@@ -97,11 +97,13 @@ export const ReadingRoomsList: React.FC<ReadingRoomsListProps> = ({
                       <SelectValue placeholder="Pick a book from your shelf" />
                     </SelectTrigger>
                     <SelectContent>
-                      {shelf.map((b: any) => (
-                        <SelectItem key={b.book_id} value={b.book_id}>
-                          {b.books_library?.title ?? "Untitled"}
-                        </SelectItem>
-                      ))}
+                      {shelf
+                        .filter((b: any) => Boolean(b?.book_id))
+                        .map((b: any) => (
+                          <SelectItem key={b.book_id} value={b.book_id}>
+                            {b.books_library?.title ?? "Untitled"}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>

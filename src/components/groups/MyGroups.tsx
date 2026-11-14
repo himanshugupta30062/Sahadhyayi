@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Users, MessageCircle, Calendar, Settings } from 'lucide-react';
 import { useUserJoinedGroups } from '@/hooks/useUserGroups';
 import GroupMessaging from './GroupMessaging';
-import { formatDistanceToNow } from 'date-fns';
+import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 import { trackUiEvent } from '@/lib/analytics';
 
 const MyGroups: React.FC = () => {
@@ -103,7 +103,7 @@ const MyGroups: React.FC = () => {
                   </div>
                   <div className="flex items-center space-x-2">
                     <Calendar className="w-4 h-4" />
-                    <span>Joined {formatDistanceToNow(new Date(membership.joined_at || ''), { addSuffix: true })}</span>
+                    <span>Joined {safeFormatDistanceToNow(membership.joined_at, { addSuffix: true })}</span>
                   </div>
                 </div>
 

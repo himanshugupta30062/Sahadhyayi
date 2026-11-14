@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Heart, ThumbsUp, Lightbulb, Bookmark } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { BookOpen, Lock, MessageCircle, Plus, Send, ShieldAlert, Trash2 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/authHelpers';
 import { Badge } from '@/components/ui/badge';
@@ -39,11 +39,7 @@ const discussionLabels: Record<GroupReadingDiscussionType, string> = {
 };
 
 const formatCreatedAt = (value: string) => {
-  try {
-    return formatDistanceToNow(new Date(value), { addSuffix: true });
-  } catch {
-    return 'Recently';
-  }
+  return safeFormatDistanceToNow(value, { addSuffix: true }, 'Recently');
 };
 
 type ReactionKind = 'heart' | 'like' | 'insightful';
