@@ -42,13 +42,15 @@ const ResearchCitationNetwork = () => {
         const refs = Array.isArray(paper.referenced_works) ? paper.referenced_works.slice(0, 12) : [];
         const [refResult, citingResult, relatedResult] = await Promise.all([
           refs.length ? fetch(`${OPENALEX}?filter=openalex_id:${refs.join('|')}&per-page=12&select=id,display_name,title,publication_year,cited_by_count,doi,authorships`) : Promise.resolve(null),
-          fetch(`${OPENALEX}?filter=cites:${workId}&per-page=12&select=id,display_name,title,publication_year,cited_by_count,doi,authorships`)
+          fetch(`${OPENALEX}?filter=cites:${workId}&per-page=12&select=id,display_name,title,publication_year,cited_by_count,doi,authorships`),
+          fetch(`${OPENALEX}?filter=related_to:${workId}&per-page=12&select=id,display_name,title,publication_year,cited_by_count,doi,authorships`),
         ]);
         if (refResult && !refResult.ok) throw new Error('Could not load referenced papers.');
         if (!citingResult.ok) throw new Error(citingResult.status === 429 ? 'OpenAlex citation lookup is rate-limited. Retry in a moment.' : 'Could not load papers citing this work.');
         const [refData, citingData, relatedData] = await Promise.all([
           refResult ? refResult.json() as Promise<WorksResponse> : Promise.resolve({ results: [] }),
           citingResult.json() as Promise<WorksResponse>,
+          relatedResult && relatedResult.ok ? relatedResult.json() as Promise<WorksResponse> : Promise.resolve({ results: [] }),
         ]);
         if (active) { setReferences(refData.results || []); setCiting(citingData.results || []); setRelated((relatedData.results || []).filter((work) => work.id !== paper.id)); setCitingCount(citingData.meta?.count || paper.cited_by_count || 0); }
       } catch (e) { if (active) setError(e instanceof Error ? e.message : 'Citation network failed to load.'); }

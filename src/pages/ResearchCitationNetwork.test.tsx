@@ -88,6 +88,12 @@ describe('ResearchCitationNetwork', () => {
           json: () => Promise.resolve(citingWorksResponse),
         });
       }
+      if (url.includes('filter=related_to:')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ results: [] }),
+        });
+      }
       return Promise.reject(new Error('Unknown url: ' + url));
     });
 

@@ -40,11 +40,12 @@ export function useBookReviews(bookId: string | undefined) {
 
         // If extended columns do not exist in the database, fall back to base columns
         if (result.error && (result.error.code === 'PGRST204' || result.error.message?.includes('column'))) {
-          result = await supabase.from('book_reviews')
+          const fallbackResult = await supabase.from('book_reviews')
             .select('id, book_id, user_id, review_text, contains_spoilers, created_at, updated_at')
             .eq('book_id', bookId)
             .order('created_at', { ascending: false })
             .limit(50);
+          result = fallbackResult as unknown as typeof result;
         }
 
         // If permission is denied (e.g. unauthenticated / guest access), return empty list without throwing
