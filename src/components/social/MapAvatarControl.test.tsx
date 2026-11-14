@@ -34,7 +34,7 @@ describe('MapAvatarControl', () => {
     render(<MapAvatarControl />);
 
     expect(screen.getByText('Create your map Bitmoji')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Create' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Create Bitmoji' }));
     expect(screen.getByRole('dialog', { name: 'Bitmoji editor' })).toBeInTheDocument();
     expect(screen.getByTestId('initial-features')).toHaveTextContent('null');
   });
