@@ -32,20 +32,21 @@ const DEFAULT_AVATAR_FEATURES: BitmojiFeatures = {
   accessory: 'none',
 };
 
-const normalizeAvatarFeatures = (value?: Partial<BitmojiFeatures> | null): BitmojiFeatures => {
+const normalizeAvatarFeatures = (value?: unknown): BitmojiFeatures => {
+  const settings = value && typeof value === 'object' ? value as Record<string, unknown> : {};
   const pick = (candidate: unknown, allowed: readonly string[], fallback: string) =>
     typeof candidate === 'string' && allowed.includes(candidate) ? candidate : fallback;
 
   return {
-    skinTone: pick(value?.skinTone, ['#f4d1ae', '#deb887', '#d2691e', '#8b4513', '#654321', '#2f1b14'], DEFAULT_AVATAR_FEATURES.skinTone),
-    hairStyle: pick(value?.hairStyle, ['short', 'long', 'curly', 'bald', 'ponytail', 'buzz'], DEFAULT_AVATAR_FEATURES.hairStyle),
-    hairColor: pick(value?.hairColor, ['#000000', '#8b4513', '#daa520', '#ff6347', '#9370db', '#32cd32'], DEFAULT_AVATAR_FEATURES.hairColor),
-    eyeShape: pick(value?.eyeShape, ['normal', 'round', 'narrow', 'wide'], DEFAULT_AVATAR_FEATURES.eyeShape),
-    eyeColor: pick(value?.eyeColor, ['#654321', '#4169e1', '#228b22', '#808080', '#800080'], DEFAULT_AVATAR_FEATURES.eyeColor),
-    noseShape: pick(value?.noseShape, ['normal'], DEFAULT_AVATAR_FEATURES.noseShape),
-    mouthShape: pick(value?.mouthShape, ['smile', 'neutral', 'surprised'], DEFAULT_AVATAR_FEATURES.mouthShape),
-    outfit: pick(value?.outfit, ['casual', 'formal', 'sporty', 'trendy', 'book-lover'], DEFAULT_AVATAR_FEATURES.outfit),
-    accessory: pick(value?.accessory, ['none'], DEFAULT_AVATAR_FEATURES.accessory),
+    skinTone: pick(settings.skinTone, ['#f4d1ae', '#deb887', '#d2691e', '#8b4513', '#654321', '#2f1b14'], DEFAULT_AVATAR_FEATURES.skinTone),
+    hairStyle: pick(settings.hairStyle, ['short', 'long', 'curly', 'bald', 'ponytail', 'buzz'], DEFAULT_AVATAR_FEATURES.hairStyle),
+    hairColor: pick(settings.hairColor, ['#000000', '#8b4513', '#daa520', '#ff6347', '#9370db', '#32cd32'], DEFAULT_AVATAR_FEATURES.hairColor),
+    eyeShape: pick(settings.eyeShape, ['normal', 'round', 'narrow', 'wide'], DEFAULT_AVATAR_FEATURES.eyeShape),
+    eyeColor: pick(settings.eyeColor, ['#654321', '#4169e1', '#228b22', '#808080', '#800080'], DEFAULT_AVATAR_FEATURES.eyeColor),
+    noseShape: pick(settings.noseShape, ['normal'], DEFAULT_AVATAR_FEATURES.noseShape),
+    mouthShape: pick(settings.mouthShape, ['smile', 'neutral', 'surprised'], DEFAULT_AVATAR_FEATURES.mouthShape),
+    outfit: pick(settings.outfit, ['casual', 'formal', 'sporty', 'trendy', 'book-lover'], DEFAULT_AVATAR_FEATURES.outfit),
+    accessory: pick(settings.accessory, ['none'], DEFAULT_AVATAR_FEATURES.accessory),
   };
 };
 
@@ -54,7 +55,7 @@ interface BitmojiCreatorProps {
   onClose: () => void;
   onSave: (avatarData: string) => void;
   currentAvatar?: string;
-  initialFeatures?: Partial<BitmojiFeatures> | null;
+  initialFeatures?: unknown;
 }
 
 export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
