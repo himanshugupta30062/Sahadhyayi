@@ -346,6 +346,8 @@ export function MapplsMap({
       }
       mapInstance.current = null;
     };
+    // Center changes are handled by the dedicated effect below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiKey, containerId, retryCount]);
 
   useEffect(() => {
@@ -396,6 +398,7 @@ export function MapplsMap({
         markers.current.push(marker);
       } catch {
         setErrorMessage('The map loaded, but one or more reader markers could not be added.');
+        setStatus('error');
       }
     });
 
