@@ -103,7 +103,7 @@ export const BookReelPlayer: React.FC<BookReelPlayerProps> = ({
 
   // Video event handlers
   const handleLoadedMetadata = () => {
-    if (videoRef.current && !isNaN(videoRef.current.duration) && videoRef.current.duration > 0) {
+    if (videoRef.current && !Number.isNaN(videoRef.current.duration) && videoRef.current.duration > 0) {
       setDuration(videoRef.current.duration);
     }
     setIsLoading(false);

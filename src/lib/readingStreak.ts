@@ -80,7 +80,7 @@ export const mergeLegacyActivityDates = (
   for (const timestamp of legacyTimestamps) {
     if (!timestamp) continue;
     const date = new Date(timestamp);
-    if (isNaN(date.getTime())) continue;
+    if (Number.isNaN(date.getTime())) continue;
 
     const dayKey = localDayKey(date, timezone);
     if (dayKey < cutoverDate && !daySet.has(dayKey)) {

@@ -65,8 +65,11 @@ const BookCard = ({ book, onDownloadPDF = () => {} }: BookCardProps) => {
 
   return (
     <Card className="group hover:shadow-warm transition-all duration-300 transform hover:-translate-y-1 bg-card border-border overflow-hidden">
-      <div 
-        className="aspect-[3/4] bg-gradient-primary relative overflow-hidden cursor-pointer"
+      <button
+        type="button"
+        aria-label={isHovered ? `Hide details for ${book.title}` : `Show details for ${book.title}`}
+        aria-expanded={isHovered}
+        className="block w-full text-left aspect-[3/4] bg-gradient-primary relative overflow-hidden cursor-pointer"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={() => setIsHovered((visible) => !visible)}

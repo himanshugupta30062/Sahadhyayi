@@ -95,7 +95,7 @@ async function fetchGutenbergBooks(): Promise<BookCandidate[]> {
           pdf_url: pdf,
           epub_url: epub,
           cover_url: cover,
-          publication_year: book.authors?.[0]?.death_year ? parseInt(book.authors[0].death_year) - 40 : undefined,
+          publication_year: book.authors?.[0]?.death_year ? Number.parseInt(book.authors[0].death_year) - 40 : undefined,
           language: book.languages?.[0] === "en" ? "English" : book.languages?.[0],
           subjects: book.subjects || [],
           description: book.summaries?.[0],
@@ -143,7 +143,7 @@ async function fetchInternetArchiveBooks(): Promise<BookCandidate[]> {
         source: "internet_archive",
         pdf_url: pdfUrl,
         cover_url: `https://archive.org/services/img/${id}`,
-        publication_year: item.date ? parseInt(item.date.split("-")[0]) : undefined,
+        publication_year: item.date ? Number.parseInt(item.date.split("-")[0]) : undefined,
         language: "English",
         subjects: Array.isArray(item.subject) ? item.subject : item.subject ? [item.subject] : [],
         description: Array.isArray(item.description) ? item.description[0] : item.description,
@@ -235,7 +235,7 @@ async function verifyPdfUrl(pdfUrl: string): Promise<{ valid: boolean; error?: s
 
     const contentType = headResponse.headers.get("content-type") || "";
     const contentLength = headResponse.headers.get("content-length");
-    const size = contentLength ? parseInt(contentLength, 10) : undefined;
+    const size = contentLength ? Number.parseInt(contentLength, 10) : undefined;
 
     if (size && size > MAX_PDF_SIZE) {
       return { valid: false, error: `PDF too large: ${size} bytes` };
