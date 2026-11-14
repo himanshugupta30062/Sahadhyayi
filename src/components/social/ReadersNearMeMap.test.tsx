@@ -83,7 +83,7 @@ vi.mock('@/components/social/ChatWindow', () => ({
 }));
 
 vi.mock('@/components/maps/MapplsMap', () => ({
-  MapplsMap: ({ points }: { points: Array<{ id: string; title: string }> }) => (
+  MapplsMap: ({ points }: { points: Array<{ id: string; title: string; lat?: number; lng?: number; avatarUrl?: string; isCurrentUser?: boolean; isFriend?: boolean; clusterCount?: number }> }) => (
     <div data-testid="map-points">{points.map((point) => point.title).join(', ')}</div>
   ),
 }));
