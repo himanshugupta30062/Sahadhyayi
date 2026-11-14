@@ -1,5 +1,5 @@
 import React from "react";
-import HeroAtomicRings from "./hero/HeroAtomicRings";
+import HeroAtomicRings3D from "./hero/HeroAtomicRings3D";
 import { HeroContent } from "./hero/HeroContent";
 import { BookOpen } from "lucide-react";
 import HomeFloatingBooks from "./home/HomeFloatingBooks";
@@ -34,7 +34,7 @@ const AnimatedHero: React.FC = () => {
           {/* Right Column: Five clearly labelled, interactive feature orbits */}
           <div className="lg:col-span-6 xl:col-span-5 flex items-center justify-center order-2">
             <div className="relative w-full max-w-[380px] sm:max-w-[440px] md:max-w-[500px] lg:max-w-[580px] xl:max-w-[620px] aspect-square flex items-center justify-center">
-              <HeroAtomicRings size="100%" className="w-full h-full max-w-full max-h-full">
+              <HeroAtomicRings3D size="100%" className="w-full h-full max-w-full max-h-full">
                 {/* Center Core Brand Sigil — kept inside the animated rings */}
                 <div className="text-center p-3 select-none pointer-events-none flex flex-col items-center justify-center">
                   <div className="relative mb-2 flex items-center justify-center">
@@ -56,7 +56,7 @@ const AnimatedHero: React.FC = () => {
                     Sahadhyayi
                   </span>
                 </div>
-              </HeroAtomicRings>
+              </HeroAtomicRings3D>
             </div>
           </div>
         </div>

@@ -321,7 +321,7 @@ export const HomeBookDiscovery: React.FC = () => {
 
   return (
     <section
-      className="home-book-discovery relative isolate py-16 sm:py-20 lg:py-24 bg-[#FAF9F5] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden transition-colors duration-300"
+      className="home-book-discovery relative isolate py-10 sm:py-14 lg:py-16 bg-[#FAF9F5] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] overflow-hidden transition-colors duration-300"
       aria-label="Book Discovery"
     >
       <style>{`
@@ -358,7 +358,7 @@ export const HomeBookDiscovery: React.FC = () => {
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8 sm:mb-10">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6 sm:mb-8">
           <div className="max-w-xl">
             <div className="flex items-center gap-2.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.24em] text-[#8F681C] dark:text-[#D5B16D] mb-3">
               <span aria-hidden="true" className="h-px w-7 bg-[#8F681C] dark:bg-[#D5B16D]" />
@@ -401,7 +401,7 @@ export const HomeBookDiscovery: React.FC = () => {
 
         {/* Category Pills (All Real Genres from Catalog) */}
         {allAvailableGenres.length > 1 && (
-          <div className="relative mb-8 -mx-1 px-1">
+          <div className="relative mb-5 -mx-1 px-1">
             {/* Scroll Navigation Chevrons */}
             {canScrollLeft && (
               <button
@@ -516,36 +516,34 @@ export const HomeBookDiscovery: React.FC = () => {
         )}
       </div>
 
-      {/* Continuously Moving Book Cover Ribbon Carousel */}
+      {/* Continuously Moving Book Cover Ribbon Carousel (Single Compact Track) */}
       {!isLoading && !isError && curatedBooks.length > 0 && (
-        <div className="relative mt-2 space-y-5 py-4">
-          {[{ key: "upper", books: marqueeItems, reverse: true }, { key: "lower", books: [...marqueeItems].reverse(), reverse: false }].map((ribbon) => (
-            <div key={ribbon.key} className="relative w-full overflow-hidden py-2">
+        <div className="relative mt-1 py-2">
           {/* Subtle editorial fade edges */}
           <div
-            className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-20 bg-gradient-to-r from-[#FAF9F5] dark:from-[#0B0D0C] to-transparent z-10"
+            className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-[#FAF9F5] dark:from-[#0B0D0C] to-transparent z-10"
             aria-hidden="true"
           />
           <div
-            className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-20 bg-gradient-to-l from-[#FAF9F5] dark:from-[#0B0D0C] to-transparent z-10"
+            className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-[#FAF9F5] dark:from-[#0B0D0C] to-transparent z-10"
             aria-hidden="true"
           />
 
           <div
-            className={`sahadhyayi-marquee-track flex gap-4 sm:gap-6 px-4 ${
-              isMarqueeActive ? 'sahadhyayi-marquee-animating' + (ribbon.reverse ? ' sahadhyayi-marquee-reverse' : '') : 'overflow-x-auto scrollbar-none justify-center'
+            className={`sahadhyayi-marquee-track flex gap-3 sm:gap-4 px-4 ${
+              isMarqueeActive ? 'sahadhyayi-marquee-animating' : 'overflow-x-auto scrollbar-none justify-center'
             }`}
             style={{
               animationPlayState: isPaused ? 'paused' : 'running',
             }}
           >
-            {/* Primary Track Set A (Always accessible to screen readers & keyboard navigation) */}
-            <div className="flex gap-4 sm:gap-6 flex-shrink-0">
-              {ribbon.books.map((book: Book, idx: number) => (
+            {/* Primary Track (Always accessible to screen readers & keyboard navigation) */}
+            <div className="flex gap-3 sm:gap-4 flex-shrink-0">
+              {marqueeItems.map((book: Book, idx: number) => (
                 <Link
                   key={`primary-${book.id}-${idx}`}
                   to={`/book/${book.id}`}
-                  className="group flex flex-col w-[42vw] max-w-[180px] sm:w-44 md:w-48 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:focus-visible:ring-[#D5B16D] rounded-xl"
+                  className="group flex flex-col w-[42vw] max-w-[180px] sm:w-40 md:w-44 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:focus-visible:ring-[#D5B16D] rounded-xl"
                   title={`${book.title} by ${book.author || 'Unknown author'}`}
                   aria-label={`View details for ${book.title} by ${book.author || 'Unknown author'}`}
                 >
@@ -557,7 +555,7 @@ export const HomeBookDiscovery: React.FC = () => {
                   </div>
 
                   {/* Metadata */}
-                  <div className="mt-2.5 min-w-0">
+                  <div className="mt-2 min-w-0">
                     <h3 className="font-serif text-xs sm:text-sm font-semibold text-[#1C201D] dark:text-[#F3F0E7] truncate group-hover:text-[#8F681C] dark:group-hover:text-[#D5B16D] transition-colors leading-snug">
                       {book.title}
                     </h3>
@@ -574,16 +572,16 @@ export const HomeBookDiscovery: React.FC = () => {
               ))}
             </div>
 
-            {/* Seamless Duplicate Track Set B (Only rendered when marquee is active for infinite loop) */}
+            {/* Seamless Duplicate Track (Only rendered when marquee is active for infinite loop) */}
             {isMarqueeActive && (
-              <div className="flex gap-4 sm:gap-6 flex-shrink-0" aria-hidden="true">
-                {ribbon.books.map((book: Book, idx: number) => (
+              <div className="flex gap-3 sm:gap-4 flex-shrink-0" aria-hidden="true">
+                {marqueeItems.map((book: Book, idx: number) => (
                   <Link
                     key={`duplicate-${book.id}-${idx}`}
                     to={`/book/${book.id}`}
                     tabIndex={-1}
                     aria-hidden="true"
-                    className="group flex flex-col w-[42vw] max-w-[180px] sm:w-44 md:w-48 flex-shrink-0 rounded-xl"
+                    className="group flex flex-col w-[42vw] max-w-[180px] sm:w-40 md:w-44 flex-shrink-0 rounded-xl"
                   >
                     {/* Book Cover Container with 2:3 aspect ratio */}
                     <div className="relative aspect-[2/3] w-full rounded-2xl overflow-hidden bg-white dark:bg-[#141816] border border-[#E5E0D8] dark:border-[#242E28] shadow-[0_4px_16px_rgba(28,32,29,0.06)] dark:shadow-sm transition-all duration-300 group-hover:border-[#8F681C]/80 dark:group-hover:border-[#D5B16D]/70 group-hover:shadow-[0_12px_28px_rgba(28,32,29,0.12)] dark:group-hover:shadow-[0_12px_28px_rgba(0,0,0,0.65)] group-hover:-translate-y-1.5">
@@ -592,7 +590,7 @@ export const HomeBookDiscovery: React.FC = () => {
                     </div>
 
                     {/* Metadata */}
-                    <div className="mt-2.5 min-w-0">
+                    <div className="mt-2 min-w-0">
                       <h3 className="font-serif text-xs sm:text-sm font-semibold text-[#1C201D] dark:text-[#F3F0E7] truncate group-hover:text-[#8F681C] dark:group-hover:text-[#D5B16D] transition-colors leading-snug">
                         {book.title}
                       </h3>
@@ -610,8 +608,6 @@ export const HomeBookDiscovery: React.FC = () => {
               </div>
             )}
           </div>
-          </div>
-          ))}
         </div>
       )}
     </section>

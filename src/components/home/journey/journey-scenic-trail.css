@@ -491,10 +491,13 @@
   font-weight: 850;
   letter-spacing: .16em;
   pointer-events: none;
+  transform: translate(-50%, -50%);
 }
 
-.journey-scenic-trail__start-label { top: 2.1%; left: 1.5%; }
-.journey-scenic-trail__finish-label { right: 1.5%; bottom: 1.4%; }
+/* Desktop path starts at (500, 130) in 1400x1380 viewBox = ~35.7% left, ~9.4% top */
+/* Desktop path ends at (900, 1250) in 1400x1380 viewBox = ~64.3% left, ~90.6% top */
+.journey-scenic-trail__start-label { top: 9.4%; left: 35.7%; }
+.journey-scenic-trail__finish-label { top: 90.6%; left: 64.3%; }
 
 .dark .journey-scenic-trail__start-label,
 .dark .journey-scenic-trail__finish-label {
@@ -1065,12 +1068,13 @@
     right: auto;
     font-size: 7px;
     padding: 4px 7px;
+    transform: translate(-50%, -50%);
   }
 
-  .journey-scenic-trail__finish-label {
-    left: auto;
-    right: 12px;
-  }
+  /* Mobile path starts at (125, 130) = ~8.9% left, ~9.4% top */
+  /* Mobile path ends at (145, 1250) = ~10.4% left, ~90.6% top */
+  .journey-scenic-trail__start-label { top: 9.4%; left: 12%; }
+  .journey-scenic-trail__finish-label { top: 90.6%; left: 12%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
