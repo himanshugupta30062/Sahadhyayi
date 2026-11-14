@@ -39,6 +39,20 @@ describe('MapAvatarControl', () => {
     expect(screen.getByTestId('initial-features')).toHaveTextContent('null');
   });
 
+  it('uses the existing profile photo until a custom Bitmoji is saved', () => {
+    avatarMocks.data = {
+      avatar_img_url: 'https://cdn.sahadhyayi.com/profile/reader.png',
+    };
+
+    render(<MapAvatarControl />);
+
+    expect(screen.getByRole('img', { name: 'Your profile photo' })).toHaveAttribute(
+      'src',
+      'https://cdn.sahadhyayi.com/profile/reader.png',
+    );
+    expect(screen.getByRole('button', { name: 'Create Bitmoji' })).toBeInTheDocument();
+  });
+
   it('shows the saved Bitmoji and reopens the editor with saved customizations', () => {
     avatarMocks.data = {
       avatar_img_url: 'data:image/svg+xml;base64,PHN2Zy8+',
