@@ -40,6 +40,7 @@ import {
   HourPoint,
   useCommunityPulse,
   getBaselineStats,
+  COUNTRY_CODE_TO_NAME,
 } from '@/hooks/useCommunityPulse';
 import { useToast } from '@/hooks/use-toast';
 import './CommunityPulseDialog.theme.css';
@@ -265,9 +266,17 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
   // Authoritative metrics computation: measured zero stays zero, missing data stays unavailable
   const effectiveStats: PulseStats = React.useMemo(() => {
     if (stats) {
+      const pv = timeframe === '7d' ? (stats.dualTable?.rolling7dViews ?? stats.pageViews)
+        : timeframe === '30d' ? (stats.dualTable?.rolling30dViews ?? stats.pageViews)
+        : (stats.dualTable?.rolling24hViews ?? stats.pageViews);
+      const uv = timeframe === '7d' ? (stats.dualTable?.uniqueVisitors7d ?? stats.uniqueVisitors)
+        : timeframe === '30d' ? (stats.dualTable?.uniqueVisitors30d ?? stats.uniqueVisitors)
+        : (stats.dualTable?.uniqueVisitors24h ?? stats.uniqueVisitors);
+
       return {
-        pageViews: typeof stats.pageViews === 'number' ? stats.pageViews : null,
-        uniqueVisitors: typeof stats.uniqueVisitors === 'number' ? stats.uniqueVisitors : null,
+        ...stats,
+        pageViews: typeof pv === 'number' ? pv : null,
+        uniqueVisitors: typeof uv === 'number' ? uv : null,
         sessions: typeof stats.sessions === 'number' ? stats.sessions : null,
         newReaders: typeof stats.newReaders === 'number' ? stats.newReaders : null,
         totalMembers: typeof stats.totalMembers === 'number' ? stats.totalMembers : null,
@@ -301,6 +310,22 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
     }
     return getBaselineStats(timeframe);
   }, [stats, timeframe]);
+
+  // Dynamically compile available countries for the filter dropdown
+  const availableCountries = React.useMemo(() => {
+    const list = new Set<string>();
+    visitors.forEach(v => {
+      if (v.countryName) list.add(v.countryName);
+      else if (v.countryCode && COUNTRY_CODE_TO_NAME[v.countryCode.toUpperCase()]) {
+        list.add(COUNTRY_CODE_TO_NAME[v.countryCode.toUpperCase()]);
+      }
+    });
+    (effectiveStats.countries || []).forEach(c => {
+      if (c.name) list.add(c.name);
+    });
+    ['India', 'United States', 'United Kingdom', 'Canada', 'Germany', 'Australia'].forEach(c => list.add(c));
+    return Array.from(list).filter(Boolean).sort();
+  }, [visitors, effectiveStats.countries]);
 
   // Unique visitors must use real per-hour aggregates; do not estimate them from pageviews.
   const hourlyUniqueDataAvailable = effectiveStats.hourlyActivity.some(
@@ -341,13 +366,13 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="pulse-modal-title"
-      className="community-pulse-dialog fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-3 md:p-4 lg:p-6 bg-black/85 backdrop-blur-sm animate-in fade-in-0 duration-200 overflow-hidden"
+      className="community-pulse-dialog fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-4 md:p-6 bg-black/85 backdrop-blur-sm animate-in fade-in-0 duration-200 overflow-hidden"
       onClick={e => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className="relative flex flex-col w-full h-full sm:w-[95vw] sm:max-w-[1600px] sm:h-[92vh] sm:max-h-[94vh] my-auto rounded-none sm:rounded-2xl border-0 sm:border border-white/[0.09] bg-[#0B0D0C] text-stone-100 shadow-2xl overflow-hidden min-w-0"
+        className="relative flex flex-col w-full h-full sm:w-[92vw] sm:max-w-5xl lg:max-w-6xl xl:max-w-7xl sm:h-[88vh] sm:max-h-[88vh] my-auto rounded-none sm:rounded-2xl border-0 sm:border border-white/[0.09] bg-[#0B0D0C] text-stone-100 shadow-2xl overflow-hidden min-w-0"
       >
         {/* Sticky Fixed Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 md:px-8 py-3 sm:py-4 border-b border-white/[0.08] bg-[#0E1210]/95 flex-shrink-0 min-w-0 z-20">
@@ -1098,7 +1123,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                   <span>Traffic Breakdowns</span>
                   <span className="text-[10px] text-stone-500 font-normal">Directly aggregated from telemetry</span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 min-w-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 min-w-0">
                   {/* 1. Most Visited Pages */}
                   <Panel
                     title="Top Pages"
@@ -1402,11 +1427,9 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                     className="bg-[#111614] border border-white/[0.09] text-xs text-stone-300 rounded-xl px-2.5 sm:px-3 py-2 focus:outline-none focus:border-[#D5B16D]"
                   >
                     <option value="all">All Countries</option>
-                    <option value="India">India</option>
-                    <option value="United States">United States</option>
-                    <option value="United Kingdom">United Kingdom</option>
-                    <option value="Canada">Canada</option>
-                    <option value="Germany">Germany</option>
+                    {availableCountries.map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
                   </select>
 
                   <select
@@ -1441,15 +1464,15 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
               {/* Visitors Table Container */}
               <div className="rounded-xl border border-white/[0.09] bg-[#111614] overflow-hidden min-w-0 w-full max-w-full">
                 <div className="overflow-x-auto max-w-full">
-                  <table className="w-full text-left text-xs text-stone-300 min-w-[550px]">
+                  <table className="w-full text-left text-xs text-stone-300 min-w-full">
                     <thead className="bg-[#161e1a] text-stone-400 font-semibold border-b border-white/[0.08]">
                       <tr>
-                        <th className="py-3 px-3 sm:px-4">Time</th>
-                        <th className="py-3 px-3 sm:px-4">Visitor</th>
-                        <th className="py-3 px-3 sm:px-4">Location</th>
-                        <th className="py-3 px-3 sm:px-4">Page</th>
-                        <th className="py-3 px-3 sm:px-4">Referrer</th>
-                        <th className="py-3 px-3 sm:px-4">Device</th>
+                        <th className="py-3 px-3 sm:px-4 w-[12%]">Time</th>
+                        <th className="py-3 px-3 sm:px-4 w-[14%]">Visitor</th>
+                        <th className="py-3 px-3 sm:px-4 w-[20%]">Location</th>
+                        <th className="py-3 px-3 sm:px-4 w-[26%]">Page</th>
+                        <th className="py-3 px-3 sm:px-4 w-[14%]">Referrer</th>
+                        <th className="py-3 px-3 sm:px-4 w-[14%]">Device</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/[0.05]">
@@ -1480,25 +1503,47 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
                                 <span className="font-mono text-[#D5B16D]">#{avatarHash}</span>
                               </div>
                             </td>
-                            <td className="py-3 px-3 sm:px-4 whitespace-nowrap">
-                              <span className="text-stone-200">{v.location}</span>
+                            <td className="py-3 px-3 sm:px-4">
+                              <span className="text-stone-200 block truncate max-w-[160px] sm:max-w-[200px]" title={v.location}>
+                                {v.location}
+                              </span>
                             </td>
-                            <td className="py-3 px-3 sm:px-4 whitespace-nowrap">
-                              <span className="font-mono text-stone-300">{v.page}</span>
+                            <td className="py-3 px-3 sm:px-4">
+                              <span className="font-mono text-stone-300 block truncate max-w-[180px] sm:max-w-[240px]" title={v.page}>
+                                {v.page}
+                              </span>
                             </td>
-                            <td className="py-3 px-3 sm:px-4 whitespace-nowrap">
-                              <span className="text-stone-400 truncate max-w-[140px] block">{v.referrer}</span>
+                            <td className="py-3 px-3 sm:px-4">
+                              <span className="text-stone-400 truncate max-w-[120px] sm:max-w-[160px] block" title={v.referrer}>
+                                {v.referrer}
+                              </span>
                             </td>
-                            <td className="py-3 px-3 sm:px-4 whitespace-nowrap">
-                              <span className="text-stone-400">{v.device}</span>
+                            <td className="py-3 px-3 sm:px-4">
+                              <span className="text-stone-400 block truncate max-w-[120px] sm:max-w-[160px]" title={v.device}>
+                                {v.device}
+                              </span>
                             </td>
                           </tr>
                         );
                       })}
                       {paginatedVisitors.length === 0 && !visitorsLoading && (
                         <tr>
-                          <td colSpan={6} className="py-12 text-center text-stone-500">
-                            No visitor sessions found matching your filters.
+                          <td colSpan={6} className="py-12 text-center text-stone-500 space-y-2">
+                            <div>No visitor sessions found matching your filters.</div>
+                            {(visitorSearch || countryFilter !== 'all' || deviceFilter !== 'all') && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setVisitorSearch('');
+                                  setCountryFilter('all');
+                                  setDeviceFilter('all');
+                                  setPage(1);
+                                }}
+                                className="text-xs text-[#D5B16D] hover:underline inline-block mt-1 font-medium"
+                              >
+                                Clear all filters
+                              </button>
+                            )}
                           </td>
                         </tr>
                       )}
