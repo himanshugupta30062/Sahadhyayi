@@ -5,6 +5,8 @@ import { supabase } from '@/integrations/supabase/client-universal';
 import { useParams } from 'react-router-dom';
 import { MapplsMap, type MapplsPoint } from '@/components/maps/MapplsMap';
 import { MAPPLS_API_KEY } from '@/config/mappls';
+import { getMyLocationSharingState } from '@/lib/locationSharingService';
+import { useUserAvatar } from '@/hooks/useUserAvatar';
 import { useAuth } from '@/contexts/authHelpers';
 
 interface ReaderProfile {
@@ -12,11 +14,13 @@ interface ReaderProfile {
   full_name: string | null;
   location_lat: number | null;
   location_lng: number | null;
+  avatar_img_url?: string | null;
 }
 
 const ReaderMap = () => {
   const { bookId } = useParams<{ bookId: string }>();
   const { user } = useAuth();
+  const { data: userAvatar } = useUserAvatar();
   const [readers, setReaders] = useState<ReaderProfile[]>([]);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isSharingLocation, setIsSharingLocation] = useState(false);
@@ -32,45 +36,20 @@ const ReaderMap = () => {
 
     const checkUserLocation = async () => {
       try {
-        const [profileResult, consentResult] = await Promise.all([
-          supabase
-            .from('profiles')
-            .select('location_sharing, location_lat, location_lng')
-            .eq('id', user.id)
-            .maybeSingle(),
-          supabase.rpc('has_location_consent', { user_uuid: user.id }),
-        ]);
-
+        const locationState = await getMyLocationSharingState(user.id);
         if (!active) return;
 
-        const sharingEnabled =
-          !profileResult.error &&
-          !consentResult.error &&
-          consentResult.data === true &&
-          profileResult.data?.location_sharing === true &&
-          profileResult.data.location_lat != null &&
-          profileResult.data.location_lng != null;
-
+        const sharingEnabled = locationState.isSharing && locationState.location !== null;
         setIsSharingLocation(sharingEnabled);
-        if (sharingEnabled) {
-          const loc = {
-            lat: Number(profileResult.data!.location_lat),
-            lng: Number(profileResult.data!.location_lng),
-          };
-          setUserLocation(loc);
+        setUserLocation(sharingEnabled ? locationState.location : null);
 
-          // If bookId is present, ensure user is registered for this book
-          if (bookId) {
-            void Promise.resolve(
-              supabase.rpc('share_book_location', {
-                book_uuid: bookId,
-                lat: loc.lat,
-                lng: loc.lng,
-              }),
-            ).catch((err) => console.warn('Could not sync user book location:', err));
-          }
-        } else {
-          setUserLocation(null);
+        if (sharingEnabled && locationState.location && bookId) {
+          const { error } = await supabase.rpc('share_book_location', {
+            book_uuid: bookId,
+            lat: locationState.location.lat,
+            lng: locationState.location.lng,
+          });
+          if (error) console.warn('Could not sync user book location:', error);
         }
       } catch (err) {
         console.warn('Could not verify reader location state:', err);
@@ -107,6 +86,7 @@ const ReaderMap = () => {
         lng: userLocation.lng,
         title: 'You (Your location)',
         description: 'Your shared location',
+        avatarUrl: userAvatar?.avatar_img_url ?? null,
       });
     }
     readers
@@ -120,11 +100,12 @@ const ReaderMap = () => {
             lat,
             lng,
             title: reader.full_name || 'Reader',
+            avatarUrl: reader.avatar_img_url ?? null,
           });
         }
       });
     return list;
-  }, [readers, isSharingLocation, userLocation]);
+  }, [readers, isSharingLocation, userLocation, userAvatar?.avatar_img_url]);
 
   return (
     <>
