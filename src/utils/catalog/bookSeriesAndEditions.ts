@@ -144,7 +144,7 @@ export function parseBookSeries(
   // 1. Look for parenthetical or bracketed series: e.g. "(Dune Chronicles, #1)", "(The Lord of the Rings, Book 1 of 3)"
   // Simplified to avoid catastrophic backtracking: use atomic groups and possessive quantifiers where possible
   // Match: (Series Name, #1) or (Series Name, Book 1) or (Series Name, Vol. 1) etc.
-  const bracketRegex = /[[(]\s*([^()[\]]{1,100}?)\s*[,:]\s*(?:#|book|vol(?:ume|\.)?|part|खण्ड|भाग|अंक)?\s*([0-9ivxlcdm०-९]+(?:\.[0-9]+)?|prequel|novella|companion)(?:\s+of\s+([0-9०-९]{1,3}))?\s*[)\]]/i;
+  const bracketRegex = /(?:\(|\[)\s*([^()[\]]{1,100}?)\s*[,:]\s*(?:#|book|vol(?:ume|\.)?|part|खण्ड|भाग|अंक)?\s*([0-9ivxlcdm०-९]+(?:\.[0-9]+)?|prequel|novella|companion)(?:\s+of\s+([0-9०-९]{1,3}))?\s*(?:\)|\])/i;
   const bracketMatch = rawTitle.match(bracketRegex);
 
   if (bracketMatch) {
