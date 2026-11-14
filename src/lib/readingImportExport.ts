@@ -288,15 +288,15 @@ export const normalizeString = (str?: string | null): string =>
 
 export const parseRatingNumber = (val?: string | number | null): number | null => {
   if (val === null || val === undefined || val === '') return null;
-  const num = typeof val === 'number' ? val : parseFloat(String(val).trim());
-  if (isNaN(num) || num <= 0) return null;
+  const num = typeof val === 'number' ? val : Number.parseFloat(String(val).trim());
+  if (Number.isNaN(num) || num <= 0) return null;
   return Math.min(5, Math.max(1, Math.round(num)));
 };
 
 export const parseNumberOrNull = (val?: string | number | null): number | null => {
   if (val === null || val === undefined || val === '') return null;
-  const num = typeof val === 'number' ? val : parseInt(String(val).trim(), 10);
-  return isNaN(num) || num <= 0 ? null : num;
+  const num = typeof val === 'number' ? val : Number.parseInt(String(val).trim(), 10);
+  return Number.isNaN(num) || num <= 0 ? null : num;
 };
 
 // ----------------------------------------------------------------------

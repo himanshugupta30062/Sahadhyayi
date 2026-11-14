@@ -22,6 +22,12 @@ const ALLOWED_HOST_SUFFIXES = [
   'oapen.org',
   'google.com',
   'googleusercontent.com',
+  'ncert.nic.in',
+  'gitapress.org',
+  'umn.edu',
+  'edu',
+  'github.io',
+  'githubusercontent.com',
 ]
 
 // Block private / loopback / link-local IPv4 ranges and IPv6 equivalents.

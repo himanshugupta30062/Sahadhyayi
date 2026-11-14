@@ -29,7 +29,7 @@ export const BookSeriesSection: React.FC<BookSeriesSectionProps> = ({ book, clas
 
   const currentVolume = series.volumes.find(v => v.bookId === book.id || v.isCurrentBook);
   const sequenceDisplay = currentVolume?.rawSequence
-    ? isNaN(Number(currentVolume.rawSequence))
+    ? Number.isNaN(Number(currentVolume.rawSequence))
       ? currentVolume.rawSequence
       : `Book ${currentVolume.rawSequence}${series.totalVolumes ? ` of ${series.totalVolumes}` : ''}`
     : currentVolume?.sequenceNumber
@@ -159,7 +159,7 @@ export const BookSeriesSection: React.FC<BookSeriesSectionProps> = ({ book, clas
               {series.volumes.map((vol) => {
                 const isCurrent = vol.bookId === book.id || vol.isCurrentBook;
                 const volumeLabel = vol.rawSequence
-                  ? isNaN(Number(vol.rawSequence))
+                  ? Number.isNaN(Number(vol.rawSequence))
                     ? vol.rawSequence
                     : `#${vol.rawSequence}`
                   : vol.sequenceNumber

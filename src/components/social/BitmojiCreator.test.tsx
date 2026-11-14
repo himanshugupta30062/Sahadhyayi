@@ -174,18 +174,18 @@ describe('BitmojiCreator', () => {
     // Select glasses from Accessories tab
     const accessoryTabs = screen.getAllByRole('tab', { name: 'Accessories' });
     fireEvent.click(accessoryTabs[accessoryTabs.length - 1]);
+    fireEvent.click(screen.getByRole('button', { name: 'glasses' }));
     await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: 'glasses' }));
+      expect(screen.getByRole('button', { name: 'glasses' })).toHaveAttribute('data-variant', 'default');
     });
-    expect(screen.getByRole('button', { name: 'glasses' })).toHaveAttribute('data-variant', 'default');
 
     // Select book from Reading tab
     const readingTabs = screen.getAllByRole('tab', { name: 'Reading' });
     fireEvent.click(readingTabs[readingTabs.length - 1]);
+    fireEvent.click(screen.getByRole('button', { name: 'book' }));
     await waitFor(() => {
-      fireEvent.click(screen.getByRole('button', { name: 'book' }));
+      expect(screen.getByRole('button', { name: 'book' })).toHaveAttribute('data-variant', 'default');
     });
-    expect(screen.getByRole('button', { name: 'book' })).toHaveAttribute('data-variant', 'default');
 
     // Preview should contain accessory and reading accessory SVG elements
     const preview = container.querySelector('[class*="rounded-2xl"]');

@@ -208,12 +208,12 @@ export const BookReadingJournal: React.FC<Props> = ({
               </div>
               {entry.type === 'reflection' && editingId === (entry.rawItem as { id: string }).id ? (
                 <div className="space-y-2 rounded-md border border-border/60 bg-background/60 p-2">
-                  <label className="text-xs font-medium">Quoted passage</label>
-                  <Textarea aria-label="Edit reflection quote" value={editQuote} onChange={(event) => setEditQuote(event.target.value)} rows={2} />
-                  <label className="text-xs font-medium">Your reflection</label>
-                  <Textarea aria-label="Edit reflection note" value={editNote} onChange={(event) => setEditNote(event.target.value)} rows={3} />
-                  <label className="text-xs font-medium">Page</label>
-                  <Input aria-label="Edit reflection page" type="number" min={1} value={editPage} onChange={(event) => setEditPage(event.target.value)} className="w-24" />
+                  <label htmlFor="edit-reflection-quote" className="text-xs font-medium">Quoted passage</label>
+                  <Textarea id="edit-reflection-quote" aria-label="Edit reflection quote" value={editQuote} onChange={(event) => setEditQuote(event.target.value)} rows={2} />
+                  <label htmlFor="edit-reflection-note" className="text-xs font-medium">Your reflection</label>
+                  <Textarea id="edit-reflection-note" aria-label="Edit reflection note" value={editNote} onChange={(event) => setEditNote(event.target.value)} rows={3} />
+                  <label htmlFor="edit-reflection-page" className="text-xs font-medium">Page</label>
+                  <Input id="edit-reflection-page" aria-label="Edit reflection page" type="number" min={1} value={editPage} onChange={(event) => setEditPage(event.target.value)} className="w-24" />
                   <div className="flex justify-end gap-2">
                     <Button size="sm" variant="ghost" onClick={cancelEdit}><X className="mr-1 h-3 w-3" />Cancel</Button>
                     <Button size="sm" onClick={() => void saveEdit()} disabled={updateMarginNote.isPending}><Save className="mr-1 h-3 w-3" />Save</Button>

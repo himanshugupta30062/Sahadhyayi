@@ -127,7 +127,7 @@ export const DnfBookDialog: React.FC<DnfBookDialogProps> = ({
                 min={1}
                 max={maxPage}
                 value={stoppedPage}
-                onChange={(e) => setStoppedPage(parseInt(e.target.value, 10) || 1)}
+                onChange={(e) => setStoppedPage(Number.parseInt(e.target.value, 10) || 1)}
                 className="h-9 text-xs"
                 required
               />

@@ -4,7 +4,7 @@ import type { BookExperienceSummary } from '@/utils/moodPaceDiscovery';
 
 export function useBookExperienceSummary(bookIds: string[]) {
   const normalizedIds = Array.from(new Set(bookIds.filter((id): id is string => Boolean(id && id.trim()))));
-  const queryKey = ['book-experience-summary', normalizedIds.sort().join(',')];
+  const queryKey = ['book-experience-summary', normalizedIds.sort((a, b) => a.localeCompare(b)).join(',')];
 
   return useQuery({
     queryKey,

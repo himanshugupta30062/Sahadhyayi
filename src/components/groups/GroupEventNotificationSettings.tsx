@@ -12,7 +12,7 @@ const defaults:Preferences={enabled:true,event_reminders:true,digest_enabled:fal
 
 export default function GroupEventNotificationSettings(){
  const [prefs,setPrefs]=useState<Preferences>(defaults),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false);
- useEffect(()=>{let alive=true;(async()=>{const {data:{user}}=await supabase.auth.getUser();if(!user){if(alive)setLoading(false);return;}
+ useEffect(()=>{let alive=true;void (async()=>{const {data:{user}}=await supabase.auth.getUser();if(!user){if(alive)setLoading(false);return;}
  const {data,error}=await supabase.from('reading_group_notification_preferences').select('enabled,event_reminders,digest_enabled,quiet_hours_enabled,quiet_hours_start,quiet_hours_end,timezone').eq('user_id',user.id).maybeSingle();
  if(error){toast.error('Could not load reminder settings');}else if(data&&alive)setPrefs({...defaults,...data,quiet_hours_start:data.quiet_hours_start?.slice(0,5)??defaults.quiet_hours_start,quiet_hours_end:data.quiet_hours_end?.slice(0,5)??defaults.quiet_hours_end});
  if(alive)setLoading(false);})();return()=>{alive=false;};},[]);

@@ -62,17 +62,20 @@ const SDK_LOAD_TIMEOUT_MS = 15_000;
 
 const loadMappls = (apiKey: string): Promise<void> => {
   if (window.mappls?.Map && window.mappls?.Marker) {
-    if (window.mapplsLoadingKey && window.mapplsLoadingKey !== apiKey) {
+    const existingKey = window.mapplsLoadingKey;
+    if (typeof existingKey === 'string' && existingKey !== apiKey) {
       return Promise.reject(new Error('A different Mappls key is already active in this page. Reload the page after changing the key.'));
     }
     return Promise.resolve();
   }
 
-  if (window.mapplsLoadingPromise) {
-    if (window.mapplsLoadingKey !== apiKey) {
+  const loadingPromise = window.mapplsLoadingPromise;
+  if (loadingPromise) {
+    const existingKey = window.mapplsLoadingKey;
+    if (typeof existingKey === 'string' && existingKey !== apiKey) {
       return Promise.reject(new Error('A Mappls SDK request is already loading with a different key. Reload the page and try again.'));
     }
-    return window.mapplsLoadingPromise;
+    return loadingPromise;
   }
 
   const loadPromise = new Promise<void>((resolve, reject) => {

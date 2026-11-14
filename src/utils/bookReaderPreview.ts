@@ -189,19 +189,12 @@ export const checkGoogleBooksEmbeddability = async (
     if (timeoutId) clearTimeout(timeoutId);
 
     if (!res.ok) {
-      if (res.status === 404) {
-        return {
-          id: cleanId,
-          embeddable: false,
-          viewability: 'NO_PAGES',
-          status: 'restricted',
-        };
-      }
       return {
         id: cleanId,
-        embeddable: true,
-        viewability: 'UNKNOWN',
-        status: 'unknown',
+        embeddable: false,
+        viewability: 'NO_PAGES',
+        status: 'restricted',
+        previewLink: `https://books.google.com/books?id=${encodeURIComponent(cleanId)}`,
       };
     }
 

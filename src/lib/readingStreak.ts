@@ -80,7 +80,7 @@ export const mergeLegacyActivityDates = (
   for (const timestamp of legacyTimestamps) {
     if (!timestamp) continue;
     const date = new Date(timestamp);
-    if (isNaN(date.getTime())) continue;
+    if (Number.isNaN(date.getTime())) continue;
 
     const dayKey = localDayKey(date, timezone);
     if (dayKey < cutoverDate && !daySet.has(dayKey)) {
@@ -90,7 +90,7 @@ export const mergeLegacyActivityDates = (
   }
 
   return {
-    mergedDates: Array.from(daySet).sort(),
+    mergedDates: Array.from(daySet).sort((a, b) => a.localeCompare(b)),
     hasLegacyFallback,
   };
 };
@@ -130,7 +130,7 @@ export const computeReadingStreak = (
   }
 
   // 2. Best streak: scan sorted unique days for longest consecutive sequence (lifetime, no 365d cap)
-  const sortedDays = Array.from(daySet).sort();
+  const sortedDays = Array.from(daySet).sort((a, b) => a.localeCompare(b));
   let best = 1;
   let run = 1;
   for (let i = 1; i < sortedDays.length; i++) {

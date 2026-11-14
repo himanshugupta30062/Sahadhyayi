@@ -161,8 +161,8 @@ export default function BookReviews({ bookId }: { bookId: string }) {
                     </label>
                   ))}
                 </div>
-                <label className="block text-sm font-medium">Your reading reaction</label>
-                <select className="w-full rounded-md border bg-background px-3 py-2 text-sm" value={readerReaction} onChange={e => setReaderReaction(e.target.value as ReaderReaction | '')} aria-label="Reading reaction">
+                <label htmlFor="reader-reaction-select" className="block text-sm font-medium">Your reading reaction</label>
+                <select id="reader-reaction-select" className="w-full rounded-md border bg-background px-3 py-2 text-sm" value={readerReaction} onChange={e => setReaderReaction(e.target.value as ReaderReaction | '')} aria-label="Reading reaction">
                   <option value="">Choose a reaction (optional)</option>{(['joyful','thoughtful','inspired','heartbroken','tense','surprised','comforted','challenged'] as ReaderReaction[]).map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
                 <p className="text-sm font-medium">Additional ratings (optional, 1–5)</p>
