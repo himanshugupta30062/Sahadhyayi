@@ -34,13 +34,15 @@ export const LocationPermissionModal: React.FC<LocationPermissionModalProps> = (
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-red-600">
                   <AlertCircle className="w-4 h-4" />
-                  <span className="font-medium">Location Access Failed</span>
+                  <span className="font-medium">Location Setup Failed</span>
                 </div>
                 <p className="text-gray-600">{errorMessage}</p>
                 <p className="text-sm text-gray-500">
                   {errorMessage?.toLowerCase().includes('permission')
                     ? 'In Chrome, open the site controls beside the address bar → Site settings → Location → Allow, then retry.'
-                    : 'GPS can be slow or temporarily unavailable. Sahadhyayi now retries with approximate location when precise positioning times out.'}
+                    : /save|database|rpc|profile/i.test(errorMessage || '')
+                      ? 'Your device location was found, but your account could not save it. Check your connection and try again; sharing stays off until the save succeeds.'
+                      : 'GPS can be slow or temporarily unavailable. Sahadhyayi retries with approximate location when precise positioning times out.'}
                 </p>
               </div>
             ) : (
