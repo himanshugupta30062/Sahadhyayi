@@ -23,17 +23,20 @@ async function computeSHA256(blob: Blob): Promise<string> {
 }
 
 /**
- * Validate PDF structure beyond magic bytes - check for proper PDF trailer and xref
+ * Validate PDF structure beyond magic bytes - check for proper PDF trailer, xref, and encryption
  */
-async function validatePDFStructure(blob: Blob): Promise<{ valid: boolean; pageCount: number | null; error?: string }> {
+async function validatePDFStructure(blob: Blob): Promise<{ valid: boolean; pageCount: number | null; encrypted: boolean; error?: string }> {
   try {
     // Read first 1KB for header validation
     const headerBuffer = await blob.slice(0, 1024).arrayBuffer();
     const header = new TextDecoder().decode(new Uint8Array(headerBuffer));
 
     if (!header.startsWith("%PDF-")) {
-      return { valid: false, pageCount: null, error: "Missing PDF signature" };
+      return { valid: false, pageCount: null, encrypted: false, error: "Missing PDF signature" };
     }
+
+    // Check for encryption dictionary in the header portion
+    const encrypted = header.includes("/Encrypt") || header.includes("/Filter") && header.includes("/V");
 
     // Read last 2KB for trailer validation
     const size = blob.size;
@@ -42,8 +45,12 @@ async function validatePDFStructure(blob: Blob): Promise<{ valid: boolean; pageC
     const trailer = new TextDecoder().decode(new Uint8Array(trailerBuffer));
 
     if (!trailer.includes("startxref") || !trailer.includes("%%EOF")) {
-      return { valid: false, pageCount: null, error: "Invalid PDF structure: missing trailer/EOF" };
+      return { valid: false, pageCount: null, encrypted, error: "Invalid PDF structure: missing trailer/EOF" };
     }
+
+    // Also check trailer for encryption
+    const trailerEncrypted = trailer.includes("/Encrypt");
+    const isEncrypted = encrypted || trailerEncrypted;
 
     // Extract page count from /Count in the trailer or catalog
     let pageCount: number | null = null;
@@ -58,9 +65,13 @@ async function validatePDFStructure(blob: Blob): Promise<{ valid: boolean; pageC
       }
     }
 
-    return { valid: true, pageCount };
+    if (isEncrypted) {
+      return { valid: false, pageCount, encrypted: true, error: "Encrypted PDFs are not accepted. Please provide an unencrypted PDF." };
+    }
+
+    return { valid: true, pageCount, encrypted: false };
   } catch (error) {
-    return { valid: false, pageCount: null, error: error instanceof Error ? error.message : "PDF structure validation failed" };
+    return { valid: false, pageCount: null, encrypted: false, error: error instanceof Error ? error.message : "PDF structure validation failed" };
   }
 }
 
@@ -198,6 +209,9 @@ serve(async (req) => {
     const structureValidation = await validatePDFStructure(pdfBlob);
     if (!structureValidation.valid) {
       throw new Error(`Invalid PDF structure: ${structureValidation.error}`);
+    }
+    if (structureValidation.encrypted) {
+      throw new Error("Encrypted PDFs are not accepted. Please provide an unencrypted PDF.");
     }
     pageCount = structureValidation.pageCount;
 

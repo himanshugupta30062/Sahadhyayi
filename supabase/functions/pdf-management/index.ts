@@ -34,16 +34,18 @@ async function computeSHA256(blob: Blob): Promise<string> {
 }
 
 /**
- * Validate PDF structure
+ * Validate PDF structure beyond magic bytes - check for proper PDF trailer, xref, and encryption
  */
-async function validatePDFStructure(blob: Blob): Promise<{ valid: boolean; pageCount: number | null; error?: string }> {
+async function validatePDFStructure(blob: Blob): Promise<{ valid: boolean; pageCount: number | null; encrypted: boolean; error?: string }> {
   try {
     const headerBuffer = await blob.slice(0, 1024).arrayBuffer();
     const header = new TextDecoder().decode(new Uint8Array(headerBuffer));
 
     if (!header.startsWith("%PDF-")) {
-      return { valid: false, pageCount: null, error: "Missing PDF signature" };
+      return { valid: false, pageCount: null, encrypted: false, error: "Missing PDF signature" };
     }
+
+    const encrypted = header.includes("/Encrypt") || (header.includes("/Filter") && header.includes("/V"));
 
     const size = blob.size;
     const trailerStart = Math.max(0, size - 2048);
@@ -51,8 +53,11 @@ async function validatePDFStructure(blob: Blob): Promise<{ valid: boolean; pageC
     const trailer = new TextDecoder().decode(new Uint8Array(trailerBuffer));
 
     if (!trailer.includes("startxref") || !trailer.includes("%%EOF")) {
-      return { valid: false, pageCount: null, error: "Invalid PDF structure: missing trailer/EOF" };
+      return { valid: false, pageCount: null, encrypted, error: "Invalid PDF structure: missing trailer/EOF" };
     }
+
+    const trailerEncrypted = trailer.includes("/Encrypt");
+    const isEncrypted = encrypted || trailerEncrypted;
 
     let pageCount: number | null = null;
     const countMatch = trailer.match(/\/Count\s+(\d+)/);
@@ -65,9 +70,13 @@ async function validatePDFStructure(blob: Blob): Promise<{ valid: boolean; pageC
       }
     }
 
-    return { valid: true, pageCount };
+    if (isEncrypted) {
+      return { valid: false, pageCount, encrypted: true, error: "Encrypted PDFs are not accepted. Please provide an unencrypted PDF." };
+    }
+
+    return { valid: true, pageCount, encrypted: false };
   } catch (error) {
-    return { valid: false, pageCount: null, error: error instanceof Error ? error.message : "PDF structure validation failed" };
+    return { valid: false, pageCount: null, encrypted: false, error: error instanceof Error ? error.message : "PDF structure validation failed" };
   }
 }
 

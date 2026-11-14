@@ -53,7 +53,7 @@ describe('getCurrentLocation', () => {
     await expect(getCurrentLocation()).rejects.toMatchObject({
       code: 'permission-denied',
       recoverable: false,
-      message: expect.stringContaining('Site settings'),
+      message: expect.stringContaining('site controls beside the address bar'),
     });
     expect(getCurrentPosition).toHaveBeenCalledTimes(1);
   });
@@ -68,10 +68,13 @@ describe('getCurrentLocation', () => {
     expect(getCurrentPosition).toHaveBeenCalledTimes(2);
   });
 
-  it('rejects an invalid coordinate from the device', async () => {
-    const getCurrentPosition = vi.fn().mockImplementationOnce((success) => success(makePosition(0, 0)));
+  it('rejects an invalid coordinate from the device after fallback also fails', async () => {
+    const getCurrentPosition = vi.fn()
+      .mockImplementationOnce((success) => success(makePosition(0, 0)))
+      .mockImplementationOnce((success) => success(makePosition(0, 0)));
     installGeolocation(getCurrentPosition);
 
     await expect(getCurrentLocation()).rejects.toBeInstanceOf(LocationRequestError);
+    expect(getCurrentPosition).toHaveBeenCalledTimes(2);
   });
 });

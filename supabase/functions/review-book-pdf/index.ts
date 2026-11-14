@@ -13,6 +13,53 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
 const RIGHTS = new Set(["public_domain", "open_license", "rights_holder", "written_permission", "official_source"]);
 
 /**
+ * Validate PDF structure beyond magic bytes - check for proper PDF trailer, xref, and encryption
+ */
+async function validatePDFStructure(blob: Blob): Promise<{ valid: boolean; pageCount: number | null; encrypted: boolean; error?: string }> {
+  try {
+    const headerBuffer = await blob.slice(0, 1024).arrayBuffer();
+    const header = new TextDecoder().decode(new Uint8Array(headerBuffer));
+
+    if (!header.startsWith("%PDF-")) {
+      return { valid: false, pageCount: null, encrypted: false, error: "Missing PDF signature" };
+    }
+
+    const encrypted = header.includes("/Encrypt") || (header.includes("/Filter") && header.includes("/V"));
+
+    const size = blob.size;
+    const trailerStart = Math.max(0, size - 2048);
+    const trailerBuffer = await blob.slice(trailerStart, size).arrayBuffer();
+    const trailer = new TextDecoder().decode(new Uint8Array(trailerBuffer));
+
+    if (!trailer.includes("startxref") || !trailer.includes("%%EOF")) {
+      return { valid: false, pageCount: null, encrypted, error: "Invalid PDF structure: missing trailer/EOF" };
+    }
+
+    const trailerEncrypted = trailer.includes("/Encrypt");
+    const isEncrypted = encrypted || trailerEncrypted;
+
+    let pageCount: number | null = null;
+    const countMatch = trailer.match(/\/Count\s+(\d+)/);
+    if (countMatch) {
+      pageCount = parseInt(countMatch[1], 10);
+    } else {
+      const contentMatch = header.match(/\/Count\s+(\d+)/);
+      if (contentMatch) {
+        pageCount = parseInt(contentMatch[1], 10);
+      }
+    }
+
+    if (isEncrypted) {
+      return { valid: false, pageCount, encrypted: true, error: "Encrypted PDFs are not accepted. Please provide an unencrypted PDF." };
+    }
+
+    return { valid: true, pageCount, encrypted: false };
+  } catch (error) {
+    return { valid: false, pageCount: null, encrypted: false, error: error instanceof Error ? error.message : "PDF structure validation failed" };
+  }
+}
+
+/**
  * Search catalogue with pagination support using the match_catalogue_book RPC
  */
 async function searchCatalogue(admin: any, query: string, page = 1, pageSize = 20): Promise<{ books: Array<Record<string, unknown>>; total: number; page: number; pageSize: number }> {
@@ -358,6 +405,15 @@ serve(async (req) => {
     const signature = new Uint8Array(await source.slice(0, 5).arrayBuffer());
     if (new TextDecoder().decode(signature) !== "%PDF-") return json({ error: "Source PDF signature validation failed." }, 422);
 
+    // Validate PDF structure (check for corruption, encryption, etc.)
+    const structureValidation = await validatePDFStructure(source);
+    if (!structureValidation.valid) {
+      return json({ error: `Invalid PDF structure: ${structureValidation.error}` }, 422);
+    }
+    if (structureValidation.encrypted) {
+      return json({ error: "Encrypted PDFs are not accepted. Please provide an unencrypted PDF." }, 422);
+    }
+
     // Run malware scan
     const scannerToken = Deno.env.get("BOUNCER_API_KEY");
     let scanBypassed = false;
@@ -522,6 +578,15 @@ serve(async (req) => {
 
     const signature = new Uint8Array(await source.slice(0, 5).arrayBuffer());
     if (new TextDecoder().decode(signature) !== "%PDF-") return json({ error: "New PDF signature validation failed." }, 422);
+
+    // Validate PDF structure (check for corruption, encryption, etc.)
+    const structureValidation = await validatePDFStructure(source);
+    if (!structureValidation.valid) {
+      return json({ error: `Invalid PDF structure: ${structureValidation.error}` }, 422);
+    }
+    if (structureValidation.encrypted) {
+      return json({ error: "Encrypted PDFs are not accepted. Please provide an unencrypted PDF." }, 422);
+    }
 
     // Run malware scan on new PDF
     const scannerToken = Deno.env.get("BOUNCER_API_KEY");
