@@ -292,35 +292,41 @@ describe('Homepage Redesign: Sections 03 to 11', () => {
     });
   });
 
-  describe('Section 11: HomeFinalCtaSection', () => {
-    it('renders warm closing CTA with Sanskrit origin badge and dynamic auth-aware buttons', () => {
+  describe("Section 11: HomeFinalCtaSection", () => {
+    it("renders warm closing CTA with Sanskrit origin badge and dynamic auth-aware buttons", () => {
       const { rerender } = render(
         <MemoryRouter>
           <HomeFinalCtaSection />
         </MemoryRouter>
       );
 
-      expect(screen.getByText('सहाध्यायी')).toBeInTheDocument();
-      expect(screen.getByText('Fellow Reader')).toBeInTheDocument();
-      expect(screen.getByText(/Ready to make reading a richer, deeper journey\?/i)).toBeInTheDocument();
+      expect(screen.getByText("सहाध्यायी")).toBeInTheDocument();
+      expect(screen.getByText("Fellow Reader")).toBeInTheDocument();
+      // Dynamic CTA for new anonymous visitors shows browse-level messaging
+      expect(screen.getByText(/Curious what's inside\?/i)).toBeInTheDocument();
 
-      // Guest state
-      const joinLink = screen.getByRole('link', { name: /join the community — it’s free/i });
-      expect(joinLink).toHaveAttribute('href', '/signup');
+      // Guest state - primary CTA is Explore the Library for new visitors
+      const exploreLink = screen.getByRole("link", { name: /explore the library/i });
+      expect(exploreLink).toHaveAttribute("href", "/library");
 
-      const libraryLink = screen.getByRole('link', { name: /explore the digital library/i });
-      expect(libraryLink).toHaveAttribute('href', '/library');
+      const mapLink = screen.getByRole("link", { name: /see the reader map/i });
+      expect(mapLink).toHaveAttribute("href", "/map");
+
+      // Social proof stats should be present
+      expect(screen.getByText("Trusted by readers worldwide")).toBeInTheDocument();
+      expect(screen.getByText("50K+")).toBeInTheDocument();
+      expect(screen.getByText("Readers joined")).toBeInTheDocument();
 
       // Authenticated state
-      mockUseAuth.mockReturnValue({ user: { id: 'usr-123', email: 'reader@example.com' } });
+      mockUseAuth.mockReturnValue({ user: { id: "usr-123", email: "reader@example.com" } });
       rerender(
         <MemoryRouter>
           <HomeFinalCtaSection />
         </MemoryRouter>
       );
 
-      const dashboardLink = screen.getByRole('link', { name: /open your dashboard/i });
-      expect(dashboardLink).toHaveAttribute('href', '/dashboard');
+      const dashboardLink = screen.getByRole("link", { name: /open your dashboard/i });
+      expect(dashboardLink).toHaveAttribute("href", "/dashboard");
     });
   });
 });

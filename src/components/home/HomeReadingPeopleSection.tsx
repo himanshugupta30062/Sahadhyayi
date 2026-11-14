@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useMarginNotes, type MarginNote } from '@/hooks/useMarginNotes';
+import { CommunityPulseBar } from './CommunityPulseBar';
 
 const FALLBACK_MARGIN_NOTES: Partial<MarginNote>[] = [
   {
@@ -82,6 +83,9 @@ export const HomeReadingPeopleSection: React.FC = () => {
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
+
+        {/* Live Community Pulse Bar */}
+        <CommunityPulseBar className="mb-8" />
 
         {/* Signature feature: readers map */}
         <div className="group relative mb-8 block overflow-hidden rounded-[2.25rem] border border-[#DFD8CC] bg-gradient-to-br from-[#EEF4ED] via-[#F8F6F0] to-[#E9F1E9] p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-[#243329] dark:from-[#132219] dark:via-[#0F1412] dark:to-[#16201A] sm:p-10 lg:p-12">
