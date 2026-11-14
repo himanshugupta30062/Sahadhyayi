@@ -63,7 +63,7 @@ describe('BitmojiCreator', () => {
     );
 
     expect(screen.getByRole('button', { name: 'curly' })).toHaveAttribute('data-variant', 'default');
-    expect(screen.getByRole('button', { name: /book-lover/i })).toHaveAttribute('data-variant', 'default');
+    expect(screen.getByRole('button', { name: /book lover/i })).toHaveAttribute('data-variant', 'default');
     const preview = container.querySelector('[class*="w-32 h-32"]');
     expect(preview?.innerHTML).toContain('circle cx="45" cy="35"');
     expect(preview?.innerHTML).toContain('fill="#000000"');
