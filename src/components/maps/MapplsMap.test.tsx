@@ -267,4 +267,259 @@ describe('MapplsMap', () => {
     }
     expect(onMarkerClick).toHaveBeenCalledWith(expect.objectContaining({ id: 'point-1' }));
   });
+
+  it('rejects if a different key is already active in window or currently loading', async () => {
+    window.mappls = { Map: vi.fn() as any, Marker: vi.fn() as any };
+    window.mapplsLoadingKey = 'key-existing';
+
+    render(<MapplsMap apiKey="key-new" points={[]} />);
+    expect(await screen.findByRole('alert')).toHaveTextContent('A different Mappls key is already active');
+
+    cleanup();
+    delete window.mappls;
+    window.mapplsLoadingKey = 'loading-key-1';
+    window.mapplsLoadingPromise = new Promise(() => {});
+
+    render(<MapplsMap apiKey="loading-key-2" points={[]} />);
+    expect(await screen.findByRole('alert')).toHaveTextContent('A Mappls SDK request is already loading with a different key');
+  });
+
+  it('reuses existing in-flight loading promise when same key is passed', async () => {
+    let resolved = false;
+    window.mapplsLoadingKey = 'key-shared';
+    window.mapplsLoadingPromise = new Promise<void>((resolve) => {
+      setTimeout(() => {
+        window.mappls = {
+          Map: vi.fn().mockImplementation(function () { return { addListener: vi.fn(), loaded: () => true, remove: vi.fn() }; }),
+          Marker: vi.fn().mockImplementation(function () { return {}; }),
+        };
+        resolved = true;
+        resolve();
+      }, 10);
+    });
+
+    render(<MapplsMap apiKey="key-shared" points={[]} />);
+    await waitFor(() => expect(resolved).toBe(true));
+  });
+
+  it('handles SDK load without exposing Map and Marker APIs', async () => {
+    render(<MapplsMap apiKey="valid-key" points={[]} />);
+    const script = document.querySelector<HTMLScriptElement>('script[data-mappls-sdk="true"]');
+    expect(script).not.toBeNull();
+    window.mappls = {}; // empty, no Map or Marker
+    script!.onload?.(new Event('load'));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Mappls SDK downloaded, but Map and Marker APIs were not exposed');
+  });
+
+  it('handles WebGL context lost and restored events', async () => {
+    const listeners: Record<string, (event?: unknown) => void> = {};
+    const resize = vi.fn();
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () {
+        return {
+          addListener: (event: string, cb: () => void) => { listeners[event] = cb; },
+          loaded: () => true,
+          resize,
+          remove: vi.fn(),
+        };
+      }),
+      Marker: vi.fn().mockImplementation(function () { return {}; }),
+    };
+
+    render(<MapplsMap apiKey="valid-key" points={[]} />);
+    await waitFor(() => expect(listeners.webglcontextlost).toBeDefined());
+
+    // Lose context
+    listeners.webglcontextlost();
+    expect(await screen.findByRole('alert')).toHaveTextContent('Map rendering paused because the browser lost its WebGL context');
+
+    // Restore context
+    listeners.webglcontextrestored();
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
+  });
+
+  it('supports map event listeners via map.on and reports error if neither exists', async () => {
+    const onListeners: Record<string, (event?: unknown) => void> = {};
+    const mapWithOn = {
+      on: (event: string, cb: () => void) => { onListeners[event] = cb; },
+      loaded: () => true,
+      remove: vi.fn(),
+    };
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () { return mapWithOn; }),
+      Marker: vi.fn().mockImplementation(function () { return {}; }),
+    };
+
+    const { unmount } = render(<MapplsMap apiKey="valid-key" points={[]} />);
+    await waitFor(() => expect(onListeners.error).toBeDefined());
+    unmount();
+
+    // Map with neither addListener nor on
+    const brokenMap = {
+      loaded: () => true,
+      remove: vi.fn(),
+    };
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () { return brokenMap; }),
+      Marker: vi.fn().mockImplementation(function () { return {}; }),
+    };
+    render(<MapplsMap apiKey="valid-key" points={[]} />);
+    expect(await screen.findByRole('alert')).toHaveTextContent('The loaded Mappls SDK does not expose the documented map event API');
+  });
+
+  it('handles marker creation errors gracefully', async () => {
+    const map = {
+      addListener: vi.fn(),
+      loaded: () => true,
+      setCenter: vi.fn(),
+      setZoom: vi.fn(),
+      remove: vi.fn(),
+    };
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () { return map; }),
+      Marker: vi.fn().mockImplementation(function () {
+        throw new Error('Marker creation failed');
+      }),
+    };
+
+    render(<MapplsMap apiKey="valid-key" points={[{ id: 'p1', lat: 12.9, lng: 77.6, title: 'Bangalore' }]} />);
+    expect(await screen.findByRole('alert')).toHaveTextContent('reader avatar marker could not be created');
+  });
+
+  it('falls back to average center when fitBounds throws an error', async () => {
+    const setCenter = vi.fn();
+    const setZoom = vi.fn();
+    const map = {
+      addListener: vi.fn(),
+      loaded: () => true,
+      setCenter,
+      setZoom,
+      remove: vi.fn(),
+    };
+    const fitBounds = vi.fn().mockImplementation(function () {
+      throw new Error('fitBounds failed');
+    });
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () { return map; }),
+      Marker: vi.fn().mockImplementation(function () { return {}; }),
+      fitBounds,
+    };
+
+    render(<MapplsMap apiKey="valid-key" points={[
+      { id: 'p1', lat: 10, lng: 20, title: 'Point 1' },
+      { id: 'p2', lat: 20, lng: 40, title: 'Point 2' },
+    ]} />);
+
+    await waitFor(() => expect(setCenter).toHaveBeenCalledWith({ lat: 15, lng: 30 }));
+    expect(setZoom).toHaveBeenCalledWith(5);
+  });
+
+  it('falls back to marker.remove when window.mappls.remove throws', async () => {
+    const markerRemove = vi.fn();
+    const map = { addListener: vi.fn(), loaded: () => true, remove: vi.fn() };
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () { return map; }),
+      Marker: vi.fn().mockImplementation(function () { return { remove: markerRemove }; }),
+      remove: vi.fn().mockImplementation(function () {
+        throw new Error('SDK remove failed');
+      }),
+    };
+
+    const { rerender } = render(<MapplsMap apiKey="valid-key" points={[{ id: 'p1', lat: 10, lng: 20, title: 'Point 1' }]} />);
+    await waitFor(() => expect(window.mappls?.Marker).toHaveBeenCalledTimes(1));
+
+    rerender(<MapplsMap apiKey="valid-key" points={[]} />);
+    await waitFor(() => expect(markerRemove).toHaveBeenCalled());
+  });
+
+  it('handles avatar image load error and replaces it with fallback letter', async () => {
+    let markerHtmlElement: HTMLElement | undefined;
+    const map = { addListener: vi.fn(), loaded: () => true, remove: vi.fn() };
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () { return map; }),
+      Marker: vi.fn().mockImplementation(function (opts: any) {
+        markerHtmlElement = opts.html;
+        return {};
+      }),
+    };
+
+    render(<MapplsMap apiKey="valid-key" points={[{ id: 'p1', lat: 10, lng: 20, title: 'Alice', avatarUrl: 'https://example.com/alice.jpg' }]} />);
+    await waitFor(() => expect(markerHtmlElement).toBeDefined());
+
+    const img = markerHtmlElement?.querySelector('img');
+    expect(img).not.toBeNull();
+    img?.dispatchEvent(new Event('error'));
+
+    expect(markerHtmlElement?.querySelector('img')).toBeNull();
+    expect(markerHtmlElement?.textContent).toContain('A');
+  });
+
+  it('formats unknown token error messages and generic map event messages', async () => {
+    let mapOptions: Record<string, unknown> | undefined;
+    const listeners: Record<string, (event?: unknown) => void> = {};
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function (_container: string, opts: Record<string, unknown>) {
+        mapOptions = opts;
+        return {
+          addListener: (event: string, cb: () => void) => { listeners[event] = cb; },
+          loaded: () => true,
+          remove: vi.fn(),
+        };
+      }),
+      Marker: vi.fn().mockImplementation(function () { return {}; }),
+    };
+
+    render(<MapplsMap apiKey="valid-key" points={[]} />);
+    await waitFor(() => expect(mapOptions).toBeDefined());
+
+    // Test unmapped token error code
+    (mapOptions?.token_callback as (event: unknown) => void)({ code: 505, error: 'Custom gateway error' });
+    expect(await screen.findByRole('alert')).toHaveTextContent('Mappls reported an authentication error (505)');
+
+    // Test generic map resource error without 401/403
+    listeners.error?.({ error: { status: 500 } });
+    expect(await screen.findByRole('alert')).toHaveTextContent('Mappls could not load one or more map resources');
+  });
+
+  it('handles Map constructor throwing an error on initialization', async () => {
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () {
+        throw new Error('Fatal Map constructor error');
+      }),
+      Marker: vi.fn().mockImplementation(function () { return {}; }),
+    };
+
+    render(<MapplsMap apiKey="valid-key" points={[]} />);
+    expect(await screen.findByRole('alert')).toHaveTextContent('Fatal Map constructor error');
+  });
+
+  it('handles ResizeObserver resize callback on mounted map container', async () => {
+    let resizeCallback: (() => void) | undefined;
+    class MockResizeObserver {
+      constructor(cb: () => void) {
+        resizeCallback = cb;
+      }
+      observe = vi.fn();
+      disconnect = vi.fn();
+    }
+    vi.stubGlobal('ResizeObserver', MockResizeObserver);
+
+    const resize = vi.fn();
+    const map = { addListener: vi.fn(), loaded: () => true, resize, remove: vi.fn() };
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () { return map; }),
+      Marker: vi.fn().mockImplementation(function () { return {}; }),
+    };
+
+    render(<MapplsMap apiKey="valid-key" points={[]} />);
+    await waitFor(() => expect(resizeCallback).toBeDefined());
+
+    const container = screen.getByLabelText('Interactive Mappls map');
+    Object.defineProperty(container, 'clientWidth', { configurable: true, value: 500 });
+    Object.defineProperty(container, 'clientHeight', { configurable: true, value: 500 });
+
+    resizeCallback?.();
+    expect(resize).toHaveBeenCalled();
+  });
 });

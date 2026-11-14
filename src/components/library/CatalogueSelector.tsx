@@ -438,7 +438,7 @@ export function CatalogueSelector({
                 <Filter className="h-3 w-3 text-muted-foreground" />
                 <span className="text-xs text-muted-foreground">Filter:</span>
                 <div className="flex gap-1" role="group" aria-label="PDF status filter">
-                  {['all', 'with_pdf', 'without_pdf'].map((filter) => (
+                  {(['all', 'with_pdf', 'without_pdf'] as const).map((filter) => (
                     <Button
                       key={filter}
                       type="button"

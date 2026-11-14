@@ -298,5 +298,110 @@ describe('Sahadhyayi Bicycle Adventure Journey', () => {
       expect(screen.getAllByRole('heading', { name: 'Storytelling Forest' }).length).toBeGreaterThan(0);
       expect(screen.getByRole('tab', { name: /storytelling forest/i })).toHaveAttribute('aria-selected', 'true');
     });
+
+    it('navigates via dot-step navigator, footer action buttons, and keyboard shortcuts', async () => {
+      render(
+        <MemoryRouter>
+          <SahadhyayiJourney />
+        </MemoryRouter>
+      );
+
+      // Click dot for Stop 4
+      const stop4Dot = screen.getByRole('button', { name: /Go to stop 4/i });
+      fireEvent.click(stop4Dot);
+      expect(screen.getAllByRole('heading', { name: 'Reading Together Bridge' }).length).toBeGreaterThan(0);
+
+      // Click "Ride from the Start" button in the footer
+      const rideFromStartBtn = screen.getByRole('button', { name: /Ride from the Start/i });
+      fireEvent.click(rideFromStartBtn);
+      expect(screen.getAllByRole('heading', { name: 'Library City' }).length).toBeGreaterThan(0);
+
+      // Click "Next: ..." button in the footer
+      const nextFooterBtn = screen.getByRole('button', { name: /Next: /i });
+      fireEvent.click(nextFooterBtn);
+      expect(screen.getAllByRole('heading', { name: 'Reading Valley' }).length).toBeGreaterThan(0);
+
+      // Test previous stop button in header
+      const prevStopBtn = screen.getByRole('button', { name: /Previous stop/i });
+      fireEvent.click(prevStopBtn);
+      expect(screen.getAllByRole('heading', { name: 'Library City' }).length).toBeGreaterThan(0);
+
+      // Test keyboard navigation
+      Object.defineProperty(window, 'innerHeight', { value: 1000, configurable: true });
+      const container = document.getElementById('sahadhyayi-journey');
+      if (container) {
+        vi.spyOn(container, 'getBoundingClientRect').mockReturnValue({
+          top: 100,
+          bottom: 500,
+          left: 0,
+          right: 800,
+          width: 800,
+          height: 400,
+          x: 0,
+          y: 100,
+          toJSON: () => {},
+        });
+      }
+
+      fireEvent.keyDown(window, { key: 'ArrowRight' });
+      expect(screen.getAllByRole('heading', { name: 'Reading Valley' }).length).toBeGreaterThan(0);
+
+      fireEvent.keyDown(window, { key: 'ArrowLeft' });
+      expect(screen.getAllByRole('heading', { name: 'Library City' }).length).toBeGreaterThan(0);
+
+      fireEvent.keyDown(window, { key: 'ArrowDown' });
+      expect(screen.getAllByRole('heading', { name: 'Reading Valley' }).length).toBeGreaterThan(0);
+
+      fireEvent.keyDown(window, { key: 'ArrowUp' });
+      expect(screen.getAllByRole('heading', { name: 'Library City' }).length).toBeGreaterThan(0);
+    });
+
+    it('shows and handles the resume journey banner when saved progress exists', async () => {
+      localStorage.setItem('sahadhyayi_journey_progress', JSON.stringify({
+        activeStopIndex: 4,
+        visitedStops: [1, 2, 3, 4],
+        lastVisitedAt: new Date().toISOString(),
+      }));
+
+      render(
+        <MemoryRouter>
+          <SahadhyayiJourney />
+        </MemoryRouter>
+      );
+
+      // Check for resume banner after timeout
+      const resumeBtn = await screen.findByRole('button', { name: /Resume Journey/i }, { timeout: 3000 });
+      expect(resumeBtn).toBeInTheDocument();
+      fireEvent.click(resumeBtn);
+
+      expect(screen.getAllByRole('heading', { name: 'Reading Together Bridge' }).length).toBeGreaterThan(0);
+
+      // Cleanup
+      localStorage.removeItem('sahadhyayi_journey_progress');
+    });
+
+    it('handles restarting journey from the resume banner', async () => {
+      localStorage.setItem('sahadhyayi_journey_progress', JSON.stringify({
+        activeStopIndex: 5,
+        visitedStops: [1, 2, 3, 4, 5],
+        lastVisitedAt: new Date().toISOString(),
+      }));
+
+      render(
+        <MemoryRouter>
+          <SahadhyayiJourney />
+        </MemoryRouter>
+      );
+
+      const restartBtn = await screen.findByRole('button', { name: /Start Over/i }, { timeout: 3000 });
+      expect(restartBtn).toBeInTheDocument();
+      fireEvent.click(restartBtn);
+
+      expect(screen.getAllByRole('heading', { name: 'Library City' }).length).toBeGreaterThan(0);
+      expect(screen.queryByRole('button', { name: /Start Over/i })).not.toBeInTheDocument();
+
+      // Cleanup
+      localStorage.removeItem('sahadhyayi_journey_progress');
+    });
   });
 });

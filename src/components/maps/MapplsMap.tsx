@@ -383,11 +383,14 @@ export function MapplsMap({
           }
 
           addMapListener('webglcontextlost', () => {
-            reportFatalError('Map rendering paused because the browser lost its WebGL context. Retry the map or reload the page.');
+            if (cancelled) return;
+            setErrorMessage('Map rendering paused because the browser lost its WebGL context. Retry the map or reload the page.');
+            setStatus('error');
           });
 
           addMapListener('webglcontextrestored', () => {
-            if (cancelled || hasFatalError) return;
+            if (cancelled) return;
+            hasFatalError = false;
             setErrorMessage('');
             setStatus('ready');
             window.requestAnimationFrame(() => map.resize?.());
