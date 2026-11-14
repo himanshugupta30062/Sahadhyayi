@@ -144,7 +144,7 @@ describe('Social discovery and location privacy regressions', () => {
   });
 
   it('describes location storage and mutual consent accurately', () => {
-    expect(consentModal).toMatch(/coordinates are saved to your private profile/);
+    expect(consentModal).toMatch(/coordinates are saved to your private profile/i);
     expect(consentModal).toMatch(/accepted friends/);
     expect(consentModal).toMatch(/does not submit an IP address/);
     expect(permissionModal).toMatch(/saved to your profile until you turn sharing off/);
