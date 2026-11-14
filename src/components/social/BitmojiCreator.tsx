@@ -54,7 +54,6 @@ interface BitmojiCreatorProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (avatarData: string) => void;
-  currentAvatar?: string;
   initialFeatures?: unknown;
 }
 
@@ -62,7 +61,6 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
   isOpen,
   onClose,
   onSave,
-  currentAvatar,
   initialFeatures
 }) => {
   const [features, setFeatures] = useState<BitmojiFeatures>(() => normalizeAvatarFeatures(initialFeatures));
