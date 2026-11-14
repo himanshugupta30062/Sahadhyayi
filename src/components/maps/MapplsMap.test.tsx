@@ -140,17 +140,18 @@ describe('MapplsMap', () => {
     const removeMap = vi.fn();
     const removeLayer = vi.fn();
     const marker = {};
+    const Marker = vi.fn().mockImplementation(function () { return marker; });
     window.mappls = {
       Map: vi.fn().mockImplementation(function () {
         return { addListener: vi.fn(), loaded: () => true, remove: removeMap };
       }),
-      Marker: vi.fn().mockImplementation(function () { return marker; }),
+      Marker,
       remove: removeLayer,
     };
 
     const points = [{ id: 'one', lat: 12.9, lng: 77.6, title: 'Bengaluru' }];
     const { unmount, rerender } = render(<MapplsMap apiKey="valid-key" points={points} />);
-    await waitFor(() => expect(removeLayer).not.toHaveBeenCalled());
+    await waitFor(() => expect(Marker).toHaveBeenCalledTimes(1));
 
     rerender(<MapplsMap apiKey="valid-key" points={[]} />);
     await waitFor(() => expect(removeLayer).toHaveBeenCalledWith(expect.objectContaining({ layer: marker })));
