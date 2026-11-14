@@ -122,9 +122,6 @@ const ATOM_FADE_ANGLE = 18;              // fade near gap edges
 
 // 3D Icon components using simple Three.js geometries
 const OrbitIcon3D = ({ icon, size = 0.35, color = '#ffffff' }: { icon: OrbitIcon; size?: number; color?: string }) => {
-  const iconRef = useRef<React.RefObject<THREE.Group>>(null);
-
-  // We'll use simple geometric representations for each icon
   switch (icon) {
     case 'book':
       return (
@@ -269,7 +266,6 @@ const OrbitRing3D: React.FC<{ config: OrbitConfig; index: number; paused: boolea
   const navigate = useNavigate();
   const ringRef = useRef<THREE.Group>(null);
   const atomRef = useRef<THREE.Group>(null);
-  const labelRef = useRef<HTMLDivElement>(null);
 
   // Create gradient texture for the ring
   const gradientTexture = useMemo(() => {
@@ -289,7 +285,7 @@ const OrbitRing3D: React.FC<{ config: OrbitConfig; index: number; paused: boolea
   }, [config.gradientColors]);
 
   // Ring geometry - a partial torus (arc)
-  useFrame((state, delta) => {
+  useFrame((_state, delta) => {
     if (paused) return;
 
     // Rotate the entire ring
@@ -318,11 +314,11 @@ const OrbitRing3D: React.FC<{ config: OrbitConfig; index: number; paused: boolea
       atomRef.current.traverse((obj) => {
         if (obj instanceof THREE.Mesh && obj.material) {
           if (Array.isArray(obj.material)) {
-            obj.material.forEach(m => m.opacity = opacity);
+            obj.material.forEach(m => { m.opacity = opacity; m.transparent = true; });
           } else {
             obj.material.opacity = opacity;
+            obj.material.transparent = true;
           }
-          if (obj.material.transparent === undefined) obj.material.transparent = true;
         }
       });
     }
@@ -349,9 +345,9 @@ const OrbitRing3D: React.FC<{ config: OrbitConfig; index: number; paused: boolea
         />
       </mesh>
 
-      {/* Colored arc (the visible orbit path) */}
+      {/* Colored arc (the visible orbit path) - partial torus with arc parameter */}
       <mesh>
-        <torusGeometry args={[config.radius, config.strokeWidth, 8, 64], Math.PI, Math.PI * COVERAGE} />
+        <torusGeometry args={[config.radius, config.strokeWidth, 8, 64, Math.PI * COVERAGE]} />
         <meshBasicMaterial
           map={gradientTexture}
           transparent
@@ -399,80 +395,91 @@ const OrbitRing3D: React.FC<{ config: OrbitConfig; index: number; paused: boolea
   );
 };
 
-// HTML overlay labels that follow 3D positions
-const OrbitLabels: React.FC<{ orbits: OrbitConfig[]; paused: boolean }> = ({ orbits, paused }) => {
-  const { camera } = useThree();
-  const labelPositions = useRef<Map<string, THREE.Vector3>>(new Map());
-
-  return (
-    <group>
-      {orbits.map((orbit, index) => (
-        <Html
-          key={orbit.id}
-          position={labelPositions.current.get(orbit.id) || new THREE.Vector3()}
-          prepend
-          center
-          fullscreen
-          zIndexRange={[100, 200]}
-        >
-          <motion.div
-            className="hero-orbit-label-3d"
-            style={{
-              pointerEvents: 'none',
-              transform: 'translate(-50%, -50%)',
-              opacity: 0,
-              transition: 'opacity 0.3s ease',
-            }}
-            animate={{ opacity: 1 }}
-            initial={{ opacity: 0 }}
-          >
-            <div
-              className="hero-orbit-label-badge"
-              style={{
-                background: 'rgba(250, 250, 248, 0.97)',
-                color: '#1C201D',
-                border: `1.5px solid ${orbit.atomColor}`,
-                borderRadius: '999px',
-                padding: '4px 14px',
-                fontSize: '14px',
-                fontWeight: '700',
-                letterSpacing: '0.15px',
-                whiteSpace: 'nowrap',
-                boxShadow: '0 4px 16px rgba(28, 32, 29, 0.12)',
-                backdropFilter: 'blur(8px)',
-              }}
-            >
-              {orbit.label}
-            </div>
-          </motion.div>
-        </Html>
-      ))}
-    </group>
-  );
-};
+// Label component that uses Html with position prop (runs inside Canvas context)
+const OrbitLabel: React.FC<{ orbit: OrbitConfig; position: THREE.Vector3 }> = ({ orbit, position }) => (
+  <Html position={position} prepend center fullscreen zIndexRange={[100, 200]} style={{ pointerEvents: 'none' }}>
+    <motion.div
+      className="hero-orbit-label-3d"
+      style={{
+        pointerEvents: 'none',
+        transform: 'translate(-50%, -50%)',
+        opacity: 0,
+        transition: 'opacity 0.3s ease',
+      }}
+      animate={{ opacity: 1 }}
+      initial={{ opacity: 0 }}
+    >
+      <div
+        className="hero-orbit-label-badge"
+        style={{
+          background: 'rgba(250, 250, 248, 0.97)',
+          color: '#1C201D',
+          border: `1.5px solid ${orbit.atomColor}`,
+          borderRadius: '999px',
+          padding: '4px 14px',
+          fontSize: '14px',
+          fontWeight: '700',
+          letterSpacing: '0.15px',
+          whiteSpace: 'nowrap',
+          boxShadow: '0 4px 16px rgba(28, 32, 29, 0.12)',
+          backdropFilter: 'blur(8px)',
+        }}
+      >
+        {orbit.label}
+      </div>
+    </motion.div>
+  </Html>
+);
 
 // Main 3D Scene Component
 const HeroAtomicRings3DScene: React.FC<{ paused: boolean; children?: ReactNode }> = ({ paused, children }) => {
-  const generatedId = useId().replace(/:/g, '');
-  const containerRef = useRef<HTMLDivElement>(null);
+  const { camera } = useThree();
+  const labelPositions = useRef<Map<string, THREE.Vector3>>(new Map());
+  const ringAngles = useRef(ORBITS.map(() => 0));
+  const atomProgress = useRef(ORBITS.map((orbit) => orbit.initialProgress));
 
-  // Handle keyboard pause for accessibility
-  const setKeyboardPause = (paused: boolean) => {
-    // Could use a context or state, but for now we'll use the passed prop
-  };
+  // Update label positions every frame
+  useFrame((_state, delta) => {
+    if (paused) return;
+
+    // Update ring angles
+    ringAngles.current = ringAngles.current.map((angle, index) =>
+      norm(angle + (360 / ORBITS[index].duration) * ORBITS[index].direction * delta * 60),
+    );
+
+    // Update atom progress
+    atomProgress.current = atomProgress.current.map(
+      (progress) => (progress + ATOM_SPEED * delta) % SWEEP_DEG,
+    );
+
+    // Project 3D positions to 2D screen coordinates for HTML labels
+    ORBITS.forEach((orbit, index) => {
+      const angle = norm(orbit.start + ringAngles.current[index] + atomProgress.current[index]);
+      const angleRad = toRadTop(angle);
+
+      // 3D position on ring (ring is rotated -PI/2 on X, so it lies on XZ plane)
+      const x = orbit.radius * Math.cos(angleRad);
+      const z = orbit.radius * Math.sin(angleRad);
+      const y = 0;
+
+      const vector = new THREE.Vector3(x, y, z);
+      vector.project(camera);
+
+      // Offset label outward from atom
+      const labelOffset = 0.8; // world units
+      const labelVector = new THREE.Vector3(
+        x + Math.cos(angleRad) * labelOffset,
+        0,
+        z + Math.sin(angleRad) * labelOffset
+      );
+      labelVector.project(camera);
+
+      labelPositions.current.set(orbit.id, labelVector);
+    });
+  });
 
   return (
-    <Canvas
-      ref={containerRef}
-      camera={{ position: [0, 0, 25], fov: 45 }}
-      gl={{ antialias: true, alpha: true, preserveDrawingBuffer: false }}
-      style={{ width: '100%', height: '100%', display: 'block' }}
-      onCreated={({ gl }) => {
-        gl.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      }}
-    >
-      <color attach="background" args={['#FAF9F5', 0]} /> {/* Transparent background */}
-
+    <>
       {/* Lights */}
       <ambientLight intensity={0.8} color="#FAF9F5" />
       <directionalLight position={[10, 15, 10]} intensity={1.2} color="#ffffff" castShadow />
@@ -486,10 +493,10 @@ const HeroAtomicRings3DScene: React.FC<{ paused: boolean; children?: ReactNode }
         ))}
       </group>
 
-      {/* HTML Overlay Labels - positioned via CSS 3D transform */}
-      <Html fullscreen prepend center zIndexRange={[100, 200]} style={{ pointerEvents: 'none' }}>
-        <OrbitLabelOverlays orbits={ORBITS} paused={paused} />
-      </Html>
+      {/* HTML Overlay Labels - positioned via @react-three/drei Html with position prop */}
+      {ORBITS.map((orbit) => (
+        <OrbitLabel key={orbit.id} orbit={orbit} position={labelPositions.current.get(orbit.id) || new THREE.Vector3()} />
+      ))}
 
       {/* Center content area for children */}
       {children && (
@@ -499,103 +506,7 @@ const HeroAtomicRings3DScene: React.FC<{ paused: boolean; children?: ReactNode }
           </div>
         </Html>
       )}
-    </Canvas>
-  );
-};
-
-// CSS-based label overlays that track 3D positions
-const OrbitLabelOverlays: React.FC<{ orbits: OrbitConfig[]; paused: boolean }> = ({ orbits, paused }) => {
-  const { camera, gl } = useThree();
-  const labelRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const ringAngles = useRef(ORBITS.map(() => 0));
-  const atomProgress = useRef(ORBITS.map((orbit) => orbit.initialProgress));
-
-  useFrame((state, delta) => {
-    if (paused) return;
-
-    // Update ring angles
-    ringAngles.current = ringAngles.current.map((angle, index) =>
-      norm(angle + (360 / ORBITS[index].duration) * ORBITS[index].direction * delta * 60), // delta is in seconds, convert to per-frame
-    );
-
-    // Update atom progress
-    atomProgress.current = atomProgress.current.map(
-      (progress) => (progress + ATOM_SPEED * delta) % SWEEP_DEG,
-    );
-
-    // Project 3D positions to 2D screen coordinates for HTML labels
-    orbits.forEach((orbit, index) => {
-      const angle = norm(orbit.start + ringAngles.current[index] + atomProgress.current[index]);
-      const angleRad = toRadTop(angle);
-
-      // 3D position on ring (ring is rotated -PI/2 on X, so it lies on XZ plane)
-      const x = orbit.radius * Math.cos(angleRad);
-      const z = orbit.radius * Math.sin(angleRad);
-      const y = 0;
-
-      const vector = new THREE.Vector3(x, y, z);
-      vector.project(camera);
-
-      // Convert to CSS coordinates
-      const width = gl.domElement.clientWidth;
-      const height = gl.domElement.clientHeight;
-      const cssX = (vector.x * 0.5 + 0.5) * width;
-      const cssY = (-vector.y * 0.5 + 0.5) * height;
-
-      // Offset label outward from atom
-      const labelOffset = 0.8; // world units
-      const labelVector = new THREE.Vector3(
-        x + Math.cos(angleRad) * labelOffset,
-        0,
-        z + Math.sin(angleRad) * labelOffset
-      );
-      labelVector.project(camera);
-      const labelCssX = (labelVector.x * 0.5 + 0.5) * width;
-      const labelCssY = (-labelVector.y * 0.5 + 0.5) * height;
-
-      if (labelRefs.current[index]) {
-        labelRefs.current[index]!.style.left = `${labelCssX}px`;
-        labelRefs.current[index]!.style.top = `${labelCssY}px`;
-      }
-    });
-  });
-
-  return (
-    <div className="absolute inset-0 pointer-events-none" style={{ overflow: 'visible' }}>
-      {orbits.map((orbit, index) => (
-        <div
-          key={orbit.id}
-          ref={(el) => { labelRefs.current[index] = el; }}
-          className="hero-orbit-label-3d absolute"
-          style={{
-            pointerEvents: 'none',
-            transform: 'translate(-50%, -50%)',
-            opacity: 1,
-            transition: 'opacity 0.3s ease',
-            zIndex: 100,
-          }}
-        >
-          <div
-            className="hero-orbit-label-badge"
-            style={{
-              background: 'rgba(250, 250, 248, 0.97)',
-              color: '#1C201D',
-              border: `1.5px solid ${orbit.atomColor}`,
-              borderRadius: '999px',
-              padding: '4px 14px',
-              fontSize: '14px',
-              fontWeight: '700',
-              letterSpacing: '0.15px',
-              whiteSpace: 'nowrap',
-              boxShadow: '0 4px 16px rgba(28, 32, 29, 0.12)',
-              backdropFilter: 'blur(8px)',
-            }}
-          >
-            {orbit.label}
-          </div>
-        </div>
-      ))}
-    </div>
+    </>
   );
 };
 
@@ -608,7 +519,6 @@ interface HeroAtomicRings3DProps {
 
 export default function HeroAtomicRings3D({ size = 720, className = '', children }: HeroAtomicRings3DProps) {
   const navigate = useNavigate();
-  const generatedId = useId().replace(/:/g, '');
   const containerRef = useRef<HTMLDivElement>(null);
   const [pausedForKeyboard, setPausedForKeyboard] = React.useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
@@ -666,7 +576,17 @@ export default function HeroAtomicRings3D({ size = 720, className = '', children
       role="group"
       aria-label="Explore Sahadhyayi through the Library, Authors, Social Media, Articles, and Games orbits"
     >
-      <HeroAtomicRings3DScene paused={isPaused} children={children} />
+      <Canvas
+        camera={{ position: [0, 0, 25], fov: 45 }}
+        gl={{ antialias: true, alpha: true, preserveDrawingBuffer: false }}
+        style={{ width: '100%', height: '100%', display: 'block' }}
+        onCreated={({ gl }) => {
+          gl.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        }}
+      >
+        <color attach="background" args={['#FAF9F5']} />
+        <HeroAtomicRings3DScene paused={isPaused} children={children} />
+      </Canvas>
 
       {/* Keyboard-accessible fallback links (screen reader only) */}
       <div className="sr-only" aria-live="polite">
