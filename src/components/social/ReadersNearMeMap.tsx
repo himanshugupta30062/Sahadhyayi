@@ -99,8 +99,8 @@ export const ReadersNearMeMap: React.FC = () => {
     };
   }, [user?.id, sharingStatusAttempt]);
 
-  // The nearby-reader RPC deliberately returns distance, not another person's exact
-  // coordinates. Show these readers in the list; never pin them at fake 0,0 locations.
+  // The nearby-reader RPC returns coarse, rounded coordinates for map pins and never
+  // exposes another reader's exact position. Invalid or missing points stay off the map.
   const fetchNearbyReaders = useCallback(async () => {
     if (!user?.id || !selectedBook || !isLocationSharing || !userLocation) return;
 
