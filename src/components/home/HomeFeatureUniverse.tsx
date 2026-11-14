@@ -20,10 +20,11 @@ const basePillars = [
 const tierEnhancements: Record<string, Record<string, { badge?: string; badgeIcon?: React.ReactNode; description?: string; highlightLink?: string }>> = {
   exploring: {
     Discover: { badge: 'New here?', badgeIcon: <Star className="w-3 h-3" />, description: 'Start with the Book Finder — personalized picks in seconds.', highlightLink: '/discovery' },
-    Connect: { badge: 'Join the conversation', badgeIcon: <MessageSquare className="w-3 h-3" />, description: 'Drop into a reading room or explore the Reader Map.', highlightLink: '/social' },
+    Connect: { badge: 'Join the conversation', badgeIcon: <MessagesSquare className="w-3 h-3" />, description: 'Drop into a reading room or explore the Reader Map.', highlightLink: '/social' },
     Create: { badge: 'Share your first thought', badgeIcon: <Feather className="w-3 h-3" />, description: 'Write a margin note or short review — no pressure.', highlightLink: '/articles' },
     Grow: { badge: 'Build a habit', badgeIcon: <TrendingUp className="w-3 h-3" />, description: 'Try a 7-day reading challenge to get started.', highlightLink: '/games' },
   },
+
   engaged: {
     Discover: { badge: 'Your picks await', badgeIcon: <Zap className="w-3 h-3" />, description: 'Book Expert AI learns from your reading history.', highlightLink: '/library' },
     Connect: { badge: 'Your people are here', badgeIcon: <Users className="w-3 h-3" />, description: 'Reading DNA matches you with compatible readers.', highlightLink: '/social?tab=dna' },
@@ -106,7 +107,7 @@ export default function HomeFeatureUniverse() {
   return (
     <section ref={sectionRef} className="home-feature-universe relative overflow-hidden bg-[#FAF9F5] text-[#1C201D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
       <style>{`.home-feature-universe [data-home-reveal]{opacity:0;transform:translateY(18px);transition:opacity 650ms ease,transform 650ms cubic-bezier(.2,.7,.2,1)}.home-feature-universe [data-home-reveal].home-revealed{opacity:1;transform:translateY(0)}.home-feature-universe .home-feature-card{transition:transform 280ms ease,box-shadow 280ms ease,border-color 280ms ease}.home-feature-universe .home-feature-card:hover{transform:translateY(-4px);box-shadow:0 14px 32px rgba(20,35,24,.07)}.home-feature-universe .home-feature-link{transition:background-color 180ms ease,padding 180ms ease}.home-feature-universe .home-feature-link:hover{padding-left:14px}@media(prefers-reduced-motion:reduce){.home-feature-universe [data-home-reveal],.home-feature-universe .home-feature-card,.home-feature-universe .home-feature-link{transition:none!important;transform:none!important}}`}</style>
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 pt-8 pb-14 sm:px-6 sm:pt-10 sm:pb-16 lg:px-8">
         <div data-home-reveal className="mb-10 max-w-3xl">
           <p className="mb-3 flex items-center gap-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-[.24em] text-[#8F681C] dark:text-[#D5B16D]"><span className="h-px w-7 bg-[#8F681C] dark:bg-[#D5B16D]"/>Beyond the book</p>
           <h2 className="font-serif text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl text-[#1C201D] dark:text-[#F3F0E7]">A reading universe, <span className="text-[#1C442D] dark:text-[#D5B16D]">made for you.</span></h2>
