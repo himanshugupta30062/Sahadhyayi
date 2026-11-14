@@ -273,7 +273,7 @@ export const PersonalReadingGoalsCard: React.FC<PersonalReadingGoalsCardProps> =
                   min={1}
                   max={500}
                   value={annualTarget}
-                  onChange={(e) => setAnnualTarget(parseInt(e.target.value, 10) || 1)}
+                  onChange={(e) => setAnnualTarget(Number.parseInt(e.target.value, 10) || 1)}
                   className="h-8 text-xs bg-card"
                   required
                 />
@@ -289,7 +289,7 @@ export const PersonalReadingGoalsCard: React.FC<PersonalReadingGoalsCardProps> =
                   min={10}
                   max={50000}
                   value={monthlyTarget}
-                  onChange={(e) => setMonthlyTarget(parseInt(e.target.value, 10) || 10)}
+                  onChange={(e) => setMonthlyTarget(Number.parseInt(e.target.value, 10) || 10)}
                   className="h-8 text-xs bg-card"
                   required
                 />
@@ -305,7 +305,7 @@ export const PersonalReadingGoalsCard: React.FC<PersonalReadingGoalsCardProps> =
                   min={15}
                   max={3000}
                   value={weeklyMinutesTarget}
-                  onChange={(e) => setWeeklyMinutesTarget(parseInt(e.target.value, 10) || 15)}
+                  onChange={(e) => setWeeklyMinutesTarget(Number.parseInt(e.target.value, 10) || 15)}
                   className="h-8 text-xs bg-card"
                   required
                 />
