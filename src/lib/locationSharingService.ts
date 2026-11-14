@@ -1,6 +1,19 @@
 import { supabase } from '@/integrations/supabase/client-universal';
 import type { LocationCoords } from '@/lib/locationService';
 
+const toServiceError = (error: unknown, fallback: string): Error => {
+  if (error instanceof Error) return error;
+  if (error && typeof error === 'object') {
+    const details = error as Record<string, unknown>;
+    const message = typeof details.message === 'string' && details.message.trim()
+      ? details.message.trim()
+      : fallback;
+    const code = typeof details.code === 'string' && details.code.trim() ? ` (${details.code.trim()})` : '';
+    return new Error(`${message}${code}`);
+  }
+  return new Error(fallback);
+};
+
 interface PrivateProfileLocation {
   location_lat?: number | string | null;
   location_lng?: number | string | null;
@@ -26,8 +39,8 @@ export async function getMyLocationSharingState(userId: string): Promise<MyLocat
     supabase.rpc('has_location_consent', { user_uuid: userId }),
   ]);
 
-  if (profileError) throw profileError;
-  if (consentError) throw consentError;
+  if (profileError) throw toServiceError(profileError, 'Could not load your saved location.');
+  if (consentError) throw toServiceError(consentError, 'Could not verify location consent.');
 
   const privateProfile = (profile ?? null) as PrivateProfileLocation | null;
   const latitude = privateProfile?.location_lat == null ? null : Number(privateProfile.location_lat);
@@ -66,7 +79,7 @@ export async function saveMyLocation(location: LocationCoords): Promise<void> {
     p_lat: location.lat,
     p_lng: location.lng,
   });
-  if (error) throw error;
+  if (error) throw toServiceError(error, 'Your location was found, but it could not be saved. Please try again.');
 }
 
 /**
@@ -75,5 +88,5 @@ export async function saveMyLocation(location: LocationCoords): Promise<void> {
  */
 export async function disableMyLocationSharing(): Promise<void> {
   const { error } = await (supabase as any).rpc('disable_my_location_sharing');
-  if (error) throw error;
+  if (error) throw toServiceError(error, 'Could not disable location sharing. Please try again.');
 }
