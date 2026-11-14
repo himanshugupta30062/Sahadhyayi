@@ -10,6 +10,7 @@ interface LocationPermissionModalProps {
   onRequestLocation: () => void;
   hasError?: boolean;
   errorMessage?: string;
+  isRequesting?: boolean;
 }
 
 export const LocationPermissionModal: React.FC<LocationPermissionModalProps> = ({
@@ -17,7 +18,8 @@ export const LocationPermissionModal: React.FC<LocationPermissionModalProps> = (
   onClose,
   onRequestLocation,
   hasError = false,
-  errorMessage
+  errorMessage,
+  isRequesting = false
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -32,11 +34,15 @@ export const LocationPermissionModal: React.FC<LocationPermissionModalProps> = (
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-red-600">
                   <AlertCircle className="w-4 h-4" />
-                  <span className="font-medium">Location Access Failed</span>
+                  <span className="font-medium">Location Setup Failed</span>
                 </div>
                 <p className="text-gray-600">{errorMessage}</p>
                 <p className="text-sm text-gray-500">
-                  Please check your browser settings and try again, or manually enable location sharing for this site.
+                  {errorMessage?.toLowerCase().includes('permission')
+                    ? 'In Chrome, open the site controls beside the address bar → Site settings → Location → Allow, then retry.'
+                    : /save|database|rpc|profile/i.test(errorMessage || '')
+                      ? 'Your device location was found, but your account could not save it. Check your connection and try again; sharing stays off until the save succeeds.'
+                      : 'GPS can be slow or temporarily unavailable. Sahadhyayi retries with approximate location when precise positioning times out.'}
                 </p>
               </div>
             ) : (
@@ -64,11 +70,12 @@ export const LocationPermissionModal: React.FC<LocationPermissionModalProps> = (
           <Button 
             onClick={onRequestLocation} 
             className="flex-1 bg-blue-600 hover:bg-blue-700"
+            disabled={isRequesting}
           >
             {hasError ? (
               <>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Try Again
+                <RefreshCw className={`w-4 h-4 mr-2 ${isRequesting ? 'animate-spin' : ''}`} />
+                {isRequesting ? 'Finding location…' : 'Try Again'}
               </>
             ) : (
               <>

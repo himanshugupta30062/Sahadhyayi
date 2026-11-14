@@ -730,13 +730,19 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
       <div className="text-center py-12">
         <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-400" />
         <h3 className="text-xl font-semibold text-gray-700 mb-2">No reading link available yet</h3>
-        <p className="text-gray-500 mb-4">We couldn't find an online copy of this book. Try a search below.</p>
+        <p className="text-gray-500 mb-2">We couldn't find an open-access copy of this book online.</p>
+        <p className="text-xs text-muted-foreground max-w-md mx-auto mb-4">
+          This title may be under active copyright protection and unavailable in the public domain. You can check for a preview or borrow an edition below.
+        </p>
         <div className="flex flex-wrap gap-2 justify-center mt-6">
           <Button variant="outline" onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(bookTitle + ' read online')}`, '_blank', 'noopener,noreferrer')}>
             Search Google
           </Button>
           <Button variant="outline" onClick={() => window.open(`https://archive.org/search.php?query=${encodeURIComponent(bookTitle)}`, '_blank', 'noopener,noreferrer')}>
             Search Internet Archive
+          </Button>
+          <Button variant="outline" onClick={() => window.open(`https://openlibrary.org/search?q=${encodeURIComponent(bookTitle)}`, '_blank', 'noopener,noreferrer')}>
+            Check Open Library
           </Button>
           {audioSummary && (
             <Button variant="outline" className="flex items-center gap-2">

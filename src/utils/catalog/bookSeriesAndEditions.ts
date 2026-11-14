@@ -316,7 +316,7 @@ export interface MergeOptions {
 export function mergeEditionMetadata(
   existing: Partial<Edition>,
   incoming: Partial<Edition>,
-  options: MergeOptions = { preferExistingUserEdits: true },
+  options?: MergeOptions,
 ): Partial<Edition> {
   const merged: Partial<Edition> = { ...existing };
 
@@ -326,7 +326,7 @@ export function mergeEditionMetadata(
     // If existing is missing, accept incoming
     if (existingVal === undefined || existingVal === null || existingVal === '') return true;
     // If preferExistingUserEdits is on and existing is present, keep existing
-    if (options.preferExistingUserEdits) return false;
+    if ((options?.preferExistingUserEdits ?? true)) return false;
     return true;
   };
 
@@ -345,7 +345,7 @@ export function mergeEditionMetadata(
   if (shouldOverwrite(existing.format, incoming.format)) merged.format = incoming.format;
 
   // Cover: do not overwrite a valid cover with an empty string or placeholder
-  if (incoming.coverImageUrl && (!existing.coverImageUrl || !options.preferExistingUserEdits)) {
+  if (incoming.coverImageUrl && (!existing.coverImageUrl || !(options?.preferExistingUserEdits ?? true))) {
     if (!incoming.coverImageUrl.includes('placeholder') && !incoming.coverImageUrl.includes('no-cover')) {
       merged.coverImageUrl = incoming.coverImageUrl;
     }
@@ -355,7 +355,7 @@ export function mergeEditionMetadata(
   if (incoming.description) {
     if (!existing.description) {
       merged.description = incoming.description;
-    } else if (!options.preferExistingUserEdits && incoming.description.length > (existing.description.length || 0)) {
+    } else if (!(options?.preferExistingUserEdits ?? true) && incoming.description.length > (existing.description.length || 0)) {
       merged.description = incoming.description;
     }
   }

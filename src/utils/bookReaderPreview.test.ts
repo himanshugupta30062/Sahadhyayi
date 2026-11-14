@@ -157,3 +157,34 @@ describe('bookReaderPreview utility', () => {
   });
 });
 
+
+
+// Additional boundary coverage
+describe('reader preview edge cases', () => {
+  it('recognizes EPUB paths and rejects dangerous protocols', () => {
+    expect(validateReaderUrl('https://cdn.test/book.epub').isEpub).toBe(true);
+    for (const value of ['javascript:alert(1)', 'data:text/html,x', 'file:///etc/passwd', 'not a url']) expect(validateReaderUrl(value).isValid).toBe(false);
+  });
+  it('preserves signed PDF parameters and clamps page numbers', () => {
+    const url = buildSafePdfEmbedUrl('https://cdn.test/book.pdf?signature=abc&expires=42', 0);
+    expect(url).toContain('signature=abc'); expect(url).toContain('expires=42'); expect(url).toContain('page=1');
+    expect(buildSafePdfEmbedUrl('https://cdn.test/book.pdf', 4.8)).toContain('page=4');
+  });
+  it('returns empty Google embed URL for invalid IDs and handles relative PDF URLs', () => {
+    expect(buildSafeGoogleBooksEmbedUrl('bad')).toBe('');
+    expect(buildSafePdfEmbedUrl('relative.pdf#old', 3)).toBe('relative.pdf#toolbar=1&navpanes=1&scrollbar=1&page=3');
+    expect(buildSafePdfEmbedUrl('', 2)).toBe('');
+  });
+  it('classifies 404 and other HTTP failures', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({ ok: false, status: 404 } as Response);
+    expect(await checkGoogleBooksEmbeddability('fqiEEQAAQBAJ')).toMatchObject({ status: 'restricted', viewability: 'NO_PAGES' });
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({ ok: false, status: 503 } as Response);
+    expect(await checkGoogleBooksEmbeddability('fqiEEQAAQBAJ')).toMatchObject({ status: 'unknown', embeddable: true });
+  });
+  it('handles restricted volumes and network failures', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({ ok: true, json: async () => ({ accessInfo: { embeddable: false, viewability: 'NO_PAGES' }, volumeInfo: { infoLink: 'info' } }) } as Response);
+    expect(await checkGoogleBooksEmbeddability('fqiEEQAAQBAJ')).toMatchObject({ status: 'restricted', embeddable: false, infoLink: 'info' });
+    vi.spyOn(globalThis, 'fetch').mockRejectedValueOnce(new Error('network'));
+    expect(await checkGoogleBooksEmbeddability('fqiEEQAAQBAJ')).toMatchObject({ status: 'unknown', embeddable: true });
+  });
+});

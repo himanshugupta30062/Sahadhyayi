@@ -28,37 +28,82 @@ export function useBookReviews(bookId: string | undefined) {
   const { user } = useAuth();
   return useQuery({
     queryKey: ['book-reviews', bookId, user?.id],
-    enabled: !!bookId && !!user?.id,
+    enabled: !!bookId,
     queryFn: async (): Promise<BookReview[]> => {
       if (!bookId) return [];
-      const { data, error } = await supabase.from('book_reviews')
-        .select('id, book_id, user_id, review_text, contains_spoilers, overall_rating, plot_rating, characters_rating, writing_rating, reader_reaction, created_at, updated_at')
-        .eq('book_id', bookId)
-        .order('created_at', { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      const rows = (data || []) as BookReview[];
-      if (!rows.length) return rows;
-      const { data: dimensionRows, error: dimensionError } = await supabase.from('book_review_dimensions').select('review_id, dimension, score').in('review_id', rows.map(row => row.id));
-      if (dimensionError) console.warn('Could not load review scores:', dimensionError.message);
-      const dimensionsByReview = new Map<string, ReviewScore[]>();
-      (dimensionRows || []).forEach(item => { const list = dimensionsByReview.get(item.review_id) || []; list.push({ dimension: item.dimension as ReviewDimension, score: item.score }); dimensionsByReview.set(item.review_id, list); });
-      rows.forEach(row => { row.dimensions = dimensionsByReview.get(row.id) || []; });
+      try {
+        let result = await supabase.from('book_reviews')
+          .select('id, book_id, user_id, review_text, contains_spoilers, overall_rating, plot_rating, characters_rating, writing_rating, reader_reaction, created_at, updated_at')
+          .eq('book_id', bookId)
+          .order('created_at', { ascending: false })
+          .limit(50);
 
-      // Enrich only from the public-profile view; never query private profile fields.
-      const ids = [...new Set(rows.map((row) => row.user_id))];
-      const { data: profiles, error: profilesError } = await supabase.from('profiles_public')
-        .select('id, full_name, username, profile_photo_url')
-        .in('id', ids);
-      if (profilesError) {
-        console.warn('Could not load public reviewer profiles:', profilesError.message);
+        // If extended columns do not exist in the database, fall back to base columns
+        if (result.error && (result.error.code === 'PGRST204' || result.error.message?.includes('column'))) {
+          result = await supabase.from('book_reviews')
+            .select('id, book_id, user_id, review_text, contains_spoilers, created_at, updated_at')
+            .eq('book_id', bookId)
+            .order('created_at', { ascending: false })
+            .limit(50);
+        }
+
+        // If permission is denied (e.g. unauthenticated / guest access), return empty list without throwing
+        if (result.error) {
+          if (result.error.code === '42501' || result.error.code === 'PGRST301' || result.error.message?.includes('permission denied')) {
+            return [];
+          }
+          throw result.error;
+        }
+
+        const rows = (result.data || []) as BookReview[];
+        if (!rows.length) return rows;
+
+        // Safely load dimension scores if table exists
+        try {
+          const { data: dimensionRows, error: dimensionError } = await supabase
+            .from('book_review_dimensions')
+            .select('review_id, dimension, score')
+            .in('review_id', rows.map(row => row.id));
+
+          if (!dimensionError && dimensionRows) {
+            const dimensionsByReview = new Map<string, ReviewScore[]>();
+            dimensionRows.forEach(item => {
+              const list = dimensionsByReview.get(item.review_id) || [];
+              list.push({ dimension: item.dimension as ReviewDimension, score: item.score });
+              dimensionsByReview.set(item.review_id, list);
+            });
+            rows.forEach(row => { row.dimensions = dimensionsByReview.get(row.id) || []; });
+          }
+        } catch {
+          // Ignore missing dimension tables
+        }
+
+        // Enrich only from the public-profile view; never query private profile fields.
+        try {
+          const ids = [...new Set(rows.map((row) => row.user_id))];
+          const { data: profiles, error: profilesError } = await supabase.from('profiles_public')
+            .select('id, full_name, username, profile_photo_url')
+            .in('id', ids);
+
+          if (!profilesError && profiles) {
+            const byId = new Map(
+              profiles.flatMap((profile) =>
+                profile.id ? [[profile.id, { ...profile, id: profile.id }] as const] : []
+              )
+            );
+            return rows.map((row) => ({ ...row, reviewer: byId.get(row.user_id) || null }));
+          }
+        } catch {
+          // Ignore profile lookup failures
+        }
+
+        return rows;
+      } catch (err: any) {
+        if (err?.code === '42501' || err?.message?.includes('permission denied')) {
+          return [];
+        }
+        throw err;
       }
-      const byId = new Map(
-        (profiles ?? []).flatMap((profile) =>
-          profile.id ? [[profile.id, { ...profile, id: profile.id }] as const] : []
-        )
-      );
-      return rows.map((row) => ({ ...row, reviewer: byId.get(row.user_id) || null }));
     },
   });
 }
@@ -115,12 +160,21 @@ export function useDeleteBookReview(bookId: string | undefined) {
 export interface ReviewHelpfulVote { review_id: string; user_id: string; }
 
 export function useReviewHelpfulVotes(reviewIds: string[]) {
- const { user } = useAuth();
- return useQuery({ queryKey: ['review-helpful-votes', reviewIds, user?.id], enabled: !!user?.id && reviewIds.length > 0, queryFn: async (): Promise<ReviewHelpfulVote[]> => {
-  if (!reviewIds.length) return [];
-  const { data, error } = await supabase.from('book_review_helpful_votes').select('review_id,user_id').in('review_id',reviewIds);
-  if (error) throw error; return (data || []) as ReviewHelpfulVote[];
- }});
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ['review-helpful-votes', reviewIds, user?.id],
+    enabled: !!user?.id && reviewIds.length > 0,
+    queryFn: async (): Promise<ReviewHelpfulVote[]> => {
+      if (!reviewIds.length) return [];
+      try {
+        const { data, error } = await supabase.from('book_review_helpful_votes').select('review_id,user_id').in('review_id', reviewIds);
+        if (error) return [];
+        return (data || []) as ReviewHelpfulVote[];
+      } catch {
+        return [];
+      }
+    },
+  });
 }
 
 export function useToggleReviewHelpfulVote() {

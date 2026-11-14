@@ -184,6 +184,25 @@ describe('ContributeBookPdfDialog', () => {
     });
   });
 
+  it('accepts a valid PDF when mobile browsers report application/octet-stream', async () => {
+    renderDialog();
+    fireEvent.change(screen.getByLabelText(/PDF file/i), {
+      target: { files: [makePdf('mobile-book.pdf', '%PDF-1.7 valid body', 'application/octet-stream')] },
+    });
+    fireEvent.click(screen.getByRole('checkbox'));
+    await waitFor(() => expect(screen.getByRole('checkbox')).toBeChecked());
+    const submitButton = screen.getByRole('button', { name: /Submit for verification/i });
+    await waitFor(() => expect(submitButton).toBeEnabled());
+    fireEvent.submit(submitButton.closest('form')!);
+
+    await waitFor(() => expect(mocks.upload).toHaveBeenCalledWith(
+      'reader-1/submission-uuid/source.pdf',
+      expect.any(File),
+      expect.objectContaining({ contentType: 'application/pdf', upsert: false }),
+    ));
+    expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'PDF submitted privately' }));
+  });
+
   it('does not upload when the database submission insert fails', async () => {
     mocks.insert.mockResolvedValueOnce({ error: new Error('database unavailable') });
     renderDialog();

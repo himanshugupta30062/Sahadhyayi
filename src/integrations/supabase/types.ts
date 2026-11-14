@@ -4521,6 +4521,14 @@ export type Database = {
         Args: never
         Returns: Json
       }
+      get_my_avatar: {
+        Args: never
+        Returns: Json
+      }
+      save_my_avatar: {
+        Args: { p_avatar_json: Json; p_avatar_img_url: string }
+        Returns: Json
+      }
       save_my_location: {
         Args: { p_lat: number; p_lng: number }
         Returns: Json

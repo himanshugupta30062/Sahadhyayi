@@ -246,44 +246,20 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
     );
   };
 
-  // Page rendering for non-PDF content
-  const renderPage = (pageNumber: number) => (
-    <motion.div
-      key={pageNumber}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
-      className={`shadow-lg border rounded-lg flex items-center justify-center transition-colors duration-300
-        ${darkMode ? 'bg-gray-900 text-gray-100 border-gray-700' : 'bg-white text-black border-gray-200'}
-      `}
-      style={{
-        transform: `scale(${zoom / 100}) rotate(${rotation}deg)`,
-        transformOrigin: 'center',
-        width: '100%',
-        height: '600px',
-        minWidth: '400px',
-      }}
-    >
-      <div className="p-8 w-full h-full flex flex-col">
-        <div className="text-2xl font-bold mb-4 text-center">{book?.title}</div>
-        <div className="text-lg mb-2 text-center">by {book?.author}</div>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <BookOpen className="w-24 h-24 mx-auto mb-4 opacity-60" />
-            <div className="text-lg font-semibold mb-2">Page {pageNumber}</div>
-            <div className="text-sm max-w-md">
-              {pageNumber === 1
-                ? book?.description
-                : `This would show the actual content of page ${pageNumber}.`}
-            </div>
-          </div>
-        </div>
-        <div className="text-center text-sm mt-4">
-          Page {pageNumber} of {totalPages}
-        </div>
-      </div>
-    </motion.div>
+  // Never simulate book pages: metadata-only records must not look like a functioning reader.
+  const renderUnavailableReader = () => (
+    <div className="flex min-h-[55vh] w-full max-w-xl flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-border bg-card p-8 text-center">
+      <BookOpen className="h-14 w-14 text-muted-foreground" />
+      <h3 className="text-xl font-semibold">Full text unavailable</h3>
+      <p className="max-w-md text-sm text-muted-foreground">
+        This catalog entry has no verified reading file. We won't display placeholder pages as book content.
+      </p>
+      {book?.pdf_url && (
+        <a href={book.pdf_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+          Open source link
+        </a>
+      )}
+    </div>
   );
 
   if (!book) return null;
@@ -378,15 +354,8 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
               {book?.pdf_url ? (
                 // Display PDF viewer for PDFs
                 renderPdfViewer()
-              ) : viewMode === 'double' ? (
-                // Display double page view for non-PDFs
-                <>
-                  {renderPage(currentPage)}
-                  {currentPage < totalPages && renderPage(currentPage + 1)}
-                </>
               ) : (
-                // Display single page view for non-PDFs
-                renderPage(currentPage)
+                renderUnavailableReader()
               )}
             </div>
 

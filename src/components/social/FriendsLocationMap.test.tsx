@@ -1,6 +1,7 @@
 import React from 'react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render as rtlRender, screen, fireEvent, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { FriendsLocationMap, createFriendInfoContent } from '@/components/social/FriendsLocationMap';
 import { useAuth } from '@/contexts/authHelpers';
 import { useFriends } from '@/hooks/useFriends';
@@ -33,7 +34,12 @@ vi.mock('@/lib/locationSharingService', () => ({
 }));
 
 vi.mock('@/hooks/useUserAvatar', () => ({
-  useUserAvatar: () => ({ data: { avatar_img_url: 'https://cdn.sahadhyayi.com/avatars/self.svg' } }),
+  useUserAvatar: () => ({ data: { avatar_img_url: 'https://cdn.sahadhyayi.com/avatars/self.svg' }, isLoading: false }),
+  useUpdateUserAvatar: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}));
+
+vi.mock('@/components/social/BitmojiCreator', () => ({
+  BitmojiCreator: ({ isOpen }: { isOpen: boolean }) => isOpen ? <div role="dialog">Create your reading avatar</div> : null,
 }));
 
 vi.mock('sonner', () => ({
@@ -88,6 +94,11 @@ vi.mock('@/integrations/supabase/client-universal', () => {
     },
   };
 });
+
+const render = (ui: React.ReactElement) => {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  return rtlRender(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+};
 
 describe('createFriendInfoContent', () => {
   it('renders a full name and initial as text rather than interpreting profile HTML', () => {
