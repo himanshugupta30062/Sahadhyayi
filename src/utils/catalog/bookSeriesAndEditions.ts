@@ -22,10 +22,10 @@ export function isValidIsbn10(isbn: string): boolean {
 
   let sum = 0;
   for (let i = 0; i < 9; i++) {
-    sum += Number.Number.parseInt(clean[i], 10) * (10 - i);
+    sum += Number.parseInt(clean[i], 10) * (10 - i);
   }
   const checkChar = clean[9];
-  const checkVal = checkChar === 'X' ? 10 : Number.Number.parseInt(checkChar, 10);
+  const checkVal = checkChar === 'X' ? 10 : Number.parseInt(checkChar, 10);
   sum += checkVal;
 
   return sum % 11 === 0;
@@ -41,10 +41,10 @@ export function isValidIsbn13(isbn: string): boolean {
 
   let sum = 0;
   for (let i = 0; i < 12; i++) {
-    sum += Number.Number.parseInt(clean[i], 10) * (i % 2 === 0 ? 1 : 3);
+    sum += Number.parseInt(clean[i], 10) * (i % 2 === 0 ? 1 : 3);
   }
   const checkDigit = (10 - (sum % 10)) % 10;
-  return checkDigit === Number.Number.parseInt(clean[12], 10);
+  return checkDigit === Number.parseInt(clean[12], 10);
 }
 
 /**
@@ -58,7 +58,7 @@ export function isbn10ToIsbn13(isbn10: string): string | null {
 
   let sum = 0;
   for (let i = 0; i < 12; i++) {
-    sum += Number.Number.parseInt(prefix12[i], 10) * (i % 2 === 0 ? 1 : 3);
+    sum += Number.parseInt(prefix12[i], 10) * (i % 2 === 0 ? 1 : 3);
   }
   const checkDigit = (10 - (sum % 10)) % 10;
   return `${prefix12}${checkDigit}`;
@@ -165,7 +165,7 @@ export function parseBookSeries(
 
     let totalVolumes: number | null = null;
     if (totalRaw) {
-      totalVolumes = /\d/.test(totalRaw) ? Number.Number.parseInt(totalRaw, 10) : parseHindiNumber(totalRaw);
+      totalVolumes = /\d/.test(totalRaw) ? Number.parseInt(totalRaw, 10) : parseHindiNumber(totalRaw);
     }
 
     return {
@@ -195,7 +195,7 @@ export function parseBookSeries(
   const bookOfMatch = rawTitle.match(bookOfRegex) || (description ? description.match(bookOfRegex) : null);
 
   if (bookOfMatch) {
-    const volumeNumber = Number.Number.parseInt(bookOfMatch[1], 10);
+    const volumeNumber = Number.parseInt(bookOfMatch[1], 10);
     const seriesName = bookOfMatch[2].trim();
     return {
       seriesName,
@@ -209,7 +209,7 @@ export function parseBookSeries(
   const commaSeriesMatch = rawTitle.match(/[([]\s*([^()[\]]+?)\s*,\s*#?\s*([0-9]+)\s*[)\]]/i);
   if (commaSeriesMatch) {
     const seriesName = commaSeriesMatch[1].trim();
-    const volumeNumber = Number.Number.parseInt(commaSeriesMatch[2], 10);
+    const volumeNumber = Number.parseInt(commaSeriesMatch[2], 10);
     return {
       seriesName,
       volumeNumber,
@@ -312,7 +312,7 @@ export interface MergeOptions {
 export function mergeEditionMetadata(
   existing: Partial<Edition>,
   incoming: Partial<Edition>,
-  options: MergeOptions = { preferExistingUserEdits: true },
+  options?: MergeOptions,
 ): Partial<Edition> {
   const merged: Partial<Edition> = { ...existing };
 
@@ -322,7 +322,7 @@ export function mergeEditionMetadata(
     // If existing is missing, accept incoming
     if (existingVal === undefined || existingVal === null || existingVal === '') return true;
     // If preferExistingUserEdits is on and existing is present, keep existing
-    if (options.preferExistingUserEdits) return false;
+    if ((options?.preferExistingUserEdits ?? true)) return false;
     return true;
   };
 
@@ -341,7 +341,7 @@ export function mergeEditionMetadata(
   if (shouldOverwrite(existing.format, incoming.format)) merged.format = incoming.format;
 
   // Cover: do not overwrite a valid cover with an empty string or placeholder
-  if (incoming.coverImageUrl && (!existing.coverImageUrl || !options.preferExistingUserEdits)) {
+  if (incoming.coverImageUrl && (!existing.coverImageUrl || !(options?.preferExistingUserEdits ?? true))) {
     if (!incoming.coverImageUrl.includes('placeholder') && !incoming.coverImageUrl.includes('no-cover')) {
       merged.coverImageUrl = incoming.coverImageUrl;
     }
@@ -351,7 +351,7 @@ export function mergeEditionMetadata(
   if (incoming.description) {
     if (!existing.description) {
       merged.description = incoming.description;
-    } else if (!options.preferExistingUserEdits && incoming.description.length > (existing.description.length || 0)) {
+    } else if (!(options?.preferExistingUserEdits ?? true) && incoming.description.length > (existing.description.length || 0)) {
       merged.description = incoming.description;
     }
   }
