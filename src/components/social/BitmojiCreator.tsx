@@ -179,8 +179,13 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
       toast.success('Avatar saved successfully!');
       onClose();
     } catch (error) {
-      console.error('Error saving avatar:', error);
-      toast.error('Failed to save avatar');
+      const message = error instanceof Error
+        ? error.message
+        : error && typeof error === 'object' && typeof (error as Record<string, unknown>).message === 'string'
+          ? String((error as Record<string, unknown>).message)
+          : 'Could not save your reading avatar. Please try again.';
+      console.error('Error saving avatar:', { message });
+      toast.error(message);
     }
   };
 
