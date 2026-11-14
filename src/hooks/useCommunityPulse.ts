@@ -88,9 +88,12 @@ export type RecentVisitor = {
   visitedAt: string;
   visitorId: string;
   location: string;
+  countryCode?: string;
+  countryName?: string;
   page: string;
   referrer: string;
   device: string;
+  deviceType?: string;
   browser: string;
   os: string;
   ipAddress?: string | null;
@@ -100,6 +103,57 @@ export type RecentVisitor = {
   deviceModel?: string;
   userId?: string;
 };
+
+export const COUNTRY_CODE_TO_NAME: Record<string, string> = {
+  IN: 'India',
+  US: 'United States',
+  GB: 'United Kingdom',
+  UK: 'United Kingdom',
+  CA: 'Canada',
+  DE: 'Germany',
+  AU: 'Australia',
+  FR: 'France',
+  SG: 'Singapore',
+  AE: 'United Arab Emirates',
+  JP: 'Japan',
+  NL: 'Netherlands',
+  BR: 'Brazil',
+  IT: 'Italy',
+  ES: 'Spain',
+  RU: 'Russia',
+  CN: 'China',
+  ID: 'Indonesia',
+  PK: 'Pakistan',
+  BD: 'Bangladesh',
+  NZ: 'New Zealand',
+  ZA: 'South Africa',
+  MX: 'Mexico',
+  NG: 'Nigeria',
+  PH: 'Philippines',
+  VN: 'Vietnam',
+  IE: 'Ireland',
+  SE: 'Sweden',
+  CH: 'Switzerland',
+  NO: 'Norway',
+  DK: 'Denmark',
+  FI: 'Finland',
+  PL: 'Poland',
+  BE: 'Belgium',
+  AT: 'Austria',
+  PT: 'Portugal',
+  GR: 'Greece',
+  MY: 'Malaysia',
+  TH: 'Thailand',
+  KR: 'South Korea',
+};
+
+export const COUNTRY_NAME_TO_CODE: Record<string, string> = Object.entries(COUNTRY_CODE_TO_NAME).reduce(
+  (acc, [code, name]) => {
+    acc[name.toLowerCase()] = code.toLowerCase();
+    return acc;
+  },
+  {} as Record<string, string>
+);
 
 export const getCacheKey = (tf: string) => `sahadhyayi_pulse_stats_${tf}_v8`;
 
@@ -592,8 +646,11 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
 
       const rows: RecentVisitor[] = (data || []).map((row: any) => {
         const cityName = row.city ? row.city.trim() : '';
-        const countryCode = row.country_code ? row.country_code.trim() : '';
-        const locationDisplay = cityName && countryCode ? `${cityName}, ${countryCode}` : cityName || countryCode || 'Unknown';
+        const rawCode = row.country_code ? row.country_code.trim().toUpperCase() : '';
+        const countryName = rawCode ? COUNTRY_CODE_TO_NAME[rawCode] || rawCode : '';
+        const locationDisplay = cityName && rawCode ? `${cityName}, ${rawCode}` : cityName || countryName || rawCode || 'Unknown';
+        const rawDeviceType = row.device_type ? String(row.device_type).toLowerCase() : '';
+        const derivedDeviceType = rawDeviceType || (/(mobile|android|iphone|ipad)/i.test(row.browser || '') ? 'mobile' : 'desktop');
 
         const stableVisitorId = row.visitor_id
           ? String(row.visitor_id)
@@ -606,9 +663,12 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
           visitedAt: row.visited_at,
           visitorId: stableVisitorId,
           location: locationDisplay,
+          countryCode: rawCode || undefined,
+          countryName: countryName || undefined,
           page: row.page_url || '/',
           referrer: row.referrer || 'Direct',
           device: row.device_type ? `${row.device_type} ${row.browser || ''}`.trim() : row.browser || 'Unknown',
+          deviceType: derivedDeviceType,
           browser: row.browser ? `${row.browser} ${row.browser_version || ''}`.trim() : 'Unknown',
           os: row.os || 'Unknown',
           ipAddress: row.ip_address || 'Unknown',
@@ -679,9 +739,30 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     } catch {
       // ignore
     }
-    // Clean transition state without fabricated baseline
-    setStats(prev => (prev ? { ...prev, isStale: true } : null));
+
+    setStats(prev => {
+      if (prev) {
+        const pv = newTf === '7d' ? (prev.dualTable?.rolling7dViews ?? prev.pageViews)
+          : newTf === '30d' ? (prev.dualTable?.rolling30dViews ?? prev.pageViews)
+          : (prev.dualTable?.rolling24hViews ?? prev.pageViews);
+        const uv = newTf === '7d' ? (prev.dualTable?.uniqueVisitors7d ?? prev.uniqueVisitors)
+          : newTf === '30d' ? (prev.dualTable?.uniqueVisitors30d ?? prev.uniqueVisitors)
+          : (prev.dualTable?.uniqueVisitors24h ?? prev.uniqueVisitors);
+        return {
+          ...prev,
+          pageViews: pv,
+          uniqueVisitors: uv,
+          isStale: true,
+        };
+      }
+      return null;
+    });
   }, []);
+
+  // Reset pagination to first page whenever visitors filter or search changes
+  useEffect(() => {
+    setPage(1);
+  }, [visitorSearch, countryFilter, deviceFilter]);
 
   // Initial and timeframe change fetch when opened
   useEffect(() => {
@@ -716,22 +797,94 @@ export const useCommunityPulse = (isOpen: boolean = false) => {
     };
   }, [isOpen, isAdmin, fetchStats, fetchRecentVisitors, fetchAdminLeaderboard]);
 
-  // Filter visitors by country and device
+  // Filter visitors by country, device, and search query
   const filteredVisitors = useMemo(() => {
+    const q = visitorSearch.trim().toLowerCase();
+    const cf = countryFilter.trim().toLowerCase();
+    const cfCode = COUNTRY_NAME_TO_CODE[cf] || cf;
+    const df = deviceFilter.trim().toLowerCase();
+
     return visitors.filter(v => {
+      // 1. Country filter
       if (countryFilter !== 'all') {
-        if (!v.location.toLowerCase().includes(countryFilter.toLowerCase())) {
+        const vCode = (v.countryCode || '').toLowerCase();
+        const vName = (v.countryName || (v.countryCode ? COUNTRY_CODE_TO_NAME[v.countryCode.toUpperCase()] : '') || '').toLowerCase();
+        const vLoc = (v.location || '').toLowerCase();
+
+        const matchCode = vCode && (vCode === cf || vCode === cfCode);
+        const matchName = vName && (vName === cf || vName.includes(cf) || cf.includes(vName));
+        const matchLoc = vLoc.includes(cf) || (cfCode && vLoc.includes(cfCode));
+
+        if (!matchCode && !matchName && !matchLoc) {
           return false;
         }
       }
+
+      // 2. Device filter
       if (deviceFilter !== 'all') {
-        if (!v.device.toLowerCase().includes(deviceFilter.toLowerCase())) {
+        const dev = (v.device || '').toLowerCase();
+        const devType = (v.deviceType || '').toLowerCase();
+        const os = (v.os || '').toLowerCase();
+        const browser = (v.browser || '').toLowerCase();
+
+        const isTabletDevice =
+          devType.includes('tablet') ||
+          dev.includes('tablet') ||
+          dev.includes('ipad') ||
+          os.includes('ipad');
+
+        if (df === 'mobile') {
+          if (isTabletDevice) return false;
+          const isMobile =
+            devType.includes('mobile') ||
+            dev.includes('mobile') ||
+            dev.includes('phone') ||
+            dev.includes('android') ||
+            dev.includes('iphone') ||
+            os.includes('android') ||
+            os.includes('ios');
+          if (!isMobile) return false;
+        } else if (df === 'tablet') {
+          if (!isTabletDevice) return false;
+        } else if (df === 'desktop') {
+          if (isTabletDevice) return false;
+          const isDesktop =
+            devType.includes('desktop') ||
+            dev.includes('desktop') ||
+            os.includes('windows') ||
+            os.includes('mac') ||
+            os.includes('linux') ||
+            (!dev.includes('mobile') && !dev.includes('phone') && !dev.includes('iphone') && !dev.includes('android') && !os.includes('android') && !os.includes('ios'));
+          if (!isDesktop) return false;
+        } else {
+          if (!dev.includes(df) && !devType.includes(df) && !os.includes(df) && !browser.includes(df)) {
+            return false;
+          }
+        }
+      }
+
+      // 3. Search query filter
+      if (q) {
+        const matchSearch =
+          (v.visitorId && v.visitorId.toLowerCase().includes(q)) ||
+          (v.location && v.location.toLowerCase().includes(q)) ||
+          (v.countryName && v.countryName.toLowerCase().includes(q)) ||
+          (v.countryCode && v.countryCode.toLowerCase().includes(q)) ||
+          (v.page && v.page.toLowerCase().includes(q)) ||
+          (v.referrer && v.referrer.toLowerCase().includes(q)) ||
+          (v.device && v.device.toLowerCase().includes(q)) ||
+          (v.browser && v.browser.toLowerCase().includes(q)) ||
+          (v.os && v.os.toLowerCase().includes(q)) ||
+          (v.ipAddress && v.ipAddress.toLowerCase().includes(q)) ||
+          (v.language && v.language.toLowerCase().includes(q));
+        if (!matchSearch) {
           return false;
         }
       }
+
       return true;
     });
-  }, [visitors, countryFilter, deviceFilter]);
+  }, [visitors, countryFilter, deviceFilter, visitorSearch]);
 
   const totalPages = Math.max(1, Math.ceil(filteredVisitors.length / pageSize));
   const paginatedVisitors = useMemo(() => {

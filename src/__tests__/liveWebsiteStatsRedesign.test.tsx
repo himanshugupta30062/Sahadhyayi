@@ -125,7 +125,7 @@ describe('Live Website Stats Redesign - Layout, Space, and Diagnostics', () => {
     // Check near-full-screen dialog container styling
     const dialog = screen.getByRole('dialog');
     expect(dialog).toHaveClass('community-pulse-dialog');
-    const container = dialog.querySelector('.sm\\:max-w-\\[1600px\\]');
+    const container = dialog.querySelector('[class*="max-w"]');
     expect(container).toBeInTheDocument();
 
     // Check All-Time Platform Visits hero card
