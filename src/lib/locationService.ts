@@ -17,10 +17,7 @@ export class LocationRequestError extends Error {
   }
 }
 
-const requestPosition = (
-  options: PositionOptions,
-  failureCode: (code: number) => LocationFailureCode,
-): Promise<LocationCoords> => new Promise((resolve, reject) => {
+const requestPosition = (options: PositionOptions): Promise<LocationCoords> => new Promise((resolve, reject) => {
   navigator.geolocation.getCurrentPosition(
     (position) => {
       const lat = position.coords.latitude;
@@ -88,7 +85,6 @@ export const getCurrentLocation = async (): Promise<LocationCoords> => {
   try {
     return await requestPosition(
       { enableHighAccuracy: true, timeout: 12_000, maximumAge: 120_000 },
-      () => 'unknown',
     );
   } catch (error) {
     if (error instanceof LocationRequestError && !error.recoverable) throw error;
@@ -101,7 +97,6 @@ export const getCurrentLocation = async (): Promise<LocationCoords> => {
   try {
     return await requestPosition(
       { enableHighAccuracy: false, timeout: 20_000, maximumAge: 300_000 },
-      () => 'unknown',
     );
   } catch (fallbackError) {
     if (fallbackError instanceof LocationRequestError) throw fallbackError;
