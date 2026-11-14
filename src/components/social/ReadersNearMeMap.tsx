@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MapPin, MapPinOff, Users, BookOpen, MessageCircle, ShieldCheck, Loader2, RefreshCw } from 'lucide-react';
@@ -15,6 +15,7 @@ import { ChatWindow } from './ChatWindow';
 import { MapplsMap, type MapplsPoint } from '@/components/maps/MapplsMap';
 import { NearbyReaderDiscovery } from './NearbyReaderDiscovery';
 import { MAPPLS_API_KEY } from '@/config/mappls';
+import { MapAvatarControl } from './MapAvatarControl';
 
 interface NearbyReader {
   id: string;
@@ -234,6 +235,32 @@ export const ReadersNearMeMap: React.FC = () => {
     }
   };
 
+  const mapPoints = useMemo<MapplsPoint[]>(() => [
+    ...(userLocation && isLocationSharing ? [{
+      id: 'self',
+      lat: userLocation.lat,
+      lng: userLocation.lng,
+      title: 'Your saved location',
+      avatarUrl: userAvatar?.avatar_img_url ?? null,
+    }] : []),
+    ...nearbyReaders
+      .filter((reader) =>
+        reader.approximate_lat != null &&
+        reader.approximate_lng != null &&
+        Number.isFinite(reader.approximate_lat) &&
+        Number.isFinite(reader.approximate_lng) &&
+        !(reader.approximate_lat === 0 && reader.approximate_lng === 0),
+      )
+      .map((reader) => ({
+        id: reader.id,
+        lat: reader.approximate_lat!,
+        lng: reader.approximate_lng!,
+        title: reader.full_name,
+        avatarUrl: reader.avatar_img_url,
+        description: `${reader.distance.toFixed(1)} km away · ${selectedBook?.title || 'Selected book'}`,
+      })),
+  ], [userLocation, isLocationSharing, userAvatar?.avatar_img_url, nearbyReaders, selectedBook?.title]);
+
   const openChat = (reader: NearbyReader) => {
     if (!reader.is_friend) {
       toast.error('Chat is available for friends only.');
@@ -254,6 +281,9 @@ export const ReadersNearMeMap: React.FC = () => {
           <p className="text-sm text-[#636B65] dark:text-[#A5ADA6] mt-2">
             Find friends who are reading the same book within {MAX_DISTANCE_KM} km.
           </p>
+          <div className="mt-4">
+            <MapAvatarControl />
+          </div>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex flex-col gap-3 rounded-xl border border-[#E8E2D9] bg-[#FAF7F2] p-4 dark:border-[#29332D] dark:bg-[#0B0D0C] sm:flex-row sm:items-center sm:justify-between">
@@ -300,34 +330,9 @@ export const ReadersNearMeMap: React.FC = () => {
 
           <MapplsMap
             apiKey={MAPPLS_API_KEY}
-            points={[
-              ...(userLocation && isLocationSharing ? [{
-                id: 'self',
-                lat: userLocation.lat,
-                lng: userLocation.lng,
-                title: 'Your saved location',
-                avatarUrl: userAvatar?.avatar_img_url ?? null,
-              }] : []),
-              ...nearbyReaders
-                .filter(
-                  (reader) =>
-                    reader.approximate_lat != null &&
-                    reader.approximate_lng != null &&
-                    Number.isFinite(reader.approximate_lat) &&
-                    Number.isFinite(reader.approximate_lng) &&
-                    !(reader.approximate_lat === 0 && reader.approximate_lng === 0),
-                )
-                .map((reader) => ({
-                  id: reader.id,
-                  lat: reader.approximate_lat!,
-                  lng: reader.approximate_lng!,
-                  title: reader.full_name,
-                  avatarUrl: reader.avatar_img_url,
-                  description: `${reader.distance.toFixed(1)} km away · ${selectedBook?.title || 'Selected book'}`,
-                })),
-            ]}
+            points={mapPoints}
             center={mapCenter || (isLocationSharing ? userLocation : null)}
-            emptyMessage="Your saved location will appear here when sharing is enabled."
+            emptyMessage="Create your Bitmoji and enable location sharing to appear on the reader map."
           />
 
           <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">
@@ -424,6 +429,7 @@ export const ReadersNearMeMap: React.FC = () => {
         onRequestLocation={() => void handleEnableSharing()}
         hasError={Boolean(locationError)}
         errorMessage={locationError || undefined}
+        isRequesting={isSavingLocation}
       />
       {chatFriendId && (
         <ChatWindow
