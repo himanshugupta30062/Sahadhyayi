@@ -676,6 +676,16 @@ export default function AdminBookPdfReviews() {
                         <Input id="new-book-evidence" type="url" value={evidenceUrl} onChange={(e) => setEvidenceUrl(e.target.value)} placeholder="https://example.org/licence-or-permission" />
                       </div>
                     </div>
+
+                    {/* Publish button for new book mode */}
+                    <Button
+                      className="w-full"
+                      onClick={() => void invokeReview('publish', { createNewBook: true, newBookTitle, newBookAuthor, newBookGenre, newBookLanguage, newBookDescription, rightsBasis, evidenceUrl })}
+                      disabled={Boolean(busyAction) || selected.status !== 'approved' || !newBookTitle.trim() || !evidenceUrl.trim()}
+                    >
+                      {busyAction === 'publish' ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
+                      Publish approved PDF to Library Book
+                    </Button>
                   </div>
                 )}
 

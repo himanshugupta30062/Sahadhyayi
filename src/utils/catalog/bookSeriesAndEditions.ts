@@ -142,9 +142,8 @@ export function parseBookSeries(
   const rawTitle = title.normalize('NFC').trim();
 
   // 1. Look for parenthetical or bracketed series: e.g. "(Dune Chronicles, #1)", "(The Lord of the Rings, Book 1 of 3)"
-  // Simplified to avoid catastrophic backtracking: use atomic groups and possessive quantifiers where possible
   // Match: (Series Name, #1) or (Series Name, Book 1) or (Series Name, Vol. 1) etc.
-  const bracketRegex = /(?:\(|\[)\s*([^()[\]]{1,100}?)\s*[,:]\s*(?:#|book|vol(?:ume|\.)?|part|खण्ड|भाग|अंक)?\s*([0-9ivxlcdm०-९]+(?:\.[0-9]+)?|prequel|novella|companion)(?:\s+of\s+([0-9०-९]{1,3}))?\s*(?:\)|\])/i;
+  const bracketRegex = /[([]\s*([^()[\]:,]+)[,:]\s*(?:(?:#|book|vol(?:ume|\.)?|part|खण्ड|भाग|अंक)\s+)?#?\s*([0-9ivxlcdm०-९]+(?:\.[0-9]+)?|prequel|novella|companion)(?:\s+of\s+([0-9०-९]{1,3}))?\s*[)\]]/i;
   const bracketMatch = rawTitle.match(bracketRegex);
 
   if (bracketMatch) {
@@ -180,8 +179,7 @@ export function parseBookSeries(
   }
 
   // 2. Format: "(Series Name #1)" or "(Series Name 1)"
-  // Simplified: limit the first capture group to avoid backtracking
-  const simpleNumMatch = rawTitle.match(/[([]\s*([^()[\]#]{1,100}?)\s*#\s*([0-9]+(?:\.[0-9]+)?)\s*[)\]]/i);
+  const simpleNumMatch = rawTitle.match(/[([]\s*([^()[\]#]+)#\s*([0-9]+(?:\.[0-9]+)?)\s*[)\]]/i);
   if (simpleNumMatch) {
     const seriesName = simpleNumMatch[1].trim();
     const volumeNumber = Number.parseFloat(simpleNumMatch[2]);
@@ -194,12 +192,12 @@ export function parseBookSeries(
   }
 
   // 3. Format: "Book 1 of The Expanse" in description or title
-  const bookOfRegex = /\b(?:book|volume|vol\.|part)\s+([0-9]+)\s+of\s+([^.,\n\r()]{3,40}?)(?:\s+series|\.|\n|,|$)/i;
+  const bookOfRegex = /\b(?:book|volume|vol\.|part)\s+([0-9]+)\s+of\s+([^.,\n\r()]+)/i;
   const bookOfMatch = rawTitle.match(bookOfRegex) || (description ? description.match(bookOfRegex) : null);
 
   if (bookOfMatch) {
     const volumeNumber = Number.parseInt(bookOfMatch[1], 10);
-    const seriesName = bookOfMatch[2].trim();
+    const seriesName = bookOfMatch[2].replace(/\s+series$/i, '').trim();
     return {
       seriesName,
       volumeNumber,
@@ -209,8 +207,7 @@ export function parseBookSeries(
   }
 
   // 4. Format: "Harry Potter and the Sorcerer's Stone (Harry Potter, #1)"
-  // Simplified: limit the first capture group
-  const commaSeriesMatch = rawTitle.match(/[([]\s*([^()[\]]{1,100}?)\s*,\s*#?\s*([0-9]{1,3})\s*[)\]]/i);
+  const commaSeriesMatch = rawTitle.match(/[([]\s*([^()[\]#,]+),\s*#?\s*([0-9]{1,3})\s*[)\]]/i);
   if (commaSeriesMatch) {
     const seriesName = commaSeriesMatch[1].trim();
     const volumeNumber = Number.parseInt(commaSeriesMatch[2], 10);
