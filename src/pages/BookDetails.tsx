@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Calendar, BookOpen, Globe, User, LogIn, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -33,6 +33,7 @@ import BookLiteraryVoices from '@/components/books/BookLiteraryVoices';
 import BookAIReader from '@/components/books/BookAIReader';
 import AIReadingToolkit from '@/components/books/AIReadingToolkit';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { validateReaderUrl } from '@/utils/bookReaderPreview';
 
 const BookTabErrorFallback = ({ title, message }: { title: string; message: string }) => (
   <Card className="border border-border/70 bg-card p-6 text-center">
@@ -58,23 +59,58 @@ const BookDetails = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState(
-    VALID_BOOK_TABS.includes(tabParam as any) ? (tabParam as string) : 'connect'
-  );
   const { user } = useAuth();
   const { data: book, isLoading, error } = useBookById(id);
   const { data: ratingData, isLoading: ratingLoading } = useBookRatings(id);
   const rateMutation = useRateBook(id);
   const { toast } = useToast();
 
+  // Validate PDF URL to determine if "Read Book" tab should be shown
+  const hasValidPdfUrl = useMemo(() => {
+    if (!book?.pdf_url) return false;
+    const validation = validateReaderUrl(book.pdf_url);
+    // Only consider it valid if it's a proper URL that can be rendered
+    // (Google Books, PDF, or EPUB)
+    return validation.isValid && (validation.isGoogleBooks || validation.isPdf || validation.isEpub);
+  }, [book?.pdf_url]);
+
+  // Valid tabs include 'read' only if PDF URL is valid
+  const validTabs = useMemo(() => {
+    const tabs = [...VALID_BOOK_TABS] as string[];
+    if (!hasValidPdfUrl) {
+      // Remove 'read' tab if no valid PDF
+      const readIndex = tabs.indexOf('read');
+      if (readIndex !== -1) tabs.splice(readIndex, 1);
+    }
+    return tabs;
+  }, [hasValidPdfUrl]);
+
+  const [activeTab, setActiveTab] = useState(() => {
+    if (tabParam && validTabs.includes(tabParam)) return tabParam;
+    if (tabParam === 'read' && !hasValidPdfUrl) return 'connect'; // Redirect from 'read' if no PDF
+    return 'connect';
+  });
+
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab && VALID_BOOK_TABS.includes(tab as any)) {
+    if (tab && validTabs.includes(tab)) {
       setActiveTab(tab);
+    } else if (tab === 'read' && !hasValidPdfUrl) {
+      // Redirect from 'read' tab if no valid PDF
+      setActiveTab('connect');
+      setSearchParams(prev => {
+        const next = new URLSearchParams(prev);
+        next.delete('tab');
+        return next;
+      }, { replace: true });
     }
-  }, [searchParams]);
+  }, [searchParams, validTabs, hasValidPdfUrl, setSearchParams]);
 
   const handleTabChange = (value: string) => {
+    // Prevent switching to 'read' if no valid PDF
+    if (value === 'read' && !hasValidPdfUrl) {
+      return;
+    }
     setActiveTab(value);
     setSearchParams(
       prev => {
@@ -476,12 +512,14 @@ const BookDetails = () => {
                 >
                   Ideas & Feedback
                 </TabsTrigger>
-                <TabsTrigger
-                  value="read"
-                  className="text-xs sm:text-sm font-medium px-2 sm:px-4 py-3 rounded-lg data-[state=active]:bg-orange-100 data-[state=active]:text-orange-800 data-[state=active]:shadow-sm min-h-[48px] whitespace-normal leading-tight"
-                >
-                  Read Book
-                </TabsTrigger>
+                {hasValidPdfUrl && (
+                  <TabsTrigger
+                    value="read"
+                    className="text-xs sm:text-sm font-medium px-2 sm:px-4 py-3 rounded-lg data-[state=active]:bg-orange-100 data-[state=active]:text-orange-800 data-[state=active]:shadow-sm min-h-[48px] whitespace-normal leading-tight"
+                  >
+                    Read Book
+                  </TabsTrigger>
+                )}
               </TabsList>
 
               <TabsContent value="connect" className="mt-0">
@@ -514,8 +552,8 @@ const BookDetails = () => {
                 <ErrorBoundary fallback={<BookTabErrorFallback title="Unable to load feedback" message="A temporary issue occurred while loading reader ideas." />}>
                   <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 shadow-lg">
                     <CardContent className="p-3 sm:p-6">
-                      <BookIdeasSection 
-                        bookId={book.id} 
+                      <BookIdeasSection
+                        bookId={book.id}
                         bookTitle={book.title}
                       />
                     </CardContent>
@@ -523,20 +561,22 @@ const BookDetails = () => {
                 </ErrorBoundary>
               </TabsContent>
 
-              <TabsContent value="read" className="mt-0">
-                <ErrorBoundary fallback={<BookTabErrorFallback title="Unable to load book reader" message="A temporary issue occurred while initializing the reader." />}>
-                  <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 border-orange-200 shadow-lg">
-                    <CardContent className="p-2 sm:p-6">
-                      <BookReader 
-                        bookId={book.id}
-                        bookTitle={book.title}
-                        pdfUrl={book.pdf_url}
-                        epubUrl={undefined}
-                      />
-                    </CardContent>
-                  </Card>
-                </ErrorBoundary>
-              </TabsContent>
+              {hasValidPdfUrl && (
+                <TabsContent value="read" className="mt-0">
+                  <ErrorBoundary fallback={<BookTabErrorFallback title="Unable to load book reader" message="A temporary issue occurred while initializing the reader." />}>
+                    <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 border-orange-200 shadow-lg">
+                      <CardContent className="p-2 sm:p-6">
+                        <BookReader
+                          bookId={book.id}
+                          bookTitle={book.title}
+                          pdfUrl={book.pdf_url}
+                          epubUrl={undefined}
+                        />
+                      </CardContent>
+                    </Card>
+                  </ErrorBoundary>
+                </TabsContent>
+              )}
             </Tabs>
           </div>
         </div>

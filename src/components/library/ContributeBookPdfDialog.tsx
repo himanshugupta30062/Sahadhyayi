@@ -168,6 +168,20 @@ function ContributeBookPdfDialogContent() {
 
     setBusy(true);
     setBusyStage('validating');
+
+    try {
+      await validatePdf(file);
+    } catch (validationErr) {
+      setBusy(false);
+      setBusyStage('idle');
+      toast({
+        title: 'Submission failed',
+        description: validationErr instanceof Error ? validationErr.message : 'Invalid PDF',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const id = crypto.randomUUID();
     const path = `${user.id}/${id}/source.pdf`;
     let submissionCreated = false;
@@ -175,7 +189,6 @@ function ContributeBookPdfDialogContent() {
 
     const attemptUpload = async (): Promise<boolean> => {
       try {
-        await validatePdf(file);
         setBusyStage('uploading');
 
         const { error: insertError } = await supabase.from('book_pdf_submissions' as any).insert({
