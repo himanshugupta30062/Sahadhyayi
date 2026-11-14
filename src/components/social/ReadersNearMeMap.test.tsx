@@ -14,6 +14,9 @@ const mocks = vi.hoisted(() => ({
   rpc: vi.fn(),
   from: vi.fn(),
   getCurrentLocation: vi.fn(),
+  getMyLocationSharingState: vi.fn(),
+  saveMyLocation: vi.fn(),
+  disableMyLocationSharing: vi.fn(),
 }));
 
 vi.mock('@/contexts/authHelpers', () => ({
@@ -40,6 +43,16 @@ vi.mock('@/integrations/supabase/client-universal', () => {
 
 vi.mock('@/lib/locationService', () => ({
   getCurrentLocation: mocks.getCurrentLocation,
+}));
+
+vi.mock('@/lib/locationSharingService', () => ({
+  getMyLocationSharingState: mocks.getMyLocationSharingState,
+  saveMyLocation: mocks.saveMyLocation,
+  disableMyLocationSharing: mocks.disableMyLocationSharing,
+}));
+
+vi.mock('@/hooks/useUserAvatar', () => ({
+  useUserAvatar: () => ({ data: { avatar_img_url: 'https://cdn.sahadhyayi.com/avatars/current.svg' } }),
 }));
 
 vi.mock('@/hooks/useFriends', () => ({
@@ -95,13 +108,17 @@ describe('ReadersNearMeMap', () => {
   beforeEach(() => {
     mocks.user = { id: 'user-1', email: 'reader@example.com', user_metadata: { full_name: 'Current Reader' } };
     mocks.profile = null;
+    mocks.getMyLocationSharingState.mockReset();
+    mocks.saveMyLocation.mockReset().mockResolvedValue(undefined);
+    mocks.disableMyLocationSharing.mockReset().mockResolvedValue(undefined);
+    mocks.getMyLocationSharingState.mockResolvedValue({ hasConsent: false, isSharing: false, location: null });
     mocks.rpc.mockReset();
     mocks.from.mockClear();
     mocks.getCurrentLocation.mockReset();
     mocks.getCurrentLocation.mockResolvedValue({ lat: 28.4595, lng: 77.0266 });
     mocks.rpc.mockImplementation((name: string) => {
-      if (name === 'has_location_consent') return Promise.resolve({ data: false, error: null });
       if (name === 'get_nearby_book_readers') return Promise.resolve({ data: [], error: null });
+      if (name === 'share_book_location') return Promise.resolve({ data: 'location-1', error: null });
       return Promise.resolve({ data: null, error: null });
     });
   });
@@ -133,13 +150,14 @@ describe('ReadersNearMeMap', () => {
     await waitFor(() => expect(mocks.getCurrentLocation).toHaveBeenCalledTimes(1));
     expect(await screen.findByText('Location sharing is on')).toBeInTheDocument();
     expect(screen.getByTestId('map-points')).toHaveTextContent('Your saved location');
-    expect(mocks.from).toHaveBeenCalledWith('profiles');
+    expect(mocks.saveMyLocation).toHaveBeenCalledWith({ lat: 28.4595, lng: 77.0266 });
   });
 
   it('shows distance-only nearby matches and opens chat only for friends', async () => {
-    mocks.profile = { location_sharing: true, location_lat: 28.4595, location_lng: 77.0266 };
+    mocks.getMyLocationSharingState.mockResolvedValue({
+      hasConsent: true, isSharing: true, location: { lat: 28.4595, lng: 77.0266 },
+    });
     mocks.rpc.mockImplementation((name: string) => {
-      if (name === 'has_location_consent') return Promise.resolve({ data: true, error: null });
       if (name === 'get_nearby_book_readers') {
         return Promise.resolve({
           data: [
@@ -176,9 +194,10 @@ describe('ReadersNearMeMap', () => {
   });
 
   it('clears nearby results when sharing is disabled', async () => {
-    mocks.profile = { location_sharing: true, location_lat: 28.4595, location_lng: 77.0266 };
+    mocks.getMyLocationSharingState.mockResolvedValue({
+      hasConsent: true, isSharing: true, location: { lat: 28.4595, lng: 77.0266 },
+    });
     mocks.rpc.mockImplementation((name: string) => {
-      if (name === 'has_location_consent') return Promise.resolve({ data: true, error: null });
       if (name === 'get_nearby_book_readers') {
         return Promise.resolve({
           data: [{ reader_id: 'friend-1', reader_name: 'Jane Reader', distance_km: 2, is_friend: true }],
@@ -200,9 +219,10 @@ describe('ReadersNearMeMap', () => {
   });
 
   it('plots both the current user and readers with approximate coordinates on the map', async () => {
-    mocks.profile = { location_sharing: true, location_lat: 28.4595, location_lng: 77.0266 };
+    mocks.getMyLocationSharingState.mockResolvedValue({
+      hasConsent: true, isSharing: true, location: { lat: 28.4595, lng: 77.0266 },
+    });
     mocks.rpc.mockImplementation((name: string) => {
-      if (name === 'has_location_consent') return Promise.resolve({ data: true, error: null });
       if (name === 'get_nearby_book_readers') {
         return Promise.resolve({
           data: [
