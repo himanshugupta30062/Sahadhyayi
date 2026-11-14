@@ -16,7 +16,7 @@ export function MapAvatarControl() {
           {avatar?.avatar_img_url ? (
             <img
               src={avatar.avatar_img_url}
-              alt="Your reading Bitmoji"
+              alt={hasCustomBitmoji ? 'Your reading Bitmoji' : 'Your profile photo'}
               className="h-full w-full object-cover"
               loading="lazy"
             />
