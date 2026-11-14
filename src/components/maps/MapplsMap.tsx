@@ -164,7 +164,14 @@ const escapeHtml = (value: string) => value
 const getSafeAvatarUrl = (value?: string | null): string | null => {
   if (!value) return null;
   const trimmed = value.trim();
-  if (/^data:image\\/svg\\+xml;base64,[A-Za-z0-9+/=]+$/i.test(trimmed)) return trimmed;
+  const [dataHeader, dataPayload] = trimmed.split(',', 2);
+  if (
+    dataHeader?.toLowerCase() === 'data:image/svg+xml;base64' &&
+    !!dataPayload &&
+    /^[A-Za-z0-9+/]+={0,2}$/.test(dataPayload)
+  ) {
+    return trimmed;
+  }
   try {
     const url = new URL(trimmed);
     return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : null;
