@@ -1,44 +1,11 @@
 /** @vitest-environment jsdom */
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import Index from '@/pages/Index';
-
-// Mock matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: vi.fn().mockImplementation((query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
-});
-
-// Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-} as any;
-
-// Mock AnimatedHero to avoid Three.js in tests
-vi.mock('@/components/AnimatedHero', () => ({
-  default: () => <div data-testid="animated-hero-mock">Hero Mock</div>,
-}));
-
-// Mock SahadhyayiJourney to avoid Three.js in tests
-vi.mock('@/components/home/journey/SahadhyayiJourney', () => ({
-  SahadhyayiJourney: () => <div data-testid="journey-mock">Journey Mock</div>,
-}));
 
 describe('Index Homepage Render', () => {
   it('renders homepage without throwing', async () => {
@@ -49,14 +16,20 @@ describe('Index Homepage Render', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <MemoryRouter>
-          <ErrorBoundary fallback={<div>Error fallback</div>}>
+          <ErrorBoundary fallback={<div>Caught in local ErrorBoundary</div>}>
             <Index />
           </ErrorBoundary>
         </MemoryRouter>
       </QueryClientProvider>
     );
 
+    // Verify no ErrorBoundary triggered
     expect(screen.queryByText(/Something went wrong/i)).toBeNull();
-    expect(screen.queryByText(/Error fallback/i)).toBeNull();
+    expect(screen.queryByText(/Caught in local ErrorBoundary/i)).toBeNull();
+
+    // Verify key homepage elements render
+    expect(screen.getByRole('group', {
+      name: /Explore Sahadhyayi through the Library, Authors, Social Media, Articles, and Games orbits/i,
+    })).toBeInTheDocument();
   });
 });

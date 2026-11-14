@@ -23,6 +23,15 @@ if (typeof window !== 'undefined') {
       disconnect() {}
     } as any;
   }
+
+  if (!window.IntersectionObserver) {
+    window.IntersectionObserver = class IntersectionObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    } as any;
+  }
+
 }
 
 // Vitest globals are disabled; register explicit cleanup so hook listeners and
