@@ -35,8 +35,8 @@ describe('MapplsMap', () => {
     window.mappls = { Map, Marker, fitBounds, remove: removeLayer };
 
     render(<MapplsMap apiKey="valid-key" points={[
-      { id: 'a', lat: 28.6, lng: 77.2, title: 'Delhi' },
-      { id: 'b', lat: 19, lng: 72.8, title: 'Mumbai' },
+      { id: 'a', lat: 28.6, lng: 77.2, title: 'Delhi', avatarUrl: 'https://cdn.example.test/delhi.svg' },
+      { id: 'b', lat: 19, lng: 72.8, title: 'Mumbai', avatarUrl: 'javascript:alert(1)' },
       { id: 'invalid', lat: 0, lng: 0, title: 'Invalid' },
     ]} />);
 
