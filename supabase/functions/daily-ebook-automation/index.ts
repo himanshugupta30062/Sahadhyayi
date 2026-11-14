@@ -31,6 +31,7 @@ interface BookCandidate {
   gutenberg_id?: number;
   archive_id?: string;
   openlibrary_key?: string;
+  isbn?: string;
 }
 
 interface AuthorProfile {
@@ -50,28 +51,162 @@ interface AutomationLog {
   run_id: string;
   started_at: string;
   completed_at?: string;
-  status: "running" | "completed" | "failed";
+  status: "running" | "completed" | "failed" | "partial";
   books_discovered: number;
   books_verified: number;
   books_inserted: number;
+  books_skipped_duplicate: number;
+  books_skipped_existing: number;
   authors_enriched: number;
   errors: string[];
+  warnings: string[];
   details: {
     discovered: BookCandidate[];
     verified: BookCandidate[];
     inserted: { id: string; title: string }[];
+    skipped: { title: string; author: string; reason: string }[];
     authors: { id: string; name: string }[];
   };
+}
+
+interface PDFMetadata {
+  sha256: string;
+  size: number;
+  pageCount: number | null;
+  valid: boolean;
 }
 
 function generateRunId(): string {
   return `ebook-auto-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+/**
+ * Compute SHA-256 hash of a blob
+ */
+async function computeSHA256(blob: Blob): Promise<string> {
+  const buffer = await blob.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/**
+ * Download PDF and compute SHA-256, validate structure
+ */
+async function fetchAndValidatePDF(pdfUrl: string): Promise<{ blob: Blob | null; metadata: PDFMetadata; error?: string }> {
+  try {
+    // HEAD request first to check content-type and size
+    const headResponse = await fetch(pdfUrl, { method: "HEAD", signal: AbortSignal.timeout(10000) });
+    if (!headResponse.ok) {
+      return { blob: null, metadata: { sha256: "", size: 0, pageCount: null, valid: false }, error: `HTTP ${headResponse.status}` };
+    }
+
+    const contentLength = headResponse.headers.get("content-length");
+    const size = contentLength ? Number.parseInt(contentLength, 10) : 0;
+
+    if (size > MAX_PDF_SIZE) {
+      return { blob: null, metadata: { sha256: "", size, pageCount: null, valid: false }, error: `PDF too large: ${size} bytes` };
+    }
+
+    // GET the full PDF (for SHA-256 and validation)
+    const getResponse = await fetch(pdfUrl, { signal: AbortSignal.timeout(60000) });
+    if (!getResponse.ok) {
+      return { blob: null, metadata: { sha256: "", size, pageCount: null, valid: false }, error: `PDF download failed: ${getResponse.status}` };
+    }
+
+    const blob = await getResponse.blob();
+    const actualSize = blob.size;
+
+    // Verify PDF signature
+    const headerBuffer = await blob.slice(0, 5).arrayBuffer();
+    const header = new TextDecoder().decode(new Uint8Array(headerBuffer));
+    if (header !== "%PDF-") {
+      return { blob, metadata: { sha256: "", size: actualSize, pageCount: null, valid: false }, error: "Invalid PDF signature" };
+    }
+
+    // Compute SHA-256
+    const sha256 = await computeSHA256(blob);
+
+    // Validate PDF structure (trailer, page count)
+    let pageCount: number | null = null;
+    try {
+      const trailerStart = Math.max(0, actualSize - 2048);
+      const trailerBuffer = await blob.slice(trailerStart, actualSize).arrayBuffer();
+      const trailer = new TextDecoder().decode(new Uint8Array(trailerBuffer));
+
+      if (trailer.includes("startxref") && trailer.includes("%%EOF")) {
+        const countMatch = trailer.match(/\/Count\s+(\d+)/);
+        if (countMatch) {
+          pageCount = parseInt(countMatch[1], 10);
+        }
+      }
+    } catch {
+      // Ignore page count extraction errors
+    }
+
+    return {
+      blob,
+      metadata: { sha256, size: actualSize, pageCount, valid: true }
+    };
+  } catch (error) {
+    return { blob: null, metadata: { sha256: "", size: 0, pageCount: null, valid: false }, error: error instanceof Error ? error.message : "Verification failed" };
+  }
+}
+
+/**
+ * Check if PDF already exists in library by SHA-256
+ */
+async function checkDuplicateBySHA256(supabase: any, sha256: string): Promise<{ exists: boolean; bookId?: string }> {
+  const { data, error } = await supabase
+    .from("books_library")
+    .select("id, title")
+    .eq("pdf_sha256", sha256)
+    .maybeSingle();
+
+  if (error) {
+    console.error("SHA-256 duplicate check error:", error);
+    return { exists: false };
+  }
+
+  return { exists: !!data, bookId: data?.id };
+}
+
+/**
+ * Check if book already exists using the match_catalogue_book RPC
+ */
+async function checkExistingBook(supabase: any, title: string, author: string, isbn?: string): Promise<{ exists: boolean; bookId?: string; matchScore?: number }> {
+  try {
+    const { data, error } = await supabase.rpc("match_catalogue_book", {
+      p_title: title,
+      p_author: author,
+      p_isbn: isbn || null,
+      p_limit: 3,
+    });
+
+    if (error) {
+      console.error("Catalogue match RPC error:", error);
+      return { exists: false };
+    }
+
+    const matches = (data || []) as Array<Record<string, unknown>>;
+    if (matches.length > 0) {
+      const topMatch = matches[0];
+      const score = typeof topMatch.match_score === "number" ? topMatch.match_score : 0;
+      // High confidence match (exact title + author or ISBN)
+      if (score >= 2.0 || (isbn && topMatch.isbn === isbn)) {
+        return { exists: true, bookId: topMatch.id as string, matchScore: score };
+      }
+    }
+
+    return { exists: false };
+  } catch (error) {
+    console.error("Existing book check failed:", error);
+    return { exists: false };
+  }
+}
+
 async function fetchGutenbergBooks(): Promise<BookCandidate[]> {
   try {
-    // Fetch recently added/public domain books from Project Gutenberg
-    // Using the Gutendex API - get books with PDF format
     const url = "https://gutendex.com/books/?languages=en&mime_type=application/pdf&sort=popular&limit=50";
     const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
     if (!response.ok) return [];
@@ -120,7 +255,6 @@ function normalizeGutenbergAuthor(raw: string): string {
 
 async function fetchInternetArchiveBooks(): Promise<BookCandidate[]> {
   try {
-    // Search for public domain texts with PDF availability
     const url = "https://archive.org/advancedsearch.php?q=mediatype:texts+AND+collection:(gutenberg)+AND+format:pdf&fl=identifier,title,creator,date,description,subject,publicdate&rows=50&output=json&sort=publicdate desc";
     const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
     if (!response.ok) return [];
@@ -133,7 +267,6 @@ async function fetchInternetArchiveBooks(): Promise<BookCandidate[]> {
       const id = item.identifier;
       if (!id) continue;
 
-      // Get verified PDF URL
       const pdfUrl = await getVerifiedArchivePdfUrl(id);
       if (!pdfUrl) continue;
 
@@ -167,7 +300,6 @@ async function getVerifiedArchivePdfUrl(identifier: string): Promise<string | un
     const item = await response.json();
     const files = Array.isArray(item.files) ? item.files : [];
 
-    // Find the main PDF (not _text.pdf or _jp2.zip)
     const pdf = files.find((file: any) =>
       typeof file.name === "string" &&
       file.name.toLowerCase().endsWith(".pdf") &&
@@ -189,8 +321,7 @@ async function getVerifiedArchivePdfUrl(identifier: string): Promise<string | un
 
 async function fetchOpenLibraryBooks(): Promise<BookCandidate[]> {
   try {
-    // Search for public domain books with PDF/ebook availability
-    const url = "https://openlibrary.org/search.json?q=public+domain&has_fulltext=true&limit=50&fields=key,title,author_name,first_publish_year,subject,language,cover_i,ia,ebook_access";
+    const url = "https://openlibrary.org/search.json?q=public+domain&has_fulltext=true&limit=50&fields=key,title,author_name,first_publish_year,subject,language,cover_i,ia,ebook_access,isbn";
     const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
     if (!response.ok) return [];
 
@@ -199,12 +330,13 @@ async function fetchOpenLibraryBooks(): Promise<BookCandidate[]> {
 
     const results: BookCandidate[] = [];
     for (const book of data.docs.slice(0, 30)) {
-      // Check if it has Internet Archive ID for PDF access
       const iaId = Array.isArray(book.ia) ? book.ia[0] : book.ia;
       if (!iaId) continue;
 
       const pdfUrl = await getVerifiedArchivePdfUrl(iaId);
       if (!pdfUrl) continue;
+
+      const isbn = Array.isArray(book.isbn) ? book.isbn[0] : book.isbn;
 
       results.push({
         title: (book.title || "").trim(),
@@ -216,6 +348,7 @@ async function fetchOpenLibraryBooks(): Promise<BookCandidate[]> {
         language: Array.isArray(book.language) ? (book.language[0] === "eng" ? "English" : book.language[0]) : "English",
         subjects: Array.isArray(book.subject) ? book.subject.slice(0, 5) : [],
         openlibrary_key: book.key,
+        isbn: isbn?.replace(/[^0-9X]/gi, "").slice(0, 17),
       });
     }
     return results;
@@ -225,54 +358,8 @@ async function fetchOpenLibraryBooks(): Promise<BookCandidate[]> {
   }
 }
 
-async function verifyPdfUrl(pdfUrl: string): Promise<{ valid: boolean; error?: string; contentType?: string; size?: number }> {
-  try {
-    // HEAD request first to check content-type and size
-    const headResponse = await fetch(pdfUrl, { method: "HEAD", signal: AbortSignal.timeout(10000) });
-    if (!headResponse.ok) {
-      return { valid: false, error: `HTTP ${headResponse.status}` };
-    }
-
-    const contentType = headResponse.headers.get("content-type") || "";
-    const contentLength = headResponse.headers.get("content-length");
-    const size = contentLength ? Number.parseInt(contentLength, 10) : undefined;
-
-    if (size && size > MAX_PDF_SIZE) {
-      return { valid: false, error: `PDF too large: ${size} bytes` };
-    }
-
-    if (!contentType.includes("pdf") && !contentType.includes("octet-stream")) {
-      // Some servers don't set proper content-type, allow but verify with GET
-      console.warn(`Unexpected content-type for ${pdfUrl}: ${contentType}`);
-    }
-
-    // GET first 2KB to verify PDF signature
-    const getResponse = await fetch(pdfUrl, {
-      headers: { Range: `bytes=0-${PDF_VERIFY_BYTES - 1}` },
-      signal: AbortSignal.timeout(10000),
-    });
-
-    if (!getResponse.ok) {
-      return { valid: false, error: `PDF download failed: ${getResponse.status}` };
-    }
-
-    const buffer = await getResponse.arrayBuffer();
-    const header = new Uint8Array(buffer).slice(0, 5);
-    const headerStr = new TextDecoder().decode(header);
-
-    if (headerStr !== "%PDF-") {
-      return { valid: false, error: "Invalid PDF signature" };
-    }
-
-    return { valid: true, contentType, size };
-  } catch (error) {
-    return { valid: false, error: error instanceof Error ? error.message : "Verification failed" };
-  }
-}
-
 async function enrichAuthorData(authorName: string): Promise<AuthorProfile | null> {
   try {
-    // Use Wikipedia API to get author info
     const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(authorName)}&format=json&srlimit=1`;
     const searchResponse = await fetch(searchUrl, { signal: AbortSignal.timeout(5000) });
     if (!searchResponse.ok) return null;
@@ -281,7 +368,6 @@ async function enrichAuthorData(authorName: string): Promise<AuthorProfile | nul
     const page = searchData.query?.search?.[0];
     if (!page) return null;
 
-    // Get detailed page info
     const pageId = page.pageid;
     const detailUrl = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts|pageimages|info&exintro=true&explaintext=true&piprop=original&inprop=url&pageids=${pageId}&format=json`;
     const detailResponse = await fetch(detailUrl, { signal: AbortSignal.timeout(5000) });
@@ -291,12 +377,10 @@ async function enrichAuthorData(authorName: string): Promise<AuthorProfile | nul
     const pageData = detailData.query?.pages?.[pageId];
     if (!pageData) return null;
 
-    // Parse infobox for birth/death dates (basic extraction from extract)
     const extract = pageData.extract || "";
     const birthMatch = extract.match(/born\s+([^.\n]+)/i);
     const deathMatch = extract.match(/died\s+([^.\n]+)/i);
 
-    // Try to get structured data from Wikidata
     const wikidataUrl = `https://www.wikidata.org/wiki/Special:EntityData/${pageData.wikibase_item || ""}.json`;
     let birthDate: string | undefined;
     let deathDate: string | undefined;
@@ -312,15 +396,12 @@ async function enrichAuthorData(authorName: string): Promise<AuthorProfile | nul
           const wdData = await wdResponse.json();
           const entity = wdData.entities?.[pageData.wikibase_item];
           if (entity) {
-            // Birth date (P569)
             const birthClaim = entity.claims?.P569?.[0]?.mainsnak?.datavalue?.value?.time;
             if (birthClaim) birthDate = birthClaim.replace(/^\+/, "").split("T")[0];
 
-            // Death date (P570)
             const deathClaim = entity.claims?.P570?.[0]?.mainsnak?.datavalue?.value?.time;
             if (deathClaim) deathDate = deathClaim.replace(/^\+/, "").split("T")[0];
 
-            // Place of birth (P19)
             const birthPlaceId = entity.claims?.P19?.[0]?.mainsnak?.datavalue?.value?.id;
             if (birthPlaceId) {
               const placeUrl = `https://www.wikidata.org/wiki/Special:EntityData/${birthPlaceId}.json`;
@@ -331,7 +412,6 @@ async function enrichAuthorData(authorName: string): Promise<AuthorProfile | nul
               }
             }
 
-            // Place of death (P20)
             const deathPlaceId = entity.claims?.P20?.[0]?.mainsnak?.datavalue?.value?.id;
             if (deathPlaceId) {
               const placeUrl = `https://www.wikidata.org/wiki/Special:EntityData/${deathPlaceId}.json`;
@@ -342,7 +422,6 @@ async function enrichAuthorData(authorName: string): Promise<AuthorProfile | nul
               }
             }
 
-            // Genre (P136)
             const genreClaims = entity.claims?.P136 || [];
             for (const claim of genreClaims.slice(0, 5)) {
               const genreId = claim.mainsnak?.datavalue?.value?.id;
@@ -357,7 +436,6 @@ async function enrichAuthorData(authorName: string): Promise<AuthorProfile | nul
               }
             }
 
-            // Notable works (P800)
             const workClaims = entity.claims?.P800 || [];
             for (const claim of workClaims.slice(0, 5)) {
               const workId = claim.mainsnak?.datavalue?.value?.id;
@@ -396,50 +474,43 @@ async function enrichAuthorData(authorName: string): Promise<AuthorProfile | nul
   }
 }
 
-async function upsertBook(supabase: any, book: BookCandidate, authorId: string): Promise<{ id: string } | null> {
-  // Check if book already exists (by title + author)
-  const { data: existing } = await supabase
-    .from("books_library")
-    .select("id")
-    .ilike("title", book.title)
-    .ilike("author", book.author)
-    .maybeSingle();
+async function upsertBook(supabase: any, book: BookCandidate, authorId: string, pdfMetadata: PDFMetadata): Promise<{ id: string } | null> {
+  const bookData = {
+    title: book.title,
+    author: book.author,
+    genre: book.subjects?.join(", "),
+    pdf_url: book.pdf_url,
+    cover_image_url: book.cover_url,
+    publication_year: book.publication_year,
+    language: book.language,
+    description: book.description,
+    pdf_sha256: pdfMetadata.sha256,
+    pdf_file_size: pdfMetadata.size,
+    pdf_page_count: pdfMetadata.pageCount,
+    pdf_verification_status: "verified",
+    pdf_last_validated: new Date().toISOString(),
+    status: "active",
+    catalog_status: "active",
+    is_archived: false,
+    // Store source metadata
+    gutenberg_id: book.gutenberg_id,
+    archive_id: book.archive_id,
+    openlibrary_key: book.openlibrary_key,
+    isbn: book.isbn,
+  };
 
-  if (existing) {
-    // Update existing book with new PDF URL if needed
-    const { data, error } = await supabase
-      .from("books_library")
-      .update({
-        pdf_url: book.pdf_url,
-        cover_image_url: book.cover_url,
-        genre: book.subjects?.join(", "),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", existing.id)
-      .select("id")
-      .single();
-
-    if (error) {
-      console.error("Book update error:", error);
-      return null;
-    }
-    return { id: data.id };
-  }
-
-  // Insert new book
   const { data, error } = await supabase
     .from("books_library")
-    .insert({
-      title: book.title,
-      author: book.author,
-      genre: book.subjects?.join(", "),
-      pdf_url: book.pdf_url,
-      cover_image_url: book.cover_url,
-    })
+    .insert(bookData)
     .select("id")
     .single();
 
   if (error) {
+    // Check if it's a duplicate key error on pdf_sha256
+    if (error.code === "23505" && error.message?.includes("pdf_sha256")) {
+      console.log(`Book "${book.title}" skipped: PDF already exists in library (SHA-256 duplicate)`);
+      return null;
+    }
     console.error("Book insert error:", error);
     return null;
   }
@@ -447,7 +518,6 @@ async function upsertBook(supabase: any, book: BookCandidate, authorId: string):
 }
 
 async function upsertAuthor(supabase: any, profile: AuthorProfile): Promise<{ id: string } | null> {
-  // Check if author exists
   const { data: existing } = await supabase
     .from("authors")
     .select("id")
@@ -497,8 +567,6 @@ async function upsertAuthor(supabase: any, profile: AuthorProfile): Promise<{ id
 }
 
 async function logAutomationRun(supabase: any, log: AutomationLog): Promise<void> {
-  // Store in a dedicated table or use existing logging
-  // For now, we'll insert into a simple audit table if it exists, or just log
   try {
     await supabase.from("automation_runs").insert({
       run_id: log.run_id,
@@ -508,12 +576,14 @@ async function logAutomationRun(supabase: any, log: AutomationLog): Promise<void
       books_discovered: log.books_discovered,
       books_verified: log.books_verified,
       books_inserted: log.books_inserted,
+      books_skipped_duplicate: log.books_skipped_duplicate,
+      books_skipped_existing: log.books_skipped_existing,
       authors_enriched: log.authors_enriched,
       errors: log.errors,
+      warnings: log.warnings,
       details: log.details,
     });
   } catch (error) {
-    // Table might not exist, just console log
     console.log("Automation run log:", JSON.stringify(log, null, 2));
   }
 }
@@ -531,12 +601,16 @@ serve(async (req) => {
     books_discovered: 0,
     books_verified: 0,
     books_inserted: 0,
+    books_skipped_duplicate: 0,
+    books_skipped_existing: 0,
     authors_enriched: 0,
     errors: [],
+    warnings: [],
     details: {
       discovered: [],
       verified: [],
       inserted: [],
+      skipped: [],
       authors: [],
     },
   };
@@ -569,96 +643,145 @@ serve(async (req) => {
 
     console.log(`[${runId}] Discovered ${allCandidates.length} candidate books`);
 
-    // Step 2: Filter out books that already exist in our library
-    const newCandidates: BookCandidate[] = [];
+    // Step 2: Filter out books that already exist in our library (using RPC + SHA-256)
+    const newCandidates: Array<{ candidate: BookCandidate; pdfMetadata: PDFMetadata }> = [];
+
     for (const candidate of allCandidates) {
-      const { data: existing } = await supabase
-        .from("books_library")
-        .select("id")
-        .ilike("title", candidate.title)
-        .ilike("author", candidate.author)
-        .maybeSingle();
+      try {
+        // First check via catalogue matching RPC
+        const existingCheck = await checkExistingBook(supabase, candidate.title, candidate.author, candidate.isbn);
+        if (existingCheck.exists) {
+          log.books_skipped_existing++;
+          log.details.skipped.push({
+            title: candidate.title,
+            author: candidate.author,
+            reason: `Already in catalogue (match score: ${existingCheck.matchScore?.toFixed(1)})`
+          });
+          console.log(`[${runId}] ⊘ Skipped (exists in catalogue): ${candidate.title} by ${candidate.author}`);
+          continue;
+        }
 
-      if (!existing) {
-        newCandidates.push(candidate);
-      }
-    }
+        // Download and validate PDF, compute SHA-256
+        console.log(`[${runId}] Downloading and validating: ${candidate.title}`);
+        const { blob, metadata, error } = await fetchAndValidatePDF(candidate.pdf_url);
 
-    console.log(`[${runId}] ${newCandidates.length} new candidates after deduplication`);
+        if (error || !blob || !metadata.valid) {
+          log.errors.push(`PDF validation failed for "${candidate.title}": ${error || "Invalid PDF"}`);
+          console.log(`[${runId}] ✗ Validation failed: ${candidate.title} - ${error}`);
+          continue;
+        }
 
-    // Step 3: Verify PDF URLs (limit to MAX_BOOKS_PER_RUN)
-    const verifiedBooks: BookCandidate[] = [];
-    for (const candidate of newCandidates.slice(0, MAX_BOOKS_PER_RUN)) {
-      console.log(`[${runId}] Verifying PDF: ${candidate.title}`);
-      const verification = await verifyPdfUrl(candidate.pdf_url);
+        // Check SHA-256 duplicate
+        const dupCheck = await checkDuplicateBySHA256(supabase, metadata.sha256);
+        if (dupCheck.exists) {
+          log.books_skipped_duplicate++;
+          log.details.skipped.push({
+            title: candidate.title,
+            author: candidate.author,
+            reason: `PDF content already exists (SHA-256 duplicate)`
+          });
+          console.log(`[${runId}] ⊘ Skipped (SHA-256 duplicate): ${candidate.title}`);
+          continue;
+        }
 
-      if (verification.valid) {
-        verifiedBooks.push(candidate);
+        newCandidates.push({ candidate, pdfMetadata: metadata });
         log.books_verified++;
         log.details.verified.push({ title: candidate.title, author: candidate.author, source: candidate.source });
-        console.log(`[${runId}] ✓ Verified: ${candidate.title}`);
-      } else {
-        log.errors.push(`PDF verification failed for "${candidate.title}": ${verification.error}`);
-        console.log(`[${runId}] ✗ Failed verification: ${candidate.title} - ${verification.error}`);
+        console.log(`[${runId}] ✓ Verified: ${candidate.title} (SHA-256: ${metadata.sha256.slice(0, 16)}...)`);
+      } catch (error) {
+        log.errors.push(`Error processing "${candidate.title}": ${error instanceof Error ? error.message : "Unknown error"}`);
+        console.error(`[${runId}] Error processing ${candidate.title}:`, error);
       }
     }
 
-    // Step 4: Process verified books - enrich authors and upsert
+    console.log(`[${runId}] ${newCandidates.length} new candidates after deduplication (${log.books_skipped_existing} existing, ${log.books_skipped_duplicate} SHA-256 duplicates)`);
+
+    // Step 3: Process verified books - enrich authors and insert (limit to MAX_BOOKS_PER_RUN)
     const processedAuthors = new Set<string>();
+    const toProcess = newCandidates.slice(0, MAX_BOOKS_PER_RUN);
 
-    for (const book of verifiedBooks) {
-      // Enrich author data
-      if (!processedAuthors.has(book.author.toLowerCase())) {
-        console.log(`[${runId}] Enriching author: ${book.author}`);
-        const authorProfile = await enrichAuthorData(book.author);
+    for (const { candidate, pdfMetadata } of toProcess) {
+      try {
+        // Enrich author data
+        if (!processedAuthors.has(candidate.author.toLowerCase())) {
+          console.log(`[${runId}] Enriching author: ${candidate.author}`);
+          const authorProfile = await enrichAuthorData(candidate.author);
 
-        if (authorProfile) {
-          const authorResult = await upsertAuthor(supabase, authorProfile);
-          if (authorResult) {
-            log.authors_enriched++;
-            log.details.authors.push({ id: authorResult.id, name: authorProfile.name });
-            processedAuthors.add(book.author.toLowerCase());
-            console.log(`[${runId}] ✓ Author enriched: ${book.author}`);
+          if (authorProfile) {
+            const authorResult = await upsertAuthor(supabase, authorProfile);
+            if (authorResult) {
+              log.authors_enriched++;
+              log.details.authors.push({ id: authorResult.id, name: authorProfile.name });
+              processedAuthors.add(candidate.author.toLowerCase());
+              console.log(`[${runId}] ✓ Author enriched: ${candidate.author}`);
+            }
           }
         }
-      }
 
-      // Upsert book (find author_id if exists)
-      let authorId: string | null = null;
-      const { data: authorData } = await supabase
-        .from("authors")
-        .select("id")
-        .ilike("name", book.author)
-        .maybeSingle();
+        // Find author_id if exists
+        let authorId: string | null = null;
+        const { data: authorData } = await supabase
+          .from("authors")
+          .select("id")
+          .ilike("name", candidate.author)
+          .maybeSingle();
 
-      if (authorData) authorId = authorData.id;
+        if (authorData) authorId = authorData.id;
 
-      const bookResult = await upsertBook(supabase, book, authorId || "");
-      if (bookResult) {
-        log.books_inserted++;
-        log.details.inserted.push({ id: bookResult.id, title: book.title });
-        console.log(`[${runId}] ✓ Book inserted: ${book.title}`);
+        // Insert book with PDF metadata
+        const bookResult = await upsertBook(supabase, candidate, authorId || "", pdfMetadata);
+        if (bookResult) {
+          log.books_inserted++;
+          log.details.inserted.push({ id: bookResult.id, title: candidate.title });
+          console.log(`[${runId}] ✓ Book inserted: ${candidate.title} (ID: ${bookResult.id})`);
+        } else {
+          // Book was not inserted (likely duplicate SHA-256 caught at DB level)
+          log.books_skipped_duplicate++;
+          log.details.skipped.push({
+            title: candidate.title,
+            author: candidate.author,
+            reason: "Insert failed (likely duplicate)"
+          });
+        }
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : "Unknown error";
+        log.errors.push(`Failed to insert "${candidate.title}": ${errorMsg}`);
+        console.error(`[${runId}] Failed to insert ${candidate.title}:`, error);
       }
     }
 
-    log.status = "completed";
+    // Determine final status
+    if (log.errors.length > 0 && log.books_inserted === 0) {
+      log.status = "failed";
+    } else if (log.errors.length > 0) {
+      log.status = "partial";
+    } else {
+      log.status = "completed";
+    }
+
     log.completed_at = new Date().toISOString();
 
     await logAutomationRun(supabase, log);
 
-    console.log(`[${runId}] Automation completed. Books: ${log.books_inserted}, Authors: ${log.authors_enriched}`);
+    console.log(`[${runId}] Automation ${log.status}. Books: ${log.books_inserted}, Authors: ${log.authors_enriched}, Skipped: ${log.books_skipped_existing + log.books_skipped_duplicate}, Errors: ${log.errors.length}`);
 
     return json({
-      success: true,
+      success: log.status !== "failed",
       run_id: runId,
+      status: log.status,
       summary: {
         discovered: log.books_discovered,
         verified: log.books_verified,
         inserted: log.books_inserted,
+        skipped_existing: log.books_skipped_existing,
+        skipped_duplicate: log.books_skipped_duplicate,
         authors_enriched: log.authors_enriched,
         errors: log.errors.length,
+        warnings: log.warnings.length,
       },
       details: log.details,
+      errors: log.errors,
+      warnings: log.warnings,
     });
 
   } catch (error) {
