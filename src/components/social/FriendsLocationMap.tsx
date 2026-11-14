@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, MapPin, MapPinOff, RefreshCw, ShieldCheck, Users } from 'lucide-react';
@@ -14,6 +14,7 @@ import { LocationConsentModal } from './LocationConsentModal';
 import { LocationPermissionModal } from './LocationPermissionModal';
 import { MapplsMap, type MapplsPoint } from '@/components/maps/MapplsMap';
 import { MAPPLS_API_KEY } from '@/config/mappls';
+import { MapAvatarControl } from './MapAvatarControl';
 
 type SharedProfile = {
   full_name?: string | null;
@@ -245,28 +246,30 @@ export const FriendsLocationMap: React.FC = () => {
     else setShowConsentModal(true);
   };
 
-  const friendsWithLocation = friends.filter((friend) =>
-    friend.friend_profile?.location_sharing === true &&
-    friend.friend_profile.location_lat != null &&
-    friend.friend_profile.location_lng != null
-  );
+  const mapPoints = useMemo<MapplsPoint[]>(() => {
+    const friendsWithLocation = friends.filter((friend) =>
+      friend.friend_profile?.location_sharing === true &&
+      friend.friend_profile.location_lat != null &&
+      friend.friend_profile.location_lng != null
+    );
 
-  const mapPoints: MapplsPoint[] = [
-    ...(isSharingLocation && userLocation ? [{
-      id: 'self',
-      lat: userLocation.lat,
-      lng: userLocation.lng,
-      title: 'Your saved location',
-      avatarUrl: userAvatar?.avatar_img_url ?? null,
-    }] : []),
-    ...friendsWithLocation.map((friend) => ({
-      id: friend.friend_profile!.id || friend.id,
-      lat: Number(friend.friend_profile!.location_lat),
-      lng: Number(friend.friend_profile!.location_lng),
-      title: friend.friend_profile!.full_name || friend.friend_profile!.username || 'Friend',
-      avatarUrl: friend.friend_profile!.avatar_img_url ?? friend.friend_profile!.profile_photo_url ?? null,
-    })).filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng)),
-  ];
+    return [
+      ...(isSharingLocation && userLocation ? [{
+        id: 'self',
+        lat: userLocation.lat,
+        lng: userLocation.lng,
+        title: 'Your saved location',
+        avatarUrl: userAvatar?.avatar_img_url ?? null,
+      }] : []),
+      ...friendsWithLocation.map((friend) => ({
+        id: friend.friend_profile!.id || friend.id,
+        lat: Number(friend.friend_profile!.location_lat),
+        lng: Number(friend.friend_profile!.location_lng),
+        title: friend.friend_profile!.full_name || friend.friend_profile!.username || 'Friend',
+        avatarUrl: friend.friend_profile!.avatar_img_url ?? friend.friend_profile!.profile_photo_url ?? null,
+      })).filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng)),
+    ];
+  }, [friends, isSharingLocation, userLocation, userAvatar?.avatar_img_url]);
 
 
   return (
@@ -280,6 +283,9 @@ export const FriendsLocationMap: React.FC = () => {
           <p className="mt-2 text-sm text-[#636B65] dark:text-[#A5ADA6]">
             Your location is never requested on page load. Shared friend markers appear only when you and the friend have both opted in.
           </p>
+          <div className="mt-4">
+            <MapAvatarControl />
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {isSharingLocation && !userLocation && !sharingStatusError && (
@@ -356,6 +362,7 @@ export const FriendsLocationMap: React.FC = () => {
         onRequestLocation={() => void enableLocationSharing()}
         hasError={Boolean(locationError)}
         errorMessage={locationError || undefined}
+        isRequesting={isSavingSharing}
       />
     </>
   );
