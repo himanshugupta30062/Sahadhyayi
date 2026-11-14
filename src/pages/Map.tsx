@@ -444,7 +444,6 @@ const MapPage = () => {
         isOpen={showBitmojiCreator}
         onClose={() => setShowBitmojiCreator(false)}
         onSave={() => setShowBitmojiCreator(false)}
-        currentAvatar={userAvatar?.avatar_img_url || undefined}
         initialFeatures={userAvatar?.avatar_json as Record<string, string> | null}
       />
     </>
