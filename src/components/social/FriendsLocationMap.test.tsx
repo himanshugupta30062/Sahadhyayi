@@ -200,7 +200,7 @@ describe('FriendsLocationMap component', () => {
     expect(screen.getByText('Friends Map')).toBeInTheDocument();
     expect(await screen.findByText('1 friend is sharing location')).toBeInTheDocument();
     expect(screen.getByTestId('mappls-map')).toHaveTextContent('Points: 1');
-    expect(screen.getByTestId('mappls-map')).toHaveAttribute('data-avatars', expect.stringContaining('https://cdn.sahadhyayi.com/avatars/friend.svg'));
+    expect(screen.getByTestId('mappls-map').getAttribute('data-avatars')).toContain('https://cdn.sahadhyayi.com/avatars/friend.svg');
   });
 
   it('handles Center on me button click', async () => {
