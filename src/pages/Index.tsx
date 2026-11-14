@@ -122,8 +122,8 @@ const Index = () => {
 
         {/* 03. The Sahadhyayi Bicycle Adventure Journey (LOCKED) */}
         <DeferredSection
-          fallback={<div className="min-h-[800px] bg-background" aria-hidden="true" />}
-          minHeightClassName="min-h-[800px]"
+          fallback={<div className="min-h-[500px] bg-background" aria-hidden="true" />}
+          minHeightClassName="min-h-[500px]"
         >
           <ErrorBoundary fallback={null}>
             <SahadhyayiJourney />
@@ -132,10 +132,10 @@ const Index = () => {
 
         {/* 04. NEW Reading Universe — all major features, with mood discovery */}
         <DeferredSection
-          fallback={<div className="min-h-[1100px] bg-[#FAF9F5] dark:bg-[#0B0D0C]" aria-hidden="true" />}
-          minHeightClassName="min-h-[1100px]"
+          fallback={<div className="min-h-[400px] bg-[#FAF9F5] dark:bg-[#0B0D0C]" aria-hidden="true" />}
+          minHeightClassName="min-h-[400px]"
         >
-          <ErrorBoundary fallback={<div className="px-6 py-12 text-center text-sm text-muted-foreground">Explore all the ways to read, connect and create on Sahadhyayi.</div>}>
+          <ErrorBoundary fallback={<div className="px-6 py-8 text-center text-sm text-muted-foreground">Explore all the ways to read, connect and create on Sahadhyayi.</div>}>
             <HomeFeatureUniverse />
           </ErrorBoundary>
         </DeferredSection>

@@ -7,7 +7,8 @@ import { useCommunityPulse } from '@/hooks/useCommunityPulse';
  * Uses the public-safe aggregate endpoint (public-community-stats Edge Function)
  * so no auth is required. Shows real-time reading activity snapshot.
  */
-export const CommunityPulseBar: React.FC = () => {
+export const CommunityPulseBar: React.FC<{ className?: string }> = ({ className = '' }) => {
+
   // Use the hook with isOpen=true to trigger the public fetch
   const { stats, loading, error } = useCommunityPulse(true);
 
@@ -99,7 +100,7 @@ export const CommunityPulseBar: React.FC = () => {
 
   return (
     <div
-      className="relative overflow-hidden rounded-2xl border border-[#E5E0D8] bg-white/90 dark:border-[#242E28] dark:bg-[#131715]/90 p-4 sm:p-6 shadow-sm backdrop-blur-sm"
+      className={`relative overflow-hidden rounded-2xl border border-[#E5E0D8] bg-white/90 dark:border-[#242E28] dark:bg-[#131715]/90 p-4 sm:p-6 shadow-sm backdrop-blur-sm ${className}`}
       role="region"
       aria-label="Live community pulse"
     >

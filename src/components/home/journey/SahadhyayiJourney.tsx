@@ -161,7 +161,7 @@ export const SahadhyayiJourney: React.FC = () => {
     <section
       ref={journeyContainerRef}
       id="sahadhyayi-journey"
-      className="sahadhyayi-bicycle-adventure relative isolate py-16 sm:py-20 lg:py-28 px-4 sm:px-6 lg:px-8 bg-background transition-colors duration-300 overflow-hidden"
+      className="sahadhyayi-bicycle-adventure relative isolate pt-12 pb-10 sm:pt-16 sm:pb-12 lg:pt-20 lg:pb-14 px-4 sm:px-6 lg:px-8 bg-background transition-colors duration-300 overflow-hidden"
       aria-label="Sahadhyayi interactive cycling journey"
     >
       {/* Ambient background glows */}
@@ -469,7 +469,7 @@ export const SahadhyayiJourney: React.FC = () => {
         </div>
 
         {/* ── Footer CTA ── */}
-        <div className="mt-16 sm:mt-20 relative overflow-hidden rounded-3xl border border-border/50 bg-gradient-to-br from-card via-card/80 to-muted/30 p-8 sm:p-10 text-center">
+        <div className="mt-8 sm:mt-10 relative overflow-hidden rounded-3xl border border-border/50 bg-gradient-to-br from-card via-card/80 to-muted/30 p-6 sm:p-8 text-center">
           {/* Soft background accent */}
           <div
             className="pointer-events-none absolute inset-0 opacity-[0.04]"
