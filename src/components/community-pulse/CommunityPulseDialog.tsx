@@ -324,7 +324,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
       if (c.name) list.add(c.name);
     });
     ['India', 'United States', 'United Kingdom', 'Canada', 'Germany', 'Australia'].forEach(c => list.add(c));
-    return Array.from(list).filter(Boolean).sort();
+    return Array.from(list).filter(Boolean).sort((a, b) => a.localeCompare(b));
   }, [visitors, effectiveStats.countries]);
 
   // Unique visitors must use real per-hour aggregates; do not estimate them from pageviews.

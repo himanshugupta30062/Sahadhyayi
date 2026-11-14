@@ -1195,7 +1195,7 @@ export default function ReadingJournalPage() {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
-                    addTag(entry.id);
+                    void addTag(entry.id);
                   }
                 }}
               />
@@ -1203,7 +1203,7 @@ export default function ReadingJournalPage() {
                 size="sm"
                 variant="ghost"
                 className="h-7 w-7 p-0"
-                onClick={() => addTag(entry.id)}
+                onClick={() => void addTag(entry.id)}
               >
                 <Tags className="h-3 w-3" />
               </Button>

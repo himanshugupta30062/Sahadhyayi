@@ -397,12 +397,13 @@ export function CreateBookReelDialog({ onPublished }: CreateBookReelDialogProps)
           {/* Caption */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-muted-foreground">
+              <label htmlFor="create-reel-caption" className="text-xs font-semibold text-muted-foreground">
                 Reel Caption / Reaction
               </label>
               <span className="text-[11px] text-muted-foreground">{caption.length}/500</span>
             </div>
             <Textarea
+              id="create-reel-caption"
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               maxLength={500}

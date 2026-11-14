@@ -72,7 +72,7 @@ export const BookEditionPicker: React.FC<BookEditionPickerProps> = ({
 
   const handleCopyIsbn = (isbn?: string) => {
     if (!isbn) return;
-    navigator.clipboard.writeText(isbn);
+    void navigator.clipboard.writeText(isbn);
     toast({
       title: 'ISBN Copied',
       description: `${isbn} copied to clipboard`,

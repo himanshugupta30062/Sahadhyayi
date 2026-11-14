@@ -738,10 +738,11 @@ export const BookReelsStrip: React.FC<BookReelsStripProps> = ({
               {/* Caption or Inline Caption Editing */}
               {isEditing ? (
                 <div className="relative z-10 space-y-2 rounded-xl border border-white/20 bg-black/60 p-3">
-                  <label className="text-xs font-semibold text-amber-200">
+                  <label htmlFor="edit-reel-caption" className="text-xs font-semibold text-amber-200">
                     Edit Reel Caption
                   </label>
                   <textarea
+                    id="edit-reel-caption"
                     value={editedCaption}
                     onChange={(e) => setEditedCaption(e.target.value)}
                     maxLength={500}

@@ -12,7 +12,7 @@ export default function SavedBookReels() {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     let alive = true;
-    (async () => {
+    void (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { if (alive) { setLoading(false); toast.error('Sign in to view saved reels.'); } return; }
       const { data, error } = await supabase.from('book_reel_saves').select('reel_id,created_at,book_reels(id,video_url,caption,book_title,book_author,user_id,created_at)').eq('user_id', user.id).order('created_at', { ascending: false });

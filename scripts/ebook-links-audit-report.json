@@ -1,0 +1,945 @@
+{
+  "summary": {
+    "totalAudited": 100,
+    "validPdf": 12,
+    "htmlLandingPages": 12,
+    "brokenOrUnreachable": 76,
+    "timestamp": "2026-11-14T17:10:03.042Z"
+  },
+  "results": [
+    {
+      "bookId": "404f7465-634a-4e17-a664-3b8de9d58e51",
+      "title": "Charge Loss (or the Lack Thereof) for AdS Black Holes",
+      "author": "Yen Chin Ong",
+      "pdfUrl": "https://archive.org/download/arxiv-1404.5215/arxiv-1404.5215.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 500,
+      "error": "HTTP 500"
+    },
+    {
+      "bookId": "d62288b3-0b67-4556-93c9-33306fb18436",
+      "title": "Astrophysical implications of hypothetical stable TeV-scale black holes",
+      "author": "Steven B. Giddings",
+      "pdfUrl": "https://archive.org/download/arxiv-0806.3381/arxiv-0806.3381.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "edddeb14-3488-4c30-aa6c-40c1d4d40714",
+      "title": "NASA Technical Reports Server (NTRS) 20110005614: The Black Holes in the Hearts of Galaxies",
+      "author": "NASA Technical Reports Server (NTRS)",
+      "pdfUrl": "https://archive.org/download/NASA_NTRS_Archive_20110005614/NASA_NTRS_Archive_20110005614.pdf",
+      "status": "VALID_PDF",
+      "httpStatus": 206,
+      "contentType": "application/pdf",
+      "signature": "%PDF-1.4",
+      "canProxy": true
+    },
+    {
+      "bookId": "8b016e6f-3b58-44fb-b629-1cad2c678ac7",
+      "title": "Toward faithful templates for non-spinning binary black holes using the effective-one-body approach",
+      "author": "Alessandra Buonanno",
+      "pdfUrl": "https://archive.org/download/arxiv-0706.3732/arxiv-0706.3732.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "0c4441cf-5853-408a-8abf-0729fe47cc63",
+      "title": "Thermal Stability Of Black Holes With Multiple Hairs In Any Dimension",
+      "author": "Aloke Kumar Sinha",
+      "pdfUrl": "https://archive.org/download/arxiv-1702.08175/arxiv-1702.08175.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "fcf11cef-68e0-4d04-9d38-728f016f5e52",
+      "title": "Can Isolated Single Black Holes Produce X-ray Novae?",
+      "author": "Tatsuya Matsumoto",
+      "pdfUrl": "https://archive.org/download/arxiv-1704.05047/arxiv-1704.05047.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "34fe2b3c-c449-418a-85a5-7b65be65d7d0",
+      "title": "Hawking radiation from rotating brane black holes",
+      "author": "Elizabeth Winstanley",
+      "pdfUrl": "https://archive.org/download/arxiv-0708.2656/arxiv-0708.2656.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "4d4470a8-6084-4611-883f-4806a83916cb",
+      "title": "Global Structure of Three Distinct Accretion Flows and Outflows around Black Holes through Two-Dimensional Radiation-Magnetohydrodynamic Simulations",
+      "author": "Ken Ohsuga",
+      "pdfUrl": "https://archive.org/download/arxiv-1105.5474/arxiv-1105.5474.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "d2779edc-75fa-476c-b832-ac27cd57ac27",
+      "title": "X-ray Properties of Intermediate-mass Black Holes in Active Galaxies",
+      "author": "Jenny E. Greene",
+      "pdfUrl": "https://archive.org/download/arxiv-astro-ph0608061/arxiv-astro-ph0608061.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "76d116b0-041f-4075-a261-dc7afc0017d9",
+      "title": "Brahma Sutra Vritti According To Chit Shiv Puran In Margin Mss No 129 Devanagari Alm 1 Shelf 5 Panjab Uni",
+      "author": "eGangotri",
+      "pdfUrl": "https://archive.org/download/BrahmaSutraVrittiAccordingToChitShivPuranInMarginMssNo129DevanagariAlm1Shelf5PanjabUni/BrahmaSutraVrittiAccordingToChitShivPuranInMarginMssNo129DevanagariAlm1Shelf5PanjabUni.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "bb3cf1b1-7655-462e-b2cf-aeed3c41216a",
+      "title": "Shiv Sutra Bodhini ( Shaktipat) Part 2 By Abhinav Gupta With Tika By Swami Vishnu Tirth Yogeshvar Peeth Trust",
+      "author": "Yogeshvar Peeth Trust",
+      "pdfUrl": "https://archive.org/download/XSVF_shiv-sutra-bodhini-shaktipat-part-2-by-abhinav-gupta-with-tika-by-swami-vishnu-t/XSVF_shiv-sutra-bodhini-shaktipat-part-2-by-abhinav-gupta-with-tika-by-swami-vishnu-t.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "9502702e-7857-432d-b994-32c166dc780a",
+      "title": "Alice’s Adventures in Wonderland",
+      "author": "Lewis Carroll",
+      "pdfUrl": "https://archive.org/download/AlicesAdventuresInWonderland/alice-in-wonderland.pdf",
+      "status": "VALID_PDF",
+      "httpStatus": 206,
+      "contentType": "application/pdf",
+      "signature": "%PDF-1.4",
+      "canProxy": true
+    },
+    {
+      "bookId": "c662868f-7b71-4e6a-8112-cef737b21149",
+      "title": "Frankenstein; or, The Modern Prometheus",
+      "author": "Mary Shelley",
+      "pdfUrl": "https://milnepublishing.geneseo.edu/suny-corningcc-frankenstein/open/download?type=print_pdf",
+      "status": "VALID_PDF",
+      "httpStatus": 206,
+      "contentType": "application/pdf; charset=binary",
+      "signature": "%PDF-1.4",
+      "canProxy": true
+    },
+    {
+      "bookId": "d4e68dbe-a165-4a74-a88c-7294a07cd209",
+      "title": "The Problems of Philosophy",
+      "author": "Bertrand Russell",
+      "pdfUrl": "https://archive.org/download/problemsofphilos00russuoft/problemsofphilos00russuoft.pdf",
+      "status": "VALID_PDF",
+      "httpStatus": 206,
+      "contentType": "application/pdf",
+      "signature": "%PDF-1.5",
+      "canProxy": true
+    },
+    {
+      "bookId": "605b12cc-e422-403c-a687-e2021f56dff2",
+      "title": "On the Origin of Species",
+      "author": "Charles Darwin",
+      "pdfUrl": "https://archive.org/download/originofspecies00darwuoft/originofspecies00darwuoft.pdf",
+      "status": "VALID_PDF",
+      "httpStatus": 206,
+      "contentType": "application/pdf",
+      "signature": "%PDF-1.5",
+      "canProxy": true
+    },
+    {
+      "bookId": "3ea2adee-2805-4168-a6a3-55b38bdc9f39",
+      "title": "[6200 MCQs] HTET Level 2 Social Studies Question Bank Based on Previous Papers",
+      "author": null,
+      "pdfUrl": "http://books.google.co.in/books?id=cUECEAAAQBAJ&pg=PA8&dq=Hindi&hl=&cd=20&source=gbs_api",
+      "status": "HTML_LANDING_PAGE",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=utf-8",
+      "error": "URL returns HTML landing page instead of PDF bytes"
+    },
+    {
+      "bookId": "606f986f-e3f2-4337-8855-3d4322dd749e",
+      "title": "Census of India, 1891",
+      "author": null,
+      "pdfUrl": "http://books.google.co.in/books?id=5y9RAAAAYAAJ&pg=PA120&dq=Hindi&hl=&cd=22&source=gbs_api",
+      "status": "HTML_LANDING_PAGE",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=utf-8",
+      "error": "URL returns HTML landing page instead of PDF bytes"
+    },
+    {
+      "bookId": "76d42bc2-ce27-477e-a142-80e31a7fdb82",
+      "title": "A Brief History of Time",
+      "author": "Stephen Hawking",
+      "pdfUrl": "https://rknxtatvlzunatpyqxro.supabase.co/storage/v1/object/public/books/Science%20Books/A%20brief%20history%20of%20time/PDF/A%20Brief%20History%20of%20Time%20PDF.pdf",
+      "status": "VALID_PDF",
+      "httpStatus": 206,
+      "contentType": "application/pdf",
+      "signature": "%PDF-1.3",
+      "canProxy": true
+    },
+    {
+      "bookId": "472c2dfd-d487-470e-890e-ebf86235cad4",
+      "title": "The Theory of Everything: The Origin and Fate of the Universe",
+      "author": "Stephen Hawking",
+      "pdfUrl": "https://rknxtatvlzunatpyqxro.supabase.co/storage/v1/object/public/books/Science%20Books/The%20Theory%20of%20Everything/PDF/The%20Theory%20of%20Everything.pdf",
+      "status": "VALID_PDF",
+      "httpStatus": 206,
+      "contentType": "application/pdf",
+      "signature": "%PDF-1.6",
+      "canProxy": true
+    },
+    {
+      "bookId": "e65d92c3-1c2a-426d-a2dc-73ee371130bf",
+      "title": "Godan",
+      "author": "Munshi Premchand",
+      "pdfUrl": "https://rknxtatvlzunatpyqxro.supabase.co/storage/v1/object/public/books/Hindi%20Fiction/Godan/PDF/godan_by_premchand.pdf",
+      "status": "VALID_PDF",
+      "httpStatus": 206,
+      "contentType": "application/pdf",
+      "signature": "%PDF-1.5",
+      "canProxy": true
+    },
+    {
+      "bookId": "31bad060-873a-463e-85cb-d5ee8612e6d4",
+      "title": "Gunahon Ka Devta",
+      "author": "Dharamvir Bharati",
+      "pdfUrl": "https://rknxtatvlzunatpyqxro.supabase.co/storage/v1/object/public/books/Hindi%20Fiction/Gunahon%20Ka%20Devta/PDF/Gunaho_Ka_Devta.pdf",
+      "status": "VALID_PDF",
+      "httpStatus": 206,
+      "contentType": "application/pdf",
+      "signature": "%PDF-1.5",
+      "canProxy": true
+    },
+    {
+      "bookId": "b31aa113-350d-4cec-9f68-02eb828c02a2",
+      "title": "1984",
+      "author": "George Orwell",
+      "pdfUrl": "",
+      "status": "FETCH_ERROR",
+      "error": "Failed to parse URL from "
+    },
+    {
+      "bookId": "b763ba42-e4ec-4ec4-9716-b12f06d75216",
+      "title": "The Catcher in the Rye",
+      "author": "J.D. Salinger",
+      "pdfUrl": "",
+      "status": "FETCH_ERROR",
+      "error": "Failed to parse URL from "
+    },
+    {
+      "bookId": "e48bc9a5-2b1c-4430-9178-19c5403211d0",
+      "title": "Autobiography of a Yogi",
+      "author": "Paramhansa Yogananda",
+      "pdfUrl": "https://archive.org/download/autobiographyofy0000para_s6z7/autobiographyofy0000para_s6z7.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 401,
+      "error": "HTTP 401"
+    },
+    {
+      "bookId": "eb95515a-25bb-44f2-b7f1-88546d85bfb9",
+      "title": "Shiv Sutra Vimarshani Sharada RSkt S Jammu No 61",
+      "author": "eGangotri",
+      "pdfUrl": "https://archive.org/download/ShivSutraVimarshaniSharadaRSktSJammuNo61/ShivSutraVimarshaniSharadaRSktSJammuNo61.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "d1b56591-ff3f-4e4f-b8c4-d90e7530d956",
+      "title": "Shiv Sutra",
+      "author": "SUVRATSUT",
+      "pdfUrl": "https://archive.org/download/ShivSutra_201706/ShivSutra_201706.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "b0dd7caa-42c1-4e38-a76c-e6dba11c6228",
+      "title": "Shiv Sutra",
+      "author": "osho",
+      "pdfUrl": "https://archive.org/download/shiv-sutra_202305/shiv-sutra_202305.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "4f51f8f1-779e-4f7a-bd95-dce96d7ad202",
+      "title": "Jivan Vikas - hindi",
+      "author": null,
+      "pdfUrl": "https://archive.org/download/JivanVikas/JivanVikas.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "16586775-a0b6-47b8-80b5-bce6a6837406",
+      "title": "Jivan Jhaanki - hindi",
+      "author": null,
+      "pdfUrl": "https://archive.org/download/JivanJhaanki_20170606/JivanJhaanki_20170606.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "deeda719-6884-4d38-9002-b495bce652b9",
+      "title": "simplified hindi-urdu article",
+      "author": null,
+      "pdfUrl": "https://archive.org/download/hindi_lucidification/hindi_lucidification.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 403,
+      "error": "HTTP 403"
+    },
+    {
+      "bookId": "c1ba8c37-c4f0-4f3b-9b8c-40840d5acf45",
+      "title": "Burning of Hindi Edition of the Gazette",
+      "author": "Tamil Nadu Legislative Council",
+      "pdfUrl": "https://archive.org/download/TNLC-DB-1962-47-8-QH7_1962-07-30/TNLC-DB-1962-47-8-QH7_1962-07-30.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "f4b33c29-4516-4c3f-bf5c-d0749f1890bb",
+      "title": "XOWA files for Hindi wikis",
+      "author": "gnosygnu",
+      "pdfUrl": "https://archive.org/download/Xowa_hiwiki_latest/Xowa_hiwiki_latest.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "d8389f96-6f1a-4007-8522-f0a6655eb19f",
+      "title": "AGHATHIYAA - 6 PROMOS - HINDI (EACH 13 SECONDS)",
+      "author": "Central Board of Film Certification (CBFC), India",
+      "pdfUrl": "https://archive.org/download/cbfc-ecinepramaan-100030292500000412/cbfc-ecinepramaan-100030292500000412.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "1d735576-1bef-4c69-9079-e5a457cbd1d0",
+      "title": "Guru Bhakti - Hindi",
+      "author": null,
+      "pdfUrl": "https://archive.org/download/GuruBhakti/GuruBhakti.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "c55c1bc5-3c98-4e3a-a8e9-c89bf31479f7",
+      "title": "Maharashtra, 2015-06-17, Part 7 (Hindi)",
+      "author": "Government of Maharashtra",
+      "pdfUrl": "https://archive.org/download/in.gazette.maharashtra.2015-06-17.Extra-Ordinary_CENTRAL-SECTION_Part-7-Hindi-/in.gazette.maharashtra.2015-06-17.Extra-Ordinary_CENTRAL-SECTION_Part-7-Hindi-.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "e6b2ea4d-1d31-477e-9d51-46160b14df7f",
+      "title": "Maharashtra, 2015-09-05, Part 7 (Hindi)",
+      "author": "Government of Maharashtra",
+      "pdfUrl": "https://archive.org/download/in.gazette.maharashtra.2015-09-05.Extra-Ordinary_CENTRAL-SECTION_Part-7-Hindi-/in.gazette.maharashtra.2015-09-05.Extra-Ordinary_CENTRAL-SECTION_Part-7-Hindi-.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "52cc8c37-b346-4e2b-8330-53de9027c148",
+      "title": "Maharashtra, 2016-06-30, Part 7 (Hindi)",
+      "author": "Government of Maharashtra",
+      "pdfUrl": "https://archive.org/download/in.gazette.maharashtra.2016-06-30.Ordinary_CENTRAL-SECTION_Part-7-Hindi-/in.gazette.maharashtra.2016-06-30.Ordinary_CENTRAL-SECTION_Part-7-Hindi-.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "8f205581-21ed-4ce6-96c1-c6d1896cc823",
+      "title": "Maharashtra, 2016-07-21, Part 7 (Hindi)",
+      "author": "Government of Maharashtra",
+      "pdfUrl": "https://archive.org/download/in.gazette.maharashtra.2016-07-21.Ordinary_CENTRAL-SECTION_Part-7-Hindi-/in.gazette.maharashtra.2016-07-21.Ordinary_CENTRAL-SECTION_Part-7-Hindi-.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "c8de3f62-f7e0-4dfa-ad12-6abfad7186e3",
+      "title": "Maharashtra Gazette, 2018-07-09, Extra - Ordinary, Part 7 (Hindi)",
+      "author": "Government of Maharashtra",
+      "pdfUrl": "https://archive.org/download/in.gazette.maharashtra.2018-07-09.Extra-Ordinary_NAGPUR-DIVISION_Part-7-Hindi-/in.gazette.maharashtra.2018-07-09.Extra-Ordinary_NAGPUR-DIVISION_Part-7-Hindi-.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "4bcd7404-1a74-4779-b862-44d5da499094",
+      "title": "Maharashtra Gazette, 2019-03-22, Extra - Ordinary, Part 7 (Hindi)",
+      "author": "Government of Maharashtra",
+      "pdfUrl": "https://archive.org/download/in.gazette.maharashtra.2019-03-22.Extra-Ordinary_CENTRAL-SECTION_Part-7-Hindi-/in.gazette.maharashtra.2019-03-22.Extra-Ordinary_CENTRAL-SECTION_Part-7-Hindi-.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "af7cc358-8356-4013-b370-623922b63b1f",
+      "title": "Alok ( Hindi Yearly Magazine) Part 3 Edited By K. Sacchidanandan Published By Sahitya Academy 2004 New Delhi Vikas Printers",
+      "author": "Vikas Printers",
+      "pdfUrl": "https://archive.org/download/evZE_alok-hindi-yearly-magazine-part-3-edited-by-k.-sacchidanandan-published-by-sahit/evZE_alok-hindi-yearly-magazine-part-3-edited-by-k.-sacchidanandan-published-by-sahit.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "e5a569cd-0444-415f-bcba-978f7811d397",
+      "title": "Madhyam No 4, 5 Ed By Balakrishna Rav 1964 Prayag Hindi Sahitya Sammelan",
+      "author": "eGangotri",
+      "pdfUrl": "https://archive.org/download/ivij_madhyam-no-4-5-ed-by-balakrishna-rav-1964-prayag-hindi-sahitya-sammelan/ivij_madhyam-no-4-5-ed-by-balakrishna-rav-1964-prayag-hindi-sahitya-sammelan.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "b55a6f38-1d7d-4e5c-b316-d178b748fe96",
+      "title": "Saraswati Vol 1 2( Hindi) Ed. Narayan Chaturvedi 1973 Allahabad Indian Press",
+      "author": "Indian Press",
+      "pdfUrl": "https://archive.org/download/dfjd_saraswati-vol-1-2-hindi-ed.-narayan-chaturvedi-1973-allahabad-indian-press/dfjd_saraswati-vol-1-2-hindi-ed.-narayan-chaturvedi-1973-allahabad-indian-press.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "ca30cb9f-d7ff-40e5-8bc9-2b7f7dc74367",
+      "title": "Shiv Sutra (1975) Ac 5112",
+      "author": "Digital Library Of India",
+      "pdfUrl": "https://archive.org/download/in.ernet.dli.2015.428584/in.ernet.dli.2015.428584.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "612b256d-dc6b-4463-abe5-ba0b2dc87b3e",
+      "title": "Shiv Sutra Fragments Sharada Manuscripts 1 Of 2 Residence Of Bashir Sahib Pulwama",
+      "author": "Residence of Bashir Sahib Pulwama",
+      "pdfUrl": "https://archive.org/download/Xluh_shiv-sutra-fragments-sharada-manuscripts-1-of-2-residence-of-bashir-sahib-pulwama/Xluh_shiv-sutra-fragments-sharada-manuscripts-1-of-2-residence-of-bashir-sahib-pulwama.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "a7ff4eb5-616e-438f-996a-b2408ef6db8d",
+      "title": "Shiv Sutra Vimarshini Vol. 1 Year 1911 KSTS",
+      "author": "KSTS",
+      "pdfUrl": "https://archive.org/download/Xyiq_shiv-sutra-vimarshini-vol.-1-year-1911-ksts/Xyiq_shiv-sutra-vimarshini-vol.-1-year-1911-ksts.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "0de0315d-bec4-4a50-b29b-db680e5d3025",
+      "title": "Brahma Sutra Vrithi Edited By Nanjundaradhya Shiv Prakash Shivacharya, Mysore",
+      "author": "eGangotri",
+      "pdfUrl": "https://archive.org/download/oxeW_brahma-sutra-vrithi-edited-by-nanjundaradhya-shiv-prakash-shivacharya-mysore/oxeW_brahma-sutra-vrithi-edited-by-nanjundaradhya-shiv-prakash-shivacharya-mysore.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "af5c592e-1d76-43a9-9331-a54c5ecdec72",
+      "title": "NAVAGRAHA GAYATHRI",
+      "author": "KALLURI SURYA NARAYANA",
+      "pdfUrl": "https://archive.org/download/navagrahagayathr021723mbp/navagrahagayathr021723mbp.pdf",
+      "status": "VALID_PDF",
+      "httpStatus": 206,
+      "contentType": "application/pdf",
+      "signature": "%PDF-1.5",
+      "canProxy": true
+    },
+    {
+      "bookId": "e2c76541-1cd8-4132-8f0e-10b5a578873a",
+      "title": "Shiv Sankalp Sutra By Swami Maheshanand Giri Dakshinamurti Math Publication",
+      "author": "Dakshinamurti Math Publication",
+      "pdfUrl": "https://archive.org/download/gHiN_shiv-sankalp-sutra-by-swami-maheshanand-giri-dakshinamurti-math-publication/gHiN_shiv-sankalp-sutra-by-swami-maheshanand-giri-dakshinamurti-math-publication.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "df4386ab-be10-4750-935d-886b1d44ad23",
+      "title": "Gayathri Mantrartha Bhaskar With Hindi Tika",
+      "author": "Pandit Gadadhar Prasad",
+      "pdfUrl": "https://archive.org/download/gayathri-mantrartha-bhaskar/gayathri-mantrartha-bhaskar.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "550a3eb1-7d5a-4783-9087-7e0476a6a7c8",
+      "title": "105480807 Shankaracharya Krit Gayathri Mantra Bhashya Swami Neelkantha Saraswati",
+      "author": "Janakinath Kaul, Swami Neelkanthananda Saraswati",
+      "pdfUrl": "https://archive.org/download/105480807ShankaracharyaKritGayathriMantraBhashyaSwamiNeelkanthaSaraswati/105480807ShankaracharyaKritGayathriMantraBhashyaSwamiNeelkanthaSaraswati.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "f3339863-e661-4608-897a-f0f905011cdd",
+      "title": "Manuscript 16 Gayathri Brahman Sharada Sarayu Foundation Trust",
+      "author": "Sarayu Foundation Trust",
+      "pdfUrl": "https://archive.org/download/UNIA_manuscript-16-gayathri-brahman-sharada-sarayu-foundation-trust/UNIA_manuscript-16-gayathri-brahman-sharada-sarayu-foundation-trust.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "1a2d885d-fb45-4709-93ef-b26a3df76854",
+      "title": "7 1 23 Eka Chakra Rucha – Graha Shanti Gayathri Brahmanam Sharada Manuscript E Gangotri Digital Preservation Trust",
+      "author": "eGangotri Digital Preservation Trust",
+      "pdfUrl": "https://archive.org/download/etLj_7-1-23-eka-chakra-rucha-graha-shanti-gayathri-brahmanam-sharada-manuscript-e-gan/etLj_7-1-23-eka-chakra-rucha-graha-shanti-gayathri-brahmanam-sharada-manuscript-e-gan.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "68494ff8-c68b-4426-b828-97ad5927ad24",
+      "title": "Gayathri Rahasyam Shiva Dutta Mishra Shastri",
+      "author": null,
+      "pdfUrl": "https://archive.org/download/gayathri-rahasyam-shiva-dutta-mishra-shastri/gayathri-rahasyam-shiva-dutta-mishra-shastri.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 403,
+      "error": "HTTP 403"
+    },
+    {
+      "bookId": "28151259-307b-407e-9a69-b4b7b4e89291",
+      "title": "The Great Science And Philosophy Of Gayathri By Pt. Sri Sriramasharma Acharya ( Tamil Tr. Sri Gopalakrishna) Haridwar 2006 – Shanti Kunj",
+      "author": "Muthulakshmi Research Academy",
+      "pdfUrl": "https://archive.org/download/tkdd_the-great-science-and-philosophy-of-gayathri-by-pt.-sri-sriramasharma-acharya-ta/tkdd_the-great-science-and-philosophy-of-gayathri-by-pt.-sri-sriramasharma-acharya-ta.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "7b476e35-13d2-4f44-92fd-f01a44124b8d",
+      "title": "GAYATHRI JEWLLERS",
+      "author": "Central Board of Film Certification (CBFC), India",
+      "pdfUrl": "https://archive.org/download/cbfc-ecinepramaan-100030291900002262/cbfc-ecinepramaan-100030291900002262.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "379743cc-aec0-49fb-84c2-346edc97860c",
+      "title": "Pranayam Maha Ganapathi Mantra Maha Gayathri Devi Mantra Vamadev Mantra And Sharika Mantra Sharada Manuscript From Kupwara E Gangotri Digital Preservation Trust",
+      "author": "eGangotri Digital Preservation Trust",
+      "pdfUrl": "https://archive.org/download/pranayam-maha-ganapathi-mantra-maha-gayathri-devi-mantra-vamadev-mantra-and-shar/pranayam-maha-ganapathi-mantra-maha-gayathri-devi-mantra-vamadev-mantra-and-shar.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "624cd41f-cc57-40a2-ad85-3cd224b5f193",
+      "title": "ADVT OF \"GAYATHRI MILK DAIRY -2\"",
+      "author": "Central Board of Film Certification (CBFC), India",
+      "pdfUrl": "https://archive.org/download/cbfc-ecinepramaan-100070292400001154/cbfc-ecinepramaan-100070292400001154.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "297e9bf7-5e04-408f-b2c6-99c582c7b039",
+      "title": "26 12 2022 Japa Mantras ( Maha Lakshmi Gayathri Maha Ganapathi Others) Sharada Manuscript E Gangotri Digital Preservation Trust",
+      "author": "eGangotri Digital Preservation Trust",
+      "pdfUrl": "https://archive.org/download/briX_26-12-2022-japa-mantras-maha-lakshmi-gayathri-maha-ganapathi-others-sharada-manu/briX_26-12-2022-japa-mantras-maha-lakshmi-gayathri-maha-ganapathi-others-sharada-manu.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "c0fde4a5-9266-4095-b810-55834dcb1bab",
+      "title": "Manuscript 26 – Gayathri Japa Vidhi ( Manuscript In Sharada) Egangotri Digital Preservation Trust",
+      "author": "Egangotri Digital Preservation Trust",
+      "pdfUrl": "https://archive.org/download/Qoyg_manuscript-26-gayathri-japa-vidhi-manuscript-in-sharada-egangotri-digital-preservation-trust/Qoyg_manuscript-26-gayathri-japa-vidhi-manuscript-in-sharada-egangotri-digital-preservation-trust.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "c3700841-356e-4dee-a6ea-7633e3a30de6",
+      "title": "Anantnag 2 Rakshoghna Mantra – Gayathri Brahmana Kushmanda Brahmana Abhisheka Mantra Sharada Manuscript E Gangotri Digital Preservation Trust",
+      "author": "eGangotri Digital Preservation Trust",
+      "pdfUrl": "https://archive.org/download/GhXc_anantnag-2-rakshoghna-mantra-gayathri-brahmana-kushmanda-brahmana-abhisheka-mant/GhXc_anantnag-2-rakshoghna-mantra-gayathri-brahmana-kushmanda-brahmana-abhisheka-mant.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "9e35f280-31d7-420c-b369-f58d47509540",
+      "title": "ADVT OF \"GAYATHRI PRODUCTS\"",
+      "author": "Central Board of Film Certification (CBFC), India",
+      "pdfUrl": "https://archive.org/download/cbfc-ecinepramaan-100070292300000190/cbfc-ecinepramaan-100070292300000190.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "964ee60f-5338-4521-a421-41b0dd8c2910",
+      "title": "The Greatness Of Sri Gayathri Jyothisha Sasthra By Sri. Y. Subbaraya Sharma In English",
+      "author": "Sri. Y. Subbaraya Sharma",
+      "pdfUrl": "https://archive.org/download/the-greatness-of-sri-gayathri-jyothisha-sasthra-by-sri-y-subbaraya-sharma-in-english/the-greatness-of-sri-gayathri-jyothisha-sasthra-by-sri-y-subbaraya-sharma-in-english.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "70363570-661c-4eb5-9c3a-8001a100ab46",
+      "title": "Srinagar 2 – Gayathri Mantra – Gayathri Shapa Mochana – Gayathri Japa Sharada Manuscript E Gangotri Digital Preservation Trust",
+      "author": "eGangotri Digital Preservation Trust",
+      "pdfUrl": "https://archive.org/download/piJc_srinagar-2-gayathri-mantra-gayathri-shapa-mochana-gayathri-japa-sharada-manuscri/piJc_srinagar-2-gayathri-mantra-gayathri-shapa-mochana-gayathri-japa-sharada-manuscri.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "44b91b1a-af9a-430f-b815-012498b9a01b",
+      "title": "Shiv Sutra Vimarshini Sharada Manuscript Pran Nath Kaul",
+      "author": "eGangotri",
+      "pdfUrl": "https://archive.org/download/ShivSutraVimarshiniSharadaManuscriptPranNathKaul/ShivSutraVimarshiniSharadaManuscriptPranNathKaul.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "cde07ffd-d7c5-4cd8-8f69-ea206f025e49",
+      "title": "11 June Kupwara Ganapati Nama Sahasram Gayathri Stotram Sharada Manuscript E Gangotri Digital Preservation Trust",
+      "author": "eGangotri Digital Preservation Trust",
+      "pdfUrl": "https://archive.org/download/qikK_11-june-kupwara-ganapati-nama-sahasram-gayathri-stotram-sharada-manuscript-e-gan/qikK_11-june-kupwara-ganapati-nama-sahasram-gayathri-stotram-sharada-manuscript-e-gan.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "289c5a6a-c81a-4572-a3e4-2dfaa0c9b7b1",
+      "title": "Gayathri Trisati",
+      "author": "unknown",
+      "pdfUrl": "https://archive.org/download/gayathri-trisati/gayathri-trisati.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "0e59e93a-a4ac-4cf2-98b2-4864865acbd6",
+      "title": "Shiv Sutra Vimarshani KSTS",
+      "author": "KSTS",
+      "pdfUrl": "https://archive.org/download/xUNL_shiv-sutra-vimarshani-ksts/xUNL_shiv-sutra-vimarshani-ksts.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "2512b445-0624-41d9-9b46-a3fd91bd2388",
+      "title": "Raising the Capacity of Gayathri Reservoir",
+      "author": null,
+      "pdfUrl": "https://archive.org/download/karnatakalegislativeassembly.debates.549.418.420/karnatakalegislativeassembly.debates.549.418.420.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "0b672368-b5fc-4d39-a5e7-453b654ffda8",
+      "title": "COLLINS NATURE GUIDES UNIVERSE FROM THE BIG BANG TO BLACK HOLES",
+      "author": null,
+      "pdfUrl": "https://archive.org/download/isbn_9780007946099/isbn_9780007946099.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 401,
+      "error": "HTTP 401"
+    },
+    {
+      "bookId": "b4395346-d909-4060-a2ef-db968f40d4ad",
+      "title": "9th Class Political Science Ncert Chapter 1 Hindi Medium",
+      "author": null,
+      "pdfUrl": "https://archive.org/download/9th-class-political-science-ncert-chapter-1-hindi-medium/9th-class-political-science-ncert-chapter-1-hindi-medium.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 403,
+      "error": "HTTP 403"
+    },
+    {
+      "bookId": "0e92232e-49cd-4f5a-9db5-ad4a82b430f7",
+      "title": "Shri Shiv Sutra Rahasyam By Shiv Dutt Shastri 1971 Kanpur Shri Kumudesh Chandra Jain",
+      "author": "Shri Ganesh Varni Digambar Jain Sansthan",
+      "pdfUrl": "https://archive.org/download/hvtv_shri-shiv-sutra-rahasyam-by-shiv-dutt-shastri-1971-kanpur-shri-kumudesh-chandra-jain/hvtv_shri-shiv-sutra-rahasyam-by-shiv-dutt-shastri-1971-kanpur-shri-kumudesh-chandra-jain.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "19ec2745-1aae-4397-bccc-eccd5f2d6bca",
+      "title": "NCERT Solutions For Class 10 Social Science Understanding Economic Development Unit 2 Unlocked",
+      "author": null,
+      "pdfUrl": "https://archive.org/download/NCERTSolutionsForClass10SocialScienceUnderstandingEconomicDevelopmentUnit2Unlocked/NCERTSolutionsForClass10SocialScienceUnderstandingEconomicDevelopmentUnit2Unlocked.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "360e320b-63cc-42ac-921f-d1e3adf8f6f6",
+      "title": "Different Types of Fe K_αLines from Radiating Annuli near Black Holes",
+      "author": "Alexander F. Zakharov",
+      "pdfUrl": "https://archive.org/download/arxiv-astro-ph0510548/arxiv-astro-ph0510548.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "76acd617-f1da-4a36-8bdc-09d4b57302d3",
+      "title": "Lessons on Black Holes from the Elliptic Genus",
+      "author": "Amit Giveon",
+      "pdfUrl": "https://archive.org/download/arxiv-1401.3104/arxiv-1401.3104.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "9b0dd3ff-2670-42f2-8533-bd9ed1db39ba",
+      "title": "Microscopic entropy of black holes and AdS_2 quantum gravity",
+      "author": "Mariano Cadoni",
+      "pdfUrl": "https://archive.org/download/arxiv-0812.3362/arxiv-0812.3362.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "0523884a-f476-4ee0-82e9-683d06c40c83",
+      "title": "ARIHANT NCERT EXEMPLAR SOLUTION books",
+      "author": null,
+      "pdfUrl": "https://archive.org/download/arihant-ncert-exemplar-biology-solution-class-11/arihant-ncert-exemplar-biology-solution-class-11.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "1384e528-cd17-4aea-9c7a-857336710a53",
+      "title": "Schwarzschild black holes can wear scalar wigs",
+      "author": "Juan Barranco",
+      "pdfUrl": "https://archive.org/download/arxiv-1207.2153/arxiv-1207.2153.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "fce6c6c0-72e1-4291-8ce1-6b434ab1d5e1",
+      "title": "Entropy of near-extremal black holes in AdS_5",
+      "author": "Vijay Balasubramanian",
+      "pdfUrl": "https://archive.org/download/arxiv-0707.3601/arxiv-0707.3601.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "e3b89e25-288e-4b5c-bc52-72e11021308d",
+      "title": "Ncert",
+      "author": null,
+      "pdfUrl": "https://archive.org/download/6th_20230207/6th_20230207.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "9026252c-a9e1-43d7-8fc4-f2a511cd9da3",
+      "title": "Ncert Polity Class Chapter 8and 9 Loktantra Ke Parinam Aur Chunautiya",
+      "author": null,
+      "pdfUrl": "https://archive.org/download/ncert-polity-class-chapter-8and-9-loktantra-ke-parinam-aur-chunautiya/ncert-polity-class-chapter-8and-9-loktantra-ke-parinam-aur-chunautiya.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "434af263-dd71-408d-a641-92bfec9609c4",
+      "title": "Shiv Sutra Vimarshini KSTS With Hand Written Notes SP Dhar Sahib Personal Copy",
+      "author": "eGangotri",
+      "pdfUrl": "https://archive.org/download/ShivSutraVimarshiniKSTSWithHandWrittenNotesSPDharSahibPersonalCopy/ShivSutraVimarshiniKSTSWithHandWrittenNotesSPDharSahibPersonalCopy.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "1a77f1e8-0ba7-4c41-b3e3-174b02e81e9c",
+      "title": "Effects of quantized fields on the spacetime geometries of static spherically symmetric black holes",
+      "author": "Paul R. Anderson",
+      "pdfUrl": "https://archive.org/download/arxiv-0709.4457/arxiv-0709.4457.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "09442a40-5c3e-4d6f-9f8b-cad062b5f0e6",
+      "title": "Quantum time uncertainty in Schwarzschild-anti-de Sitter black holes",
+      "author": "Pablo Galan",
+      "pdfUrl": "https://archive.org/download/arxiv-0707.4362/arxiv-0707.4362.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "2abb66d8-9523-43de-b70c-7416f0562baf",
+      "title": "Super-Extremal Spinning Black Holes via Accretion",
+      "author": "Tanja Bode",
+      "pdfUrl": "https://archive.org/download/arxiv-1106.1864/arxiv-1106.1864.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "5e8ba876-f3d0-4351-9c76-8a4112db6628",
+      "title": "Correlations between X-ray and radio spectral properties of accreting black holes",
+      "author": "Andrzej A. Zdziarski",
+      "pdfUrl": "https://archive.org/download/arxiv-astro-ph0209363/arxiv-astro-ph0209363.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "97643378-aa4b-4742-89a8-2e0e880976af",
+      "title": "Black-holes, topological strings and large N phase transitions",
+      "author": null,
+      "pdfUrl": "https://archive.org/download/arxiv-hep-th0512213/arxiv-hep-th0512213.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "bfa000c6-8fb7-4ee3-8b02-2f513cc17bf2",
+      "title": "Mental Zoo",
+      "author": "Salman Akhtar",
+      "pdfUrl": "http://books.google.co.in/books?id=ZBVWDwAAQBAJ&pg=PT62&dq=Selected+Papers+of+Salman+Akthar&hl=&cd=20&source=gbs_api",
+      "status": "HTML_LANDING_PAGE",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=utf-8",
+      "error": "URL returns HTML landing page instead of PDF bytes"
+    },
+    {
+      "bookId": "aa6871cc-4188-4f4b-85e3-d76bad1eeb42",
+      "title": "NCERT Solutions - Science for Class X",
+      "author": "Dr. Kanchan Upreti",
+      "pdfUrl": "http://books.google.co.in/books?id=54RIEAAAQBAJ&printsec=frontcover&dq=NCERT&hl=&cd=1&source=gbs_api",
+      "status": "HTML_LANDING_PAGE",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=utf-8",
+      "error": "URL returns HTML landing page instead of PDF bytes"
+    },
+    {
+      "bookId": "07082b19-5122-4c6e-9c43-8fd8f863da56",
+      "title": "NCERT Mathematics Practice Book 5",
+      "author": "Sheela Khandelwal",
+      "pdfUrl": "http://books.google.co.in/books?id=drpjDwAAQBAJ&printsec=frontcover&dq=NCERT&hl=&cd=6&source=gbs_api",
+      "status": "HTML_LANDING_PAGE",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=utf-8",
+      "error": "URL returns HTML landing page instead of PDF bytes"
+    },
+    {
+      "bookId": "26760691-2b34-47dc-8ce4-239b0e09c186",
+      "title": "NCERT गणित Mathematics Class 12",
+      "author": "Dr. Ramdev Sharma ",
+      "pdfUrl": "http://books.google.co.in/books?id=xAQZEQAAQBAJ&pg=PA262&dq=NCERT&hl=&cd=9&source=gbs_api",
+      "status": "HTML_LANDING_PAGE",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=utf-8",
+      "error": "URL returns HTML landing page instead of PDF bytes"
+    },
+    {
+      "bookId": "5c91cc24-8d54-4139-a2d4-785d3b1707e8",
+      "title": "NCERT MCQs Indian Economy Class 9-12 (Old+New) for UPSC , State PSC and Other Competitive Exams",
+      "author": "Rakesh Kumar Roshan",
+      "pdfUrl": "http://books.google.co.in/books?id=BUFpEAAAQBAJ&pg=PA1&dq=NCERT&hl=&cd=12&source=gbs_api",
+      "status": "HTML_LANDING_PAGE",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=utf-8",
+      "error": "URL returns HTML landing page instead of PDF bytes"
+    },
+    {
+      "bookId": "b85f405d-77be-48e3-b425-b138eec32720",
+      "title": "Harper Lee's To Kill a Mockingbird",
+      "author": "Harper Lee",
+      "pdfUrl": "http://books.google.co.in/books?id=LaMTiorjM9cC&pg=PA19&dq=To+kill+a+Mockingbird&hl=&cd=5&source=gbs_api",
+      "status": "HTML_LANDING_PAGE",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=utf-8",
+      "error": "URL returns HTML landing page instead of PDF bytes"
+    },
+    {
+      "bookId": "6765ecf8-75cb-43f8-8202-042d79f26830",
+      "title": "Mathematics class 10 Based on NCERT Guidelines",
+      "author": " Dr. Ram Dev Sharma",
+      "pdfUrl": "http://books.google.co.in/books?id=9Il6EAAAQBAJ&pg=PA214&dq=NCERT&hl=&cd=23&source=gbs_api",
+      "status": "HTML_LANDING_PAGE",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=utf-8",
+      "error": "URL returns HTML landing page instead of PDF bytes"
+    },
+    {
+      "bookId": "143d028a-6a48-4f4b-8b04-cdfd910e6bdf",
+      "title": "NCERT गणित Mathematics Class 10 Scorer Guru Publications",
+      "author": "Dr. Ram Dev Sharma ",
+      "pdfUrl": "http://books.google.co.in/books?id=VekIEQAAQBAJ&pg=PA60&dq=NCERT&hl=&cd=26&source=gbs_api",
+      "status": "HTML_LANDING_PAGE",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=utf-8",
+      "error": "URL returns HTML landing page instead of PDF bytes"
+    },
+    {
+      "bookId": "7f5973ef-2da9-4738-a87a-e496ae193eb7",
+      "title": "Shiv Sutra Vimarshini Of Vasugupt With Vimarshini Commentary By Kshemraj 1911 Kashmir Text And Series No. 1 Nirnay Sagar Press",
+      "author": "eGangotri",
+      "pdfUrl": "https://archive.org/download/EaST_shiv-sutra-vimarshini-of-vasugupt-with-vimarshini-commentary-by-kshemraj-1911-ka/EaST_shiv-sutra-vimarshini-of-vasugupt-with-vimarshini-commentary-by-kshemraj-1911-ka.pdf",
+      "status": "UNREACHABLE",
+      "httpStatus": 404,
+      "error": "HTTP 404"
+    },
+    {
+      "bookId": "4d9e1a79-6b7b-4537-a9e1-2ae8dffeddee",
+      "title": "shiv-sutra",
+      "author": null,
+      "pdfUrl": "https://archive.org/download/shiv-sutra/shiv-sutra.pdf",
+      "status": "VALID_PDF",
+      "httpStatus": 206,
+      "contentType": "application/pdf",
+      "signature": "%PDF-1.5",
+      "canProxy": true
+    },
+    {
+      "bookId": "26d7619f-cc98-4ce5-8c04-8d81f2df4ed2",
+      "title": "NCERT MCQs Indian History Class 6-12 (Old+New) for UPSC , State PSC and Other Competitive Exams",
+      "author": "Amibh Ranjan",
+      "pdfUrl": "http://books.google.co.in/books?id=CUFpEAAAQBAJ&pg=PA162&dq=NCERT&hl=&cd=30&source=gbs_api",
+      "status": "HTML_LANDING_PAGE",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=utf-8",
+      "error": "URL returns HTML landing page instead of PDF bytes"
+    },
+    {
+      "bookId": "f9c0bb2a-af60-4b10-bb0f-342bd517cb1c",
+      "title": "Chemistry Simplified NCERT Class 12",
+      "author": "Sanjay Sharma",
+      "pdfUrl": "http://books.google.co.in/books?id=aBvzDwAAQBAJ&printsec=frontcover&dq=NCERT&hl=&cd=35&source=gbs_api",
+      "status": "HTML_LANDING_PAGE",
+      "httpStatus": 200,
+      "contentType": "text/html; charset=utf-8",
+      "error": "URL returns HTML landing page instead of PDF bytes"
+    },
+    {
+      "bookId": "8889a5ee-79f7-471c-af76-4b8a35e66f76",
+      "title": "Mozart : The story of a little boy and his sister who gave concerts",
+      "author": "Tapper, Thomas",
+      "pdfUrl": "https://www.gutenberg.org/files/34582/34582-pdf.pdf",
+      "status": "VALID_PDF",
+      "httpStatus": 206,
+      "contentType": "application/pdf",
+      "signature": "%PDF-1.4",
+      "canProxy": true
+    }
+  ]
+}
