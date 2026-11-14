@@ -11,6 +11,14 @@ export interface UserAvatar {
   updated_at: string;
 }
 
+const toAvatarError = (error: unknown, fallback: string): Error => {
+  if (error instanceof Error) return error;
+  if (error && typeof error === 'object' && typeof (error as Record<string, unknown>).message === 'string') {
+    return new Error(String((error as Record<string, unknown>).message));
+  }
+  return new Error(fallback);
+};
+
 const parseAvatar = (value: unknown): UserAvatar | null => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const avatar = value as Record<string, unknown>;
@@ -39,7 +47,7 @@ export const useUserAvatar = (userId?: string) => {
       if (!targetUserId || !user?.id || targetUserId !== user.id) return null;
 
       const { data, error } = await supabase.rpc('get_my_avatar');
-      if (error) throw error;
+      if (error) throw toAvatarError(error, 'Could not load your saved reading avatar.');
       return parseAvatar(data);
     },
     enabled: !!targetUserId && !!user?.id && targetUserId === user.id,
@@ -61,7 +69,7 @@ export const useUpdateUserAvatar = () => {
         p_avatar_img_url: avatarData.avatar_img_url,
       });
 
-      if (error) throw error;
+      if (error) throw toAvatarError(error, 'Could not save your reading avatar.');
       const savedAvatar = parseAvatar(data);
       if (!savedAvatar) throw new Error('The avatar was saved but the server returned an invalid avatar record.');
       return savedAvatar;
