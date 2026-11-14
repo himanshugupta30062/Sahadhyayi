@@ -74,8 +74,8 @@ export const useUpdateReaderHighlight = () => {
       return data as ReaderHighlight;
     },
     onSuccess: (data, input) => {
-      qc.invalidateQueries({ queryKey: ["reader-highlights", user?.id, input.bookId] });
-      qc.invalidateQueries({ queryKey: ["reader-highlights", user?.id] });
+      void qc.invalidateQueries({ queryKey: ["reader-highlights", user?.id, input.bookId] });
+      void qc.invalidateQueries({ queryKey: ["reader-highlights", user?.id] });
     },
   });
 };

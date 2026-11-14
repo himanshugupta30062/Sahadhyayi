@@ -38,7 +38,7 @@ const shiftDay = (key: string, amount: number) => {
 };
 
 const streakMetrics = (dates: Set<string>) => {
-  const sorted = [...dates].sort();
+  const sorted = [...dates].sort((a, b) => a.localeCompare(b));
   let longest = 0;
   let run = 0;
   let previous: string | undefined;

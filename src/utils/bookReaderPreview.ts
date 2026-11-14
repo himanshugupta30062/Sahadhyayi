@@ -195,6 +195,7 @@ export const checkGoogleBooksEmbeddability = async (
           embeddable: false,
           viewability: 'NO_PAGES',
           status: 'restricted',
+          previewLink: `https://books.google.com/books?id=${encodeURIComponent(cleanId)}`,
         };
       }
       return {

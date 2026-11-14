@@ -34,7 +34,7 @@ export default function SavedGroupDiscussions() {
   };
   useEffect(() => { void load(); }, []);
 
-  const topics = useMemo(() => [...new Set(items.map(item => item.topic_type).filter(Boolean))].sort(), [items]);
+  const topics = useMemo(() => [...new Set(items.map(item => item.topic_type).filter(Boolean))].sort((a, b) => a.localeCompare(b)), [items]);
   const filtered = useMemo(() => {
     const needle = search.trim().toLowerCase();
     return items.filter(item => (topic === 'all' || item.topic_type === topic) &&

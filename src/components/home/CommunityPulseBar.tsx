@@ -159,7 +159,7 @@ export const CommunityPulseBar: React.FC<{ className?: string }> = ({ className 
         </div>
 
         {/* Total members badge */}
-        {totalMembers && (
+        {totalMembers > 0 && (
           <div className="shrink-0 ml-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1C442D]/10 dark:bg-[#D5B16D]/10 border border-[#1C442D]/20 dark:border-[#D5B16D]/20 text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">
               <Users className="w-3.5 h-3.5" aria-hidden="true" />
