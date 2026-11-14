@@ -9,16 +9,73 @@ import {
   Sparkles,
   Compass,
   MapPin,
+  Bookmark,
+  X,
 } from 'lucide-react';
 import { JOURNEY_DESTINATIONS } from './journeyData';
 import { JourneyDestinationNode } from './JourneyDestinationNode';
 import { JourneyScenicTrail } from './JourneyScenicTrail';
 
+const JOURNEY_STORAGE_KEY = 'sahadhyayi_journey_progress';
+
+type JourneyProgress = {
+  activeStopIndex: number;
+  visitedStops: number[];
+  lastVisitedAt: string;
+  completedAt?: string;
+};
+
 export const SahadhyayiJourney: React.FC = () => {
   const [activeStopIndex, setActiveStopIndex] = useState<number>(1);
   const [isAutoPlaying, setIsAutoPlaying] = useState<boolean>(false);
+  const [showResumeBanner, setShowResumeBanner] = useState<boolean>(false);
+  const [savedProgress, setSavedProgress] = useState<JourneyProgress | null>(null);
+  const [hasInteracted, setHasInteracted] = useState<boolean>(false);
 
   const journeyContainerRef = useRef<HTMLElement>(null);
+
+  // Load saved progress from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(JOURNEY_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored) as JourneyProgress;
+        // Only restore if progress is meaningful (not just first stop)
+        if (parsed.activeStopIndex > 1 || (parsed.visitedStops?.length ?? 0) > 1) {
+          setSavedProgress(parsed);
+          // Show resume banner after a short delay
+          setTimeout(() => setShowResumeBanner(true), 1000);
+        }
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, []);
+
+  // Save progress to localStorage whenever activeStopIndex changes
+  useEffect(() => {
+    if (!hasInteracted) return; // Don't save initial load
+
+    try {
+      const existing = localStorage.getItem(JOURNEY_STORAGE_KEY);
+      const existingProgress = existing ? JSON.parse(existing) as JourneyProgress : { activeStopIndex: 1, visitedStops: [], lastVisitedAt: '' };
+
+      const visitedStops = Array.from(new Set([...existingProgress.visitedStops, activeStopIndex]));
+      const isComplete = visitedStops.length >= JOURNEY_DESTINATIONS.length;
+
+      const progress: JourneyProgress = {
+        activeStopIndex,
+        visitedStops,
+        lastVisitedAt: new Date().toISOString(),
+        completedAt: isComplete ? new Date().toISOString() : undefined,
+      };
+
+      localStorage.setItem(JOURNEY_STORAGE_KEY, JSON.stringify(progress));
+      setSavedProgress(progress);
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, [activeStopIndex, hasInteracted]);
 
   const activeDestination =
     JOURNEY_DESTINATIONS[activeStopIndex - 1] || JOURNEY_DESTINATIONS[0];
@@ -29,6 +86,8 @@ export const SahadhyayiJourney: React.FC = () => {
   const scrollToDestination = useCallback((targetIndex: number, scrollIntoDetail = false) => {
     const safeIndex = Math.min(JOURNEY_DESTINATIONS.length, Math.max(1, targetIndex));
     setActiveStopIndex(safeIndex);
+    setHasInteracted(true);
+    setShowResumeBanner(false); // Hide banner once user interacts
 
     if (scrollIntoDetail) {
       const detailElement = document.getElementById('journey-detail-section');
@@ -47,6 +106,22 @@ export const SahadhyayiJourney: React.FC = () => {
       scrollToDestination(activeStopIndex - 1);
     }
   }, [activeStopIndex, scrollToDestination]);
+
+  const handleResumeJourney = useCallback(() => {
+    if (savedProgress) {
+      scrollToDestination(savedProgress.activeStopIndex, true);
+      setShowResumeBanner(false);
+    }
+  }, [savedProgress, scrollToDestination]);
+
+  const handleDismissBanner = useCallback(() => {
+    setShowResumeBanner(false);
+  }, []);
+
+  const handleRestartJourney = useCallback(() => {
+    scrollToDestination(1, true);
+    setShowResumeBanner(false);
+  }, [scrollToDestination]);
 
   useEffect(() => {
     if (!isAutoPlaying) return;
@@ -79,6 +154,9 @@ export const SahadhyayiJourney: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleNextStop, handlePrevStop]);
 
+  const visitedCount = savedProgress?.visitedStops?.length ?? 0;
+  const isComplete = visitedCount >= JOURNEY_DESTINATIONS.length;
+
   return (
     <section
       ref={journeyContainerRef}
@@ -93,6 +171,70 @@ export const SahadhyayiJourney: React.FC = () => {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
+
+        {/* ── Resume Journey Banner ── */}
+        {showResumeBanner && savedProgress && (
+          <div
+            className="mb-8 relative overflow-hidden rounded-2xl bg-white/90 dark:bg-[#131715]/90 border border-[#8F681C]/30 dark:border-[#D5B16D]/30 p-4 sm:p-5 shadow-lg backdrop-blur-sm animate-slide-down"
+            role="status"
+            aria-live="polite"
+          >
+            <style>{`
+              @keyframes slide-down {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
+              }
+              .animate-slide-down { animation: slide-down 400ms cubic-bezier(.2,.7,.2,1); }
+            `}</style>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-[#8F681C]/10 dark:bg-[#D5B16D]/10 flex items-center justify-center">
+                  <Bookmark className="w-5 h-5 text-[#8F681C] dark:text-[#D5B16D]" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-[#1C201D] dark:text-[#F3F0E7]">
+                    You've explored {visitedCount} of {JOURNEY_DESTINATIONS.length} destinations
+                  </p>
+                  <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">
+                    Last stop: {JOURNEY_DESTINATIONS[savedProgress.activeStopIndex - 1]?.title || 'Library City'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+                <button
+                  type="button"
+                  onClick={handleResumeJourney}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1C442D] hover:bg-[#143221] dark:bg-[#D5B16D] dark:hover:bg-[#e4c688] text-white dark:text-stone-950 text-sm font-semibold transition-all shadow-sm"
+                >
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span>Resume Journey</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRestartJourney}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-[#E5E0D8] hover:border-[#8F681C]/50 bg-white hover:bg-[#FAF7F0] dark:border-[#242E28] dark:hover:border-[#38483D] dark:bg-[#18201B] dark:hover:bg-[#202923] text-[#1C201D] dark:text-[#F3F0E7] text-sm font-semibold transition-all"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Start Over</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDismissBanner}
+                  className="p-1.5 rounded-lg text-[#636B65] dark:text-[#A5ADA6] hover:bg-[#E5E0D8] dark:hover:bg-[#242E28] transition-colors"
+                  aria-label="Dismiss resume banner"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            {isComplete && (
+              <div className="mt-3 pt-3 border-t border-[#E5E0D8] dark:border-[#242E28] flex items-center gap-2 text-xs text-[#8F681C] dark:text-[#D5B16D]">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span className="font-semibold">Journey complete! 🎉 You've visited all {JOURNEY_DESTINATIONS.length} destinations.</span>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ── Section header ── */}
         <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
@@ -148,13 +290,14 @@ export const SahadhyayiJourney: React.FC = () => {
                 {JOURNEY_DESTINATIONS.map((dest) => {
                   const isActive = dest.index === activeStopIndex;
                   const isPast = dest.index < activeStopIndex;
+                  const isVisited = savedProgress?.visitedStops?.includes(dest.index) ?? false;
                   return (
                     <button
                       key={dest.id}
                       type="button"
                       onClick={() => scrollToDestination(dest.index)}
                       title={dest.title}
-                      aria-label={`Go to stop ${dest.index}: ${dest.title}`}
+                      aria-label={`Go to stop ${dest.index}: ${dest.title}${isVisited && isPast ? ' (visited)' : ''}`}
                       aria-current={isActive ? 'step' : undefined}
                       className="group relative shrink-0 transition-all duration-200 cursor-pointer"
                     >
@@ -170,16 +313,24 @@ export const SahadhyayiJourney: React.FC = () => {
                         style={
                           isActive
                             ? { background: activeDestination.accentColor }
-                            : isPast
+                            : isVisited && isPast
                               ? { background: dest.accentColor, color: '#fff' }
-                              : {}
+                              : isPast
+                                ? { background: dest.accentColor, color: '#fff', opacity: 0.6 }
+                                : {}
                         }
                       >
                         {dest.index}
                       </span>
+                      {/* Visited checkmark for past stops */}
+                      {isVisited && isPast && !isActive && (
+                        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-green-500 text-white text-[10px] flex items-center justify-center">
+                          ✓
+                        </span>
+                      )}
                       {/* Tooltip on hover */}
                       <span className="pointer-events-none absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-popover border border-border text-popover-foreground text-[10px] px-2 py-0.5 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50">
-                        {dest.title.split(' ')[0]}
+                        {dest.title.split(' ')[0]}{isVisited && isPast ? ' ✓' : ''}
                       </span>
                     </button>
                   );
@@ -273,6 +424,7 @@ export const SahadhyayiJourney: React.FC = () => {
           >
             {JOURNEY_DESTINATIONS.map((dest) => {
               const isActive = dest.index === activeStopIndex;
+              const isVisited = savedProgress?.visitedStops?.includes(dest.index) ?? false;
               return (
                 <button
                   key={dest.id}
@@ -290,6 +442,9 @@ export const SahadhyayiJourney: React.FC = () => {
                 >
                   <MapPin className="w-3 h-3" />
                   <span>{dest.title}</span>
+                  {isVisited && !isActive && (
+                    <span className="w-3.5 h-3.5 rounded-full bg-green-500 text-white text-[9px] flex items-center justify-center">✓</span>
+                  )}
                 </button>
               );
             })}
