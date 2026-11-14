@@ -25,6 +25,13 @@ const mapLocationMigration = readFileSync(
   toPath('../../supabase/migrations/20261114120000_fix_map_location_save_and_reader_avatars.sql'),
   'utf8',
 );
+const mapAvatarMigration = readFileSync(
+  toPath('../../supabase/migrations/20261114180000_add_owner_scoped_map_avatar_rpcs.sql'),
+  'utf8',
+);
+const userAvatarHook = readFileSync(toPath('../../src/hooks/useUserAvatar.ts'), 'utf8');
+const mapAvatarControl = readFileSync(toPath('../../src/components/social/MapAvatarControl.tsx'), 'utf8');
+const mapRenderer = readFileSync(toPath('../../src/components/maps/MapplsMap.tsx'), 'utf8');
 
 describe('Social discovery and location privacy regressions', () => {
   it('keeps authenticated data hooks inside the authenticated social page', () => {
@@ -133,6 +140,33 @@ describe('Social discovery and location privacy regressions', () => {
     expect(mapLocationMigration).toMatch(/get_profiles_for_social_context\(profile_ids uuid\[\]\)[\s\S]*?ua\.avatar_img_url/);
     expect(mapLocationMigration).toMatch(/get_nearby_book_readers\([\s\S]*?ua\.avatar_img_url[\s\S]*?internal_security\.has_location_consent\(ubl\.user_id\)/);
     expect(mapLocationMigration).toMatch(/get_friend_locations\(\)[\s\S]*?ua\.avatar_img_url[\s\S]*?internal_security\.has_location_consent\(p\.id\)/);
+  });
+
+  it('reads and saves the current Bitmoji through owner-scoped avatar RPCs', () => {
+    expect(userAvatarHook).toMatch(/rpc\('get_my_avatar'\)/);
+    expect(userAvatarHook).toMatch(/rpc\('save_my_avatar'/);
+    expect(userAvatarHook).not.toMatch(/from\('user_avatars'\)/);
+    expect(mapAvatarMigration).toMatch(/CREATE OR REPLACE FUNCTION public\.get_my_avatar\(\)[\s\S]*?WHERE p\.id = auth\.uid\(\)/);
+    expect(mapAvatarMigration).toMatch(/CREATE OR REPLACE FUNCTION public\.save_my_avatar\([\s\S]*?v_user_id uuid := auth\.uid\(\)/);
+    expect(mapAvatarMigration).toMatch(/REVOKE ALL ON FUNCTION public\.get_my_avatar\(\) FROM PUBLIC, anon/);
+    expect(mapAvatarMigration).toMatch(/GRANT EXECUTE ON FUNCTION public\.get_my_avatar\(\) TO authenticated/);
+    expect(mapAvatarMigration).toMatch(/REVOKE ALL ON FUNCTION public\.save_my_avatar\(jsonb, text\) FROM PUBLIC, anon/);
+    expect(mapAvatarMigration).toMatch(/GRANT EXECUTE ON FUNCTION public\.save_my_avatar\(jsonb, text\) TO authenticated/);
+  });
+
+  it('shows a profile photo until a custom Bitmoji is saved and exposes the editor on map surfaces', () => {
+    expect(mapAvatarControl).toMatch(/Create Bitmoji/);
+    expect(mapAvatarControl).toMatch(/avatar\?\.avatar_img_url/);
+    expect(mapAvatarControl).toMatch(/avatar\?\.avatar_json/);
+    expect(readersMap).toMatch(/<MapAvatarControl\s*\/>/);
+    expect(friendsMap).toMatch(/<MapAvatarControl\s*\/>/);
+  });
+
+  it('uses Mappls DOM marker elements and only reconciles changed reader markers', () => {
+    expect(mapRenderer).toMatch(/createAvatarMarkerElement\s*=\s*\(point: MapplsPoint\): HTMLElement/);
+    expect(mapRenderer).toMatch(/html:\s*createAvatarMarkerElement\(point\)/);
+    expect(mapRenderer).toMatch(/markers\.current\.has\(point\.id\)/);
+    expect(mapRenderer).not.toMatch(/removeMarkers\(map, markers\.current\);\s*markers\.current = \[\]/);
   });
 
   it('builds map popup content using safe text nodes rather than interpolated profile HTML', () => {

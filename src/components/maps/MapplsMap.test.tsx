@@ -29,7 +29,7 @@ describe('MapplsMap', () => {
     });
     const map = { addListener, loaded: () => true, setCenter, setZoom, remove: removeMap };
     const Map = vi.fn().mockImplementation(function () { return map; });
-    const Marker = vi.fn().mockImplementation(function () { return {}; });
+    const Marker = vi.fn().mockImplementation(function (options: Record<string, unknown>) { return { options, remove: vi.fn() }; });
     const fitBounds = vi.fn();
     const removeLayer = vi.fn();
     window.mappls = { Map, Marker, fitBounds, remove: removeLayer };
@@ -49,14 +49,58 @@ describe('MapplsMap', () => {
     expect(addListener).toHaveBeenCalledWith('load', expect.any(Function));
     expect(addListener).toHaveBeenCalledWith('idle', expect.any(Function));
     expect(addListener).toHaveBeenCalledWith('error', expect.any(Function));
+    const delhiMarker = (Marker as any).mock.calls[0][0];
+    const mumbaiMarker = (Marker as any).mock.calls[1][0];
+    expect(delhiMarker.html).toBeInstanceOf(HTMLElement);
+    expect(delhiMarker.html.querySelector('img')?.getAttribute('src')).toBe('https://cdn.example.test/delhi.svg');
+    expect(delhiMarker.html.querySelector('img')?.referrerPolicy).toBe('no-referrer');
+    expect(delhiMarker.width).toBe(58);
+    expect(delhiMarker.height).toBe(68);
+    expect(mumbaiMarker.html.querySelector('img')).toBeNull();
+    expect(mumbaiMarker.html.textContent).toContain('M');
     expect(fitBounds).toHaveBeenCalledWith(expect.objectContaining({
       map,
       cType: 0,
       bounds: [[77.2, 28.6], [72.8, 19]],
-      options: { padding: 80, duration: 700 },
+      options: { padding: 96, duration: 650 },
     }));
     expect(screen.getByLabelText('Interactive Mappls map')).toBeInTheDocument();
     expect(screen.queryByText('Loading Mappls map…')).not.toBeInTheDocument();
+  });
+
+  it('keeps stable avatar markers instead of removing and recreating them on unrelated rerenders', async () => {
+    const markerInstances: Array<Record<string, unknown>> = [];
+    const removeLayer = vi.fn();
+    const Marker = vi.fn().mockImplementation(function (options: Record<string, unknown>) {
+      const marker = { options, setPosition: vi.fn(), remove: vi.fn() };
+      markerInstances.push(marker);
+      return marker;
+    });
+    const map = { addListener: vi.fn(), loaded: () => true, setCenter: vi.fn(), setZoom: vi.fn(), remove: vi.fn() };
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () { return map; }),
+      Marker,
+      remove: removeLayer,
+    };
+
+    const stablePoints = [
+      { id: 'self', lat: 28.45, lng: 77.02, title: 'You', avatarUrl: 'data:image/svg+xml;base64,PHN2Zy8+' },
+      { id: 'friend', lat: 28.46, lng: 77.03, title: 'Friend' },
+    ];
+    const { rerender } = render(<MapplsMap apiKey="valid-key" points={stablePoints} />);
+    await waitFor(() => expect(Marker).toHaveBeenCalledTimes(2));
+
+    rerender(<MapplsMap apiKey="valid-key" points={stablePoints} emptyMessage="Still here" />);
+    expect(Marker).toHaveBeenCalledTimes(2);
+    expect(removeLayer).not.toHaveBeenCalled();
+
+    const updatedPoints = [
+      { ...stablePoints[0], description: 'Reading a book' },
+      stablePoints[1],
+    ];
+    rerender(<MapplsMap apiKey="valid-key" points={updatedPoints} />);
+    await waitFor(() => expect(Marker).toHaveBeenCalledTimes(3));
+    expect(removeLayer).toHaveBeenCalledTimes(1);
   });
 
   it('centers and zooms for a single point and responds to center updates', async () => {
@@ -73,7 +117,7 @@ describe('MapplsMap', () => {
     const points = [{ id: 'one', lat: 12.9, lng: 77.6, title: 'Bengaluru' }];
     const { rerender } = render(<MapplsMap apiKey="valid-key" points={points} center={{ lat: 12.9, lng: 77.6 }} />);
 
-    await waitFor(() => expect(setZoom).toHaveBeenCalledWith(10));
+    await waitFor(() => expect(setZoom).toHaveBeenCalledWith(13));
     rerender(<MapplsMap apiKey="valid-key" points={points} center={{ lat: 13, lng: 78 }} />);
     await waitFor(() => expect(setCenter).toHaveBeenCalledWith({ lat: 13, lng: 78 }));
   });
