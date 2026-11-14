@@ -8,15 +8,16 @@ SECURITY DEFINER
 SET search_path = ''
 AS $function$
   SELECT jsonb_build_object(
-    'id', ua.id,
-    'user_id', ua.user_id,
+    'id', COALESCE(ua.id, p.id),
+    'user_id', p.id,
     'avatar_json', ua.avatar_json,
-    'avatar_img_url', ua.avatar_img_url,
-    'created_at', ua.created_at,
-    'updated_at', ua.updated_at
+    'avatar_img_url', COALESCE(ua.avatar_img_url, p.profile_photo_url),
+    'created_at', COALESCE(ua.created_at, p.created_at),
+    'updated_at', COALESCE(ua.updated_at, p.updated_at)
   )
-  FROM public.user_avatars AS ua
-  WHERE ua.user_id = auth.uid()
+  FROM public.profiles AS p
+  LEFT JOIN public.user_avatars AS ua ON ua.user_id = p.id
+  WHERE p.id = auth.uid()
   LIMIT 1;
 $function$;
 
