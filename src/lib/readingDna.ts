@@ -29,9 +29,13 @@ const norm = (s: string) => s.trim().toLowerCase();
 /**
  * Weighted Jaccard similarity over genres
  */
-export const genreOverlap = (a: ReadingDna, b: ReadingDna): number => {
-  const am = new Map(a.genres.map((g) => [norm(g.name), g.weight]));
-  const bm = new Map(b.genres.map((g) => [norm(g.name), g.weight]));
+export const genreOverlap = (a: ReadingDna | null | undefined, b: ReadingDna | null | undefined): number => {
+  if (!a || !b) return 0;
+  const aGenres = Array.isArray(a.genres) ? a.genres : [];
+  const bGenres = Array.isArray(b.genres) ? b.genres : [];
+  if (!aGenres.length && !bGenres.length) return 0;
+  const am = new Map(aGenres.map((g) => [norm(g?.name || ""), Number(g?.weight) || 0]));
+  const bm = new Map(bGenres.map((g) => [norm(g?.name || ""), Number(g?.weight) || 0]));
   let inter = 0;
   let union = 0;
   const keys = new Set([...am.keys(), ...bm.keys()]);
@@ -47,11 +51,13 @@ export const genreOverlap = (a: ReadingDna, b: ReadingDna): number => {
 /**
  * Cosine similarity over mood / theme string vectors
  */
-export const cosineSimilarity = (a: string[], b: string[]): number => {
-  if (!a.length || !b.length) return 0;
-  const allTerms = Array.from(new Set([...a.map(norm), ...b.map(norm)]));
-  const vecA = allTerms.map((t) => (a.map(norm).includes(t) ? 1 : 0));
-  const vecB = allTerms.map((t) => (b.map(norm).includes(t) ? 1 : 0));
+export const cosineSimilarity = (a: string[] | null | undefined, b: string[] | null | undefined): number => {
+  const arrA = Array.isArray(a) ? a : [];
+  const arrB = Array.isArray(b) ? b : [];
+  if (!arrA.length || !arrB.length) return 0;
+  const allTerms = Array.from(new Set([...arrA.map(norm), ...arrB.map(norm)]));
+  const vecA = allTerms.map((t) => (arrA.map(norm).includes(t) ? 1 : 0));
+  const vecB = allTerms.map((t) => (arrB.map(norm).includes(t) ? 1 : 0));
 
   let dotProduct = 0;
   let magA = 0;
@@ -70,7 +76,7 @@ export const cosineSimilarity = (a: string[], b: string[]): number => {
  * Match % computed client-side from two DNA rows:
  * weighted Jaccard over genres (45%) + cosine over mood vectors (25%) + themes (20%) + pace alignment (10%)
  */
-export const matchScore = (a: ReadingDna | null, b: ReadingDna | null): number => {
+export const matchScore = (a: ReadingDna | null | undefined, b: ReadingDna | null | undefined): number => {
   if (!a || !b) return 0;
   const g = genreOverlap(a, b);
   const m = cosineSimilarity(a.moods, b.moods);

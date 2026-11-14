@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { MessageCircle, Reply, Trash2, Send, Pencil, X } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 
 interface Props {
   articleId: string;
@@ -107,7 +107,7 @@ const ArticleComments: React.FC<Props> = ({ articleId }) => {
           <div className="flex items-center justify-between gap-2 mb-1">
             <span className="text-sm font-medium text-foreground">{comment.author_name}</span>
             <span className="text-xs text-muted-foreground shrink-0">
-              {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+              {safeFormatDistanceToNow(comment.created_at, { addSuffix: true })}
               {wasEdited && <span className="ml-1 italic">· edited</span>}
             </span>
           </div>

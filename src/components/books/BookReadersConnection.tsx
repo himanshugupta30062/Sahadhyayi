@@ -10,7 +10,7 @@ import { Users, MessageCircle, Heart, Share, Send, User, Loader2, Pencil, Trash2
 import { useAuth } from '@/contexts/authHelpers';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { formatDistanceToNow } from 'date-fns';
+import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 
 interface BookReadersConnectionProps {
   bookId: string;
@@ -317,7 +317,7 @@ const BookReadersConnection = ({ bookId, bookTitle }: BookReadersConnectionProps
                         {comment.kind === 'quote' ? 'Quote' : 'Comment'}
                       </Badge>
                       <span className="text-xs text-gray-500">
-                        {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                        {safeFormatDistanceToNow(comment.created_at, { addSuffix: true })}
                       </span>
                     </div>
 

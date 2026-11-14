@@ -32,6 +32,24 @@ import BookExperienceTags from '@/components/books/BookExperienceTags';
 import BookLiteraryVoices from '@/components/books/BookLiteraryVoices';
 import BookAIReader from '@/components/books/BookAIReader';
 import AIReadingToolkit from '@/components/books/AIReadingToolkit';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+
+const BookTabErrorFallback = ({ title, message }: { title: string; message: string }) => (
+  <Card className="border border-border/70 bg-card p-6 text-center">
+    <CardContent className="space-y-3 p-0">
+      <p className="text-sm font-semibold text-foreground">{title}</p>
+      <p className="text-xs text-muted-foreground">{message}</p>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => window.location.reload()}
+        className="mt-2 text-xs"
+      >
+        Try Again
+      </Button>
+    </CardContent>
+  </Card>
+);
 
 
 const VALID_BOOK_TABS = ['connect', 'create', 'feedback', 'read'] as const;
@@ -467,49 +485,57 @@ const BookDetails = () => {
               </TabsList>
 
               <TabsContent value="connect" className="mt-0">
-                <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200 shadow-lg">
-                  <CardContent className="p-3 sm:p-6">
-                    <BookReadersConnection 
-                      bookId={book.id}
-                      bookTitle={book.title}
-                    />
-                  </CardContent>
-                </Card>
+                <ErrorBoundary fallback={<BookTabErrorFallback title="Unable to load reader comments" message="A temporary issue occurred while loading reader discussions." />}>
+                  <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200 shadow-lg">
+                    <CardContent className="p-3 sm:p-6">
+                      <BookReadersConnection 
+                        bookId={book.id}
+                        bookTitle={book.title}
+                      />
+                    </CardContent>
+                  </Card>
+                </ErrorBoundary>
               </TabsContent>
 
               <TabsContent value="create" className="mt-0">
-                <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 shadow-lg">
-                  <CardContent className="p-3 sm:p-6">
-                    <CreateYourVersionSection 
-                      bookId={book.id}
-                      bookTitle={book.title}
-                    />
-                  </CardContent>
-                </Card>
+                <ErrorBoundary fallback={<BookTabErrorFallback title="Unable to load versions" message="A temporary issue occurred while loading user versions." />}>
+                  <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 shadow-lg">
+                    <CardContent className="p-3 sm:p-6">
+                      <CreateYourVersionSection 
+                        bookId={book.id}
+                        bookTitle={book.title}
+                      />
+                    </CardContent>
+                  </Card>
+                </ErrorBoundary>
               </TabsContent>
 
               <TabsContent value="feedback" className="mt-0">
-                <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 shadow-lg">
-                  <CardContent className="p-3 sm:p-6">
-                    <BookIdeasSection 
-                      bookId={book.id} 
-                      bookTitle={book.title}
-                    />
-                  </CardContent>
-                </Card>
+                <ErrorBoundary fallback={<BookTabErrorFallback title="Unable to load feedback" message="A temporary issue occurred while loading reader ideas." />}>
+                  <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 shadow-lg">
+                    <CardContent className="p-3 sm:p-6">
+                      <BookIdeasSection 
+                        bookId={book.id} 
+                        bookTitle={book.title}
+                      />
+                    </CardContent>
+                  </Card>
+                </ErrorBoundary>
               </TabsContent>
 
               <TabsContent value="read" className="mt-0">
-                <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 border-orange-200 shadow-lg">
-                  <CardContent className="p-2 sm:p-6">
-                    <BookReader 
-                      bookId={book.id}
-                      bookTitle={book.title}
-                      pdfUrl={book.pdf_url}
-                      epubUrl={undefined}
-                    />
-                  </CardContent>
-                </Card>
+                <ErrorBoundary fallback={<BookTabErrorFallback title="Unable to load book reader" message="A temporary issue occurred while initializing the reader." />}>
+                  <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 border-orange-200 shadow-lg">
+                    <CardContent className="p-2 sm:p-6">
+                      <BookReader 
+                        bookId={book.id}
+                        bookTitle={book.title}
+                        pdfUrl={book.pdf_url}
+                        epubUrl={undefined}
+                      />
+                    </CardContent>
+                  </Card>
+                </ErrorBoundary>
               </TabsContent>
             </Tabs>
           </div>

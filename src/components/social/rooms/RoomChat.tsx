@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { safeFormatDistanceToNow } from "@/lib/dateUtils";
 import { useAuth } from "@/contexts/authHelpers";
 
 interface RoomChatProps {
@@ -62,7 +62,7 @@ export const RoomChat: React.FC<RoomChatProps> = ({ messages, onSendMessage }) =
                       {isMe ? "You" : m.profiles?.full_name || "Reader"}
                     </span>
                     <span>·</span>
-                    <span>{formatDistanceToNow(new Date(m.created_at), { addSuffix: true })}</span>
+                    <span>{safeFormatDistanceToNow(m.created_at, { addSuffix: true })}</span>
                   </div>
 
                   <div

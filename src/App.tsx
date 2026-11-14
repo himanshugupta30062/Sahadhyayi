@@ -266,11 +266,13 @@ const PageTracker = () => {
  * post-sign-in dashboard must not permanently replace the entire application;
  * navigating to another route creates a fresh boundary and reports the error
  * through the shared Sentry-aware ErrorBoundary.
+ * Key on pathname alone so search param changes (e.g. ?tab=...) update gracefully
+ * within the route rather than unmounting and remounting the entire route tree.
  */
 const RouteErrorBoundary = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   return (
-    <ErrorBoundary key={`${location.pathname}${location.search}`}>
+    <ErrorBoundary key={location.pathname}>
       {children}
     </ErrorBoundary>
   );

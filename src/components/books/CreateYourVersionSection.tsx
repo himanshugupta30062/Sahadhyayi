@@ -14,7 +14,7 @@ import { Edit3, Upload, ThumbsUp, User, Crown, Loader2, Pencil, Trash2, X, Check
 import { useAuth } from '@/contexts/authHelpers';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { formatDistanceToNow } from 'date-fns';
+import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 
 interface CreateYourVersionSectionProps {
   bookId: string;
@@ -369,7 +369,7 @@ const CreateYourVersionSection = ({ bookId, bookTitle }: CreateYourVersionSectio
                             <Badge variant="outline" className="text-xs">Private</Badge>
                           )}
                           <span className="text-xs text-gray-500">
-                            {formatDistanceToNow(new Date(version.created_at), { addSuffix: true })}
+                            {safeFormatDistanceToNow(version.created_at, { addSuffix: true })}
                           </span>
                         </div>
                         <h5 className="font-semibold text-lg text-gray-900 break-words">{version.title}</h5>

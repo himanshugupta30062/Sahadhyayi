@@ -8,7 +8,7 @@ import { useGroupMessages, useSendGroupMessage } from '@/hooks/useMessages';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useAuth } from '@/contexts/authHelpers';
-import { formatDistanceToNow } from 'date-fns';
+import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 
 interface GroupChatWindowProps {
   groupId: string;
@@ -106,7 +106,7 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, isOpe
                     <p className="text-sm break-words">{msg.content}</p>
                   </div>
                   <p className={`text-xs text-gray-500 mt-1 ${msg.sender_id === user?.id ? 'text-right' : 'text-left'}`}>
-                    {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                    {safeFormatDistanceToNow(msg.created_at, { addSuffix: true })}
                   </p>
                 </div>
               </div>

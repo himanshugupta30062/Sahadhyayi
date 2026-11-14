@@ -14,7 +14,7 @@ import { Lightbulb, Bug, ThumbsUp, AlertTriangle, User, Send, Loader2, Pencil, T
 import { useAuth } from '@/contexts/authHelpers';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { formatDistanceToNow } from 'date-fns';
+import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 
 interface BookIdeasSectionProps {
   bookId: string;
@@ -397,7 +397,7 @@ const BookIdeasSection = ({ bookId, bookTitle }: BookIdeasSectionProps) => {
                           </Avatar>
                           <span className="font-medium text-gray-900">{feedback.authorName}</span>
                           <span className="text-xs text-gray-500">
-                            {formatDistanceToNow(new Date(feedback.created_at), { addSuffix: true })}
+                            {safeFormatDistanceToNow(feedback.created_at, { addSuffix: true })}
                           </span>
                         </div>
                         <h5 className="font-semibold text-lg text-gray-900 break-words">{feedback.title}</h5>
