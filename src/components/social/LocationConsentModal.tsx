@@ -40,8 +40,8 @@ export const LocationConsentModal: React.FC<LocationConsentModalProps> = ({
       }
 
       toast({
-        title: "Location Sharing Enabled",
-        description: "You can now share your location with friends who also have location sharing enabled.",
+        title: "Consent Recorded",
+        description: "Your consent is recorded. Next, allow your browser to share your location and save it to your private profile.",
       });
 
       onConsentGiven();
@@ -67,7 +67,7 @@ export const LocationConsentModal: React.FC<LocationConsentModalProps> = ({
             Location Sharing Consent
           </DialogTitle>
           <DialogDescription>
-            We need your explicit consent to enable location sharing features.
+            We need your explicit consent before requesting and saving your device location.
           </DialogDescription>
         </DialogHeader>
         
@@ -85,7 +85,7 @@ export const LocationConsentModal: React.FC<LocationConsentModalProps> = ({
               <div>
                 <h4 className="font-medium">What we collect</h4>
                 <p className="text-sm text-muted-foreground">
-                  Your device's location coordinates when you enable sharing, so you can see eligible friends on the map and find book-reading matches nearby.
+                  Your device coordinates only after you allow the browser location request. Coordinates are saved to your private profile and used under the mutual-consent rules below.
                 </p>
               </div>
             </div>
@@ -105,7 +105,7 @@ export const LocationConsentModal: React.FC<LocationConsentModalProps> = ({
               <div>
                 <h4 className="font-medium">Your control</h4>
                 <p className="text-sm text-muted-foreground">
-                  You can turn sharing off at any time from this map. Turning it off clears your saved profile coordinates; access is also protected by server-side consent checks.
+                  You can turn sharing off at any time. This immediately clears your saved coordinates, deactivates legacy location records, and removes the consent grant.
                 </p>
               </div>
             </div>
@@ -113,7 +113,7 @@ export const LocationConsentModal: React.FC<LocationConsentModalProps> = ({
 
           <Alert>
             <AlertDescription className="text-xs">
-              By clicking "Enable Location Sharing", you consent to saving your device coordinates to your profile and making them available to eligible friends under the mutual-sharing rules above. The consent record includes your browser user-agent string; this screen does not submit an IP address.
+              By clicking "Continue", you record your consent. Your location is not requested until you confirm the browser prompt. Sharing becomes active only after your coordinates have been saved successfully. The consent record includes your browser user-agent string; this screen does not submit an IP address.
             </AlertDescription>
           </Alert>
 
@@ -130,7 +130,7 @@ export const LocationConsentModal: React.FC<LocationConsentModalProps> = ({
               disabled={isSubmitting}
               className="flex-1"
             >
-              {isSubmitting ? "Processing..." : "Enable Location Sharing"}
+              {isSubmitting ? "Recording..." : "Continue"}
             </Button>
           </div>
         </div>
