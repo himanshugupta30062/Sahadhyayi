@@ -35,6 +35,7 @@ export interface MapplsPoint {
   lng: number;
   title: string;
   description?: string;
+  avatarUrl?: string | null;
 }
 
 interface MapplsMapProps {
@@ -150,6 +151,37 @@ const getMapEventMessage = (event: unknown): string => {
   }
 
   return 'Mappls could not load one or more map resources. Check the Network panel for failed styles or tile requests.';
+};
+
+
+const escapeHtml = (value: string) => value
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
+const getSafeAvatarUrl = (value?: string | null): string | null => {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (/^data:image\\/svg\\+xml;base64,[A-Za-z0-9+/=]+$/i.test(trimmed)) return trimmed;
+  try {
+    const url = new URL(trimmed);
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : null;
+  } catch {
+    return null;
+  }
+};
+
+const createAvatarMarkerHtml = (point: MapplsPoint): string => {
+  const avatarUrl = getSafeAvatarUrl(point.avatarUrl);
+  const initial = escapeHtml((point.title.trim().charAt(0) || 'R').toUpperCase());
+  const borderColor = point.id === 'self' ? '#D5B16D' : '#1C442D';
+  const avatarContent = avatarUrl
+    ? `<img src="${escapeHtml(avatarUrl)}" alt="" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
+    : `<span aria-hidden="true" style="display:flex;width:100%;height:100%;align-items:center;justify-content:center;border-radius:50%;background:#E8EFE9;color:#1C442D;font:700 16px/1 system-ui,sans-serif;">${initial}</span>`;
+
+  return `<div title="${escapeHtml(point.title)}" style="box-sizing:border-box;width:44px;height:44px;overflow:hidden;border:3px solid ${borderColor};border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.28);">${avatarContent}</div>`;
 };
 
 const removeMarkers = (map: MapplsRuntimeMap, markers: MapplsRuntimeMarker[]) => {
@@ -393,6 +425,9 @@ export function MapplsMap({
           map,
           position: { lat: point.lat, lng: point.lng },
           title: point.title,
+          html: createAvatarMarkerHtml(point),
+          width: 44,
+          height: 44,
           popupHtml,
         });
         markers.current.push(marker);
