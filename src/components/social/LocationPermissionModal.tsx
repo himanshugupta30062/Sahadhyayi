@@ -10,6 +10,7 @@ interface LocationPermissionModalProps {
   onRequestLocation: () => void;
   hasError?: boolean;
   errorMessage?: string;
+  isRequesting?: boolean;
 }
 
 export const LocationPermissionModal: React.FC<LocationPermissionModalProps> = ({
@@ -17,7 +18,8 @@ export const LocationPermissionModal: React.FC<LocationPermissionModalProps> = (
   onClose,
   onRequestLocation,
   hasError = false,
-  errorMessage
+  errorMessage,
+  isRequesting = false
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -36,7 +38,9 @@ export const LocationPermissionModal: React.FC<LocationPermissionModalProps> = (
                 </div>
                 <p className="text-gray-600">{errorMessage}</p>
                 <p className="text-sm text-gray-500">
-                  Please check your browser settings and try again, or manually enable location sharing for this site.
+                  {errorMessage?.toLowerCase().includes('permission')
+                    ? 'In Chrome, open the site controls beside the address bar → Site settings → Location → Allow, then retry.'
+                    : 'GPS can be slow or temporarily unavailable. Sahadhyayi now retries with approximate location when precise positioning times out.'}
                 </p>
               </div>
             ) : (
@@ -64,11 +68,12 @@ export const LocationPermissionModal: React.FC<LocationPermissionModalProps> = (
           <Button 
             onClick={onRequestLocation} 
             className="flex-1 bg-blue-600 hover:bg-blue-700"
+            disabled={isRequesting}
           >
             {hasError ? (
               <>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Try Again
+                <RefreshCw className={`w-4 h-4 mr-2 ${isRequesting ? 'animate-spin' : ''}`} />
+                {isRequesting ? 'Finding location…' : 'Try Again'}
               </>
             ) : (
               <>
