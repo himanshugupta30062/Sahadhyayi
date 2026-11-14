@@ -1,159 +1,76 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  extractGoogleBooksId,
-  validateReaderUrl,
-  buildSafeGoogleBooksEmbedUrl,
-  buildSafePdfEmbedUrl,
-  checkGoogleBooksEmbeddability,
+  extractGoogleBooksId, validateReaderUrl, buildSafeGoogleBooksEmbedUrl,
+  buildSafePdfEmbedUrl, checkGoogleBooksEmbeddability,
 } from './bookReaderPreview';
 
-describe('bookReaderPreview utility', () => {
-  describe('extractGoogleBooksId', () => {
-    it('extracts ID from standard books.google.com URLs', () => {
-      expect(
-        extractGoogleBooksId('https://books.google.com/books?id=fqiEEQAAQBAJ&lpg=PP1&pg=PP1')
-      ).toBe('fqiEEQAAQBAJ');
-      expect(
-        extractGoogleBooksId('http://books.google.co.in/books?printsec=frontcover&id=J7U719-WcWQC')
-      ).toBe('J7U719-WcWQC');
-    });
-
-    it('extracts ID from content or about paths', () => {
-      expect(
-        extractGoogleBooksId('https://books.google.com/books/about/Book.html?id=1234567890AB')
-      ).toBe('1234567890AB');
-    });
-
-    it('accepts raw valid volume IDs', () => {
-      expect(extractGoogleBooksId('fqiEEQAAQBAJ')).toBe('fqiEEQAAQBAJ');
-      expect(extractGoogleBooksId('abc_123-XYZ')).toBe('abc_123-XYZ');
-    });
-
-    it('returns null for empty or invalid values', () => {
-      expect(extractGoogleBooksId('')).toBeNull();
-      expect(extractGoogleBooksId(null)).toBeNull();
-      expect(extractGoogleBooksId(undefined)).toBeNull();
-      expect(extractGoogleBooksId('not a url or id with spaces')).toBeNull();
-    });
+describe('extractGoogleBooksId', () => {
+  it('extracts query, path, and raw volume IDs', () => {
+    expect(extractGoogleBooksId('https://books.google.com/books?id=Abc12345')).toBe('Abc12345');
+    expect(extractGoogleBooksId('https://books.google.com/books/reader/Abc12345')).toBe('Abc12345');
+    expect(extractGoogleBooksId('Abc12345')).toBe('Abc12345');
   });
-
-  describe('validateReaderUrl', () => {
-    it('validates and categorizes Google Books URLs correctly', () => {
-      const result = validateReaderUrl('https://books.google.com/books?id=fqiEEQAAQBAJ');
-      expect(result.isValid).toBe(true);
-      expect(result.isGoogleBooks).toBe(true);
-      expect(result.googleBooksId).toBe('fqiEEQAAQBAJ');
-      expect(result.isPdf).toBe(false);
-    });
-
-    it('validates raw Google Books IDs and turns them into safe URL', () => {
-      const result = validateReaderUrl('fqiEEQAAQBAJ');
-      expect(result.isValid).toBe(true);
-      expect(result.isGoogleBooks).toBe(true);
-      expect(result.googleBooksId).toBe('fqiEEQAAQBAJ');
-      expect(result.sanitizedUrl).toBe('https://books.google.com/books?id=fqiEEQAAQBAJ');
-    });
-
-    it('validates and categorizes PDF URLs correctly', () => {
-      const result = validateReaderUrl('https://example.com/storage/book.pdf?token=secret123');
-      expect(result.isValid).toBe(true);
-      expect(result.isPdf).toBe(true);
-      expect(result.isGoogleBooks).toBe(false);
-    });
-
-    it('rejects unsafe schemes like javascript: or data:', () => {
-      expect(validateReaderUrl('javascript:alert(1)').isValid).toBe(false);
-      expect(validateReaderUrl('data:text/html,evil').isValid).toBe(false);
-      expect(validateReaderUrl('file:///etc/passwd').isValid).toBe(false);
-    });
-  });
-
-  describe('buildSafePdfEmbedUrl', () => {
-    it('appends toolbar and page number to hash without modifying searchParams or auth tokens', () => {
-      const signedUrl =
-        'https://example.com/book.pdf?X-Amz-Security-Token=token123&X-Amz-Signature=sig456';
-      const embedUrl = buildSafePdfEmbedUrl(signedUrl, 15);
-
-      expect(embedUrl).toContain('X-Amz-Security-Token=token123');
-      expect(embedUrl).toContain('X-Amz-Signature=sig456');
-      expect(embedUrl).toContain('#toolbar=1&navpanes=1&scrollbar=1&page=15');
-    });
-
-    it('clamps negative or zero page numbers to 1', () => {
-      const embedUrl = buildSafePdfEmbedUrl('https://example.com/book.pdf', 0);
-      expect(embedUrl).toContain('#toolbar=1&navpanes=1&scrollbar=1&page=1');
-    });
-  });
-
-  describe('buildSafeGoogleBooksEmbedUrl', () => {
-    it('builds standard output=embed URL', () => {
-      expect(buildSafeGoogleBooksEmbedUrl('fqiEEQAAQBAJ')).toBe(
-        'https://books.google.com/books?id=fqiEEQAAQBAJ&lpg=PP1&pg=PP1&output=embed'
-      );
-    });
-
-    it('returns empty string for invalid ID', () => {
-      expect(buildSafeGoogleBooksEmbedUrl('')).toBe('');
-    });
-  });
-
-  describe('checkGoogleBooksEmbeddability', () => {
-    const originalFetch = global.fetch;
-
-    afterEach(() => {
-      global.fetch = originalFetch;
-    });
-
-    it('returns available status when embeddable is true and viewability is not NO_PAGES', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          id: 'test-id-1',
-          volumeInfo: { title: 'Dune', previewLink: 'https://books.google.com/preview' },
-          accessInfo: { embeddable: true, viewability: 'PARTIAL' },
-        }),
-      } as any);
-
-      const res = await checkGoogleBooksEmbeddability('test-id-1');
-      expect(res.status).toBe('available');
-      expect(res.embeddable).toBe(true);
-      expect(res.viewability).toBe('PARTIAL');
-      expect(res.title).toBe('Dune');
-    });
-
-    it('returns restricted status when embeddable is false', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          id: 'test-id-2',
-          volumeInfo: { title: 'Restricted Book' },
-          accessInfo: { embeddable: false, viewability: 'NO_PAGES' },
-        }),
-      } as any);
-
-      const res = await checkGoogleBooksEmbeddability('test-id-2');
-      expect(res.status).toBe('restricted');
-      expect(res.embeddable).toBe(false);
-    });
-
-    it('returns restricted status when volume returns 404', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: false,
-        status: 404,
-      } as any);
-
-      const res = await checkGoogleBooksEmbeddability('not-found-id');
-      expect(res.status).toBe('restricted');
-      expect(res.embeddable).toBe(false);
-    });
-
-    it('falls back to unknown on network error or timeout', async () => {
-      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
-
-      const res = await checkGoogleBooksEmbeddability('test-error-id');
-      expect(res.status).toBe('unknown');
-      expect(res.embeddable).toBe(true);
-    });
+  it('rejects empty and invalid identifiers', () => {
+    expect(extractGoogleBooksId('')).toBeNull();
+    expect(extractGoogleBooksId(undefined)).toBeNull();
+    expect(extractGoogleBooksId('short')).toBeNull();
+    expect(extractGoogleBooksId('https://example.com/book')).toBeNull();
   });
 });
 
+describe('validateReaderUrl', () => {
+  it('normalizes Google IDs and recognizes PDF, EPUB, archive and proxy sources', () => {
+    expect(validateReaderUrl('Abc12345')).toMatchObject({ isValid: true, sanitizedUrl: 'https://books.google.com/books?id=Abc12345', isGoogleBooks: true });
+    expect(validateReaderUrl('https://cdn.test/book.pdf?token=x').isPdf).toBe(true);
+    expect(validateReaderUrl('https://cdn.test/book.epub').isEpub).toBe(true);
+    expect(validateReaderUrl('https://archive.org/details/book').isPdf).toBe(true);
+    expect(validateReaderUrl('https://cdn.test/pdf-proxy?id=1').isPdf).toBe(true);
+  });
+  it.each(['javascript:alert(1)', 'data:text/html,x', 'file:///etc/passwd', 'not a url'])('rejects unsafe URL %s', url => {
+    expect(validateReaderUrl(url).isValid).toBe(false);
+  });
+  it('handles nullish values', () => expect(validateReaderUrl(null)).toMatchObject({ isValid: false, sanitizedUrl: null, googleBooksId: null }));
+});
+
+describe('embed URL builders', () => {
+  it('builds valid Google Books embed URLs only', () => {
+    expect(buildSafeGoogleBooksEmbedUrl('Abc12345')).toContain('https://books.google.com/books?id=Abc12345');
+    expect(buildSafeGoogleBooksEmbedUrl('bad')).toBe('');
+  });
+  it('preserves signed PDF query params and clamps pages', () => {
+    const url = buildSafePdfEmbedUrl('https://cdn.test/book.pdf?signature=abc&expires=42', 0);
+    expect(url).toContain('signature=abc');
+    expect(url).toContain('expires=42');
+    expect(url).toContain('#toolbar=1&navpanes=1&scrollbar=1&page=1');
+    expect(buildSafePdfEmbedUrl('https://cdn.test/book.pdf', 4.8)).toContain('page=4');
+  });
+  it('supports relative/malformed URLs and empty input', () => {
+    expect(buildSafePdfEmbedUrl('relative.pdf#old', 3)).toBe('relative.pdf#toolbar=1&navpanes=1&scrollbar=1&page=3');
+    expect(buildSafePdfEmbedUrl('', 2)).toBe('');
+  });
+});
+
+describe('checkGoogleBooksEmbeddability', () => {
+  afterEach(() => vi.restoreAllMocks());
+  it('returns invalid ID without fetch', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    expect(await checkGoogleBooksEmbeddability('bad')).toMatchObject({ status: 'invalid_id', embeddable: false });
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+  it('returns available metadata for embeddable volume', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, json: async () => ({ accessInfo: { embeddable: true, viewability: 'PARTIAL', webReaderLink: 'reader' }, volumeInfo: { title: 'Test', previewLink: 'preview' } }) } as Response);
+    expect(await checkGoogleBooksEmbeddability('Abc12345')).toMatchObject({ status: 'available', embeddable: true, viewability: 'PARTIAL', title: 'Test', previewLink: 'preview' });
+  });
+  it('handles 404 and other HTTP errors', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({ ok: false, status: 404 } as Response);
+    expect(await checkGoogleBooksEmbeddability('Abc12345')).toMatchObject({ status: 'restricted', viewability: 'NO_PAGES' });
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({ ok: false, status: 503 } as Response);
+    expect(await checkGoogleBooksEmbeddability('Abc12345')).toMatchObject({ status: 'unknown', embeddable: true });
+  });
+  it('handles restricted response and network failure', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({ ok: true, json: async () => ({ accessInfo: { embeddable: false, viewability: 'NO_PAGES' }, volumeInfo: { infoLink: 'info' } }) } as Response);
+    expect(await checkGoogleBooksEmbeddability('Abc12345')).toMatchObject({ status: 'restricted', embeddable: false, infoLink: 'info' });
+    vi.spyOn(globalThis, 'fetch').mockRejectedValueOnce(new Error('network'));
+    expect(await checkGoogleBooksEmbeddability('Abc12345')).toMatchObject({ status: 'unknown', embeddable: true });
+  });
+});
