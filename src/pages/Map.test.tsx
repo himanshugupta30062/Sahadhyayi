@@ -24,6 +24,7 @@ vi.mock('@/hooks/useFriends', () => ({
 
 vi.mock('@/hooks/useUserAvatar', () => ({
   useUserAvatar: () => ({ data: { avatar_img_url: 'https://cdn.sahadhyayi.com/avatars/self.svg', avatar_json: { hairStyle: 'curly' } } }),
+  useUpdateUserAvatar: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
 vi.mock('@/lib/locationSharingService', () => ({
