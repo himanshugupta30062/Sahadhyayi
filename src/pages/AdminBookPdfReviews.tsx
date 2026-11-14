@@ -175,12 +175,17 @@ export default function AdminBookPdfReviews() {
         toast({ title: 'Temporary preview opened', description: 'This private link expires in three minutes.' });
       } else {
         if (data?.success !== true) throw new Error(data?.error || 'The server did not confirm that this action completed.');
+        if (action === 'approve' && data?.targetBookId) setTargetBookId(data.targetBookId);
         const description = action === 'approve'
-          ? 'Approved for publishing review only. This does not make the PDF visible in the Library; complete the Publish step below.'
+          ? data?.catalogueAction === 'created'
+            ? 'Gemini metadata was used to create a catalogue entry automatically. Complete the rights/security checks and publish the PDF.'
+            : data?.catalogueAction === 'matched'
+              ? 'A unique catalogue book was matched automatically. Complete the rights/security checks and publish the PDF.'
+              : 'Approved. Gemini could not safely select a catalogue entry; resolve the match and rights/security checks before publishing.'
           : action === 'publish'
             ? 'The PDF was published and is now live in the Library. Refresh the Library page to see it.'
             : data?.status ? `Status: ${data.status}` : 'The action completed.';
-        toast({ title: action === 'publish' ? 'PDF published' : action === 'approve' ? 'Approved — not yet published' : 'Review saved', description });
+        toast({ title: action === 'publish' ? 'PDF published' : action === 'approve' ? 'Approved — catalogue handled' : 'Review saved', description });
         setReason('');
         await refresh();
       }
