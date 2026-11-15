@@ -310,7 +310,7 @@ const MapPage = () => {
                 ) : (
                   <Palette className="w-3.5 h-3.5 text-[#98733A] dark:text-[#D5B16D]" />
                 )}
-                <span>Customize Bitmoji</span>
+                <span>Customize / Upload Avatar</span>
               </Button>
             </div>
           </div>
@@ -491,6 +491,7 @@ const MapPage = () => {
         onClose={() => setShowBitmojiCreator(false)}
         onSave={() => setShowBitmojiCreator(false)}
         initialFeatures={userAvatar?.avatar_json as Record<string, string> | null}
+        initialAvatarUrl={userAvatar?.avatar_img_url ?? null}
       />
     </>
   );
