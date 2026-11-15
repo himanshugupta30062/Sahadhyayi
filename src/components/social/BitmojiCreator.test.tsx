@@ -22,6 +22,15 @@ const mocks = vi.hoisted(() => {
       Headphones: LucideIcon,
       BookOpen: LucideIcon,
       Bookmark: LucideIcon,
+      ImagePlus: LucideIcon,
+    },
+    mapAvatar: {
+      validate: vi.fn((file: Pick<File, 'type' | 'size'>) => {
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) return 'Choose a JPG, PNG, or WebP image.';
+        if (file.size <= 0 || file.size > 5 * 1024 * 1024) return 'Avatar images must be smaller than 5 MB.';
+        return null;
+      }),
+      upload: vi.fn(),
     },
   };
 });
@@ -53,6 +62,15 @@ vi.mock('@/hooks/useUserAvatar', () => ({
     mutateAsync: mocks.avatar.mutateAsync,
     isPending: false,
   }),
+}));
+
+vi.mock('@/contexts/authHelpers', () => ({
+  useAuth: () => ({ user: { id: 'reader-1' } }),
+}));
+
+vi.mock('@/lib/mapAvatarUpload', () => ({
+  getMapAvatarFileValidationError: mocks.mapAvatar.validate,
+  uploadMapAvatarImage: mocks.mapAvatar.upload,
 }));
 
 vi.mock('sonner', () => ({
@@ -209,4 +227,73 @@ describe('BitmojiCreator', () => {
     expect(preview).toHaveClass('w-40');
     expect(preview).toHaveClass('h-48');
   });
+  it('uploads a selected photo and saves the hosted URL as the map avatar', async () => {
+    const hostedUrl = 'https://project.supabase.co/storage/v1/object/public/avatars/reader-1/map-avatar-photo.png';
+    const photo = new File([new Uint8Array([1, 2, 3])], 'reader-photo.png', { type: 'image/png' });
+    const onSave = vi.fn();
+    const onClose = vi.fn();
+    mocks.mapAvatar.upload.mockResolvedValue(hostedUrl);
+    mocks.avatar.mutateAsync.mockResolvedValue({});
+
+    render(
+      <BitmojiCreator isOpen onClose={onClose} onSave={onSave} />,
+    );
+
+    fireEvent.change(screen.getByLabelText('Choose avatar photo'), {
+      target: { files: [photo] },
+    });
+    expect(mocks.avatar.success).toHaveBeenCalledWith(
+      'Photo selected. Save it to use it as your map avatar.',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save Photo Avatar' }));
+
+    await waitFor(() => {
+      expect(mocks.mapAvatar.upload).toHaveBeenCalledWith(photo, 'reader-1');
+      expect(mocks.avatar.mutateAsync).toHaveBeenCalledWith(expect.objectContaining({
+        avatar_img_url: hostedUrl,
+        avatar_json: expect.objectContaining({ avatarMode: 'photo' }),
+      }));
+      expect(onSave).toHaveBeenCalledWith(hostedUrl);
+      expect(onClose).toHaveBeenCalled();
+    });
+  });
+
+  it('stores generated Bitmoji as a hosted marker image instead of a data URL', async () => {
+    const hostedUrl = 'https://project.supabase.co/storage/v1/object/public/avatars/reader-1/map-avatar-bitmoji.png';
+    mocks.mapAvatar.upload.mockResolvedValue(hostedUrl);
+    mocks.avatar.mutateAsync.mockResolvedValue({});
+
+    render(
+      <BitmojiCreator isOpen onClose={vi.fn()} onSave={vi.fn()} />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save Avatar' }));
+
+    await waitFor(() => {
+      expect(mocks.mapAvatar.upload).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'image/svg+xml' }),
+        'reader-1',
+      );
+      expect(mocks.avatar.mutateAsync).toHaveBeenCalledWith(expect.objectContaining({
+        avatar_img_url: hostedUrl,
+        avatar_json: expect.objectContaining({ avatarMode: 'bitmoji' }),
+      }));
+    });
+  });
+
+  it('rejects an unsupported image before attempting to save it', async () => {
+    const invalidPhoto = new File(['not an image'], 'avatar.gif', { type: 'image/gif' });
+    render(
+      <BitmojiCreator isOpen onClose={vi.fn()} onSave={vi.fn()} />,
+    );
+
+    fireEvent.change(screen.getByLabelText('Choose avatar photo'), {
+      target: { files: [invalidPhoto] },
+    });
+
+    expect(mocks.avatar.error).toHaveBeenCalledWith('Choose a JPG, PNG, or WebP image.');
+    expect(mocks.mapAvatar.upload).not.toHaveBeenCalled();
+  });
+
 });
