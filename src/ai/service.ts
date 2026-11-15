@@ -12,6 +12,8 @@ const cache = new Map<string, AiResponseParsed>();
 
 export function classifyIntent(q: string): Intent {
   const s = q.toLowerCase();
+  if (/\b(who is|tell me about|biography|bio of|life of|about the author|author profile)\b/i.test(s) || /\b(authors?|writers?)\b.*\b(list|famous|popular|indian|women|contemporary|recommend)\b/i.test(s)) return 'author_query';
+  if (/\b(books? by|written by|works? of|bibliography|recommend books? by)\b/i.test(s)) return 'book_query';
   if (/help|how to|what can you do/.test(s)) return 'help';
   if (/policy|terms|privacy/.test(s)) return 'policy';
   if (/(book|recommend|read|author|genre|summary)/.test(s)) return 'book_query';
