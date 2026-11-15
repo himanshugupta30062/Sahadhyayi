@@ -36,6 +36,7 @@ const accentStyles = {
 export function PeopleCollectionPage({ collectionKey }: { collectionKey: PeopleCollectionKey }) {
   const fallback = peopleCollections[collectionKey];
   const [search, setSearch] = useState("");
+  const [activeTheme, setActiveTheme] = useState<string | null>(null);
   const { data: backendCollection, isLoading } = useQuery({
     queryKey: ["people-collection", collectionKey],
     queryFn: async () => {
@@ -127,12 +128,12 @@ export function PeopleCollectionPage({ collectionKey }: { collectionKey: PeopleC
         <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
           <Breadcrumb items={[{ name: collection.title, path: "/" + collectionKey, current: true }]} className="mb-6" />
 
-          <div className="mb-8 flex flex-col gap-5 rounded-2xl border border-[#E5DED2] bg-white p-5 shadow-[0_8px_30px_rgba(28,32,29,0.035)] dark:border-[#29332D] dark:bg-[#111614] sm:flex-row sm:items-end sm:justify-between sm:p-6">
+          <div className="mb-8 rounded-2xl border border-[#E5DED2] bg-white p-5 shadow-[0_8px_30px_rgba(28,32,29,0.035)] dark:border-[#29332D] dark:bg-[#111614] sm:p-6">
             <div className="max-w-2xl">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#98733A] dark:text-[#D5B16D]">Explore the collection</p>
               <p className="mt-2 text-sm leading-6 text-[#636B65] dark:text-[#A5ADA6]">{collection.intro}</p>
             </div>
-            <div className="relative w-full shrink-0 sm:max-w-sm">
+            <div className="relative mt-4 w-full sm:mt-0 sm:max-w-sm">
               <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#737B75] dark:text-[#89938B]" aria-hidden="true" />
               <Input
                 value={search}
@@ -147,7 +148,7 @@ export function PeopleCollectionPage({ collectionKey }: { collectionKey: PeopleC
           <div className="mb-5 flex items-center justify-between gap-3">
             <div>
               <h2 className="font-serif text-2xl font-bold tracking-tight sm:text-3xl">People and their journeys</h2>
-              <p className="mt-1 text-sm text-[#737B75] dark:text-[#89938B]">Showing {visiblePeople.length} of {collection.people.length} profiles</p>
+              <p className="mt-1 text-sm text-[#737B75] dark:text-[#89938B]">Showing {visiblePeople.length} of {collection.people.length} profiles{activeTheme ? " · " + activeTheme : ""}</p>
             </div>
           </div>
 
@@ -231,7 +232,7 @@ export function PeopleCollectionPage({ collectionKey }: { collectionKey: PeopleC
               <Search className="mx-auto h-7 w-7 text-[#8B9188]" aria-hidden="true" />
               <h3 className="mt-3 font-serif text-xl font-bold">No profiles match that search</h3>
               <p className="mt-2 text-sm text-[#687067] dark:text-[#A5ADA6]">Try another name, place or theme.</p>
-              <button type="button" onClick={() => setSearch("")} className="mt-4 rounded-lg border border-[#D5CEC2] px-4 py-2 text-xs font-semibold text-[#1C442D] hover:bg-[#EBF2EC] dark:border-[#34443A] dark:text-[#D5B16D] dark:hover:bg-[#1C3024]">Clear search</button>
+              <button type="button" onClick={() => { setSearch(""); setActiveTheme(null); }} className="mt-4 rounded-lg border border-[#D5CEC2] px-4 py-2 text-xs font-semibold text-[#1C442D] hover:bg-[#EBF2EC] dark:border-[#34443A] dark:text-[#D5B16D] dark:hover:bg-[#1C3024]">Clear search</button>
             </div>
           )}
 
