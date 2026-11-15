@@ -11,6 +11,7 @@ import { BookFilterDropdown } from './BookFilterDropdown';
 import { getCurrentLocation, type LocationCoords } from '@/lib/locationService';
 import { disableMyLocationSharing, getMyLocationSharingState, saveMyLocation } from '@/lib/locationSharingService';
 import { useUserAvatar } from '@/hooks/useUserAvatar';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { ChatWindow } from './ChatWindow';
 import { MapplsMap, type MapplsPoint } from '@/components/maps/MapplsMap';
 import { NearbyReaderDiscovery } from './NearbyReaderDiscovery';
@@ -40,6 +41,7 @@ const MAX_DISTANCE_KM = 50;
 export const ReadersNearMeMap: React.FC = () => {
   const { user } = useAuth();
   const { data: userAvatar } = useUserAvatar();
+  const { data: userProfile } = useUserProfile();
   const requestIdRef = useRef(0);
   const [mapCenter, setMapCenter] = useState<LocationCoords | null>(null);
   const [userLocation, setUserLocation] = useState<LocationCoords | null>(null);
@@ -241,7 +243,7 @@ export const ReadersNearMeMap: React.FC = () => {
       lat: userLocation.lat,
       lng: userLocation.lng,
       title: 'Your saved location',
-      avatarUrl: userAvatar?.avatar_img_url ?? null,
+      avatarUrl: userAvatar?.avatar_img_url ?? userProfile?.profile_photo_url ?? (user?.user_metadata?.avatar_url as string | undefined) ?? null,
     }] : []),
     ...nearbyReaders
       .filter((reader) =>
@@ -259,7 +261,7 @@ export const ReadersNearMeMap: React.FC = () => {
         avatarUrl: reader.avatar_img_url,
         description: `${reader.distance.toFixed(1)} km away · ${selectedBook?.title || 'Selected book'}`,
       })),
-  ], [userLocation, isLocationSharing, userAvatar?.avatar_img_url, nearbyReaders, selectedBook?.title]);
+  ], [userLocation, isLocationSharing, userAvatar?.avatar_img_url, userProfile?.profile_photo_url, user?.user_metadata, nearbyReaders, selectedBook?.title]);
 
   const openChat = (reader: NearbyReader) => {
     if (!reader.is_friend) {
