@@ -264,10 +264,19 @@ const getPointBoundsSignature = (points: MapplsPoint[]) => JSON.stringify(
 );
 
 const removeMarker = (map: MapplsRuntimeMap, marker: MapplsRuntimeMarker) => {
+  if (typeof window.mappls?.remove === 'function') {
+    try {
+      window.mappls.remove({ map, layer: marker });
+      return;
+    } catch {
+      // Some SDK builds expose remove but reject a marker created by another build.
+    }
+  }
+
   try {
-    window.mappls?.remove?.({ map, layer: marker });
+    marker.remove?.();
   } catch {
-    try { marker.remove?.(); } catch { /* map teardown is the final fallback */ }
+    // Map teardown remains the final cleanup fallback.
   }
 };
 
@@ -381,7 +390,12 @@ export function MapplsMap({
             setErrorMessage('');
             setStatus('ready');
             window.requestAnimationFrame(() => {
-              if (!cancelled) map.resize?.();
+              if (cancelled) return;
+              try {
+                map.resize?.();
+              } catch (error) {
+                console.warn('Mappls resize after load failed; the map will retry on the next layout change:', error);
+              }
             });
           };
 
@@ -425,7 +439,13 @@ export function MapplsMap({
             hasFatalError = false;
             setErrorMessage('');
             setStatus('ready');
-            window.requestAnimationFrame(() => map.resize?.());
+            window.requestAnimationFrame(() => {
+              try {
+                map.resize?.();
+              } catch (error) {
+                console.warn('Mappls resize after WebGL recovery failed:', error);
+              }
+            });
           });
 
           addMapListener('load', markReady);
