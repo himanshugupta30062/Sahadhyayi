@@ -1,4 +1,4 @@
--- Snap Map Reading Spots, Literary Events Coordinates, and Saved Map Places
+-- Social Explore Map Reading Spots, Literary Events Coordinates, and Saved Map Places
 -- Adds geospatial discovery for verified public places (libraries, bookstores, literary cafes, study spaces)
 -- and literary events on the Sahadhyayi Book Explore Map.
 

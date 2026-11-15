@@ -481,7 +481,7 @@ const MapPage = () => {
   return (
     <>
       <SEO
-        title="Reader Snap Map — Live Reader Community & Book Discovery | Sahadhyayi"
+        title="Social Map & Book Discovery — Live Reader Community | Sahadhyayi"
         description="Discover readers, friends, libraries, bookstores and literary events around you with custom Bitmojis and book sharing."
         canonical="https://sahadhyayi.com/map"
         url="https://sahadhyayi.com/map"
@@ -489,7 +489,7 @@ const MapPage = () => {
 
       <main className="min-h-screen px-3 sm:px-4 pb-16 pt-3 bg-[#FAF7F2] dark:bg-[#0B0D0C] text-[#202820] dark:text-[#F3F0E7] space-y-3">
         <div className="mx-auto max-w-5xl space-y-3">
-          {/* Snapchat Style Top HUD */}
+          {/* Floating Glassmorphic Top HUD */}
           <MapTopHUD
             mode={tab}
             onModeChange={handleModeChange}
@@ -600,7 +600,7 @@ const MapPage = () => {
                   points={readerPoints}
                   center={currentLocation}
                   onMarkerClick={handleMarkerClick}
-                  emptyMessage={!selectedBook ? 'Choose a book above to discover active readers.' : !locationSharingEnabled ? 'Enable location sharing to discover nearby readers on Snap Map.' : 'No nearby readers are sharing this book location yet.'}
+                  emptyMessage={!selectedBook ? 'Choose a book above to discover active readers.' : !locationSharingEnabled ? 'Enable location sharing to discover nearby readers on the map.' : 'No nearby readers are sharing this book location yet.'}
                 />
                 <MapFloatingControls
                   hasUserLocation={Boolean(currentLocation)}
@@ -612,7 +612,7 @@ const MapPage = () => {
                 />
               </div>
 
-              {/* Snapchat Bottom Drawer of Active Readers */}
+              {/* Bottom Drawer of Active Readers */}
               {readers.length > 0 && (
                 <div className="space-y-2 pt-2">
                   <div className="flex items-center justify-between">
@@ -741,7 +741,7 @@ const MapPage = () => {
         />
       </main>
 
-      {/* Snap Map Avatar Upload Dialog */}
+      {/* Map Avatar Upload Dialog */}
       <AvatarUploadDialog
         isOpen={showAvatarUpload}
         onClose={() => setShowAvatarUpload(false)}
@@ -749,7 +749,7 @@ const MapPage = () => {
         onSuccess={() => setShowAvatarUpload(false)}
       />
 
-      {/* Snap Map Bitmoji Creator Dialog */}
+      {/* Map Bitmoji Creator Dialog */}
       <BitmojiCreator
         isOpen={showBitmojiCreator}
         onClose={() => setShowBitmojiCreator(false)}
