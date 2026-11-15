@@ -286,6 +286,10 @@ const removeMarkers = (map: MapplsRuntimeMap, markers: Map<string, MapplsMarkerR
 };
 
 const isValidPoint = (point: MapplsPoint) =>
+  typeof point.id === 'string' &&
+  point.id.trim().length > 0 &&
+  typeof point.title === 'string' &&
+  point.title.trim().length > 0 &&
   Number.isFinite(point.lat) &&
   Number.isFinite(point.lng) &&
   Math.abs(point.lat) <= 90 &&
@@ -542,7 +546,7 @@ export function MapplsMap({
     const MarkerConstructor = window.mappls?.Marker;
     if (status !== 'ready' || !map || !MarkerConstructor) return;
 
-    const validPoints = points.filter((point) => point.id.trim().length > 0 && isValidPoint(point));
+    const validPoints = points.filter(isValidPoint);
     const desiredPoints = new Map(validPoints.map((point) => [point.id, point]));
     let failedMarkers = 0;
 
