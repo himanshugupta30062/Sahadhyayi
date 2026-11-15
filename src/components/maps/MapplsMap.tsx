@@ -695,7 +695,7 @@ export function MapplsMap({
         </div>
       )}
       {status === 'ready' && markerIssue && (
-        <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-3 rounded-lg border border-amber-300 bg-background/95 px-3 py-2 text-xs shadow" role="status">
+        <div className={`absolute ${mapWarning ? 'bottom-16' : 'bottom-4'} left-4 right-4 flex items-center justify-between gap-3 rounded-lg border border-amber-300 bg-background/95 px-3 py-2 text-xs shadow`} role="status">
           <span>{markerIssue}</span>
           <button type="button" onClick={() => setMarkerRetryCount((count) => count + 1)} className="shrink-0 underline underline-offset-2">
             Retry markers
@@ -703,7 +703,7 @@ export function MapplsMap({
         </div>
       )}
       {status === 'ready' && mapWarning && (
-        <div className="absolute bottom-4 left-4 right-4 rounded-lg border border-amber-300 bg-background/95 px-3 py-2 text-xs shadow" role="status">
+        <div className={`absolute ${markerIssue ? 'bottom-16' : 'bottom-4'} left-4 right-4 rounded-lg border border-amber-300 bg-background/95 px-3 py-2 text-xs shadow`} role="status">
           {mapWarning}
         </div>
       )}
