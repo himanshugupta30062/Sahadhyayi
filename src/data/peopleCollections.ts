@@ -246,6 +246,35 @@ export const peopleCollections: Record<string, PeopleCollection> = {
           { label: "Mahatma Gandhi Chronology", publisher: "Gandhi Heritage Portal", url: "https://www.gandhiheritageportal.org/chronology" },
           { label: "Life & Times of Mahatma Gandhi", publisher: "Gandhi Heritage Portal", url: "https://www.gandhiheritageportal.org/" }
         ]
+      },
+      {
+        slug: "bal-gangadhar-tilak", name: "Bal Gangadhar Tilak", lifespan: "1856–1920", origin: "Ratnagiri, Maharashtra, India", role: "Nationalist leader · Journalist",
+        summary: "Tilak helped popularise assertive nationalism through journalism, public festivals and the Home Rule movement.",
+        story: ["Tilak used Kesari and The Mahratta to criticise colonial rule and advocate political self-government.", "He helped turn public Ganesh and Shivaji celebrations into platforms for political mobilisation. His imprisonment and advocacy made him a major figure in early nationalism.", "Tilak later worked with Annie Besant and others in the Home Rule movement, demanding greater Indian participation in governance."],
+        milestones: [{date:"1881",title:"Newspapers founded",description:"Co-founded Kesari and The Mahratta."},{date:"1908",title:"Imprisoned in Mandalay",description:"Sentenced to six years' imprisonment."},{date:"1916",title:"Home Rule League",description:"Helped establish the Indian Home Rule League."}],
+        themes: ["National movement","Press and journalism","Home Rule"], sources: [{label:"Bal Gangadhar Tilak",publisher:"Encyclopaedia Britannica",url:"https://www.britannica.com/biography/Bal-Gangadhar-Tilak"}]
+      },
+      {
+        slug: "chandrashekhar-azad", name: "Chandrashekhar Azad", lifespan: "1906–1931", origin: "Alirajpur, Madhya Pradesh, India", role: "Revolutionary · HSRA organiser",
+        summary: "Azad became a leading organiser of revolutionary networks and helped rebuild the Hindustan Socialist Republican Association.",
+        story: ["Azad joined the Non-Cooperation Movement as a teenager. After arrest, he adopted the name Azad, meaning free, and vowed not to be captured alive.", "He worked with revolutionary groups and helped reorganise the Hindustan Republican Association as the HSRA alongside other revolutionaries.", "Azad coordinated underground activity and died in a police encounter at Alfred Park in Allahabad in 1931."],
+        milestones: [{date:"1921",title:"Non-Cooperation Movement",description:"Joined as a young volunteer and was arrested."},{date:"1928",title:"HSRA",description:"Helped organise the Hindustan Socialist Republican Association."},{date:"27 February 1931",title:"Alfred Park",description:"Died during a police encounter in Allahabad."}],
+        themes: ["Revolutionary movement","HSRA","Anti-colonial resistance"], sources: [{label:"Chandra Shekhar Azad",publisher:"Encyclopaedia Britannica",url:"https://www.britannica.com/biography/Chandra-Shekhar-Azad"}]
+      },
+      {
+        slug: "maulana-abul-kalam-azad", name: "Maulana Abul Kalam Azad", lifespan: "1888–1958", origin: "Mecca · raised in Calcutta, India", role: "Nationalist leader · Educationist",
+        summary: "Azad opposed partition, led Congress during the Quit India period and became independent India's first education minister.",
+        story: ["A scholar and journalist, Azad used Al-Hilal to oppose colonial rule and advocate Hindu-Muslim cooperation; the journal was eventually suppressed.", "He served as Congress president from 1940 to 1946, during the Quit India Movement and negotiations over independence.", "After independence, Azad became India's first education minister and supported expansion of scientific, cultural and higher education."],
+        milestones: [{date:"1912",title:"Al-Hilal",description:"Launched a journal advocating anti-colonial politics and unity."},{date:"1940–1946",title:"Congress president",description:"Led Congress through a crucial period."},{date:"1947",title:"Education minister",description:"Became India's first education minister."}],
+        themes: ["National movement","Hindu-Muslim unity","Education"], sources: [{label:"Maulana Abul Kalam Azad",publisher:"Ministry of Education, Government of India",url:"https://www.education.gov.in/"}]
+      },
+      {
+        slug: "begum-hazrat-mahal", name: "Begum Hazrat Mahal", lifespan: "c. 1820–1879", origin: "Awadh, Uttar Pradesh, India", role: "Leader in the Revolt of 1857",
+        summary: "Begum Hazrat Mahal led resistance in Awadh during the 1857 uprising and challenged British annexation and authority.",
+        story: ["After the British annexed Awadh in 1856 and exiled Nawab Wajid Ali Shah, Begum Hazrat Mahal emerged as a political leader in Lucknow.", "She declared her son Birjis Qadr ruler and helped coordinate resistance against East India Company forces, issuing proclamations that criticised colonial policies.", "After the uprising's defeat, she retreated to Nepal and lived in exile until her death, representing women's leadership in the resistance."],
+        milestones: [{date:"1856",title:"Awadh annexed",description:"British annexation reshaped the political setting."},{date:"1857",title:"Resistance in Lucknow",description:"Helped lead the uprising and supported Birjis Qadr."},{date:"1879",title:"Exile in Nepal",description:"Died in Kathmandu after years in exile."}],
+        themes: ["1857 uprising","Women in history","Anti-colonial resistance"], sources: [{label:"Begum Hazrat Mahal",publisher:"National Archives of India",url:"https://nationalarchives.nic.in/"}]
+      },
       }
     ]
   }
