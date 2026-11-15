@@ -569,4 +569,75 @@ describe('MapplsMap', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
+  it('supports PNG, WebP and JPEG base64 data avatars in addition to SVG and HTTPS URLs', async () => {
+    const createdMarkers: Array<Record<string, unknown>> = [];
+    const Marker = vi.fn().mockImplementation(function (options: Record<string, unknown>) {
+      createdMarkers.push(options);
+      return { options, remove: vi.fn() };
+    });
+    const map = { addListener: vi.fn(), loaded: () => true, setCenter: vi.fn(), setZoom: vi.fn(), remove: vi.fn() };
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () { return map; }),
+      Marker,
+      remove: vi.fn(),
+    };
+
+    const pngDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+    const webpDataUrl = 'data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAAAAAAfQ//73v/+BiOh/AAA=';
+
+    render(<MapplsMap apiKey="valid-key" points={[
+      { id: 'self', lat: 28.5, lng: 77.2, title: 'You', avatarUrl: pngDataUrl },
+      { id: 'friend-webp', lat: 28.6, lng: 77.3, title: 'Rohan', avatarUrl: webpDataUrl },
+    ]} />);
+
+    await waitFor(() => expect(Marker).toHaveBeenCalledTimes(2));
+
+    const selfMarker = createdMarkers[0];
+    const friendMarker = createdMarkers[1];
+
+    const selfHtml = selfMarker.html as HTMLElement;
+    const friendHtml = friendMarker.html as HTMLElement;
+
+    // Self marker contains 'YOU' label and golden border
+    expect(selfHtml.textContent).toContain('YOU');
+    expect(selfHtml.querySelector('img')?.getAttribute('src')).toBe(pngDataUrl);
+
+    // Friend marker contains initial fallback and WebP image
+    expect(friendHtml.textContent).not.toContain('YOU');
+    expect(friendHtml.querySelector('img')?.getAttribute('src')).toBe(webpDataUrl);
+    expect(friendHtml.textContent).toContain('R');
+  });
+
+  it('gracefully hides broken images on image error without removing the fallback initial', async () => {
+    const createdMarkers: Array<Record<string, unknown>> = [];
+    const Marker = vi.fn().mockImplementation(function (options: Record<string, unknown>) {
+      createdMarkers.push(options);
+      return { options, remove: vi.fn() };
+    });
+    const map = { addListener: vi.fn(), loaded: () => true, setCenter: vi.fn(), setZoom: vi.fn(), remove: vi.fn() };
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () { return map; }),
+      Marker,
+      remove: vi.fn(),
+    };
+
+    render(<MapplsMap apiKey="valid-key" points={[
+      { id: 'broken-img-user', lat: 28.5, lng: 77.2, title: 'Neha', avatarUrl: 'https://cdn.example.com/broken-avatar.png' },
+    ]} />);
+
+    await waitFor(() => expect(Marker).toHaveBeenCalledTimes(1));
+
+    const markerHtml = createdMarkers[0].html as HTMLElement;
+    const img = markerHtml.querySelector('img') as HTMLImageElement;
+    expect(img).not.toBeNull();
+    expect(img.getAttribute('src')).toBe('https://cdn.example.com/broken-avatar.png');
+    expect(markerHtml.textContent).toContain('N');
+
+    // Simulate image error event
+    fireEvent.error(img);
+
+    // Fallback initial remains visible and broken image is hidden
+    expect(markerHtml.textContent).toContain('N');
+    expect(img.style.display).toBe('none');
+  });
 });

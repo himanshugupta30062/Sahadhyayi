@@ -191,16 +191,22 @@ const escapeHtml = (value: string) => value
 const getSafeAvatarUrl = (value?: string | null): string | null => {
   if (!value) return null;
   const trimmed = value.trim();
-  const [dataHeader, dataPayload] = trimmed.split(',', 2);
-  if (
-    dataHeader?.toLowerCase() === 'data:image/svg+xml;base64' &&
-    !!dataPayload &&
-    /^[A-Za-z0-9+/]+={0,2}$/.test(dataPayload)
-  ) {
-    return trimmed;
+  if (!trimmed || trimmed.startsWith('javascript:') || trimmed.startsWith('vbscript:')) {
+    return null;
+  }
+  if (trimmed.startsWith('data:image/')) {
+    const base64Match = /^data:image\/(?:svg\+xml|png|jpe?g|webp|gif)(?:;[a-z0-9=-]+)*;base64,\s*([A-Za-z0-9+/=\s_-]+)$/i.exec(trimmed);
+    if (base64Match) {
+      return trimmed;
+    }
+    if (/^data:image\/svg\+xml(?:;[a-z0-9=-]+)*,(.+)$/i.test(trimmed)) {
+      return trimmed;
+    }
+    return null;
   }
   try {
-    const url = new URL(trimmed);
+    const base = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'https://sahadhyayi.com';
+    const url = new URL(trimmed, base);
     return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : null;
   } catch {
     return null;
@@ -211,20 +217,24 @@ const createAvatarMarkerElement = (point: MapplsPoint): HTMLElement => {
   const avatarUrl = getSafeAvatarUrl(point.avatarUrl);
   const isSelf = point.id === 'self';
   const borderColor = isSelf ? '#D5B16D' : '#1C442D';
+  const glowShadow = isSelf
+    ? '0 3px 12px rgba(213,177,109,.45),0 0 0 2px rgba(255,255,255,.96)'
+    : '0 3px 12px rgba(20,35,25,.28),0 0 0 2px rgba(255,255,255,.96)';
+
   const root = document.createElement('div');
-  root.className = 'sahadhyayi-reader-map-marker';
+  root.className = `sahadhyayi-reader-map-marker sahadhyayi-marker-${isSelf ? 'self' : 'peer'}`;
   root.setAttribute('role', 'img');
   root.setAttribute('aria-label', isSelf ? 'Your reading avatar' : `${point.title} reading avatar`);
   root.title = point.title;
-  root.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:58px;height:68px;overflow:visible;pointer-events:auto;';
+  root.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:58px;height:68px;overflow:visible;pointer-events:auto;cursor:pointer;user-select:none;';
 
   const shell = document.createElement('div');
-  shell.style.cssText = `box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:52px;height:52px;padding:3px;border:3px solid ${borderColor};border-radius:50%;background:#fff;box-shadow:0 3px 12px rgba(20,35,25,.28),0 0 0 2px rgba(255,255,255,.96);overflow:hidden;`;
+  shell.style.cssText = `position:relative;box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:52px;height:52px;padding:3px;border:3px solid ${borderColor};border-radius:50%;background:#fff;box-shadow:${glowShadow};overflow:hidden;`;
 
   const fallback = document.createElement('span');
   fallback.textContent = (point.title.trim().charAt(0) || 'R').toUpperCase();
   fallback.setAttribute('aria-hidden', 'true');
-  fallback.style.cssText = 'display:flex;width:100%;height:100%;align-items:center;justify-content:center;border-radius:50%;background:#E8EFE9;color:#1C442D;font:700 18px/1 system-ui,sans-serif;';
+  fallback.style.cssText = `position:absolute;inset:0;display:flex;width:100%;height:100%;align-items:center;justify-content:center;border-radius:50%;background:${isSelf ? '#FBF7EE' : '#E8EFE9'};color:${isSelf ? '#8F681C' : '#1C442D'};font:700 18px/1 system-ui,sans-serif;`;
 
   if (avatarUrl) {
     const image = document.createElement('img');
@@ -232,20 +242,29 @@ const createAvatarMarkerElement = (point: MapplsPoint): HTMLElement => {
     image.alt = '';
     image.decoding = 'async';
     image.referrerPolicy = 'no-referrer';
-    image.style.cssText = 'display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;';
+    image.style.cssText = 'position:relative;z-index:1;display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;background:transparent;';
     image.addEventListener('error', () => {
-      if (image.parentElement === shell) image.replaceWith(fallback);
+      image.style.display = 'none';
+      if (image.parentElement === shell) {
+        image.remove();
+      }
     }, { once: true });
+    shell.appendChild(fallback);
     shell.appendChild(image);
   } else {
     shell.appendChild(fallback);
   }
 
   root.appendChild(shell);
+
+  const pointer = document.createElement('div');
+  pointer.style.cssText = `width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid ${borderColor};margin-top:-2px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));`;
+  root.appendChild(pointer);
+
   if (isSelf) {
     const label = document.createElement('span');
     label.textContent = 'YOU';
-    label.style.cssText = 'margin-top:1px;padding:1px 5px;border-radius:999px;background:#1C442D;color:#fff;font:700 8px/1.4 system-ui,sans-serif;letter-spacing:.06em;box-shadow:0 1px 4px rgba(0,0,0,.2);';
+    label.style.cssText = 'margin-top:1px;padding:1px 5px;border-radius:999px;background:#1C442D;color:#fff;font:700 8px/1.4 system-ui,sans-serif;letter-spacing:.06em;box-shadow:0 1px 4px rgba(0,0,0,.2);border:1px solid #D5B16D;';
     root.appendChild(label);
   }
   return root;
@@ -679,7 +698,7 @@ export function MapplsMap({
         aria-label="Interactive Mappls map"
       />
       {status === 'loading' && (
-        <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-background/80" role="status">
+        <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-background/80" aria-label="Loading map" aria-busy="true">
           <p className="text-sm text-muted-foreground">Loading Mappls map…</p>
         </div>
       )}

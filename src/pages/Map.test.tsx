@@ -185,5 +185,90 @@ describe('MapPage', () => {
     expect(mapPageMocks.refetchFriends).toHaveBeenCalled();
   });
 
+  it('falls back to profile photo when custom Bitmoji is not available for a friend', async () => {
+    vi.mocked(useAuth).mockReturnValue({ user: { id: 'user-me' } } as any);
+    vi.mocked(getMyLocationSharingState).mockResolvedValue({
+      hasConsent: true,
+      isSharing: true,
+      location: { lat: 28.5, lng: 77.2 },
+    });
+    mapPageMocks.friends = [{
+      id: 'friendship-2',
+      user1_id: 'user-me',
+      user2_id: 'friend-2',
+      friend_profile: {
+        id: 'friend-2',
+        full_name: 'Priya Sharma',
+        username: 'priya',
+        profile_photo_url: 'https://cdn.sahadhyayi.com/photos/priya.jpg',
+        avatar_img_url: null,
+        location_sharing: true,
+        location_lat: 28.65,
+        location_lng: 77.35,
+      },
+    }];
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <MapPage />
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    await screen.findByRole('tab', { name: /Friends Map/ });
+    fireEvent.click(screen.getByRole('tab', { name: /Friends Map/ }));
+
+    await waitFor(() => {
+      const mapEl = screen.getByTestId('mappls-map');
+      expect(mapEl).toHaveTextContent('friendship-2:Priya Sharma');
+      expect(mapEl.getAttribute('data-avatars')).toContain('https://cdn.sahadhyayi.com/photos/priya.jpg');
+    });
+  });
+
+  it('renders avatar image in the active readers bottom card list', async () => {
+    vi.mocked(useAuth).mockReturnValue({ user: { id: 'user-me' } } as any);
+    vi.mocked(getMyLocationSharingState).mockResolvedValue({
+      hasConsent: true,
+      isSharing: true,
+      location: { lat: 28.5, lng: 77.2 },
+    });
+
+    vi.spyOn(supabase, 'rpc').mockImplementation(((fn: string) => {
+      if (fn === 'get_nearby_book_readers') {
+        return Promise.resolve({
+          data: [
+            {
+              reader_id: 'reader-aarav',
+              reader_name: 'Aarav Patel',
+              avatar_img_url: 'https://cdn.sahadhyayi.com/avatars/aarav.png',
+              approximate_latitude: 28.54,
+              approximate_longitude: 77.24,
+              distance_km: '3.5',
+            },
+          ],
+          error: null,
+        });
+      }
+      return Promise.resolve({ data: null, error: null });
+    }) as any);
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <MapPage />
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select Book' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Aarav Patel')).toBeInTheDocument();
+      const readerImg = screen.getByRole('img', { name: 'Aarav Patel' });
+      expect(readerImg).toHaveAttribute('src', 'https://cdn.sahadhyayi.com/avatars/aarav.png');
+    });
+  });
+
 });
 

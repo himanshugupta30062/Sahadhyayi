@@ -185,7 +185,7 @@ const MapPage = () => {
         lng: currentLocation.lng,
         title: 'You (Your location)',
         description: selectedBook ? `Reading: ${selectedBook.title}` : 'Your shared location',
-        avatarUrl: userAvatar?.avatar_img_url ?? null,
+        avatarUrl: userAvatar?.avatar_img_url ?? (user?.user_metadata?.avatar_url as string | undefined) ?? (user?.user_metadata?.picture as string | undefined) ?? null,
       });
     }
     readers
@@ -210,7 +210,7 @@ const MapPage = () => {
         });
       });
     return points;
-  }, [readers, locationSharingEnabled, currentLocation, selectedBook, userAvatar?.avatar_img_url]);
+  }, [readers, locationSharingEnabled, currentLocation, selectedBook, userAvatar?.avatar_img_url, user?.user_metadata]);
 
   const friendPoints = useMemo<MapplsPoint[]>(() => {
     const points: MapplsPoint[] = [];
@@ -221,7 +221,7 @@ const MapPage = () => {
         lng: currentLocation.lng,
         title: 'You (Your location)',
         description: 'Your shared location',
-        avatarUrl: userAvatar?.avatar_img_url ?? null,
+        avatarUrl: userAvatar?.avatar_img_url ?? (user?.user_metadata?.avatar_url as string | undefined) ?? (user?.user_metadata?.picture as string | undefined) ?? null,
       });
     }
     const friends = friendsQuery.data || [];
@@ -250,7 +250,7 @@ const MapPage = () => {
       });
     });
     return points;
-  }, [friendsQuery.data, locationSharingEnabled, currentLocation, userAvatar?.avatar_img_url]);
+  }, [friendsQuery.data, locationSharingEnabled, currentLocation, userAvatar?.avatar_img_url, user?.user_metadata]);
 
   return (
     <>
@@ -325,10 +325,21 @@ const MapPage = () => {
             className="w-full"
           >
             <TabsList className="mb-4 grid w-full grid-cols-2 rounded-xl p-1 bg-[#EFECE6] dark:bg-[#161D19] border border-[#DCD5C9] dark:border-[#29332D]">
-              <TabsTrigger value="readers" className="rounded-lg text-xs font-bold data-[state=active]:bg-white dark:data-[state=active]:bg-[#1C442D] data-[state=active]:shadow-xs">
+              <TabsTrigger
+                value="readers"
+                onClick={() => setTab('readers')}
+                className="rounded-lg text-xs font-bold data-[state=active]:bg-white dark:data-[state=active]:bg-[#1C442D] data-[state=active]:shadow-xs"
+              >
                 📚 Readers Map {readers.length > 0 && `(${readers.length})`}
               </TabsTrigger>
-              <TabsTrigger value="friends" className="rounded-lg text-xs font-bold data-[state=active]:bg-white dark:data-[state=active]:bg-[#1C442D] data-[state=active]:shadow-xs">
+              <TabsTrigger
+                value="friends"
+                onClick={() => {
+                  setTab('friends');
+                  if (user?.id) void friendsQuery.refetch();
+                }}
+                className="rounded-lg text-xs font-bold data-[state=active]:bg-white dark:data-[state=active]:bg-[#1C442D] data-[state=active]:shadow-xs"
+              >
                 🧑‍🤝‍🧑 Friends Map
               </TabsTrigger>
             </TabsList>
@@ -380,6 +391,7 @@ const MapPage = () => {
               {/* Map Canvas with Snapchat-style rounded frame */}
               <div className="overflow-hidden rounded-2xl border border-[#E5DED2] dark:border-[#29332D] shadow-md bg-white dark:bg-[#111614]">
                 <MapplsMap
+                  key="readers-map"
                   apiKey={MAPPLS_API_KEY}
                   points={readerPoints}
                   center={currentLocation}
@@ -404,6 +416,16 @@ const MapPage = () => {
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
                           <Avatar className="h-9 w-9 border border-amber-400 shrink-0">
+                            {reader.avatar_img_url ? (
+                              <img
+                                src={reader.avatar_img_url}
+                                alt={reader.profiles?.full_name || 'Reader'}
+                                className="h-full w-full rounded-full object-cover"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLElement).style.display = 'none';
+                                }}
+                              />
+                            ) : null}
                             <AvatarFallback className="bg-[#1C442D] text-white text-xs font-bold">
                               {(reader.profiles?.full_name || 'R')[0]}
                             </AvatarFallback>
@@ -447,6 +469,7 @@ const MapPage = () => {
               )}
               <div className="overflow-hidden rounded-2xl border border-[#E5DED2] dark:border-[#29332D] shadow-md bg-white dark:bg-[#111614]">
                 <MapplsMap
+                  key="friends-map"
                   apiKey={MAPPLS_API_KEY}
                   points={friendPoints}
                   center={currentLocation}
