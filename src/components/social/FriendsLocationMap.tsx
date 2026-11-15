@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { getCurrentLocation, type LocationCoords } from '@/lib/locationService';
 import { disableMyLocationSharing, getMyLocationSharingState, saveMyLocation } from '@/lib/locationSharingService';
 import { useUserAvatar } from '@/hooks/useUserAvatar';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { uniqueChannelName } from '@/lib/realtime';
 import { LocationConsentModal } from './LocationConsentModal';
 import { LocationPermissionModal } from './LocationPermissionModal';
@@ -79,6 +80,7 @@ export const FriendsLocationMap: React.FC = () => {
   const { user } = useAuth();
   const { data: friends = [], isLoading: isLoadingFriends, error: friendsError, refetch } = useFriends();
   const { data: userAvatar } = useUserAvatar();
+  const { data: userProfile } = useUserProfile();
 
   const [mapCenter, setMapCenter] = useState<LocationCoords | null>(null);
 
@@ -261,7 +263,7 @@ export const FriendsLocationMap: React.FC = () => {
         lat: userLocation.lat,
         lng: userLocation.lng,
         title: 'Your saved location',
-        avatarUrl: userAvatar?.avatar_img_url ?? null,
+        avatarUrl: userAvatar?.avatar_img_url ?? userProfile?.profile_photo_url ?? (user?.user_metadata?.avatar_url as string | undefined) ?? null,
       }] : []),
       ...friendsWithLocation.map((friend) => ({
         id: friend.friend_profile!.id || friend.id,
@@ -271,7 +273,7 @@ export const FriendsLocationMap: React.FC = () => {
         avatarUrl: friend.friend_profile!.avatar_img_url ?? friend.friend_profile!.profile_photo_url ?? null,
       })).filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng)),
     ];
-  }, [friendsWithLocation, isSharingLocation, userLocation, userAvatar?.avatar_img_url]);
+  }, [friendsWithLocation, isSharingLocation, userLocation, userAvatar?.avatar_img_url, userProfile?.profile_photo_url, user?.user_metadata]);
 
 
   return (

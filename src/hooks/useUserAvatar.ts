@@ -78,6 +78,7 @@ export const useUpdateUserAvatar = () => {
       queryClient.setQueryData(['user-avatar', user?.id], avatar);
       void queryClient.invalidateQueries({ queryKey: ['user-avatar'] });
       void queryClient.invalidateQueries({ queryKey: ['friends'] });
+      void queryClient.invalidateQueries({ queryKey: ['user_profile'] });
     },
   });
 };

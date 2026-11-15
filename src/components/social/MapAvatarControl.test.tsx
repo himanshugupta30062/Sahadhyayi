@@ -9,6 +9,20 @@ const avatarMocks = vi.hoisted(() => ({
 
 vi.mock('@/hooks/useUserAvatar', () => ({
   useUserAvatar: () => ({ data: avatarMocks.data, isLoading: false }),
+  useUpdateUserAvatar: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}));
+
+vi.mock('@/hooks/useUserProfile', () => ({
+  useUserProfile: () => ({ data: null, isLoading: false }),
+  useUpsertUserProfile: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}));
+
+vi.mock('@/components/social/AvatarUploadDialog', () => ({
+  AvatarUploadDialog: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => isOpen ? (
+    <div role="dialog" aria-label="Avatar upload dialog">
+      <button type="button" onClick={onClose}>Close upload</button>
+    </div>
+  ) : null,
 }));
 
 vi.mock('@/components/social/BitmojiCreator', () => ({
@@ -68,5 +82,12 @@ describe('MapAvatarControl', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
     expect(screen.getByTestId('initial-features')).toHaveTextContent('"hairStyle":"curly"');
     expect(screen.getByTestId('initial-features')).toHaveTextContent('"outfit":"book-lover"');
+  });
+
+  it('opens the upload photo dialog when Upload Photo is clicked', () => {
+    render(<MapAvatarControl />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Upload Photo' }));
+    expect(screen.getByRole('dialog', { name: 'Avatar upload dialog' })).toBeInTheDocument();
   });
 });

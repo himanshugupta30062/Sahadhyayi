@@ -204,6 +204,14 @@ const getSafeAvatarUrl = (value?: string | null): string | null => {
     }
     return null;
   }
+  if (trimmed.startsWith('<svg')) {
+    try {
+      const base64Svg = btoa(unescape(encodeURIComponent(trimmed)));
+      return `data:image/svg+xml;base64,${base64Svg}`;
+    } catch {
+      return null;
+    }
+  }
   try {
     const base = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'https://sahadhyayi.com';
     const url = new URL(trimmed, base);
@@ -211,6 +219,27 @@ const getSafeAvatarUrl = (value?: string | null): string | null => {
   } catch {
     return null;
   }
+};
+
+const createAvatarMarkerHtml = (point: MapplsPoint): string => {
+  const avatarUrl = getSafeAvatarUrl(point.avatarUrl);
+  const isSelf = point.id === 'self';
+  const borderColor = isSelf ? '#D5B16D' : '#1C442D';
+  const glowShadow = isSelf
+    ? '0 3px 12px rgba(213,177,109,.45),0 0 0 2px rgba(255,255,255,.96)'
+    : '0 3px 12px rgba(20,35,25,.28),0 0 0 2px rgba(255,255,255,.96)';
+  const escapedTitle = escapeHtml(point.title);
+  const initial = escapeHtml((point.title.trim().charAt(0) || 'R').toUpperCase());
+
+  const imageHtml = avatarUrl
+    ? `<img src="${avatarUrl}" alt="" decoding="async" referrerpolicy="no-referrer" style="position:relative;z-index:1;display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;background:transparent;" onerror="this.style.display='none';" />`
+    : '';
+
+  const youBadgeHtml = isSelf
+    ? '<span style="margin-top:1px;padding:1px 5px;border-radius:999px;background:#1C442D;color:#fff;font:700 8px/1.4 system-ui,sans-serif;letter-spacing:.06em;box-shadow:0 1px 4px rgba(0,0,0,.2);border:1px solid #D5B16D;">YOU</span>'
+    : '';
+
+  return `<div class="sahadhyayi-reader-map-marker sahadhyayi-marker-${isSelf ? 'self' : 'peer'}" role="img" aria-label="${isSelf ? 'Your reading avatar' : `${escapedTitle} reading avatar`}" title="${escapedTitle}" style="display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:58px;height:68px;overflow:visible;pointer-events:auto;cursor:pointer;user-select:none;"><div style="position:relative;box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:52px;height:52px;padding:3px;border:3px solid ${borderColor};border-radius:50%;background:#fff;box-shadow:${glowShadow};overflow:hidden;"><span aria-hidden="true" style="position:absolute;inset:0;display:flex;width:100%;height:100%;align-items:center;justify-content:center;border-radius:50%;background:${isSelf ? '#FBF7EE' : '#E8EFE9'};color:${isSelf ? '#8F681C' : '#1C442D'};font:700 18px/1 system-ui,sans-serif;">${initial}</span>${imageHtml}</div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid ${borderColor};margin-top:-2px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));"></div>${youBadgeHtml}</div>`;
 };
 
 const createAvatarMarkerElement = (point: MapplsPoint): HTMLElement => {
@@ -242,6 +271,7 @@ const createAvatarMarkerElement = (point: MapplsPoint): HTMLElement => {
     image.alt = '';
     image.decoding = 'async';
     image.referrerPolicy = 'no-referrer';
+    image.setAttribute('onerror', "this.style.display='none';");
     image.style.cssText = 'position:relative;z-index:1;display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;background:transparent;';
     image.addEventListener('error', () => {
       image.style.display = 'none';
@@ -267,6 +297,11 @@ const createAvatarMarkerElement = (point: MapplsPoint): HTMLElement => {
     label.style.cssText = 'margin-top:1px;padding:1px 5px;border-radius:999px;background:#1C442D;color:#fff;font:700 8px/1.4 system-ui,sans-serif;letter-spacing:.06em;box-shadow:0 1px 4px rgba(0,0,0,.2);border:1px solid #D5B16D;';
     root.appendChild(label);
   }
+
+  // Override toString so that if Mappls Vector Maps SDK sets innerHTML = options.html,
+  // it serializes to valid HTML markup instead of the generic '[object HTMLDivElement]'.
+  root.toString = () => createAvatarMarkerHtml(point);
+
   return root;
 };
 
@@ -590,14 +625,17 @@ export function MapplsMap({
         : '';
       const popupHtml = `<div style="font-family:sans-serif;padding:4px 6px;min-width:140px;color:#1C201D;">${badgeHtml}<strong style="font-size:13px;display:block;">${escapedTitle}</strong>${escapedDesc ? `<span style="font-size:12px;color:#636B65;display:block;margin-top:2px;">${escapedDesc}</span>` : ''}</div>`;
 
+      const markerElement = createAvatarMarkerElement(point);
+
       try {
         const marker = new MarkerConstructor({
           map,
           position: { lat: point.lat, lng: point.lng },
           title: point.title,
-          // Mappls v3 custom HTML markers accept a real DOM element. This lets
-          // avatar image errors be handled with addEventListener (no inline JS).
+          // markerElement provides both the DOM node (for SDKs/tests inspecting elements)
+          // and overrides toString() with markerHtml (for Mappls SDK setting innerHTML).
           html: createAvatarMarkerElement(point),
+          element: markerElement,
           width: 58,
           height: 68,
           offset: [0, -12],
@@ -607,6 +645,20 @@ export function MapplsMap({
           marker.addListener?.('click', () => onMarkerClickRef.current?.(point));
         } catch (error) {
           console.warn('Mappls marker click listener could not be attached:', error);
+        }
+        try {
+          marker.on?.('click', () => onMarkerClickRef.current?.(point));
+        } catch {
+          // Ignore
+        }
+        markerElement.addEventListener('click', () => onMarkerClickRef.current?.(point));
+        try {
+          const domEl = marker.getElement?.();
+          if (domEl && domEl !== markerElement) {
+            domEl.addEventListener('click', () => onMarkerClickRef.current?.(point));
+          }
+        } catch {
+          // Ignore
         }
         markers.current.set(point.id, { marker, signature: getMarkerSignature(point) });
       } catch (error) {
@@ -691,6 +743,17 @@ export function MapplsMap({
 
   return (
     <div className="relative">
+      <style>{`
+        .sahadhyayi-reader-map-marker {
+          cursor: pointer !important;
+          pointer-events: auto !important;
+          user-select: none !important;
+        }
+        .sahadhyayi-reader-map-marker img {
+          border-radius: 50% !important;
+          object-fit: cover !important;
+        }
+      `}</style>
       <div
         id={containerId}
         ref={mapElement}

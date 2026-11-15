@@ -11,12 +11,15 @@ import { useFriends } from '@/hooks/useFriends';
 import { BookFilterDropdown } from '@/components/social/BookFilterDropdown';
 import { MapplsMap, type MapplsPoint } from '@/components/maps/MapplsMap';
 import { BitmojiCreator } from '@/components/social/BitmojiCreator';
+import { AvatarUploadDialog } from '@/components/social/AvatarUploadDialog';
 import { useUserAvatar } from '@/hooks/useUserAvatar';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { MAPPLS_API_KEY } from '@/config/mappls';
 import { getMyLocationSharingState } from '@/lib/locationSharingService';
 import { useAuth } from '@/contexts/authHelpers';
 import {
   BookOpen,
+  Camera,
   Compass,
   Eye,
   EyeOff,
@@ -59,8 +62,17 @@ const MapPage = () => {
   const [locationSharingEnabled, setLocationSharingEnabled] = useState(false);
   const [locationConsentChecked, setLocationConsentChecked] = useState(false);
   const [showBitmojiCreator, setShowBitmojiCreator] = useState(false);
+  const [showAvatarUpload, setShowAvatarUpload] = useState(false);
   const { user } = useAuth();
   const { data: userAvatar } = useUserAvatar();
+  const { data: userProfile } = useUserProfile();
+
+  const selfAvatarUrl = userAvatar?.avatar_img_url
+    ?? userProfile?.profile_photo_url
+    ?? userProfile?.profile_picture_url
+    ?? (user?.user_metadata?.avatar_url as string | undefined)
+    ?? (user?.user_metadata?.picture as string | undefined)
+    ?? null;
 
   const friendsQuery = useFriends();
 
@@ -185,7 +197,7 @@ const MapPage = () => {
         lng: currentLocation.lng,
         title: 'You (Your location)',
         description: selectedBook ? `Reading: ${selectedBook.title}` : 'Your shared location',
-        avatarUrl: userAvatar?.avatar_img_url ?? (user?.user_metadata?.avatar_url as string | undefined) ?? (user?.user_metadata?.picture as string | undefined) ?? null,
+        avatarUrl: selfAvatarUrl,
       });
     }
     readers
@@ -210,7 +222,7 @@ const MapPage = () => {
         });
       });
     return points;
-  }, [readers, locationSharingEnabled, currentLocation, selectedBook, userAvatar?.avatar_img_url, user?.user_metadata]);
+  }, [readers, locationSharingEnabled, currentLocation, selectedBook, selfAvatarUrl]);
 
   const friendPoints = useMemo<MapplsPoint[]>(() => {
     const points: MapplsPoint[] = [];
@@ -221,7 +233,7 @@ const MapPage = () => {
         lng: currentLocation.lng,
         title: 'You (Your location)',
         description: 'Your shared location',
-        avatarUrl: userAvatar?.avatar_img_url ?? (user?.user_metadata?.avatar_url as string | undefined) ?? (user?.user_metadata?.picture as string | undefined) ?? null,
+        avatarUrl: selfAvatarUrl,
       });
     }
     const friends = friendsQuery.data || [];
@@ -250,7 +262,7 @@ const MapPage = () => {
       });
     });
     return points;
-  }, [friendsQuery.data, locationSharingEnabled, currentLocation, userAvatar?.avatar_img_url, user?.user_metadata]);
+  }, [friendsQuery.data, locationSharingEnabled, currentLocation, selfAvatarUrl]);
 
   return (
     <>
@@ -297,6 +309,21 @@ const MapPage = () => {
                   </>
                 )}
               </div>
+
+              {/* Upload Photo / Avatar Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAvatarUpload(true)}
+                className="rounded-xl gap-1.5 text-xs h-9 border-[#DCD5C9] dark:border-[#29332D] hover:bg-[#F3EFE7] dark:hover:bg-[#1C3024]"
+              >
+                {selfAvatarUrl ? (
+                  <img src={selfAvatarUrl} alt="" className="w-4 h-4 rounded-full object-cover" />
+                ) : (
+                  <Camera className="w-3.5 h-3.5 text-[#1C442D] dark:text-[#D5B16D]" />
+                )}
+                <span>Upload Avatar</span>
+              </Button>
 
               {/* Bitmoji Creator Button */}
               <Button
@@ -484,6 +511,14 @@ const MapPage = () => {
           </Tabs>
         </div>
       </main>
+
+      {/* Snap Map Avatar Upload Dialog */}
+      <AvatarUploadDialog
+        isOpen={showAvatarUpload}
+        onClose={() => setShowAvatarUpload(false)}
+        currentAvatarUrl={userAvatar?.avatar_img_url}
+        onSuccess={() => setShowAvatarUpload(false)}
+      />
 
       {/* Snap Map Bitmoji Creator Dialog */}
       <BitmojiCreator
