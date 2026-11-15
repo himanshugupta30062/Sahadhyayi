@@ -176,8 +176,9 @@ describe('Social discovery and location privacy regressions', () => {
   });
 
   it('uses Mappls DOM marker elements and only reconciles changed reader markers', () => {
-    expect(mapRenderer).toMatch(/createAvatarMarkerElement\s*=\s*\(point: MapplsPoint\): HTMLElement/);
-    expect(mapRenderer).toMatch(/html:\s*createAvatarMarkerElement\(point\)/);
+    expect(mapRenderer).toMatch(/createAvatarMarkerHtml\s*=\s*\(point: MapplsPoint\): string/);
+    expect(mapRenderer).toMatch(/html:\s*createAvatarMarkerHtml\(point\)/);
+    expect(mapRenderer).toMatch(/observeAvatarMarkerImages/);
     expect(mapRenderer).toMatch(/markers\.current\.has\(point\.id\)/);
     expect(mapRenderer).not.toMatch(/removeMarkers\(map, markers\.current\);\s*markers\.current = \[\]/);
   });
