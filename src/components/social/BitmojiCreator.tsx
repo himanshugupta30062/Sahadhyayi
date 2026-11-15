@@ -1,8 +1,10 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Palette, Save, RotateCcw, Shirt, Glasses, HardHat, Headphones, BookOpen, Bookmark } from 'lucide-react';
+import { Palette, Save, RotateCcw, Shirt, Glasses, HardHat, Headphones, BookOpen, Bookmark, Upload, ImagePlus } from 'lucide-react';
 import { useUpdateUserAvatar } from '@/hooks/useUserAvatar';
+import { useAuth } from '@/contexts/authHelpers';
+import { getMapAvatarFileValidationError, uploadMapAvatarImage } from '@/lib/mapAvatarUpload';
 import { toast } from 'sonner';
 import DOMPurify from 'dompurify';
 
@@ -97,6 +99,7 @@ interface BitmojiCreatorProps {
   onClose: () => void;
   onSave: (avatarData: string) => void;
   initialFeatures?: unknown;
+  initialAvatarUrl?: string | null;
 }
 
 export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
@@ -104,14 +107,37 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
   onClose,
   onSave,
   initialFeatures,
+  initialAvatarUrl,
 }) => {
   const [features, setFeatures] = useState<BitmojiFeatures>(() => normalizeAvatarFeatures(initialFeatures));
   const [activeTab, setActiveTab] = useState<'appearance' | 'style' | 'accessories' | 'reading'>('appearance');
+  const [uploadedAvatarFile, setUploadedAvatarFile] = useState<File | null>(null);
+  const [savedPhotoUrl, setSavedPhotoUrl] = useState<string | null>(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
-    if (isOpen) setFeatures(normalizeAvatarFeatures(initialFeatures));
-  }, [isOpen, initialFeatures]);
+    if (!isOpen) return;
+    setFeatures(normalizeAvatarFeatures(initialFeatures));
+    const settings = initialFeatures && typeof initialFeatures === 'object'
+      ? initialFeatures as Record<string, unknown>
+      : {};
+    setSavedPhotoUrl(settings.avatarMode === 'photo' ? initialAvatarUrl ?? null : null);
+    setUploadedAvatarFile(null);
+  }, [isOpen, initialFeatures, initialAvatarUrl]);
 
+  useEffect(() => {
+    if (!uploadedAvatarFile) {
+      setPhotoPreviewUrl(null);
+      return;
+    }
+    const objectUrl = URL.createObjectURL(uploadedAvatarFile);
+    setPhotoPreviewUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [uploadedAvatarFile]);
+
+  const currentPhotoPreviewUrl = photoPreviewUrl ?? savedPhotoUrl;
   const updateAvatarMutation = useUpdateUserAvatar();
 
   const updateFeature = useCallback((feature: keyof BitmojiFeatures, value: string) => {
@@ -120,8 +146,31 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
 
   const resetToDefault = useCallback(() => {
     setFeatures(DEFAULT_AVATAR_FEATURES);
+    setUploadedAvatarFile(null);
+    setSavedPhotoUrl(null);
     setActiveTab('appearance');
   }, []);
+
+  const handlePhotoSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = '';
+    if (!file) return;
+
+    const validationError = getMapAvatarFileValidationError(file);
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
+    setSavedPhotoUrl(null);
+    setUploadedAvatarFile(file);
+    toast.success('Photo selected. Save it to use it as your map avatar.');
+  };
+
+  const useIllustratedAvatar = () => {
+    setUploadedAvatarFile(null);
+    setSavedPhotoUrl(null);
+  };
 
   // Generate avatar SVG with all features
   const generateAvatarSvg = useCallback(() => {
@@ -472,22 +521,27 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
 
   const handleSave = async () => {
     try {
-      const avatarSvg = generateAvatarSvg();
-      let base64Payload: string;
-      try {
-        base64Payload = btoa(unescape(encodeURIComponent(avatarSvg)));
-      } catch {
-        base64Payload = btoa(avatarSvg);
+      if (!user?.id) throw new Error('Sign in to save your map avatar.');
+
+      const photoSelected = Boolean(uploadedAvatarFile || savedPhotoUrl);
+      let avatarUrl = savedPhotoUrl;
+      if (uploadedAvatarFile) {
+        avatarUrl = await uploadMapAvatarImage(uploadedAvatarFile, user.id);
+      } else if (!avatarUrl) {
+        const svgBlob = new Blob([generateAvatarSvg()], { type: 'image/svg+xml' });
+        avatarUrl = await uploadMapAvatarImage(svgBlob, user.id);
       }
-      const avatarDataUrl = 'data:image/svg+xml;base64,' + base64Payload;
 
       await updateAvatarMutation.mutateAsync({
-        avatar_json: features as any,
-        avatar_img_url: avatarDataUrl,
+        avatar_json: {
+          ...(features as unknown as Record<string, unknown>),
+          avatarMode: photoSelected ? 'photo' : 'bitmoji',
+        },
+        avatar_img_url: avatarUrl,
       });
 
-      onSave(avatarDataUrl);
-      toast.success('Avatar saved successfully!');
+      onSave(avatarUrl);
+      toast.success('Map avatar saved. It will now appear on your shared map pins.');
       onClose();
     } catch (error) {
       const message = error instanceof Error
@@ -799,16 +853,64 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
                 <div className="text-center flex-1 min-w-[200px]">
                   <h3 className="font-semibold text-gray-900 mb-3">Live Preview</h3>
                   <div className="flex justify-center">
-                    <div
-                      className="w-40 h-48 md:w-48 md:h-56 rounded-2xl overflow-hidden border-4 border-orange-200 bg-gray-50 shadow-lg"
-                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(generateAvatarSvg(), { USE_PROFILES: { svg: true } }) }}
-                      role="img"
-                      aria-label="Avatar preview"
-                    />
+                    {currentPhotoPreviewUrl ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="flex h-40 w-40 items-center justify-center rounded-full border-4 border-orange-200 bg-gray-50 p-1 shadow-lg">
+                          <img
+                            src={currentPhotoPreviewUrl}
+                            alt="Uploaded map avatar preview"
+                            className="h-full w-full rounded-full object-cover"
+                          />
+                        </div>
+                        <span className="text-xs font-medium text-emerald-700">Photo avatar selected</span>
+                      </div>
+                    ) : (
+                      <div
+                        className="w-40 h-48 md:w-48 md:h-56 rounded-2xl overflow-hidden border-4 border-orange-200 bg-gray-50 shadow-lg"
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(generateAvatarSvg(), { USE_PROFILES: { svg: true } }) }}
+                        role="img"
+                        aria-label="Avatar preview"
+                      />
+                    )}
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3 md:flex-row md:items-end">
+                <div className="flex w-full flex-col gap-3 md:w-auto md:items-stretch">
+                  <input
+                    ref={uploadInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="sr-only"
+                    aria-label="Choose avatar photo"
+                    onChange={handlePhotoSelection}
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => uploadInputRef.current?.click()}
+                      disabled={updateAvatarMutation.isPending}
+                    >
+                      <ImagePlus className="mr-2 h-4 w-4" />
+                      Upload photo
+                    </Button>
+                    {currentPhotoPreviewUrl && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={useIllustratedAvatar}
+                        disabled={updateAvatarMutation.isPending}
+                      >
+                        Use Bitmoji
+                      </Button>
+                    )}
+                  </div>
+                  <p className="max-w-xs text-xs text-gray-500">
+                    JPG, PNG, or WebP up to 5 MB. Your photo is stored securely in your avatar folder and shown as your map pin.
+                  </p>
+                  <div className="flex flex-col gap-3 md:flex-row md:items-end">
                   <Button
                     onClick={handleSave}
                     className="bg-orange-600 hover:bg-orange-700 w-full md:w-auto"
@@ -816,12 +918,13 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
                     size="lg"
                   >
                     <Save className="w-5 h-5 mr-2" />
-                    {updateAvatarMutation.isPending ? 'Saving...' : 'Save Avatar'}
+                    {updateAvatarMutation.isPending ? 'Saving...' : currentPhotoPreviewUrl ? 'Save Photo Avatar' : 'Save Avatar'}
                   </Button>
                   <Button onClick={resetToDefault} variant="outline" size="lg" className="w-full md:w-auto">
                     <RotateCcw className="w-5 h-5 mr-2" />
                     Reset to Default
                   </Button>
+                  </div>
                 </div>
               </div>
             </div>
