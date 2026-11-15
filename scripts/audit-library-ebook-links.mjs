@@ -42,8 +42,8 @@ function cleanLog(value, maxLength = 240) {
   if (value === null || value === undefined) return '';
   // Remove control characters and bound values to prevent forged or flooded logs.
   return String(value)
-    .replace(/[\\u0000-\\u001F\\u007F-\\u009F]/g, ' ')
-    .replace(/\\s+/g, ' ')
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim()
     .slice(0, maxLength);
 }
@@ -156,8 +156,7 @@ async function run() {
     let brokenCount = 0;
 
     for (const [index, book] of books.entries()) {
-      const rawTitle = book?.title ? String(book.title).slice(0, 30) : 'Untitled';
-      const sanitizedTitle = rawTitle.replace(/[\r\n]/g, '');
+      const sanitizedTitle = cleanLog(book?.title || 'Untitled', 30);
       process.stdout.write(`[${index + 1}/${books.length}] Auditing "${sanitizedTitle}"... `);
       const result = await verifyPdfUrl(book.pdf_url);
       const auditEntry = {
