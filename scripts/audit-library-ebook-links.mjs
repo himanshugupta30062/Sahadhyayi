@@ -38,9 +38,14 @@ const ALLOWED_PROXY_SUFFIXES = [
   'edu',
 ];
 
-function cleanLog(str) {
-  if (str === null || str === undefined) return '';
-  return String(str).replace(/[\r\n]/g, '').replace(/\t/g, ' ');
+function cleanLog(value, maxLength = 240) {
+  if (value === null || value === undefined) return '';
+  // Remove control characters and bound values to prevent forged or flooded logs.
+  return String(value)
+    .replace(/[\\u0000-\\u001F\\u007F-\\u009F]/g, ' ')
+    .replace(/\\s+/g, ' ')
+    .trim()
+    .slice(0, maxLength);
 }
 
 // Keep terminal output single-line and bounded to prevent log injection / log flooding.
