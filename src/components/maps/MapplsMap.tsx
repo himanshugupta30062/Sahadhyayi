@@ -213,24 +213,62 @@ const getSafeAvatarUrl = (value?: string | null): string | null => {
   }
 };
 
-const createFallbackMarkerIcon = (point: MapplsPoint): string => {
+const createAvatarMarkerHtml = (point: MapplsPoint): string => {
   const isSelf = point.id === 'self';
+  const avatarUrl = getSafeAvatarUrl(point.avatarUrl);
   const initial = escapeHtml((point.title.trim().charAt(0) || 'R').toUpperCase());
   const primaryColor = isSelf ? '#8F681C' : '#1C442D';
   const backgroundColor = isSelf ? '#FBF7EE' : '#E8EFE9';
   const borderColor = isSelf ? '#D5B16D' : '#1C442D';
+  const glowShadow = isSelf
+    ? '0 3px 12px rgba(213,177,109,.45),0 0 0 2px rgba(255,255,255,.96)'
+    : '0 3px 12px rgba(20,35,25,.28),0 0 0 2px rgba(255,255,255,.96)';
+  const image = avatarUrl
+    ? `<img data-sahadhyayi-avatar="true" src="${escapeHtml(avatarUrl)}" alt="" aria-hidden="true" draggable="false" decoding="async" referrerpolicy="no-referrer" style="position:absolute;inset:0;z-index:1;display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;background:transparent;" />`
+    : '';
 
-  // Mappls Marker.icon accepts an image URL. Use an SVG data URL as the
-  // initials fallback so every point still goes through the same image-icon API.
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="184" viewBox="0 0 160 184">
-    <path d="M54 104 L106 104 L80 158 Z" fill="${borderColor}"/>
-    <path d="M62 105 L98 105 L80 145 Z" fill="#FFFFFF"/>
-    <circle cx="80" cy="68" r="58" fill="#FFFFFF" stroke="${borderColor}" stroke-width="6"/>
-    <circle cx="80" cy="68" r="50" fill="${backgroundColor}"/>
-    <text x="80" y="82" text-anchor="middle" font-family="Arial,sans-serif" font-size="48" font-weight="700" fill="${primaryColor}">${initial}</text>
-    ${isSelf ? '<rect x="49" y="150" width="62" height="22" rx="11" fill="#1C442D" stroke="#D5B16D" stroke-width="2"/><text x="80" y="165" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">YOU</text>' : ''}
-  </svg>`;
-  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+  // Mappls Web Maps v3 expects HTML marker content as an HTML string.
+  // Supplying a DOM node or a data:image SVG as "icon" can fall back
+  // to the SDK's stock question-mark marker on some SDK builds.
+  return `<div class="sahadhyayi-reader-map-marker sahadhyayi-marker-${isSelf ? 'self' : 'peer'}" role="img" aria-label="${isSelf ? 'Your reading avatar' : `${escapeHtml(point.title)} reading avatar`}" title="${escapeHtml(point.title)}" style="display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:58px;height:68px;overflow:visible;pointer-events:auto;cursor:pointer;user-select:none;">
+    <div style="position:relative;box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:52px;height:52px;padding:3px;border:3px solid ${borderColor};border-radius:50%;background:#fff;box-shadow:${glowShadow};overflow:hidden;">
+      <span aria-hidden="true" style="position:absolute;inset:0;display:flex;width:100%;height:100%;align-items:center;justify-content:center;border-radius:50%;background:${backgroundColor};color:${primaryColor};font:700 18px/1 system-ui,sans-serif;">${initial}</span>
+      ${image}
+    </div>
+    <div aria-hidden="true" style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid ${borderColor};margin-top:-2px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));"></div>
+    ${isSelf ? '<span style="margin-top:1px;padding:1px 5px;border-radius:999px;background:#1C442D;color:#fff;font:700 8px/1.4 system-ui,sans-serif;letter-spacing:.06em;box-shadow:0 1px 4px rgba(0,0,0,.2);border:1px solid #D5B16D;">YOU</span>' : ''}
+  </div>`;
+};
+
+const observeAvatarMarkerImages = (container: HTMLElement): (() => void) => {
+  if (typeof MutationObserver === 'undefined') return () => undefined;
+
+  const observedImages = new WeakSet<HTMLImageElement>();
+  const attachErrorFallback = (image: HTMLImageElement) => {
+    if (observedImages.has(image)) return;
+    observedImages.add(image);
+    image.addEventListener('error', () => image.remove(), { once: true });
+    if (image.complete && image.naturalWidth === 0) image.remove();
+  };
+  const scan = (root: ParentNode) => {
+    if (root instanceof HTMLImageElement && root.hasAttribute('data-sahadhyayi-avatar')) {
+      attachErrorFallback(root);
+    }
+    root.querySelectorAll?.('img[data-sahadhyayi-avatar]').forEach((image) => {
+      attachErrorFallback(image as HTMLImageElement);
+    });
+  };
+
+  scan(container);
+  const observer = new MutationObserver((records) => {
+    records.forEach((record) => {
+      record.addedNodes.forEach((node) => {
+        if (node instanceof HTMLElement) scan(node);
+      });
+    });
+  });
+  observer.observe(container, { childList: true, subtree: true });
+  return () => observer.disconnect();
 };
 
 const getMarkerSignature = (point: MapplsPoint) => JSON.stringify([
@@ -524,6 +562,12 @@ export function MapplsMap({
   }, [center, status]);
 
   useEffect(() => {
+    const container = mapElement.current;
+    if (status !== 'ready' || !container) return;
+    return observeAvatarMarkerImages(container);
+  }, [status]);
+
+  useEffect(() => {
     const map = mapInstance.current;
     const MarkerConstructor = window.mappls?.Marker;
     if (status !== 'ready' || !map || !MarkerConstructor) return;
@@ -558,9 +602,8 @@ export function MapplsMap({
           map,
           position: { lat: point.lat, lng: point.lng },
           title: point.title,
-          // Use Mappls' documented custom image-marker API. Hosted PNGs are
-          // loaded directly by the SDK; SVG initials keep empty/invalid avatars visible.
-          icon: getSafeAvatarUrl(point.avatarUrl) ?? createFallbackMarkerIcon(point),
+          // Mappls documents "html" markers as HTML strings, not HTMLElement objects.
+          html: createAvatarMarkerHtml(point),
           width: 58,
           height: 68,
           offset: [0, -12],
