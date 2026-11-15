@@ -99,7 +99,4 @@ const WeeklyReadingSummary: React.FC<WeeklyReadingSummaryProps> = ({ userId }) =
   );
 };
 
-// Fix the import - BarChart3 should be imported from lucide-react
-import { BarChart3 } from 'lucide-react';
-
 export default WeeklyReadingSummary;

@@ -18,7 +18,7 @@ describe('BookExperienceTags', () => {
       data: null,
       isLoading: false,
       save: { mutate: vi.fn(), isPending: false } as any,
-    });
+    } as any);
 
     render(
       <MemoryRouter>
@@ -37,7 +37,7 @@ describe('BookExperienceTags', () => {
       data: { moods: ['inspiring'], pacing: 'medium', content_warnings: [], custom_warning: '' },
       isLoading: false,
       save: { mutate, isPending: false } as any,
-    });
+    } as any);
 
     render(
       <MemoryRouter>

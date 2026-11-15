@@ -13,6 +13,8 @@ interface MapplsRuntimeMap {
 interface MapplsRuntimeMarker {
   setPosition?: (position: { lat: number; lng: number }) => void;
   addListener?: (eventName: string, callback: (event?: unknown) => void) => unknown;
+  on?: (eventName: string, callback: (event?: unknown) => void) => unknown;
+  getElement?: () => HTMLElement | null;
   remove?: () => void;
   [key: string]: unknown;
 }

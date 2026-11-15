@@ -35,7 +35,7 @@ describe('AuthorProfile', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <MemoryRouter>
-          <AuthorProfile author={author} />
+          <AuthorProfile author={author as any} />
         </MemoryRouter>
       </QueryClientProvider>
     );

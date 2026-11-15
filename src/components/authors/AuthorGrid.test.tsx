@@ -42,7 +42,7 @@ describe('AuthorGrid', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <MemoryRouter>
-          <AuthorGrid authors={sampleAuthors} />
+          <AuthorGrid authors={sampleAuthors as any} />
         </MemoryRouter>
       </QueryClientProvider>
     );

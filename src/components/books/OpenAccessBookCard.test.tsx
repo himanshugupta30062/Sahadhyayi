@@ -7,6 +7,7 @@ describe('OpenAccessBookCard', () => {
   it('renders book metadata and download button', () => {
     const book: ExternalBook = {
       id: 'ext-1',
+      md5: 'md5-principia-123',
       title: 'Principia Mathematica',
       author: 'Isaac Newton',
       year: '1687',
@@ -14,7 +15,7 @@ describe('OpenAccessBookCard', () => {
       extension: 'pdf',
       size: '14 MB',
       downloadUrl: 'https://archive.org/details/principia',
-      source: 'archive',
+      source: 'open_access',
     };
 
     render(<OpenAccessBookCard book={book} />);
