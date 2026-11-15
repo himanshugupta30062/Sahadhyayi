@@ -175,9 +175,11 @@ describe('Social discovery and location privacy regressions', () => {
     expect(friendsMap).toMatch(/<MapAvatarControl\s*\/>/);
   });
 
-  it('uses Mappls DOM marker elements and only reconciles changed reader markers', () => {
-    expect(mapRenderer).toMatch(/createAvatarMarkerElement\s*=\s*\(point: MapplsPoint\): HTMLElement/);
-    expect(mapRenderer).toMatch(/html:\s*createAvatarMarkerElement\(point\)/);
+  it('uses Mappls native image icons and only reconciles changed reader markers', () => {
+    expect(mapRenderer).toMatch(/createFallbackMarkerIcon\s*=\s*\(point: MapplsPoint\): string/);
+    expect(mapRenderer).toMatch(/icon:\s*getSafeAvatarUrl\(point\.avatarUrl\)\s*\?\?\s*createFallbackMarkerIcon\(point\)/);
+    expect(mapRenderer).toMatch(/width:\s*58/);
+    expect(mapRenderer).toMatch(/height:\s*68/);
     expect(mapRenderer).toMatch(/markers\.current\.has\(point\.id\)/);
     expect(mapRenderer).not.toMatch(/removeMarkers\(map, markers\.current\);\s*markers\.current = \[\]/);
   });
