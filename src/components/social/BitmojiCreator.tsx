@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Palette, Save, RotateCcw, Shirt, Glasses, HardHat, Headphones, BookOpen, Bookmark, Upload, ImagePlus } from 'lucide-react';
+import { Palette, Save, RotateCcw, Shirt, Glasses, HardHat, Headphones, BookOpen, Bookmark, ImagePlus } from 'lucide-react';
 import { useUpdateUserAvatar } from '@/hooks/useUserAvatar';
 import { useAuth } from '@/contexts/authHelpers';
 import { getMapAvatarFileValidationError, uploadMapAvatarImage } from '@/lib/mapAvatarUpload';
@@ -132,6 +132,7 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
       setPhotoPreviewUrl(null);
       return;
     }
+    if (typeof URL.createObjectURL !== 'function') return;
     const objectUrl = URL.createObjectURL(uploadedAvatarFile);
     setPhotoPreviewUrl(objectUrl);
     return () => URL.revokeObjectURL(objectUrl);
