@@ -51,13 +51,15 @@ describe('MapplsMap', () => {
     expect(addListener).toHaveBeenCalledWith('error', expect.any(Function));
     const delhiMarker = (Marker as any).mock.calls[0][0];
     const mumbaiMarker = (Marker as any).mock.calls[1][0];
-    expect(delhiMarker.html).toBeInstanceOf(HTMLElement);
-    expect(delhiMarker.html.querySelector('img')?.getAttribute('src')).toBe('https://cdn.example.test/delhi.svg');
-    expect(delhiMarker.html.querySelector('img')?.referrerPolicy).toBe('no-referrer');
+    expect(typeof delhiMarker.html).toBe('string');
+    expect(delhiMarker.html).toContain('src="https://cdn.example.test/delhi.svg"');
+    expect(delhiMarker.html).toContain('referrerpolicy="no-referrer"');
+    expect(delhiMarker.html).toContain('border-radius:50%');
     expect(delhiMarker.width).toBe(58);
     expect(delhiMarker.height).toBe(68);
-    expect(mumbaiMarker.html.querySelector('img')).toBeNull();
-    expect(mumbaiMarker.html.textContent).toContain('M');
+    expect(typeof mumbaiMarker.html).toBe('string');
+    expect(mumbaiMarker.html).not.toContain('javascript:alert(1)');
+    expect(mumbaiMarker.html).toContain('>M</span>');
     expect(fitBounds).toHaveBeenCalledWith(expect.objectContaining({
       map,
       cType: 0,
