@@ -168,7 +168,7 @@ describe('Social discovery and location privacy regressions', () => {
   });
 
   it('shows a profile photo until a custom Bitmoji is saved and exposes the editor on map surfaces', () => {
-    expect(mapAvatarControl).toMatch(/Create Bitmoji/);
+    expect(mapAvatarControl).toMatch(/Create Avatar/);
     expect(mapAvatarControl).toMatch(/avatar\?\.avatar_img_url/);
     expect(mapAvatarControl).toMatch(/avatar\?\.avatar_json/);
     expect(readersMap).toMatch(/<MapAvatarControl\s*\/>/);
