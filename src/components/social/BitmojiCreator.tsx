@@ -123,7 +123,21 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
     const settings = initialFeatures && typeof initialFeatures === 'object'
       ? initialFeatures as Record<string, unknown>
       : {};
-    setSavedPhotoUrl(settings.avatarMode === 'photo' ? initialAvatarUrl ?? null : null);
+    const hasSavedBitmojiSettings = [
+      'skinTone',
+      'hairStyle',
+      'hairColor',
+      'eyeShape',
+      'eyeColor',
+      'noseShape',
+      'mouthShape',
+      'outfit',
+      'accessory',
+      'readingAccessory',
+    ].some((key) => settings[key] !== undefined);
+    const useSavedPhoto = settings.avatarMode === 'photo' ||
+      (settings.avatarMode !== 'bitmoji' && !hasSavedBitmojiSettings && Boolean(initialAvatarUrl));
+    setSavedPhotoUrl(useSavedPhoto ? initialAvatarUrl ?? null : null);
     setUploadedAvatarFile(null);
   }, [isOpen, initialFeatures, initialAvatarUrl]);
 
@@ -909,7 +923,7 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
                     )}
                   </div>
                   <p className="max-w-xs text-xs text-gray-500">
-                    JPG, PNG, or WebP up to 5 MB. Your photo is stored securely in your avatar folder and shown as your map pin.
+                    JPG, PNG, or WebP up to 5 MB. Your selected photo is saved to your Sahadhyayi avatar folder and used on your map pin.
                   </p>
                   <div className="flex flex-col gap-3 md:flex-row md:items-end">
                   <Button
