@@ -94,7 +94,7 @@ describe('MapPage', () => {
               avatar_img_url: 'https://cdn.sahadhyayi.com/avatars/friend.svg',
               approximate_latitude: 28.52,
               approximate_longitude: 77.22,
-              distance_km: 2.1,
+              distance_km: '2.1',
             },
           ],
           error: null,
@@ -139,6 +139,7 @@ describe('MapPage', () => {
       expect(mapEl).toHaveTextContent('friend-2:Friend Two');
       expect(mapEl.getAttribute('data-avatars')).toContain('https://cdn.sahadhyayi.com/avatars/self.svg');
       expect(mapEl.getAttribute('data-avatars')).toContain('https://cdn.sahadhyayi.com/avatars/friend.svg');
+      expect(screen.getByText('2.1 km away')).toBeInTheDocument();
     });
   });
   it('renders real friend avatars on the Friends tab and refreshes that tab when opened', async () => {
