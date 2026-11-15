@@ -435,26 +435,24 @@ describe('MapplsMap', () => {
     await waitFor(() => expect(markerRemove).toHaveBeenCalled());
   });
 
-  it('handles avatar image load error and replaces it with fallback letter', async () => {
-    let markerHtmlElement: HTMLElement | undefined;
+  it('passes hosted avatar images through the Mappls native icon API', async () => {
+    const Marker = vi.fn().mockImplementation(function () { return {}; });
     const map = { addListener: vi.fn(), loaded: () => true, remove: vi.fn() };
     window.mappls = {
       Map: vi.fn().mockImplementation(function () { return map; }),
-      Marker: vi.fn().mockImplementation(function (opts: any) {
-        markerHtmlElement = opts.html;
-        return {};
-      }),
+      Marker,
     };
 
-    render(<MapplsMap apiKey="valid-key" points={[{ id: 'p1', lat: 10, lng: 20, title: 'Alice', avatarUrl: 'https://example.com/alice.jpg' }]} />);
-    await waitFor(() => expect(markerHtmlElement).toBeDefined());
+    render(<MapplsMap apiKey="valid-key" points={[
+      { id: 'p1', lat: 10, lng: 20, title: 'Alice', avatarUrl: 'https://example.com/alice.png' },
+    ]} />);
+    await waitFor(() => expect(Marker).toHaveBeenCalledTimes(1));
 
-    const img = markerHtmlElement?.querySelector('img');
-    expect(img).not.toBeNull();
-    img?.dispatchEvent(new Event('error'));
-
-    expect(markerHtmlElement?.querySelector('img')).toBeNull();
-    expect(markerHtmlElement?.textContent).toContain('A');
+    const markerOptions = Marker.mock.calls[0][0] as Record<string, unknown>;
+    expect(markerOptions.icon).toBe('https://example.com/alice.png');
+    expect(markerOptions.width).toBe(58);
+    expect(markerOptions.height).toBe(68);
+    expect(markerOptions).not.toHaveProperty('html');
   });
 
   it('formats unknown token error messages and generic map event messages', async () => {
@@ -568,12 +566,8 @@ describe('MapplsMap', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('supports PNG, WebP and JPEG base64 data avatars in addition to SVG and HTTPS URLs', async () => {
-    const createdMarkers: Array<Record<string, unknown>> = [];
-    const Marker = vi.fn().mockImplementation(function (options: Record<string, unknown>) {
-      createdMarkers.push(options);
-      return { options, remove: vi.fn() };
-    });
+  it('passes supported PNG and WebP data avatar URLs to Mappls as image icons', async () => {
+    const Marker = vi.fn().mockImplementation(function () { return {}; });
     const map = { addListener: vi.fn(), loaded: () => true, setCenter: vi.fn(), setZoom: vi.fn(), remove: vi.fn() };
     window.mappls = {
       Map: vi.fn().mockImplementation(function () { return map; }),
@@ -591,29 +585,15 @@ describe('MapplsMap', () => {
 
     await waitFor(() => expect(Marker).toHaveBeenCalledTimes(2));
 
-    const selfMarker = createdMarkers[0];
-    const friendMarker = createdMarkers[1];
-
-    const selfHtml = selfMarker.html as HTMLElement;
-    const friendHtml = friendMarker.html as HTMLElement;
-
-    // Self marker contains 'YOU' label and golden border
-    expect(selfHtml.textContent).toContain('YOU');
-    expect(selfHtml.querySelector('img')?.getAttribute('src')).toBe(pngDataUrl);
-
-    // Friend marker contains initial fallback and WebP image
-    expect(friendHtml.textContent).not.toContain('YOU');
-    expect(friendHtml.querySelector('img')?.getAttribute('src')).toBe(webpDataUrl);
-    expect(friendHtml.textContent).toContain('R');
+    expect(Marker.mock.calls[0][0].icon).toBe(pngDataUrl);
+    expect(Marker.mock.calls[1][0].icon).toBe(webpDataUrl);
+    expect(Marker.mock.calls[0][0].width).toBe(58);
+    expect(Marker.mock.calls[1][0].height).toBe(68);
   });
 
-  it('gracefully hides broken images on image error without removing the fallback initial', async () => {
-    const createdMarkers: Array<Record<string, unknown>> = [];
-    const Marker = vi.fn().mockImplementation(function (options: Record<string, unknown>) {
-      createdMarkers.push(options);
-      return { options, remove: vi.fn() };
-    });
-    const map = { addListener: vi.fn(), loaded: () => true, setCenter: vi.fn(), setZoom: vi.fn(), remove: vi.fn() };
+  it('uses a safe initials icon when a supplied avatar URL is invalid', async () => {
+    const Marker = vi.fn().mockImplementation(function () { return {}; });
+    const map = { addListener: vi.fn(), loaded: () => true, remove: vi.fn() };
     window.mappls = {
       Map: vi.fn().mockImplementation(function () { return map; }),
       Marker,
@@ -621,22 +601,13 @@ describe('MapplsMap', () => {
     };
 
     render(<MapplsMap apiKey="valid-key" points={[
-      { id: 'broken-img-user', lat: 28.5, lng: 77.2, title: 'Neha', avatarUrl: 'https://cdn.example.com/broken-avatar.png' },
+      { id: 'broken-img-user', lat: 28.5, lng: 77.2, title: 'Neha', avatarUrl: 'javascript:alert(1)' },
     ]} />);
 
     await waitFor(() => expect(Marker).toHaveBeenCalledTimes(1));
-
-    const markerHtml = createdMarkers[0].html as HTMLElement;
-    const img = markerHtml.querySelector('img') as HTMLImageElement;
-    expect(img).not.toBeNull();
-    expect(img.getAttribute('src')).toBe('https://cdn.example.com/broken-avatar.png');
-    expect(markerHtml.textContent).toContain('N');
-
-    // Simulate image error event
-    fireEvent.error(img);
-
-    // Fallback initial remains visible and broken image is hidden
-    expect(markerHtml.textContent).toContain('N');
-    expect(img.style.display).toBe('none');
+    const markerIcon = Marker.mock.calls[0][0].icon as string;
+    expect(markerIcon).toContain('data:image/svg+xml;charset=UTF-8,');
+    expect(decodeURIComponent(markerIcon.split(',')[1])).toContain('>N</text>');
+    expect(markerIcon).not.toContain('javascript:alert(1)');
   });
 });
