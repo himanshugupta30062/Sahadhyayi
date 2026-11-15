@@ -40,7 +40,7 @@ const ALLOWED_PROXY_SUFFIXES = [
 
 function cleanLog(str) {
   if (str === null || str === undefined) return '';
-  return String(str).replace(/[\r\n\t]/g, ' ');
+  return String(str).replace(/[\r\n]/g, '').replace(/\t/g, ' ');
 }
 
 function isProxyable(url) {
@@ -191,14 +191,14 @@ async function run() {
     console.log(`Broken / Unreachable:  ${summary.brokenOrUnreachable}`);
     console.log(`Report written to:     ${outPath}`);
   } catch (err) {
-    const errorMsg = err instanceof Error ? err.message : String(err);
+    const errorMsg = (err instanceof Error ? err.message : String(err)).replace(/[\r\n]/g, '');
     console.error('[audit] Error during link audit:', cleanLog(errorMsg));
     process.exit(1);
   }
 }
 
 run().catch((err) => {
-  const fatalMsg = err instanceof Error ? err.message : String(err);
+  const fatalMsg = (err instanceof Error ? err.message : String(err)).replace(/[\r\n]/g, '');
   console.error('[audit] Fatal error during link audit:', cleanLog(fatalMsg));
   process.exit(1);
 });

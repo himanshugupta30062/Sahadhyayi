@@ -214,13 +214,13 @@ export default function AdminBookPdfReviews() {
 
   useEffect(() => {
     if (showCatalogueSelector) {
-      searchCatalogue(catalogueSearchQuery, 1, false);
+      void searchCatalogue(catalogueSearchQuery, 1, false);
     }
   }, [showCatalogueSelector, catalogueSearchQuery, searchCatalogue]);
 
   const loadMoreCatalogue = useCallback(() => {
     if (!catalogueLoading && catalogueHasMore) {
-      searchCatalogue(catalogueSearchQuery, cataloguePage + 1, true);
+      void searchCatalogue(catalogueSearchQuery, cataloguePage + 1, true);
       setCataloguePage(prev => prev + 1);
     }
   }, [catalogueLoading, catalogueHasMore, cataloguePage, catalogueSearchQuery, searchCatalogue]);
@@ -368,7 +368,7 @@ export default function AdminBookPdfReviews() {
                           <span>·</span>
                           {new Date(item.created_at).toLocaleDateString()}
                         </p>
-                        {item.match_confidence && item.match_confidence > 0 && (
+                        {Boolean(item.match_confidence && item.match_confidence > 0) && (
                           <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                             <Sparkles className="h-3 w-3" />
                             <span>Match confidence: {Math.round(item.match_confidence * 100)}%</span>
@@ -503,7 +503,7 @@ export default function AdminBookPdfReviews() {
                       <div className="flex items-center justify-between">
                         <Label htmlFor="pdf-book-search">Find catalogue book (without an existing PDF)</Label>
                         <div className="flex items-center gap-2">
-                          <Select value={catalogueFilter} onValueChange={(v) => { setCatalogueFilter(v as any); searchCatalogue(catalogueSearchQuery, 1, false); }}>
+                          <Select value={catalogueFilter} onValueChange={(v) => { setCatalogueFilter(v as any); void searchCatalogue(catalogueSearchQuery, 1, false); }}>
                             <SelectTrigger className="w-auto"><SelectValue placeholder="Filter" /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="without_pdf">Missing PDF</SelectItem>
@@ -569,9 +569,9 @@ export default function AdminBookPdfReviews() {
                                     </div>
                                     <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
                                       {book.isbn && <span>ISBN {book.isbn}</span>}
-                                      {book.publication_year && <span>· {book.publication_year}</span>}
+                                      {Boolean(book.publication_year) && <span>· {book.publication_year}</span>}
                                       {book.language && <span>· {book.language}</span>}
-                                      {book.pdf_page_count && <span>· {book.pdf_page_count} pp</span>}
+                                      {Boolean(book.pdf_page_count) && <span>· {book.pdf_page_count} pp</span>}
                                     </div>
                                   </button>
                                 ))}
@@ -597,7 +597,7 @@ export default function AdminBookPdfReviews() {
                               <p className="text-sm text-green-700">{selectedCatalogueBook.author || 'Unknown author'}</p>
                               <div className="mt-1 flex flex-wrap gap-2 text-xs text-green-600">
                                 {selectedCatalogueBook.isbn && <span>ISBN {selectedCatalogueBook.isbn}</span>}
-                                {selectedCatalogueBook.publication_year && <span>· {selectedCatalogueBook.publication_year}</span>}
+                                {Boolean(selectedCatalogueBook.publication_year) && <span>· {selectedCatalogueBook.publication_year}</span>}
                                 {selectedCatalogueBook.language && <span>· {selectedCatalogueBook.language}</span>}
                               </div>
                             </div>

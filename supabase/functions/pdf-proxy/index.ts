@@ -35,7 +35,6 @@ const BLOCKED_HOST_PATTERNS = [
   // Cloud metadata services
   "metadata.google.internal",
   "metadata.azure.com",
-  "169.254.169.254",
   "metadata",
   // Local development
   "localhost",
@@ -145,8 +144,8 @@ function validateUrl(url: URL): { valid: boolean; error?: string } {
 
   // Port restrictions - only standard ports
   if (url.port) {
-    const port = parseInt(url.port, 10);
-    if (isNaN(port) || port < 1 || port > 65535) {
+    const port = Number.parseInt(url.port, 10);
+    if (Number.isNaN(port) || port < 1 || port > 65535) {
       return { valid: false, error: "Invalid port" };
     }
     // Only allow standard HTTP/HTTPS ports
@@ -300,8 +299,8 @@ serve(async (req) => {
       // Check response size limit via Content-Length header
       const contentLength = response.headers.get("content-length");
       if (contentLength) {
-        const size = parseInt(contentLength, 10);
-        if (!isNaN(size) && size > MAX_RESPONSE_SIZE) {
+        const size = Number.parseInt(contentLength, 10);
+        if (!Number.isNaN(size) && size > MAX_RESPONSE_SIZE) {
           return new Response(JSON.stringify({ error: "Response too large" }), {
             status: 413,
             headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -41,11 +41,11 @@ async function validatePDFStructure(blob: Blob): Promise<{ valid: boolean; pageC
     let pageCount: number | null = null;
     const countMatch = trailer.match(/\/Count\s+(\d+)/);
     if (countMatch) {
-      pageCount = parseInt(countMatch[1], 10);
+      pageCount = Number.parseInt(countMatch[1], 10);
     } else {
       const contentMatch = header.match(/\/Count\s+(\d+)/);
       if (contentMatch) {
-        pageCount = parseInt(contentMatch[1], 10);
+        pageCount = Number.parseInt(contentMatch[1], 10);
       }
     }
 

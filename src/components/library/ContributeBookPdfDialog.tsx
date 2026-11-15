@@ -404,7 +404,7 @@ function ContributeBookPdfDialogContent() {
                           </div>
                           <p className="text-sm text-muted-foreground">
                             {candidate.author || 'Unknown author'}
-                            {candidate.publication_year && ` · ${candidate.publication_year}`}
+                            {Boolean(candidate.publication_year) && ` · ${candidate.publication_year}`}
                             {candidate.isbn && ` · ISBN ${candidate.isbn}`}
                             {candidate.language && ` · ${candidate.language}`}
                           </p>
@@ -454,7 +454,7 @@ function ContributeBookPdfDialogContent() {
                       </Button>
                     </div>
                     <p className="mt-1 text-sm text-green-700 font-medium">{selectedBook.title}</p>
-                    <p className="text-xs text-green-600">{selectedBook.author || 'Unknown author'}{selectedBook.publication_year && ` · ${selectedBook.publication_year}`}</p>
+                    <p className="text-xs text-green-600">{selectedBook.author || 'Unknown author'}{Boolean(selectedBook.publication_year) && ` · ${selectedBook.publication_year}`}</p>
                     {selectedBook.pdf_url && (
                       <p className="mt-1 text-xs text-amber-700 flex items-center gap-1">
                         <AlertCircle className="h-3 w-3" /> This book already has a PDF. Your submission will be reviewed as a potential replacement or additional edition.
@@ -539,7 +539,7 @@ function ContributeBookPdfDialogContent() {
                     <p className="font-medium">{selectedBook.title}</p>
                     <p className="text-sm text-muted-foreground">{selectedBook.author || 'Unknown author'}</p>
                     <div className="mt-1 flex flex-wrap gap-1 text-xs text-muted-foreground">
-                      {selectedBook.publication_year && <span>· {selectedBook.publication_year}</span>}
+                      {Boolean(selectedBook.publication_year) && <span>· {selectedBook.publication_year}</span>}
                       {selectedBook.isbn && <span>· ISBN {selectedBook.isbn}</span>}
                       {selectedBook.language && <span>· {selectedBook.language}</span>}
                     </div>
