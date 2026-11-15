@@ -48,8 +48,8 @@ describe('QuotesContext', () => {
 
   it('syncs quotes to and from cloud for authenticated user', async () => {
     vi.spyOn(authHelpers, 'useAuth').mockReturnValue({
-      user: { id: 'user-cloud-1' } as any,
-    });
+      user: { id: 'user-cloud-1' },
+    } as any);
 
     const mockUpsert = vi.fn().mockResolvedValue({ error: null });
     const mockSelect = vi.fn().mockReturnValue({

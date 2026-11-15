@@ -142,56 +142,67 @@ export function parseBookSeries(
   const rawTitle = title.normalize('NFC').trim();
 
   // 1. Look for parenthetical or bracketed series: e.g. "(Dune Chronicles, #1)", "(The Lord of the Rings, Book 1 of 3)"
-  // Match: (Series Name, #1) or (Series Name, Book 1) or (Series Name, Vol. 1) etc.
-  const bracketRegex = /[([]\s*([^()[\]:,\s][^()[\]:,]*)\s*[,:]\s*(?:(?:book|vol(?:ume)?\.?|part|खण्ड|भाग|अंक)\s*)?(?:#\s*)?([0-9ivxlcdm०-९]+(?:\.[0-9]+)?|prequel|novella|companion)(?:\s+of\s+([0-9०-९]{1,3}))?\s*[)\]]/i;
-  const bracketMatch = rawTitle.match(bracketRegex);
-
+  const bracketMatch = rawTitle.match(/[([]([^()[\]]+)[)\]]/);
   if (bracketMatch) {
-    const seriesName = bracketMatch[1].trim();
-    const rawSeq = bracketMatch[2].trim();
-    const totalRaw = bracketMatch[3]?.trim();
+    const inside = bracketMatch[1].trim();
 
-    let volumeNumber: number | null = null;
-    const lowerSeq = rawSeq.toLowerCase();
+    // Check for delimiter "," or ":" without catastrophic regular expression backtracking
+    const sepIndex = inside.search(/[,:]/);
+    if (sepIndex !== -1) {
+      const seriesName = inside.slice(0, sepIndex).trim();
+      const descriptor = inside.slice(sepIndex + 1).trim();
 
-    if (lowerSeq === 'prequel') {
-      volumeNumber = 0;
-    } else if (lowerSeq in ROMAN_NUMERALS) {
-      volumeNumber = ROMAN_NUMERALS[lowerSeq];
-    } else if (/\d/.test(rawSeq)) {
-      volumeNumber = Number.parseFloat(rawSeq);
-    } else if (/[०-९]/.test(rawSeq)) {
-      volumeNumber = parseHindiNumber(rawSeq);
+      const descMatch = descriptor.match(/^(?:(?:book|vol(?:ume)?\.?|part|खण्ड|भाग|अंक)\s*)?(?:#\s*)?([0-9ivxlcdm०-९]+(?:\.[0-9]+)?|prequel|novella|companion)(?:\s+of\s+([0-9०-९]{1,3}))?$/i);
+      if (descMatch && seriesName) {
+        const rawSeq = descMatch[1].trim();
+        const totalRaw = descMatch[2]?.trim();
+
+        let volumeNumber: number | null = null;
+        const lowerSeq = rawSeq.toLowerCase();
+
+        if (lowerSeq === 'prequel') {
+          volumeNumber = 0;
+        } else if (lowerSeq in ROMAN_NUMERALS) {
+          volumeNumber = ROMAN_NUMERALS[lowerSeq];
+        } else if (/\d/.test(rawSeq)) {
+          volumeNumber = Number.parseFloat(rawSeq);
+        } else if (/[०-९]/.test(rawSeq)) {
+          volumeNumber = parseHindiNumber(rawSeq);
+        }
+
+        let totalVolumes: number | null = null;
+        if (totalRaw) {
+          totalVolumes = /\d/.test(totalRaw) ? Number.parseInt(totalRaw, 10) : parseHindiNumber(totalRaw);
+        }
+
+        return {
+          seriesName,
+          volumeNumber: Number.isNaN(volumeNumber) ? null : volumeNumber,
+          rawSequence: rawSeq,
+          totalVolumes: Number.isNaN(totalVolumes) ? null : totalVolumes,
+          isStandalone: false,
+        };
+      }
     }
 
-    let totalVolumes: number | null = null;
-    if (totalRaw) {
-      totalVolumes = /\d/.test(totalRaw) ? Number.parseInt(totalRaw, 10) : parseHindiNumber(totalRaw);
+    // Format: "(Series Name #1)"
+    const hashIndex = inside.indexOf('#');
+    if (hashIndex !== -1) {
+      const seriesName = inside.slice(0, hashIndex).trim();
+      const numPart = inside.slice(hashIndex + 1).trim();
+      if (/^[0-9]+(?:\.[0-9]+)?$/.test(numPart) && seriesName) {
+        const volumeNumber = Number.parseFloat(numPart);
+        return {
+          seriesName,
+          volumeNumber: Number.isNaN(volumeNumber) ? null : volumeNumber,
+          rawSequence: numPart,
+          isStandalone: false,
+        };
+      }
     }
-
-    return {
-      seriesName,
-      volumeNumber: Number.isNaN(volumeNumber) ? null : volumeNumber,
-      rawSequence: rawSeq,
-      totalVolumes: Number.isNaN(totalVolumes) ? null : totalVolumes,
-      isStandalone: false,
-    };
   }
 
-  // 2. Format: "(Series Name #1)" or "(Series Name 1)"
-  const simpleNumMatch = rawTitle.match(/[([]\s*([^()[\]#:,\s][^()[\]#:,]*)\s*#\s*([0-9]+(?:\.[0-9]+)?)\s*[)\]]/i);
-  if (simpleNumMatch) {
-    const seriesName = simpleNumMatch[1].trim();
-    const volumeNumber = Number.parseFloat(simpleNumMatch[2]);
-    return {
-      seriesName,
-      volumeNumber: Number.isNaN(volumeNumber) ? null : volumeNumber,
-      rawSequence: simpleNumMatch[2],
-      isStandalone: false,
-    };
-  }
-
-  // 3. Format: "Book 1 of The Expanse" in description or title
+  // 2. Format: "Book 1 of The Expanse" in description or title
   const bookOfRegex = /\b(?:book|volume|vol\.|part)\s+([0-9]+)\s+of\s+([^.,\n\r()]+)/i;
   const bookOfMatch = rawTitle.match(bookOfRegex) || (description ? description.match(bookOfRegex) : null);
 
@@ -205,19 +216,6 @@ export function parseBookSeries(
       seriesName,
       volumeNumber,
       rawSequence: bookOfMatch[1],
-      isStandalone: false,
-    };
-  }
-
-  // 4. Format: "Harry Potter and the Sorcerer's Stone (Harry Potter, #1)"
-  const commaSeriesMatch = rawTitle.match(/[([]\s*([^()[\]#,\s][^()[\]#,]*)\s*,\s*(?:#\s*)?([0-9]{1,3})\s*[)\]]/i);
-  if (commaSeriesMatch) {
-    const seriesName = commaSeriesMatch[1].trim();
-    const volumeNumber = Number.parseInt(commaSeriesMatch[2], 10);
-    return {
-      seriesName,
-      volumeNumber,
-      rawSequence: commaSeriesMatch[2],
       isStandalone: false,
     };
   }

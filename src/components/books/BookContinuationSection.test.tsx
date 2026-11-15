@@ -77,8 +77,8 @@ describe('BookContinuationSection', () => {
 
   it('allows authenticated user to vote yes on sequel', async () => {
     vi.spyOn(authHelpers, 'useAuth').mockReturnValue({
-      user: { id: 'u-789' } as any,
-    });
+      user: { id: 'u-789' },
+    } as any);
 
     vi.spyOn(supabase, 'rpc').mockImplementation(((fn: string) => {
       if (fn === 'get_sequel_vote_counts') {
