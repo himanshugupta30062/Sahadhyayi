@@ -43,6 +43,7 @@ function cleanLog(str) {
   return String(str).replace(/[\r\n]/g, '').replace(/\t/g, ' ');
 }
 
+// Keep terminal output single-line and bounded to prevent log injection / log flooding.
 function isProxyable(url) {
   try {
     const parsed = new URL(url);
