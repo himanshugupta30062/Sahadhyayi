@@ -227,7 +227,7 @@ export const SpoilerThreadCard: React.FC<SpoilerThreadCardProps> = ({ thread }) 
           </div>
         ) : (
           /* Locked State with blurred backdrop */
-          <div className="relative rounded-xl border border-dashed border-amber-500/30 bg-muted/40 p-6 overflow-hidden text-center">
+          <div className="relative min-h-[168px] rounded-xl border border-dashed border-amber-500/30 bg-muted/40 p-6 overflow-hidden text-center">
             {/* Blurred placeholder text behind */}
             <div className="select-none blur-[6px] opacity-40 text-xs text-foreground space-y-1 pointer-events-none" aria-hidden="true">
               <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
