@@ -1,4 +1,4 @@
-export type Intent = 'book_query' | 'general' | 'help' | 'policy';
+export type Intent = 'book_query' | 'author_query' | 'general' | 'help' | 'policy';
 
 export interface SiteContext {
   totalBooks: number | null;
