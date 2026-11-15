@@ -213,27 +213,24 @@ const getSafeAvatarUrl = (value?: string | null): string | null => {
   }
 };
 
-const createAvatarMarkerHtml = (point: MapplsPoint): string => {
-  const avatarUrl = getSafeAvatarUrl(point.avatarUrl);
+const createFallbackMarkerIcon = (point: MapplsPoint): string => {
   const isSelf = point.id === 'self';
+  const initial = escapeHtml((point.title.trim().charAt(0) || 'R').toUpperCase());
+  const primaryColor = isSelf ? '#8F681C' : '#1C442D';
+  const backgroundColor = isSelf ? '#FBF7EE' : '#E8EFE9';
   const borderColor = isSelf ? '#D5B16D' : '#1C442D';
-  const fallback = escapeHtml((point.title.trim().charAt(0) || 'R').toUpperCase());
-  const label = escapeHtml(isSelf ? 'Your reading avatar' : `${point.title} reading avatar`);
-  const image = avatarUrl
-    ? `<img src="${escapeHtml(avatarUrl)}" alt="" referrerpolicy="no-referrer" draggable="false" style="position:absolute;inset:0;z-index:1;display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;background:transparent;" />`
-    : '';
 
-  // Mappls' public Web SDK examples pass HTML strings to the Marker html option.
-  // Use that documented integration path rather than handing the SDK a live
-  // React-created DOM node that some SDK builds do not mount consistently.
-  return `<div class="sahadhyayi-reader-map-marker sahadhyayi-marker-${isSelf ? 'self' : 'peer'}" role="img" aria-label="${label}" title="${escapeHtml(point.title)}" style="display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:58px;height:68px;overflow:visible;pointer-events:auto;cursor:pointer;user-select:none;">
-    <div style="position:relative;box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:52px;height:52px;padding:3px;border:3px solid ${borderColor};border-radius:50%;background:#fff;box-shadow:0 3px 12px rgba(20,35,25,.28),0 0 0 2px rgba(255,255,255,.96);overflow:hidden;">
-      <span aria-hidden="true" style="position:absolute;inset:0;display:flex;width:100%;height:100%;align-items:center;justify-content:center;border-radius:50%;background:${isSelf ? '#FBF7EE' : '#E8EFE9'};color:${isSelf ? '#8F681C' : '#1C442D'};font:700 18px/1 system-ui,sans-serif;">${fallback}</span>
-      ${image}
-    </div>
-    <div aria-hidden="true" style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid ${borderColor};margin-top:-2px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));"></div>
-    ${isSelf ? '<span style="margin-top:1px;padding:1px 5px;border-radius:999px;background:#1C442D;color:#fff;font:700 8px/1.4 system-ui,sans-serif;letter-spacing:.06em;box-shadow:0 1px 4px rgba(0,0,0,.2);border:1px solid #D5B16D;">YOU</span>' : ''}
-  </div>`;
+  // Mappls Marker.icon accepts an image URL. Use an SVG data URL as the
+  // initials fallback so every point still goes through the same image-icon API.
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="184" viewBox="0 0 160 184">
+    <path d="M54 104 L106 104 L80 158 Z" fill="${borderColor}"/>
+    <path d="M62 105 L98 105 L80 145 Z" fill="#FFFFFF"/>
+    <circle cx="80" cy="68" r="58" fill="#FFFFFF" stroke="${borderColor}" stroke-width="6"/>
+    <circle cx="80" cy="68" r="50" fill="${backgroundColor}"/>
+    <text x="80" y="82" text-anchor="middle" font-family="Arial,sans-serif" font-size="48" font-weight="700" fill="${primaryColor}">${initial}</text>
+    ${isSelf ? '<rect x="49" y="150" width="62" height="22" rx="11" fill="#1C442D" stroke="#D5B16D" stroke-width="2"/><text x="80" y="165" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">YOU</text>' : ''}
+  </svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 };
 
 const getMarkerSignature = (point: MapplsPoint) => JSON.stringify([
@@ -561,9 +558,9 @@ export function MapplsMap({
           map,
           position: { lat: point.lat, lng: point.lng },
           title: point.title,
-          // Mappls v3 custom HTML markers accept a real DOM element. This lets
-          // avatar image errors be handled with addEventListener (no inline JS).
-          html: createAvatarMarkerHtml(point),
+          // Use Mappls' documented custom image-marker API. Hosted PNGs are
+          // loaded directly by the SDK; SVG initials keep empty/invalid avatars visible.
+          icon: getSafeAvatarUrl(point.avatarUrl) ?? createFallbackMarkerIcon(point),
           width: 58,
           height: 68,
           offset: [0, -12],
