@@ -413,7 +413,7 @@ const MapPage = () => {
                               {reader.profiles?.full_name || 'Reader'}
                             </p>
                             <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6]">
-                              {reader.distance != null ? `${reader.distance.toFixed(1)} km away` : 'Active nearby'}
+                              {reader.distance != null && Number.isFinite(reader.distance) ? `${reader.distance.toFixed(1)} km away` : 'Active nearby'}
                             </p>
                           </div>
                         </div>
