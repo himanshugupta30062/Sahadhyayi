@@ -170,15 +170,15 @@ async function run() {
 
       if (result.status === 'VALID_PDF') {
         validCount++;
-        const safeSignature = String(result.signature || 'ok').replace(/[\r\n]/g, '');
+        const safeSignature = cleanLog(result.signature || 'ok', 30);
         console.log(`✅ VALID PDF (${safeSignature})`);
       } else if (result.status === 'HTML_LANDING_PAGE') {
         htmlCount++;
         console.log(`⚠️ HTML PAGE`);
       } else {
         brokenCount++;
-        const safeStatus = String(result.status || '').replace(/[\r\n]/g, '');
-        const safeError = String(result.error || '').replace(/[\r\n]/g, '');
+        const safeStatus = cleanLog(result.status, 40);
+        const safeError = cleanLog(result.error, 180);
         console.log(`❌ ${safeStatus} (${safeError})`);
       }
     }
@@ -201,14 +201,14 @@ async function run() {
     console.log(`Broken / Unreachable:  ${summary.brokenOrUnreachable}`);
     console.log(`Report written to:     ${outPath}`);
   } catch (err) {
-    const errorMsg = String(err instanceof Error ? err.message : err).replace(/[\r\n]/g, '');
+    const errorMsg = cleanLog(err instanceof Error ? err.message : err, 240);
     console.error('[audit] Error during link audit:', errorMsg);
     process.exit(1);
   }
 }
 
 run().catch((err) => {
-  const fatalMsg = String(err instanceof Error ? err.message : err).replace(/[\r\n]/g, '');
+  const fatalMsg = cleanLog(err instanceof Error ? err.message : err, 240);
   console.error('[audit] Fatal error during link audit:', fatalMsg);
   process.exit(1);
 });
