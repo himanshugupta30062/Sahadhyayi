@@ -192,48 +192,21 @@ const getSafeAvatarUrl = (value?: string | null): string | null => {
   }
 };
 
-const createAvatarMarkerElement = (point: MapplsPoint): HTMLElement => {
+const createAvatarMarkerHtml = (point: MapplsPoint): string => {
   const avatarUrl = getSafeAvatarUrl(point.avatarUrl);
   const isSelf = point.id === 'self';
   const borderColor = isSelf ? '#D5B16D' : '#1C442D';
-  const root = document.createElement('div');
-  root.className = 'sahadhyayi-reader-map-marker';
-  root.setAttribute('role', 'img');
-  root.setAttribute('aria-label', isSelf ? 'Your reading avatar' : `${point.title} reading avatar`);
-  root.title = point.title;
-  root.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:58px;height:68px;overflow:visible;pointer-events:auto;';
-
-  const shell = document.createElement('div');
-  shell.style.cssText = `box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:52px;height:52px;padding:3px;border:3px solid ${borderColor};border-radius:50%;background:#fff;box-shadow:0 3px 12px rgba(20,35,25,.28),0 0 0 2px rgba(255,255,255,.96);overflow:hidden;`;
-
-  const fallback = document.createElement('span');
-  fallback.textContent = (point.title.trim().charAt(0) || 'R').toUpperCase();
-  fallback.setAttribute('aria-hidden', 'true');
-  fallback.style.cssText = 'display:flex;width:100%;height:100%;align-items:center;justify-content:center;border-radius:50%;background:#E8EFE9;color:#1C442D;font:700 18px/1 system-ui,sans-serif;';
-
-  if (avatarUrl) {
-    const image = document.createElement('img');
-    image.src = avatarUrl;
-    image.alt = '';
-    image.decoding = 'async';
-    image.referrerPolicy = 'no-referrer';
-    image.style.cssText = 'display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;';
-    image.addEventListener('error', () => {
-      if (image.parentElement === shell) image.replaceWith(fallback);
-    }, { once: true });
-    shell.appendChild(image);
-  } else {
-    shell.appendChild(fallback);
-  }
-
-  root.appendChild(shell);
-  if (isSelf) {
-    const label = document.createElement('span');
-    label.textContent = 'YOU';
-    label.style.cssText = 'margin-top:1px;padding:1px 5px;border-radius:999px;background:#1C442D;color:#fff;font:700 8px/1.4 system-ui,sans-serif;letter-spacing:.06em;box-shadow:0 1px 4px rgba(0,0,0,.2);';
-    root.appendChild(label);
-  }
-  return root;
+  const initial = escapeHtml((point.title.trim().charAt(0) || 'R').toUpperCase());
+  const avatar = avatarUrl
+    ? `<img src="${escapeHtml(avatarUrl)}" alt="" referrerpolicy="no-referrer" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+    : '';
+  const fallback = `<span aria-hidden="true" style="display:${avatarUrl ? 'none' : 'flex'};width:100%;height:100%;align-items:center;justify-content:center;border-radius:50%;background:#E8EFE9;color:#1C442D;font:700 18px/1 system-ui,sans-serif;">${initial}</span>`;
+  const label = isSelf
+    ? '<span style="margin-top:1px;padding:1px 5px;border-radius:999px;background:#1C442D;color:#fff;font:700 8px/1.4 system-ui,sans-serif;letter-spacing:.06em;box-shadow:0 1px 4px rgba(0,0,0,.2);">YOU</span>'
+    : '';
+  // Mappls v3 HTML markers are most stable with an HTML string. Passing a
+  // React-created DOM node can trigger SDK "object HTML div component" errors.
+  return `<div role="img" aria-label="${isSelf ? 'Your reading avatar' : `${escapeHtml(point.title)} reading avatar`}" title="${escapeHtml(point.title)}" style="display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:58px;height:68px;overflow:visible;pointer-events:auto;"><div style="box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:52px;height:52px;padding:3px;border:3px solid ${borderColor};border-radius:50%;background:#fff;box-shadow:0 3px 12px rgba(20,35,25,.28),0 0 0 2px rgba(255,255,255,.96);overflow:hidden;">${avatar}${fallback}</div>${label}</div>`;
 };
 
 const getMarkerSignature = (point: MapplsPoint) => JSON.stringify([
@@ -500,7 +473,7 @@ export function MapplsMap({
           map,
           position: { lat: point.lat, lng: point.lng },
           title: point.title,
-          html: createAvatarMarkerElement(point),
+          html: createAvatarMarkerHtml(point),
           width: 58,
           height: 68,
           offset: [0, -12],
