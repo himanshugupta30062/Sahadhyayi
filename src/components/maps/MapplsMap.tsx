@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import { generateMarkerHtml } from './utils/mapMarkerGenerators';
 
 interface MapplsRuntimeMap {
   addListener?: (eventName: string, callback: (event?: unknown) => void) => unknown;
@@ -46,6 +47,9 @@ export interface MapplsPoint {
   title: string;
   description?: string;
   avatarUrl?: string | null;
+  markerType?: 'avatar' | 'place' | 'event' | 'book';
+  category?: string;
+  data?: unknown;
 }
 
 interface MapplsMapProps {
@@ -240,6 +244,9 @@ const getSafeAvatarUrl = (value?: string | null): string | null => {
 };
 
 const createAvatarMarkerHtml = (point: MapplsPoint): string => {
+  if (point.markerType && point.markerType !== 'avatar') {
+    return generateMarkerHtml(point);
+  }
   const avatarUrl = getSafeAvatarUrl(point.avatarUrl);
   const isSelf = point.id === 'self';
   const borderColor = isSelf ? '#D5B16D' : '#1C442D';

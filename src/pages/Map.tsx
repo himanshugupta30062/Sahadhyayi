@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import SEO from '@/components/SEO';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useFriends } from '@/hooks/useFriends';
@@ -15,8 +15,18 @@ import { AvatarUploadDialog } from '@/components/social/AvatarUploadDialog';
 import { useUserAvatar } from '@/hooks/useUserAvatar';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { MAPPLS_API_KEY } from '@/config/mappls';
-import { getMyLocationSharingState } from '@/lib/locationSharingService';
+import { disableMyLocationSharing, getMyLocationSharingState, saveMyLocation } from '@/lib/locationSharingService';
 import { useAuth } from '@/contexts/authHelpers';
+import { getCurrentLocation } from '@/lib/locationService';
+import { LocationConsentModal } from '@/components/social/LocationConsentModal';
+import { LocationPermissionModal } from '@/components/social/LocationPermissionModal';
+import { MapTopHUD } from '@/components/maps/MapTopHUD';
+import { MapCategoryFilters } from '@/components/maps/MapCategoryFilters';
+import { MapBottomSheetPreview } from '@/components/maps/MapBottomSheetPreview';
+import { MapFloatingControls } from '@/components/maps/MapFloatingControls';
+import { MapDiscoveryDrawer } from '@/components/maps/MapDiscoveryDrawer';
+import { useExploreSpots } from '@/hooks/useExploreSpots';
+import type { ExploreCategory, MapMode, SelectedMapMarker } from '@/types/mapExplore';
 import {
   BookOpen,
   Camera,
@@ -26,11 +36,10 @@ import {
   MapPin,
   MessageCircle,
   Palette,
-  Radio,
   Sparkles,
   Users,
-  Zap,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface ReaderLocation {
   latitude: number | null;
@@ -53,7 +62,10 @@ interface BookOption {
 }
 
 const MapPage = () => {
-  const [tab, setTab] = useState<'readers' | 'friends'>('readers');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialMode = (searchParams.get('tab') as MapMode) || 'readers';
+
+  const [tab, setTab] = useState<MapMode>(initialMode);
   const [readers, setReaders] = useState<ReaderLocation[]>([]);
   const [readersLoading, setReadersLoading] = useState(false);
   const [readersError, setReadersError] = useState<string | null>(null);
@@ -63,6 +75,12 @@ const MapPage = () => {
   const [locationConsentChecked, setLocationConsentChecked] = useState(false);
   const [showBitmojiCreator, setShowBitmojiCreator] = useState(false);
   const [showAvatarUpload, setShowAvatarUpload] = useState(false);
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<ExploreCategory>('all');
+  const [selectedMarker, setSelectedMarker] = useState<SelectedMapMarker | null>(null);
+
   const { user } = useAuth();
   const { data: userAvatar } = useUserAvatar();
   const { data: userProfile } = useUserProfile();
@@ -75,6 +93,10 @@ const MapPage = () => {
     ?? null;
 
   const friendsQuery = useFriends();
+  const { data: exploreItems = [] } = useExploreSpots({
+    category: selectedCategory,
+    userCoords: currentLocation,
+  });
 
   // Use only the location the signed-in user has already chosen to share.
   // Opening this page must never trigger a new GPS permission prompt.
@@ -101,6 +123,7 @@ const MapPage = () => {
     return () => { active = false; };
   }, [user?.id]);
 
+  // Fetch nearby readers when in readers tab and book is selected
   useEffect(() => {
     let cancelled = false;
 
@@ -133,8 +156,6 @@ const MapPage = () => {
           return;
         }
 
-        // The RPC returns coarse coordinates and avatar URLs only for mutually
-        // consenting friends, so map pins never expose exact peer locations.
         const readerList = (data || []).map((reader: any) => ({
           user_id: reader.reader_id,
           latitude: reader.approximate_latitude == null ? null : Number(reader.approximate_latitude),
@@ -142,7 +163,7 @@ const MapPage = () => {
           avatar_img_url: reader.avatar_img_url ?? null,
           profiles: {
             full_name: reader.reader_name ?? null,
-            username: (reader.reader_name || 'reader').toLowerCase().replace(/\\s+/g, '_'),
+            username: (reader.reader_name || 'reader').toLowerCase().replace(/\s+/g, '_'),
           },
           distance: reader.distance_km == null ? undefined : Number(reader.distance_km),
           reading_since: reader.reading_since,
@@ -188,6 +209,45 @@ const MapPage = () => {
     };
   }, [user?.id, selectedBook?.id, locationSharingEnabled, currentLocation]);
 
+  // Toggle location sharing / Ghost mode
+  const handleToggleSharing = async () => {
+    if (!user?.id) {
+      toast.info('Sign in to manage your map location sharing.');
+      return;
+    }
+
+    if (locationSharingEnabled) {
+      try {
+        await disableMyLocationSharing();
+        setLocationSharingEnabled(false);
+        setCurrentLocation(null);
+        toast.success('Ghost Mode activated. Your location is now hidden from other readers.');
+      } catch (err) {
+        toast.error('Could not activate Ghost Mode. Please try again.');
+      }
+    } else {
+      setShowConsentModal(true);
+    }
+  };
+
+  const handleConsentGiven = () => {
+    setShowConsentModal(false);
+    setShowPermissionModal(true);
+  };
+
+  const handleRequestLocation = async () => {
+    try {
+      setShowPermissionModal(false);
+      const coords = await getCurrentLocation();
+      await saveMyLocation(coords);
+      setCurrentLocation(coords);
+      setLocationSharingEnabled(true);
+      toast.success('Location sharing enabled! Your Bitmoji is now active on the map.');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not save your location.');
+    }
+  };
+
   const readerPoints = useMemo<MapplsPoint[]>(() => {
     const points: MapplsPoint[] = [];
     if (locationSharingEnabled && currentLocation) {
@@ -198,6 +258,7 @@ const MapPage = () => {
         title: 'You (Your location)',
         description: selectedBook ? `Reading: ${selectedBook.title}` : 'Your shared location',
         avatarUrl: selfAvatarUrl,
+        markerType: 'avatar',
       });
     }
     readers
@@ -210,19 +271,28 @@ const MapPage = () => {
           !(reader.latitude === 0 && reader.longitude === 0),
       )
       .forEach((reader) => {
+        const title = reader.profiles?.full_name || reader.profiles?.username || 'Reader';
+        if (
+          searchQuery.trim() &&
+          !title.toLowerCase().includes(searchQuery.toLowerCase().trim())
+        ) {
+          return;
+        }
         points.push({
           id: reader.user_id,
           lat: reader.latitude!,
           lng: reader.longitude!,
-          title: reader.profiles?.full_name || reader.profiles?.username || 'Reader',
+          title,
           description: reader.distance != null && Number.isFinite(reader.distance)
             ? `${reader.distance.toFixed(1)} km away`
             : 'Reading this book',
           avatarUrl: reader.avatar_img_url ?? null,
+          markerType: 'avatar',
+          data: reader,
         });
       });
     return points;
-  }, [readers, locationSharingEnabled, currentLocation, selectedBook, selfAvatarUrl]);
+  }, [readers, locationSharingEnabled, currentLocation, selectedBook, selfAvatarUrl, searchQuery]);
 
   const friendPoints = useMemo<MapplsPoint[]>(() => {
     const points: MapplsPoint[] = [];
@@ -234,6 +304,7 @@ const MapPage = () => {
         title: 'You (Your location)',
         description: 'Your shared location',
         avatarUrl: selfAvatarUrl,
+        markerType: 'avatar',
       });
     }
     const friends = friendsQuery.data || [];
@@ -252,109 +323,204 @@ const MapPage = () => {
       const lng = Number(profile.location_lng);
       if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) return;
 
+      const title = profile.full_name || profile.username || 'Friend';
+      if (
+        searchQuery.trim() &&
+        !title.toLowerCase().includes(searchQuery.toLowerCase().trim())
+      ) {
+        return;
+      }
+
       points.push({
         id: String(friend.id ?? profile.id ?? `${lat},${lng}`),
         lat,
         lng,
-        title: profile.full_name || profile.username || 'Friend',
+        title,
         description: 'Friend who has enabled location sharing',
         avatarUrl: profile.avatar_img_url ?? profile.profile_photo_url ?? null,
+        markerType: 'avatar',
+        data: friend,
       });
     });
     return points;
-  }, [friendsQuery.data, locationSharingEnabled, currentLocation, selfAvatarUrl]);
+  }, [friendsQuery.data, locationSharingEnabled, currentLocation, selfAvatarUrl, searchQuery]);
+
+  const explorePoints = useMemo<MapplsPoint[]>(() => {
+    const points: MapplsPoint[] = [];
+    if (locationSharingEnabled && currentLocation) {
+      points.push({
+        id: 'self',
+        lat: currentLocation.lat,
+        lng: currentLocation.lng,
+        title: 'You (Your location)',
+        description: 'Your shared location',
+        avatarUrl: selfAvatarUrl,
+        markerType: 'avatar',
+      });
+    }
+
+    const q = searchQuery.toLowerCase().trim();
+    exploreItems.forEach((item) => {
+      if (
+        q &&
+        !item.title.toLowerCase().includes(q) &&
+        !item.address.toLowerCase().includes(q) &&
+        !(item.city && item.city.toLowerCase().includes(q))
+      ) {
+        return;
+      }
+
+      points.push({
+        id: item.id,
+        lat: item.latitude,
+        lng: item.longitude,
+        title: item.title,
+        description: item.address ? (item.city ? `${item.address}, ${item.city}` : item.address) : item.category,
+        avatarUrl: item.image_url,
+        markerType: item.item_type === 'literary_event' ? 'event' : 'place',
+        category: item.category,
+        data: item,
+      });
+    });
+
+    return points;
+  }, [exploreItems, locationSharingEnabled, currentLocation, selfAvatarUrl, searchQuery]);
+
+  const handleMarkerClick = (point: MapplsPoint) => {
+    if (point.id === 'self') {
+      setSelectedMarker({
+        type: 'self',
+        id: 'self',
+        title: point.title,
+        avatarUrl: point.avatarUrl,
+        lat: point.lat,
+        lng: point.lng,
+        readingActivity: selectedBook ? selectedBook.title : 'Active on Sahadhyayi Map',
+      });
+      return;
+    }
+
+    if (tab === 'readers') {
+      const reader = point.data as ReaderLocation | undefined;
+      setSelectedMarker({
+        type: 'user',
+        id: point.id,
+        userId: reader?.user_id || point.id,
+        title: point.title,
+        avatarUrl: point.avatarUrl,
+        lat: point.lat,
+        lng: point.lng,
+        distanceKm: reader?.distance,
+        readingActivity: selectedBook ? selectedBook.title : 'Reader',
+      });
+      return;
+    }
+
+    if (tab === 'friends') {
+      const friend = point.data as any;
+      const profile = friend?.friend_profile;
+      setSelectedMarker({
+        type: 'user',
+        id: point.id,
+        userId: profile?.id,
+        title: point.title,
+        avatarUrl: point.avatarUrl,
+        lat: point.lat,
+        lng: point.lng,
+        readingActivity: 'Friend sharing location',
+      });
+      return;
+    }
+
+    // Explore tab
+    const item = point.data as any;
+    if (point.markerType === 'event') {
+      setSelectedMarker({
+        type: 'event',
+        id: point.id,
+        title: point.title,
+        category: point.category || 'Literary Event',
+        imageUrl: point.avatarUrl,
+        lat: point.lat,
+        lng: point.lng,
+        address: item?.address || point.description || '',
+        city: item?.city,
+        distanceKm: item?.distance_km,
+        description: item?.description,
+        startAt: item?.extra_meta?.start_at,
+        priceType: item?.extra_meta?.price_type,
+        registrationUrl: item?.extra_meta?.registration_url,
+        organizerName: item?.extra_meta?.organizer_name,
+      });
+    } else {
+      setSelectedMarker({
+        type: 'spot',
+        id: point.id,
+        title: point.title,
+        category: point.category || 'Reading Spot',
+        imageUrl: point.avatarUrl,
+        lat: point.lat,
+        lng: point.lng,
+        address: item?.address || point.description || '',
+        city: item?.city,
+        distanceKm: item?.distance_km,
+        description: item?.description,
+        amenities: item?.extra_meta?.amenities,
+        websiteUrl: item?.extra_meta?.website_url,
+      });
+    }
+  };
+
+  const handleModeChange = (nextMode: MapMode) => {
+    setTab(nextMode);
+    setSelectedMarker(null);
+    setSearchParams({ tab: nextMode }, { replace: true });
+    if (nextMode === 'friends' && user?.id) void friendsQuery.refetch();
+  };
 
   return (
     <>
-      <SEO title="Reader Snap Map — Live Reader Community | Sahadhyayi" description="Discover readers and friends reading near you in real-time with customizable reading Bitmojis and book sharing." canonical="https://sahadhyayi.com/map" url="https://sahadhyayi.com/map" />
-      <main className="min-h-screen px-4 pb-16 pt-6 bg-[#FAF7F2] dark:bg-[#0B0D0C] text-[#202820] dark:text-[#F3F0E7]">
-        <div className="mx-auto max-w-5xl space-y-5">
-          {/* ── Snapchat Style Top Header HUD ── */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white/80 dark:bg-[#111614]/80 backdrop-blur-md border border-[#E5DED2] dark:border-[#29332D] rounded-2xl p-4 shadow-sm">
-            <div className="space-y-1">
-              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-[11px] font-bold text-amber-800 dark:text-amber-300">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                Snap Map for Readers
-              </div>
-              <h1 className="text-xl sm:text-2xl font-serif font-bold tracking-tight">
-                Live Reader Map
-              </h1>
-              <p className="text-xs text-[#687067] dark:text-[#A5ADA6]">
-                See what fellow book lovers are reading around your city with custom Bitmojis.
-              </p>
-            </div>
+      <SEO
+        title="Reader Snap Map — Live Reader Community & Book Discovery | Sahadhyayi"
+        description="Discover readers, friends, libraries, bookstores and literary events around you with custom Bitmojis and book sharing."
+        canonical="https://sahadhyayi.com/map"
+        url="https://sahadhyayi.com/map"
+      />
 
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Ghost Mode Pill */}
-              <div
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border ${
-                  locationSharingEnabled
-                    ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300'
-                    : 'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-300'
-                }`}
-                title={locationSharingEnabled ? 'Your approximate location is visible to fellow readers' : 'Ghost mode: you are browsing privately'}
-              >
-                {locationSharingEnabled ? (
-                  <>
-                    <Eye className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Sharing Active</span>
-                  </>
-                ) : (
-                  <>
-                    <EyeOff className="w-3.5 h-3.5 text-slate-500" />
-                    <span>Ghost Mode</span>
-                  </>
-                )}
-              </div>
+      <main className="min-h-screen px-3 sm:px-4 pb-16 pt-3 bg-[#FAF7F2] dark:bg-[#0B0D0C] text-[#202820] dark:text-[#F3F0E7] space-y-3">
+        <div className="mx-auto max-w-5xl space-y-3">
+          {/* Snapchat Style Top HUD */}
+          <MapTopHUD
+            mode={tab}
+            onModeChange={handleModeChange}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            isSharing={locationSharingEnabled}
+            onToggleSharing={handleToggleSharing}
+            onOpenAvatarModal={() => setShowBitmojiCreator(true)}
+            userAvatarUrl={selfAvatarUrl}
+            readersCount={readers.length}
+            friendsCount={(friendsQuery.data || []).length}
+            exploreCount={exploreItems.length}
+          />
 
-              {/* Upload Photo / Avatar Button */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowAvatarUpload(true)}
-                className="rounded-xl gap-1.5 text-xs h-9 border-[#DCD5C9] dark:border-[#29332D] hover:bg-[#F3EFE7] dark:hover:bg-[#1C3024]"
-              >
-                {selfAvatarUrl ? (
-                  <img src={selfAvatarUrl} alt="" className="w-4 h-4 rounded-full object-cover" />
-                ) : (
-                  <Camera className="w-3.5 h-3.5 text-[#1C442D] dark:text-[#D5B16D]" />
-                )}
-                <span>Upload Avatar</span>
-              </Button>
+          {tab === 'explore' && (
+            <MapCategoryFilters
+              selectedCategory={selectedCategory}
+              onSelectCategory={setSelectedCategory}
+            />
+          )}
 
-              {/* Bitmoji Creator Button */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowBitmojiCreator(true)}
-                className="rounded-xl gap-1.5 text-xs h-9 border-[#DCD5C9] dark:border-[#29332D] hover:bg-[#F3EFE7] dark:hover:bg-[#1C3024]"
-              >
-                {userAvatar?.avatar_img_url ? (
-                  <img src={userAvatar.avatar_img_url} alt="" className="w-4 h-4 rounded-full object-cover" />
-                ) : (
-                  <Palette className="w-3.5 h-3.5 text-[#98733A] dark:text-[#D5B16D]" />
-                )}
-                <span>Customize Bitmoji</span>
-              </Button>
-            </div>
-          </div>
-
+          {/* Unified Accessible Tabs List */}
           <Tabs
             value={tab}
-            onValueChange={(value) => {
-              const nextTab = value as 'readers' | 'friends';
-              setTab(nextTab);
-              if (nextTab === 'friends' && user?.id) void friendsQuery.refetch();
-            }}
-            className="w-full"
+            onValueChange={(val) => handleModeChange(val as MapMode)}
+            className="w-full space-y-3"
           >
-            <TabsList className="mb-4 grid w-full grid-cols-2 rounded-xl p-1 bg-[#EFECE6] dark:bg-[#161D19] border border-[#DCD5C9] dark:border-[#29332D]">
+            <TabsList className="grid w-full grid-cols-3 rounded-xl p-1 bg-[#EFECE6] dark:bg-[#161D19] border border-[#DCD5C9] dark:border-[#29332D]">
               <TabsTrigger
                 value="readers"
-                onClick={() => setTab('readers')}
+                onClick={() => handleModeChange('readers')}
                 className="rounded-lg text-xs font-bold data-[state=active]:bg-white dark:data-[state=active]:bg-[#1C442D] data-[state=active]:shadow-xs"
               >
                 📚 Readers Map {readers.length > 0 && `(${readers.length})`}
@@ -362,15 +528,23 @@ const MapPage = () => {
               <TabsTrigger
                 value="friends"
                 onClick={() => {
-                  setTab('friends');
+                  handleModeChange('friends');
                   if (user?.id) void friendsQuery.refetch();
                 }}
                 className="rounded-lg text-xs font-bold data-[state=active]:bg-white dark:data-[state=active]:bg-[#1C442D] data-[state=active]:shadow-xs"
               >
                 🧑‍🤝‍🧑 Friends Map
               </TabsTrigger>
+              <TabsTrigger
+                value="explore"
+                onClick={() => handleModeChange('explore')}
+                className="rounded-lg text-xs font-bold data-[state=active]:bg-white dark:data-[state=active]:bg-[#1C442D] data-[state=active]:shadow-xs"
+              >
+                🧭 Explore Map {exploreItems.length > 0 && `(${exploreItems.length})`}
+              </TabsTrigger>
             </TabsList>
 
+            {/* Readers Map Content */}
             <TabsContent value="readers" className="space-y-4">
               <Card className="rounded-2xl border-[#E5DED2] dark:border-[#29332D] shadow-xs">
                 <CardHeader className="pb-3">
@@ -401,11 +575,14 @@ const MapPage = () => {
                   <p role="status">
                     Enable location sharing in your social settings to discover nearby readers. Your location is not requested automatically.
                   </p>
-                  <Link to="/social?tab=map">
-                    <Button size="sm" variant="outline" className="text-xs h-7 shrink-0 border-amber-300 dark:border-amber-700 bg-white dark:bg-amber-950 text-amber-900 dark:text-amber-100">
-                      Enable in Social →
-                    </Button>
-                  </Link>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleToggleSharing}
+                    className="text-xs h-7 shrink-0 border-amber-300 dark:border-amber-700 bg-white dark:bg-amber-950 text-amber-900 dark:text-amber-100"
+                  >
+                    Enable Now →
+                  </Button>
                 </div>
               )}
               {readersLoading && (
@@ -415,14 +592,23 @@ const MapPage = () => {
                 <p className="text-sm text-muted-foreground" role="status">{readersError}</p>
               )}
 
-              {/* Map Canvas with Snapchat-style rounded frame */}
-              <div className="overflow-hidden rounded-2xl border border-[#E5DED2] dark:border-[#29332D] shadow-md bg-white dark:bg-[#111614]">
+              {/* Map Canvas */}
+              <div className="relative overflow-hidden rounded-2xl border border-[#E5DED2] dark:border-[#29332D] shadow-md bg-white dark:bg-[#111614] h-[480px] sm:h-[540px]">
                 <MapplsMap
                   key="readers-map"
                   apiKey={MAPPLS_API_KEY}
                   points={readerPoints}
                   center={currentLocation}
+                  onMarkerClick={handleMarkerClick}
                   emptyMessage={!selectedBook ? 'Choose a book above to discover active readers.' : !locationSharingEnabled ? 'Enable location sharing to discover nearby readers on Snap Map.' : 'No nearby readers are sharing this book location yet.'}
+                />
+                <MapFloatingControls
+                  hasUserLocation={Boolean(currentLocation)}
+                  onRecenter={() => {
+                    if (currentLocation) toast.info('Recentering to your location');
+                    else handleToggleSharing();
+                  }}
+                  onResetView={() => toast.info('Fitting all community markers')}
                 />
               </div>
 
@@ -476,12 +662,9 @@ const MapPage = () => {
                   </div>
                 </div>
               )}
-
-              <p className="text-xs text-muted-foreground">
-                This map shows friends who share the selected book and have both enabled location sharing. Pins use approximate coordinates; exact reader coordinates are never displayed.
-              </p>
             </TabsContent>
 
+            {/* Friends Map Content */}
             <TabsContent value="friends" className="space-y-4">
               {friendsQuery.isLoading && (
                 <p className="text-sm text-muted-foreground" role="status">Loading friends and their shared locations…</p>
@@ -494,13 +677,22 @@ const MapPage = () => {
                   </Button>
                 </div>
               )}
-              <div className="overflow-hidden rounded-2xl border border-[#E5DED2] dark:border-[#29332D] shadow-md bg-white dark:bg-[#111614]">
+              <div className="relative overflow-hidden rounded-2xl border border-[#E5DED2] dark:border-[#29332D] shadow-md bg-white dark:bg-[#111614] h-[500px] sm:h-[560px]">
                 <MapplsMap
                   key="friends-map"
                   apiKey={MAPPLS_API_KEY}
                   points={friendPoints}
                   center={currentLocation}
+                  onMarkerClick={handleMarkerClick}
                   emptyMessage="No friends have shared a mappable location with you yet."
+                />
+                <MapFloatingControls
+                  hasUserLocation={Boolean(currentLocation)}
+                  onRecenter={() => {
+                    if (currentLocation) toast.info('Recentering to your location');
+                    else handleToggleSharing();
+                  }}
+                  onResetView={() => toast.info('Fitting all community markers')}
                 />
               </div>
 
@@ -508,8 +700,45 @@ const MapPage = () => {
                 Only accepted friends who have enabled location sharing and given consent are shown. Your own marker appears here when you have enabled sharing too.
               </p>
             </TabsContent>
+
+            {/* Explore Map Content */}
+            <TabsContent value="explore" className="space-y-4">
+              <div className="relative overflow-hidden rounded-2xl border border-[#E5DED2] dark:border-[#29332D] shadow-md bg-white dark:bg-[#111614] h-[520px] sm:h-[580px]">
+                <MapplsMap
+                  key="explore-map"
+                  apiKey={MAPPLS_API_KEY}
+                  points={explorePoints}
+                  center={currentLocation}
+                  onMarkerClick={handleMarkerClick}
+                  emptyMessage="No public reading spots or events found matching your filter."
+                />
+                <MapFloatingControls
+                  hasUserLocation={Boolean(currentLocation)}
+                  onRecenter={() => {
+                    if (currentLocation) toast.info('Recentering to your location');
+                    else handleToggleSharing();
+                  }}
+                  onResetView={() => toast.info('Fitting all community markers')}
+                />
+
+                {!selectedMarker && (
+                  <MapDiscoveryDrawer
+                    mode="explore"
+                    items={exploreItems}
+                    readers={[]}
+                    onSelectItem={(marker) => setSelectedMarker(marker)}
+                  />
+                )}
+              </div>
+            </TabsContent>
           </Tabs>
         </div>
+
+        {/* Selected Marker Slide-up Bottom Sheet */}
+        <MapBottomSheetPreview
+          marker={selectedMarker}
+          onClose={() => setSelectedMarker(null)}
+        />
       </main>
 
       {/* Snap Map Avatar Upload Dialog */}
@@ -526,6 +755,19 @@ const MapPage = () => {
         onClose={() => setShowBitmojiCreator(false)}
         onSave={() => setShowBitmojiCreator(false)}
         initialFeatures={userAvatar?.avatar_json as Record<string, string> | null}
+      />
+
+      {/* Location Consent & Permission Modals */}
+      <LocationConsentModal
+        isOpen={showConsentModal}
+        onClose={() => setShowConsentModal(false)}
+        onConsentGiven={handleConsentGiven}
+      />
+
+      <LocationPermissionModal
+        isOpen={showPermissionModal}
+        onClose={() => setShowPermissionModal(false)}
+        onRequestLocation={handleRequestLocation}
       />
     </>
   );
