@@ -36,6 +36,7 @@ const accentStyles = {
 export function PeopleCollectionPage({ collectionKey }: { collectionKey: PeopleCollectionKey }) {
   const fallback = peopleCollections[collectionKey];
   const [search, setSearch] = useState("");
+  const [activeTheme, setActiveTheme] = useState("All causes");
   const { data: backendCollection, isLoading } = useQuery({
     queryKey: ["people-collection", collectionKey],
     queryFn: async () => {
@@ -55,20 +56,15 @@ export function PeopleCollectionPage({ collectionKey }: { collectionKey: PeopleC
   const collection = backendCollection?.people?.length ? backendCollection : fallback;
   const accent = accentStyles[collection.accent];
 
+  const causeFilters = useMemo(() => ["All causes", ...Array.from(new Set(collection.people.flatMap((person) => person.themes))).sort()], [collection.people]);
   const visiblePeople = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
-    if (!query) return collection.people;
-    return collection.people.filter((person) =>
-      [
-        person.name,
-        person.role,
-        person.origin,
-        person.summary,
-        ...person.themes,
-        ...person.story,
-      ].join(" ").toLocaleLowerCase().includes(query)
-    );
-  }, [collection.people, search]);
+    return collection.people.filter((person) => {
+      const matchesCause = activeTheme === "All causes" || person.themes.includes(activeTheme);
+      const matchesSearch = !query || [person.name, person.role, person.origin, person.summary, ...person.themes, ...person.story].join(" ").toLocaleLowerCase().includes(query);
+      return matchesCause && matchesSearch;
+    });
+  }, [collection.people, search, activeTheme]);
 
   return (
     <>
@@ -144,6 +140,16 @@ export function PeopleCollectionPage({ collectionKey }: { collectionKey: PeopleC
             </div>
           </div>
 
+          <div className="mb-8 flex flex-wrap gap-2" aria-label="Filter activists by cause">
+            {causeFilters.map((cause) => <button key={cause} type="button" onClick={() => setActiveTheme(cause)} aria-pressed={activeTheme === cause} className={"rounded-full border px-3.5 py-2 text-xs font-semibold transition " + (activeTheme === cause ? "border-[#1C442D] bg-[#1C442D] text-white dark:border-[#D5B16D] dark:bg-[#D5B16D] dark:text-[#101711]" : "border-[#D9D2C6] bg-white text-[#526052] hover:border-[#81A889] dark:border-[#34443A] dark:bg-[#111614] dark:text-[#B9C9BC]")}>{cause}</button>)}
+          </div>
+          {collection.people[0] && activeTheme === "All causes" && !search.trim() && <section className="mb-8 overflow-hidden rounded-3xl border border-[#B9CDB8]/50 bg-gradient-to-br from-[#173824] via-[#1C442D] to-[#263D2D] p-6 text-white sm:p-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#D5B16D]">Start with a story</p>
+            <h2 className="mt-2 font-serif text-2xl font-bold sm:text-3xl">{collection.people[0].name}</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/80">{collection.people[0].summary}</p>
+            <div className="mt-4 flex flex-wrap gap-2">{collection.people[0].themes.map((theme) => <span key={theme} className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs">{theme}</span>)}</div>
+            <button type="button" onClick={() => document.getElementById("profile-" + collection.people[0].slug)?.scrollIntoView({ behavior: "smooth", block: "center" })} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-[#1C442D] hover:bg-[#F2F5EF]">Explore featured story <ArrowUpRight className="h-4 w-4" /></button>
+          </section>}
           <div className="mb-5 flex items-center justify-between gap-3">
             <div>
               <h2 className="font-serif text-2xl font-bold tracking-tight sm:text-3xl">People and their journeys</h2>
@@ -154,7 +160,7 @@ export function PeopleCollectionPage({ collectionKey }: { collectionKey: PeopleC
           {isLoading && !backendCollection ? <div className="rounded-xl border p-8 text-center text-sm text-muted-foreground">Loading profiles…</div> : visiblePeople.length > 0 ? (
             <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
               {visiblePeople.map((person) => (
-                <article key={person.slug} className="overflow-hidden rounded-2xl border border-[#E5DED2] bg-white shadow-[0_6px_24px_rgba(28,32,29,0.035)] transition-shadow hover:shadow-lg dark:border-[#29332D] dark:bg-[#111614] dark:shadow-none">
+                <article id={"profile-" + person.slug} key={person.slug} className="overflow-hidden rounded-2xl border border-[#E5DED2] bg-white shadow-[0_6px_24px_rgba(28,32,29,0.035)] transition-shadow hover:shadow-lg dark:border-[#29332D] dark:bg-[#111614] dark:shadow-none">
                   <details className="group">
                     <summary className="cursor-pointer list-none p-5 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] sm:p-6 [&::-webkit-details-marker]:hidden">
                       <div className="flex items-start gap-4">
@@ -231,7 +237,7 @@ export function PeopleCollectionPage({ collectionKey }: { collectionKey: PeopleC
               <Search className="mx-auto h-7 w-7 text-[#8B9188]" aria-hidden="true" />
               <h3 className="mt-3 font-serif text-xl font-bold">No profiles match that search</h3>
               <p className="mt-2 text-sm text-[#687067] dark:text-[#A5ADA6]">Try another name, place or theme.</p>
-              <button type="button" onClick={() => setSearch("")} className="mt-4 rounded-lg border border-[#D5CEC2] px-4 py-2 text-xs font-semibold text-[#1C442D] hover:bg-[#EBF2EC] dark:border-[#34443A] dark:text-[#D5B16D] dark:hover:bg-[#1C3024]">Clear search</button>
+              <button type="button" onClick={() => { setSearch(""); setActiveTheme("All causes"); }} className="mt-4 rounded-lg border border-[#D5CEC2] px-4 py-2 text-xs font-semibold text-[#1C442D] hover:bg-[#EBF2EC] dark:border-[#34443A] dark:text-[#D5B16D] dark:hover:bg-[#1C3024]">Clear search</button>
             </div>
           )}
 
