@@ -919,7 +919,7 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
                     size="lg"
                   >
                     <Save className="w-5 h-5 mr-2" />
-                    {updateAvatarMutation.isPending ? 'Saving...' : currentPhotoPreviewUrl ? 'Save Photo Avatar' : 'Save Avatar'}
+                    {updateAvatarMutation.isPending ? 'Saving...' : (uploadedAvatarFile || currentPhotoPreviewUrl) ? 'Save Photo Avatar' : 'Save Avatar'}
                   </Button>
                   <Button onClick={resetToDefault} variant="outline" size="lg" className="w-full md:w-auto">
                     <RotateCcw className="w-5 h-5 mr-2" />
