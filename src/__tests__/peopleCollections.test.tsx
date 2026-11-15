@@ -79,6 +79,23 @@ describe("public people collections", () => {
     expect(screen.queryByText("Kailash Satyarthi")).not.toBeInTheDocument();
   });
 
+  it("filters Social Activists by cause and keeps the featured story discoverable", async () => {
+    renderWithQueryClient(
+      <MemoryRouter initialEntries={["/social-activists"]}>
+        <PeopleCollectionPage collectionKey="social-activists" />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("heading", { name: "Kailash Satyarthi" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /explore featured story/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Children's rights" }));
+    expect(screen.getByText("Kailash Satyarthi")).toBeInTheDocument();
+    expect(screen.queryByText("Ela Bhatt")).not.toBeInTheDocument();
+    expect(screen.getByText(/Showing 1 of 4 profiles/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "All causes" }));
+    expect(screen.getByText("Ela Bhatt")).toBeInTheDocument();
+  });
+
   it("renders the Freedom Fighters collection", async () => {
     renderWithQueryClient(
       <MemoryRouter initialEntries={["/freedom-fighters"]}>
