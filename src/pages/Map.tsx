@@ -92,6 +92,11 @@ const MapPage = () => {
   useEffect(() => {
     let cancelled = false;
 
+    if (tab !== 'readers') {
+      setReadersLoading(false);
+      return () => { cancelled = true; };
+    }
+
     if (!selectedBook?.id || !locationSharingEnabled) {
       setReaders([]);
       setReadersError(null);
@@ -127,7 +132,7 @@ const MapPage = () => {
             full_name: reader.reader_name ?? null,
             username: (reader.reader_name || 'reader').toLowerCase().replace(/\\s+/g, '_'),
           },
-          distance: reader.distance_km,
+          distance: reader.distance_km == null ? undefined : Number(reader.distance_km),
           reading_since: reader.reading_since,
         }));
         setReaders(readerList);
@@ -148,7 +153,7 @@ const MapPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [selectedBook?.id, locationSharingEnabled]);
+  }, [selectedBook?.id, locationSharingEnabled, tab]);
 
   // Sync reader book location so other users reading this book can discover this reader
   useEffect(() => {
@@ -198,7 +203,9 @@ const MapPage = () => {
           lat: reader.latitude!,
           lng: reader.longitude!,
           title: reader.profiles?.full_name || reader.profiles?.username || 'Reader',
-          description: reader.distance == null ? 'Reading this book' : `${reader.distance.toFixed(1)} km away`,
+          description: reader.distance != null && Number.isFinite(reader.distance)
+            ? `${reader.distance.toFixed(1)} km away`
+            : 'Reading this book',
           avatarUrl: reader.avatar_img_url ?? null,
         });
       });
@@ -308,7 +315,15 @@ const MapPage = () => {
             </div>
           </div>
 
-          <Tabs value={tab} onValueChange={(value) => setTab(value as 'readers' | 'friends')} className="w-full">
+          <Tabs
+            value={tab}
+            onValueChange={(value) => {
+              const nextTab = value as 'readers' | 'friends';
+              setTab(nextTab);
+              if (nextTab === 'friends' && user?.id) void friendsQuery.refetch();
+            }}
+            className="w-full"
+          >
             <TabsList className="mb-4 grid w-full grid-cols-2 rounded-xl p-1 bg-[#EFECE6] dark:bg-[#161D19] border border-[#DCD5C9] dark:border-[#29332D]">
               <TabsTrigger value="readers" className="rounded-lg text-xs font-bold data-[state=active]:bg-white dark:data-[state=active]:bg-[#1C442D] data-[state=active]:shadow-xs">
                 📚 Readers Map {readers.length > 0 && `(${readers.length})`}
@@ -398,7 +413,7 @@ const MapPage = () => {
                               {reader.profiles?.full_name || 'Reader'}
                             </p>
                             <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6]">
-                              {reader.distance != null ? `${reader.distance.toFixed(1)} km away` : 'Active nearby'}
+                              {reader.distance != null && Number.isFinite(reader.distance) ? `${reader.distance.toFixed(1)} km away` : 'Active nearby'}
                             </p>
                           </div>
                         </div>
@@ -420,7 +435,15 @@ const MapPage = () => {
 
             <TabsContent value="friends" className="space-y-4">
               {friendsQuery.isLoading && (
-                <p className="text-sm text-muted-foreground" role="status">Loading friends…</p>
+                <p className="text-sm text-muted-foreground" role="status">Loading friends and their shared locations…</p>
+              )}
+              {friendsQuery.error && (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-300/60 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-200" role="alert">
+                  <span>Friends and their map locations could not be loaded. Your map is still available.</span>
+                  <Button type="button" size="sm" variant="outline" onClick={() => void friendsQuery.refetch()}>
+                    Retry friends
+                  </Button>
+                </div>
               )}
               <div className="overflow-hidden rounded-2xl border border-[#E5DED2] dark:border-[#29332D] shadow-md bg-white dark:bg-[#111614]">
                 <MapplsMap
@@ -432,7 +455,7 @@ const MapPage = () => {
               </div>
 
               <p className="text-xs text-muted-foreground">
-                Only friends whose location-sharing setting is enabled are shown.
+                Only accepted friends who have enabled location sharing and given consent are shown. Your own marker appears here when you have enabled sharing too.
               </p>
             </TabsContent>
           </Tabs>

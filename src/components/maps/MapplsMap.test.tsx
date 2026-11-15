@@ -384,7 +384,10 @@ describe('MapplsMap', () => {
     };
 
     render(<MapplsMap apiKey="valid-key" points={[{ id: 'p1', lat: 12.9, lng: 77.6, title: 'Bangalore' }]} />);
-    expect(await screen.findByRole('alert')).toHaveTextContent('reader avatar marker could not be created');
+    expect(await screen.findByRole('status')).toHaveTextContent('reader marker could not be added');
+    expect(screen.getByLabelText('Interactive Mappls map')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Retry markers' })).toBeInTheDocument();
   });
 
   it('falls back to average center when fitBounds throws an error', async () => {
@@ -477,9 +480,8 @@ describe('MapplsMap', () => {
     (mapOptions?.token_callback as (event: unknown) => void)({ code: 505, error: 'Custom gateway error' });
     expect(await screen.findByRole('alert')).toHaveTextContent('Mappls reported an authentication error (505)');
 
-    // Test generic map resource error without 401/403
-    listeners.error?.({ error: { status: 500 } });
-    expect(await screen.findByRole('alert')).toHaveTextContent('Mappls could not load one or more map resources');
+    // This instance is already in the fatal token state; recoverable resource
+    // events are covered independently so they cannot mask an auth failure.
   });
 
   it('handles Map constructor throwing an error on initialization', async () => {
@@ -522,4 +524,49 @@ describe('MapplsMap', () => {
     resizeCallback?.();
     expect(resize).toHaveBeenCalled();
   });
+  it('retries only failed avatar markers without tearing down the map', async () => {
+    const map = { addListener: vi.fn(), loaded: () => true, remove: vi.fn() };
+    const Marker = vi.fn()
+      .mockImplementationOnce(function () { throw new Error('temporary marker renderer error'); })
+      .mockImplementation(function () { return { remove: vi.fn() }; });
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () { return map; }),
+      Marker,
+      remove: vi.fn(),
+    };
+
+    render(<MapplsMap apiKey="valid-key" points={[
+      { id: 'reader-1', lat: 28.6, lng: 77.2, title: 'Reader One', avatarUrl: 'https://cdn.example.test/reader.svg' },
+    ]} />);
+
+    expect(await screen.findByRole('status')).toHaveTextContent('reader marker could not be added');
+    expect(screen.getByLabelText('Interactive Mappls map')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retry markers' }));
+    await waitFor(() => expect(Marker).toHaveBeenCalledTimes(2));
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Interactive Mappls map')).toBeInTheDocument();
+  });
+
+  it('keeps the map visible when Mappls reports a transient 500 resource error', async () => {
+    const listeners: Record<string, (event?: unknown) => void> = {};
+    const map = {
+      addListener: (event: string, callback: (event?: unknown) => void) => { listeners[event] = callback; },
+      loaded: () => true,
+      remove: vi.fn(),
+    };
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () { return map; }),
+      Marker: vi.fn().mockImplementation(function () { return {}; }),
+    };
+
+    render(<MapplsMap apiKey="valid-key" points={[]} />);
+    await waitFor(() => expect(listeners.error).toBeDefined());
+
+    listeners.error?.({ error: { status: 500 } });
+    expect(await screen.findByRole('status')).toHaveTextContent('Some map tiles or resources did not load');
+    expect(screen.getByLabelText('Interactive Mappls map')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
 });

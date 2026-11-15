@@ -25,6 +25,10 @@ const mapLocationMigration = readFileSync(
   toPath('../../supabase/migrations/20261114120000_fix_map_location_save_and_reader_avatars.sql'),
   'utf8',
 );
+const mapAvatarFallbackMigration = readFileSync(
+  toPath('../../supabase/migrations/20261115090000_fix_map_avatar_fallbacks.sql'),
+  'utf8',
+);
 const mapAvatarMigration = readFileSync(
   toPath('../../supabase/migrations/20261114180000_add_owner_scoped_map_avatar_rpcs.sql'),
   'utf8',
@@ -140,6 +144,15 @@ describe('Social discovery and location privacy regressions', () => {
     expect(mapLocationMigration).toMatch(/get_profiles_for_social_context\(profile_ids uuid\[\]\)[\s\S]*?ua\.avatar_img_url/);
     expect(mapLocationMigration).toMatch(/get_nearby_book_readers\([\s\S]*?ua\.avatar_img_url[\s\S]*?internal_security\.has_location_consent\(ubl\.user_id\)/);
     expect(mapLocationMigration).toMatch(/get_friend_locations\(\)[\s\S]*?ua\.avatar_img_url[\s\S]*?internal_security\.has_location_consent\(p\.id\)/);
+  });
+
+  it('falls back to profile photos for readers without a custom Bitmoji without changing privacy rules', () => {
+    expect(mapAvatarFallbackMigration).toContain('CREATE OR REPLACE FUNCTION public.get_profiles_for_social_context');
+    expect(mapAvatarFallbackMigration).toContain('CREATE OR REPLACE FUNCTION public.get_nearby_book_readers');
+    expect(mapAvatarFallbackMigration).toContain('CREATE OR REPLACE FUNCTION public.get_friend_locations');
+    expect(mapAvatarFallbackMigration.split('COALESCE(ua.avatar_img_url, p.profile_photo_url) AS avatar_img_url')).toHaveLength(4);
+    expect(mapAvatarFallbackMigration).toContain('internal_security.has_location_consent(p.id)');
+    expect(mapAvatarFallbackMigration).toContain('internal_security.has_location_consent(ubl.user_id)');
   });
 
   it('reads and saves the current Bitmoji through owner-scoped avatar RPCs', () => {

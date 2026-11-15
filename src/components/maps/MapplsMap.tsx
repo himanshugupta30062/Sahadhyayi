@@ -147,6 +147,21 @@ const getTokenErrorMessage = (event: unknown): string => {
   return `Mappls reported an authentication error${code ? ` (${code})` : ''}. Verify the application credentials and Web Maps allocation.`;
 };
 
+const isAuthorizationMapEvent = (event: unknown): boolean => {
+  const details = event && typeof event === 'object' ? event as Record<string, unknown> : {};
+  const error = details.error && typeof details.error === 'object'
+    ? details.error as Record<string, unknown>
+    : {};
+  const status = String(error.status ?? details.status ?? '');
+  const message = [details.message, details.error, error.message]
+    .map((value) => typeof value === 'string' ? value.toLowerCase() : '')
+    .join(' ');
+  return status === '401' || status === '403' ||
+    message.includes('unauthorized') ||
+    message.includes('domain validation') ||
+    message.includes('token rejected');
+};
+
 const getMapEventMessage = (event: unknown): string => {
   const details = event && typeof event === 'object' ? event as Record<string, unknown> : {};
   const error = details.error && typeof details.error === 'object'
@@ -249,10 +264,19 @@ const getPointBoundsSignature = (points: MapplsPoint[]) => JSON.stringify(
 );
 
 const removeMarker = (map: MapplsRuntimeMap, marker: MapplsRuntimeMarker) => {
+  if (typeof window.mappls?.remove === 'function') {
+    try {
+      window.mappls.remove({ map, layer: marker });
+      return;
+    } catch {
+      // Some SDK builds expose remove but reject a marker created by another build.
+    }
+  }
+
   try {
-    window.mappls?.remove?.({ map, layer: marker });
+    marker.remove?.();
   } catch {
-    try { marker.remove?.(); } catch { /* map teardown is the final fallback */ }
+    // Map teardown remains the final cleanup fallback.
   }
 };
 
@@ -262,6 +286,10 @@ const removeMarkers = (map: MapplsRuntimeMap, markers: Map<string, MapplsMarkerR
 };
 
 const isValidPoint = (point: MapplsPoint) =>
+  typeof point.id === 'string' &&
+  point.id.trim().length > 0 &&
+  typeof point.title === 'string' &&
+  point.title.trim().length > 0 &&
   Number.isFinite(point.lat) &&
   Number.isFinite(point.lng) &&
   Math.abs(point.lat) <= 90 &&
@@ -285,6 +313,9 @@ export function MapplsMap({
   onMarkerClickRef.current = onMarkerClick;
   const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'missing-key'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
+  const [mapWarning, setMapWarning] = useState('');
+  const [markerIssue, setMarkerIssue] = useState('');
+  const [markerRetryCount, setMarkerRetryCount] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
@@ -307,6 +338,7 @@ export function MapplsMap({
     const reportFatalError = (message: string) => {
       if (cancelled) return;
       hasFatalError = true;
+      setMapWarning('');
       setErrorMessage(message);
       setStatus('error');
     };
@@ -355,12 +387,19 @@ export function MapplsMap({
           }
 
           const markReady = () => {
-            if (cancelled || markedReady || hasFatalError) return;
+            if (cancelled || hasFatalError) return;
+            setMapWarning('');
+            if (markedReady) return;
             markedReady = true;
             setErrorMessage('');
             setStatus('ready');
             window.requestAnimationFrame(() => {
-              if (!cancelled) map.resize?.();
+              if (cancelled) return;
+              try {
+                map.resize?.();
+              } catch (error) {
+                console.warn('Mappls resize after load failed; the map will retry on the next layout change:', error);
+              }
             });
           };
 
@@ -377,7 +416,18 @@ export function MapplsMap({
             return false;
           };
 
-          if (!addMapListener('error', (event) => reportFatalError(getMapEventMessage(event)))) {
+          if (!addMapListener('error', (event) => {
+            const message = getMapEventMessage(event);
+            // The SDK emits "error" for tile/source/resource failures as well as
+            // authentication failures. Only rejected credentials should block the
+            // map; transient tile failures must not hide working controls/markers.
+            if (isAuthorizationMapEvent(event)) {
+              reportFatalError(message);
+            } else if (!cancelled) {
+              console.warn('Mappls reported a recoverable map resource error:', message);
+              setMapWarning('Some map tiles or resources did not load. The map is still available; retry if the issue continues.');
+            }
+          })) {
             reportFatalError('The loaded Mappls SDK does not expose the documented map event API.');
             return;
           }
@@ -393,7 +443,13 @@ export function MapplsMap({
             hasFatalError = false;
             setErrorMessage('');
             setStatus('ready');
-            window.requestAnimationFrame(() => map.resize?.());
+            window.requestAnimationFrame(() => {
+              try {
+                map.resize?.();
+              } catch (error) {
+                console.warn('Mappls resize after WebGL recovery failed:', error);
+              }
+            });
           });
 
           addMapListener('load', markReady);
@@ -432,12 +488,28 @@ export function MapplsMap({
       observer.observe(mapElement.current);
     }
 
+    const handleWindowResize = () => {
+      const container = mapElement.current;
+      if (!container || container.clientWidth === 0 || container.clientHeight === 0) return;
+      if (mapInstance.current) {
+        try {
+          mapInstance.current.resize?.();
+        } catch {
+          // Resize failures are recoverable and should not destroy the map.
+        }
+      } else {
+        initializeMap();
+      }
+    };
+    window.addEventListener('resize', handleWindowResize);
+
     const currentMarkers = markers.current;
     initializeMap();
 
     return () => {
       cancelled = true;
       observer?.disconnect();
+      window.removeEventListener('resize', handleWindowResize);
 
       const map = mapInstance.current;
       if (map) {
@@ -461,7 +533,11 @@ export function MapplsMap({
     if (status !== 'ready' || !map) return;
 
     if (center && Number.isFinite(center.lat) && Number.isFinite(center.lng)) {
-      map.setCenter?.({ lat: center.lat, lng: center.lng });
+      try {
+        map.setCenter?.({ lat: center.lat, lng: center.lng });
+      } catch (error) {
+        console.warn('Mappls could not update its center:', error);
+      }
     }
   }, [center, status]);
 
@@ -472,9 +548,10 @@ export function MapplsMap({
 
     const validPoints = points.filter(isValidPoint);
     const desiredPoints = new Map(validPoints.map((point) => [point.id, point]));
+    let failedMarkers = 0;
 
-    // Keep stable markers in place. Only remove markers that disappeared or
-    // whose displayed data/position actually changed.
+    // Remove only disappeared or changed markers. This keeps avatar nodes stable
+    // across React renders and avoids accumulating SDK layers over time.
     markers.current.forEach((record, id) => {
       const nextPoint = desiredPoints.get(id);
       if (!nextPoint || getMarkerSignature(nextPoint) !== record.signature) {
@@ -495,50 +572,54 @@ export function MapplsMap({
       const popupHtml = `<div style="font-family:sans-serif;padding:4px 6px;min-width:140px;color:#1C201D;">${badgeHtml}<strong style="font-size:13px;display:block;">${escapedTitle}</strong>${escapedDesc ? `<span style="font-size:12px;color:#636B65;display:block;margin-top:2px;">${escapedDesc}</span>` : ''}</div>`;
 
       try {
-        // Mappls markerProperties documents html as a DOM element, not an HTML string.
         const marker = new MarkerConstructor({
           map,
           position: { lat: point.lat, lng: point.lng },
           title: point.title,
+          // Mappls v3 custom HTML markers accept a real DOM element. This lets
+          // avatar image errors be handled with addEventListener (no inline JS).
           html: createAvatarMarkerElement(point),
           width: 58,
           height: 68,
           offset: [0, -12],
           popupHtml,
         });
-        if (typeof marker.addListener === 'function') {
-          marker.addListener('click', () => {
-            onMarkerClickRef.current?.(point);
-          });
+        try {
+          marker.addListener?.('click', () => onMarkerClickRef.current?.(point));
+        } catch (error) {
+          console.warn('Mappls marker click listener could not be attached:', error);
         }
         markers.current.set(point.id, { marker, signature: getMarkerSignature(point) });
       } catch (error) {
+        failedMarkers += 1;
         console.error('Mappls could not create a reader avatar marker:', error);
-        setErrorMessage('The map loaded, but a reader avatar marker could not be created. Try reloading the map.');
-        setStatus('error');
       }
     });
+
+    setMarkerIssue(failedMarkers > 0
+      ? `${failedMarkers} reader marker${failedMarkers === 1 ? '' : 's'} could not be added. The map is still usable; retry marker loading.`
+      : '');
 
     const boundsSignature = getPointBoundsSignature(validPoints);
     if (boundsSignature !== lastBoundsSignature.current) {
       lastBoundsSignature.current = boundsSignature;
 
-      if (validPoints.length === 1) {
-        map.setCenter?.({ lat: validPoints[0].lat, lng: validPoints[0].lng });
-        map.setZoom?.(13);
-      } else if (validPoints.length > 1) {
-        const fitBounds = window.mappls?.fitBounds;
-        const bounds = validPoints.map((point) => [point.lng, point.lat]);
+      try {
+        if (validPoints.length === 1) {
+          map.setCenter?.({ lat: validPoints[0].lat, lng: validPoints[0].lng });
+          map.setZoom?.(13);
+        } else if (validPoints.length > 1) {
+          const fitBounds = window.mappls?.fitBounds;
+          const bounds = validPoints.map((point) => [point.lng, point.lat]);
 
-        if (fitBounds) {
-          try {
+          if (fitBounds) {
             new fitBounds({
               map,
               cType: 0,
               bounds,
               options: { padding: 96, duration: 650 },
             });
-          } catch {
+          } else {
             const averageCenter = validPoints.reduce(
               (result, point) => ({
                 lat: result.lat + point.lat / validPoints.length,
@@ -550,9 +631,26 @@ export function MapplsMap({
             map.setZoom?.(5);
           }
         }
+      } catch (error) {
+        console.warn('Mappls could not fit all reader markers; using an approximate center:', error);
+        if (validPoints.length > 1) {
+          const averageCenter = validPoints.reduce(
+            (result, point) => ({
+              lat: result.lat + point.lat / validPoints.length,
+              lng: result.lng + point.lng / validPoints.length,
+            }),
+            { lat: 0, lng: 0 },
+          );
+          try {
+            map.setCenter?.(averageCenter);
+            map.setZoom?.(5);
+          } catch {
+            // The map remains interactive even if camera adjustment fails.
+          }
+        }
       }
     }
-  }, [points, status]);
+  }, [points, status, markerRetryCount]);
 
   if (status === 'missing-key') {
     return (
@@ -598,6 +696,19 @@ export function MapplsMap({
               Retry map
             </button>
           </div>
+        </div>
+      )}
+      {status === 'ready' && markerIssue && (
+        <div className={`absolute ${mapWarning ? 'bottom-16' : 'bottom-4'} left-4 right-4 flex items-center justify-between gap-3 rounded-lg border border-amber-300 bg-background/95 px-3 py-2 text-xs shadow`} role="status">
+          <span>{markerIssue}</span>
+          <button type="button" onClick={() => setMarkerRetryCount((count) => count + 1)} className="shrink-0 underline underline-offset-2">
+            Retry markers
+          </button>
+        </div>
+      )}
+      {status === 'ready' && mapWarning && (
+        <div className={`absolute ${markerIssue ? 'bottom-16' : 'bottom-4'} left-4 right-4 rounded-lg border border-amber-300 bg-background/95 px-3 py-2 text-xs shadow`} role="status">
+          {mapWarning}
         </div>
       )}
       {status === 'ready' && validPointCount === 0 && (
