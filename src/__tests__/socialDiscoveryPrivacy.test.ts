@@ -150,7 +150,7 @@ describe('Social discovery and location privacy regressions', () => {
     expect(mapAvatarFallbackMigration).toContain('CREATE OR REPLACE FUNCTION public.get_profiles_for_social_context');
     expect(mapAvatarFallbackMigration).toContain('CREATE OR REPLACE FUNCTION public.get_nearby_book_readers');
     expect(mapAvatarFallbackMigration).toContain('CREATE OR REPLACE FUNCTION public.get_friend_locations');
-    expect(mapAvatarFallbackMigration.match(/COALESCE\\(ua\\.avatar_img_url, p\\.profile_photo_url\\) AS avatar_img_url/g)).toHaveLength(3);
+    expect(mapAvatarFallbackMigration.split('COALESCE(ua.avatar_img_url, p.profile_photo_url) AS avatar_img_url')).toHaveLength(4);
     expect(mapAvatarFallbackMigration).toContain('internal_security.has_location_consent(p.id)');
     expect(mapAvatarFallbackMigration).toContain('internal_security.has_location_consent(ubl.user_id)');
   });
