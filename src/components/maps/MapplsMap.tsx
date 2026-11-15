@@ -258,6 +258,7 @@ const observeAvatarMarkerImages = (container: HTMLElement): (() => void) => {
   const attachErrorFallback = (image: HTMLImageElement) => {
     if (observedImages.has(image)) return;
     observedImages.add(image);
+    image.dataset.sahadhyayiAvatarObserved = 'true';
     image.addEventListener('error', () => image.remove(), { once: true });
   };
   const scan = (root: ParentNode) => {
