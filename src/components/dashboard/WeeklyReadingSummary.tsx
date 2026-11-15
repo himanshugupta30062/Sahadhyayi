@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { BookOpen, Clock, Target } from 'lucide-react';
+import { BookOpen, Clock, Target, BarChart3 } from 'lucide-react';
 
 interface WeeklyReadingSummaryProps {
   userId?: string;
