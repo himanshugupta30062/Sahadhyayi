@@ -60,7 +60,7 @@ function isProxyable(url) {
 }
 
 async function fetchLibraryBooks() {
-  const safeSupabaseUrl = String(SUPABASE_URL).replace(/[\r\n]/g, '');
+  const safeSupabaseUrl = cleanLog(SUPABASE_URL, 300);
   console.log(`[audit] Fetching library books with pdf_url from ${safeSupabaseUrl}...`);
   const endpoint = `${SUPABASE_URL}/rest/v1/books_library?pdf_url=not.is.null&select=id,title,author,pdf_url,publication_year&limit=100`;
   const res = await fetch(endpoint, {
