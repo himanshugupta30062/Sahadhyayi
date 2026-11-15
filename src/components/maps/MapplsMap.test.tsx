@@ -51,12 +51,13 @@ describe('MapplsMap', () => {
     expect(addListener).toHaveBeenCalledWith('error', expect.any(Function));
     const delhiMarker = (Marker as any).mock.calls[0][0];
     const mumbaiMarker = (Marker as any).mock.calls[1][0];
-    expect(delhiMarker.icon).toBe('https://cdn.example.test/delhi.svg');
+    expect(delhiMarker.html).toContain('src="https://cdn.example.test/delhi.svg"');
+    expect(delhiMarker.html).toContain('data-sahadhyayi-avatar="true"');
     expect(delhiMarker.width).toBe(58);
     expect(delhiMarker.height).toBe(68);
-    expect(mumbaiMarker.icon).toContain('data:image/svg+xml;charset=UTF-8,');
-    expect(decodeURIComponent(mumbaiMarker.icon.split(',')[1])).toContain('>M</text>');
-    expect(mumbaiMarker.icon).not.toContain('javascript:alert(1)');
+    expect(mumbaiMarker.html).toContain('>M</span>');
+    expect(mumbaiMarker.html).not.toContain('javascript:alert(1)');
+    expect(delhiMarker).not.toHaveProperty('icon');
     expect(fitBounds).toHaveBeenCalledWith(expect.objectContaining({
       map,
       cType: 0,
@@ -435,7 +436,7 @@ describe('MapplsMap', () => {
     await waitFor(() => expect(markerRemove).toHaveBeenCalled());
   });
 
-  it('passes hosted avatar images through the Mappls native icon API', async () => {
+  it('passes hosted avatar images through the documented Mappls HTML marker API', async () => {
     const Marker = vi.fn().mockImplementation(function () { return {}; });
     const map = { addListener: vi.fn(), loaded: () => true, remove: vi.fn() };
     window.mappls = {
@@ -449,10 +450,11 @@ describe('MapplsMap', () => {
     await waitFor(() => expect(Marker).toHaveBeenCalledTimes(1));
 
     const markerOptions = Marker.mock.calls[0][0] as Record<string, unknown>;
-    expect(markerOptions.icon).toBe('https://example.com/alice.png');
+    expect(markerOptions.html).toContain('src="https://example.com/alice.png"');
+    expect(markerOptions.html).toContain('data-sahadhyayi-avatar="true"');
     expect(markerOptions.width).toBe(58);
     expect(markerOptions.height).toBe(68);
-    expect(markerOptions).not.toHaveProperty('html');
+    expect(markerOptions).not.toHaveProperty('icon');
   });
 
   it('formats unknown token error messages and generic map event messages', async () => {
@@ -566,7 +568,7 @@ describe('MapplsMap', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('passes supported PNG and WebP data avatar URLs to Mappls as image icons', async () => {
+  it('renders supported PNG and WebP avatar URLs inside Mappls HTML markers', async () => {
     const Marker = vi.fn().mockImplementation(function () { return {}; });
     const map = { addListener: vi.fn(), loaded: () => true, setCenter: vi.fn(), setZoom: vi.fn(), remove: vi.fn() };
     window.mappls = {
@@ -585,13 +587,13 @@ describe('MapplsMap', () => {
 
     await waitFor(() => expect(Marker).toHaveBeenCalledTimes(2));
 
-    expect(Marker.mock.calls[0][0].icon).toBe(pngDataUrl);
-    expect(Marker.mock.calls[1][0].icon).toBe(webpDataUrl);
+    expect(Marker.mock.calls[0][0].html).toContain(`src="${pngDataUrl}"`);
+    expect(Marker.mock.calls[1][0].html).toContain(`src="${webpDataUrl}"`);
     expect(Marker.mock.calls[0][0].width).toBe(58);
     expect(Marker.mock.calls[1][0].height).toBe(68);
   });
 
-  it('uses a safe initials icon when a supplied avatar URL is invalid', async () => {
+  it('uses a visible initials HTML marker when a supplied avatar URL is invalid', async () => {
     const Marker = vi.fn().mockImplementation(function () { return {}; });
     const map = { addListener: vi.fn(), loaded: () => true, remove: vi.fn() };
     window.mappls = {
@@ -605,9 +607,9 @@ describe('MapplsMap', () => {
     ]} />);
 
     await waitFor(() => expect(Marker).toHaveBeenCalledTimes(1));
-    const markerIcon = Marker.mock.calls[0][0].icon as string;
-    expect(markerIcon).toContain('data:image/svg+xml;charset=UTF-8,');
-    expect(decodeURIComponent(markerIcon.split(',')[1])).toContain('>N</text>');
-    expect(markerIcon).not.toContain('javascript:alert(1)');
+    const markerHtml = Marker.mock.calls[0][0].html as string;
+    expect(markerHtml).toContain('>N</span>');
+    expect(markerHtml).not.toContain('javascript:alert(1)');
+    expect(markerHtml).not.toContain('<img');
   });
 });
