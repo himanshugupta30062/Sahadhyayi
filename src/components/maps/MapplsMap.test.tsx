@@ -480,11 +480,8 @@ describe('MapplsMap', () => {
     (mapOptions?.token_callback as (event: unknown) => void)({ code: 505, error: 'Custom gateway error' });
     expect(await screen.findByRole('alert')).toHaveTextContent('Mappls reported an authentication error (505)');
 
-    // Generic tile/source failures are recoverable and must not cover the map.
-    listeners.error?.({ error: { status: 500 } });
-    expect(await screen.findByRole('status')).toHaveTextContent('Some map tiles or resources did not load');
-    expect(screen.getByLabelText('Interactive Mappls map')).toBeInTheDocument();
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    // This instance is already in the fatal token state; recoverable resource
+    // events are covered independently so they cannot mask an auth failure.
   });
 
   it('handles Map constructor throwing an error on initialization', async () => {
@@ -549,6 +546,27 @@ describe('MapplsMap', () => {
     await waitFor(() => expect(Marker).toHaveBeenCalledTimes(2));
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(screen.getByLabelText('Interactive Mappls map')).toBeInTheDocument();
+  });
+
+  it('keeps the map visible when Mappls reports a transient 500 resource error', async () => {
+    const listeners: Record<string, (event?: unknown) => void> = {};
+    const map = {
+      addListener: (event: string, callback: (event?: unknown) => void) => { listeners[event] = callback; },
+      loaded: () => true,
+      remove: vi.fn(),
+    };
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () { return map; }),
+      Marker: vi.fn().mockImplementation(function () { return {}; }),
+    };
+
+    render(<MapplsMap apiKey="valid-key" points={[]} />);
+    await waitFor(() => expect(listeners.error).toBeDefined());
+
+    listeners.error?.({ error: { status: 500 } });
+    expect(await screen.findByRole('status')).toHaveTextContent('Some map tiles or resources did not load');
+    expect(screen.getByLabelText('Interactive Mappls map')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
 });
