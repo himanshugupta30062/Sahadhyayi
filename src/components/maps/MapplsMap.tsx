@@ -243,6 +243,8 @@ const createAvatarMarkerHtml = (point: MapplsPoint): string => {
   const avatarUrl = getSafeAvatarUrl(point.avatarUrl);
   const isSelf = point.id === 'self';
   const borderColor = isSelf ? '#D5B16D' : '#1C442D';
+  const backgroundColor = isSelf ? '#FBF7EE' : '#E8EFE9';
+  const primaryColor = isSelf ? '#8F681C' : '#1C442D';
   const glowShadow = isSelf
     ? '0 3px 12px rgba(213,177,109,.45),0 0 0 2px rgba(255,255,255,.96)'
     : '0 3px 12px rgba(20,35,25,.28),0 0 0 2px rgba(255,255,255,.96)';
@@ -250,77 +252,52 @@ const createAvatarMarkerHtml = (point: MapplsPoint): string => {
   const initial = escapeHtml((point.title.trim().charAt(0) || 'R').toUpperCase());
 
   const imageHtml = avatarUrl
-    ? `<img src="${avatarUrl}" alt="" decoding="async" referrerpolicy="no-referrer" style="position:relative;z-index:1;display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;background:transparent;" onerror="this.style.display='none';" />`
+    ? `<img data-sahadhyayi-avatar="true" src="${escapeHtml(avatarUrl)}" alt="" aria-hidden="true" draggable="false" decoding="async" referrerpolicy="no-referrer" style="position:absolute;inset:0;z-index:1;display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;background:transparent;" />`
     : '';
 
   const youBadgeHtml = isSelf
     ? '<span style="margin-top:1px;padding:1px 5px;border-radius:999px;background:#1C442D;color:#fff;font:700 8px/1.4 system-ui,sans-serif;letter-spacing:.06em;box-shadow:0 1px 4px rgba(0,0,0,.2);border:1px solid #D5B16D;">YOU</span>'
     : '';
 
-  return `<div class="sahadhyayi-reader-map-marker sahadhyayi-marker-${isSelf ? 'self' : 'peer'}" role="img" aria-label="${isSelf ? 'Your reading avatar' : `${escapedTitle} reading avatar`}" title="${escapedTitle}" style="display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:58px;height:68px;overflow:visible;pointer-events:auto;cursor:pointer;user-select:none;"><div style="position:relative;box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:52px;height:52px;padding:3px;border:3px solid ${borderColor};border-radius:50%;background:#fff;box-shadow:${glowShadow};overflow:hidden;"><span aria-hidden="true" style="position:absolute;inset:0;display:flex;width:100%;height:100%;align-items:center;justify-content:center;border-radius:50%;background:${isSelf ? '#FBF7EE' : '#E8EFE9'};color:${isSelf ? '#8F681C' : '#1C442D'};font:700 18px/1 system-ui,sans-serif;">${initial}</span>${imageHtml}</div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid ${borderColor};margin-top:-2px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));"></div>${youBadgeHtml}</div>`;
+  return `<div class="sahadhyayi-reader-map-marker sahadhyayi-marker-${isSelf ? 'self' : 'peer'}" role="img" aria-label="${isSelf ? 'Your reading avatar' : `${escapedTitle} reading avatar`}" title="${escapedTitle}" style="display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:58px;height:68px;overflow:visible;pointer-events:auto;cursor:pointer;user-select:none;">
+    <div style="position:relative;box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:52px;height:52px;padding:3px;border:3px solid ${borderColor};border-radius:50%;background:#fff;box-shadow:${glowShadow};overflow:hidden;">
+      <span aria-hidden="true" style="position:absolute;inset:0;display:flex;width:100%;height:100%;align-items:center;justify-content:center;border-radius:50%;background:${backgroundColor};color:${primaryColor};font:700 18px/1 system-ui,sans-serif;">${initial}</span>
+      ${imageHtml}
+    </div>
+    <div aria-hidden="true" style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid ${borderColor};margin-top:-2px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));"></div>
+    ${youBadgeHtml}
+  </div>`;
 };
 
-const createAvatarMarkerElement = (point: MapplsPoint): HTMLElement => {
-  const avatarUrl = getSafeAvatarUrl(point.avatarUrl);
-  const isSelf = point.id === 'self';
-  const borderColor = isSelf ? '#D5B16D' : '#1C442D';
-  const glowShadow = isSelf
-    ? '0 3px 12px rgba(213,177,109,.45),0 0 0 2px rgba(255,255,255,.96)'
-    : '0 3px 12px rgba(20,35,25,.28),0 0 0 2px rgba(255,255,255,.96)';
+const observeAvatarMarkerImages = (container: HTMLElement): (() => void) => {
+  if (typeof MutationObserver === 'undefined') return () => undefined;
 
-  const root = document.createElement('div');
-  root.className = `sahadhyayi-reader-map-marker sahadhyayi-marker-${isSelf ? 'self' : 'peer'}`;
-  root.setAttribute('role', 'img');
-  root.setAttribute('aria-label', isSelf ? 'Your reading avatar' : `${point.title} reading avatar`);
-  root.title = point.title;
-  root.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:58px;height:68px;overflow:visible;pointer-events:auto;cursor:pointer;user-select:none;';
+  const observedImages = new WeakSet<HTMLImageElement>();
+  const attachErrorFallback = (image: HTMLImageElement) => {
+    if (observedImages.has(image)) return;
+    observedImages.add(image);
+    image.dataset.sahadhyayiAvatarObserved = 'true';
+    image.addEventListener('error', () => image.remove(), { once: true });
+  };
+  const scan = (root: ParentNode) => {
+    if (root instanceof HTMLImageElement && root.hasAttribute('data-sahadhyayi-avatar')) {
+      attachErrorFallback(root);
+    }
+    root.querySelectorAll?.('img[data-sahadhyayi-avatar]').forEach((image) => {
+      attachErrorFallback(image as HTMLImageElement);
+    });
+  };
 
-  const shell = document.createElement('div');
-  shell.style.cssText = `position:relative;box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:52px;height:52px;padding:3px;border:3px solid ${borderColor};border-radius:50%;background:#fff;box-shadow:${glowShadow};overflow:hidden;`;
-
-  const fallback = document.createElement('span');
-  fallback.textContent = (point.title.trim().charAt(0) || 'R').toUpperCase();
-  fallback.setAttribute('aria-hidden', 'true');
-  fallback.style.cssText = `position:absolute;inset:0;display:flex;width:100%;height:100%;align-items:center;justify-content:center;border-radius:50%;background:${isSelf ? '#FBF7EE' : '#E8EFE9'};color:${isSelf ? '#8F681C' : '#1C442D'};font:700 18px/1 system-ui,sans-serif;`;
-
-  if (avatarUrl) {
-    const image = document.createElement('img');
-    image.src = avatarUrl;
-    image.alt = '';
-    image.decoding = 'async';
-    image.referrerPolicy = 'no-referrer';
-    image.setAttribute('onerror', "this.style.display='none';");
-    image.style.cssText = 'position:relative;z-index:1;display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;background:transparent;';
-    image.addEventListener('error', () => {
-      image.style.display = 'none';
-      if (image.parentElement === shell) {
-        image.remove();
-      }
-    }, { once: true });
-    shell.appendChild(fallback);
-    shell.appendChild(image);
-  } else {
-    shell.appendChild(fallback);
-  }
-
-  root.appendChild(shell);
-
-  const pointer = document.createElement('div');
-  pointer.style.cssText = `width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid ${borderColor};margin-top:-2px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));`;
-  root.appendChild(pointer);
-
-  if (isSelf) {
-    const label = document.createElement('span');
-    label.textContent = 'YOU';
-    label.style.cssText = 'margin-top:1px;padding:1px 5px;border-radius:999px;background:#1C442D;color:#fff;font:700 8px/1.4 system-ui,sans-serif;letter-spacing:.06em;box-shadow:0 1px 4px rgba(0,0,0,.2);border:1px solid #D5B16D;';
-    root.appendChild(label);
-  }
-
-  // Override toString so that if Mappls Vector Maps SDK sets innerHTML = options.html,
-  // it serializes to valid HTML markup instead of the generic '[object HTMLDivElement]'.
-  root.toString = () => createAvatarMarkerHtml(point);
-
-  return root;
+  scan(container);
+  const observer = new MutationObserver((records) => {
+    records.forEach((record) => {
+      record.addedNodes.forEach((node) => {
+        if (node instanceof HTMLElement) scan(node);
+      });
+    });
+  });
+  observer.observe(container, { childList: true, subtree: true });
+  return () => observer.disconnect();
 };
 
 const getMarkerSignature = (point: MapplsPoint) => JSON.stringify([
@@ -614,6 +591,12 @@ export function MapplsMap({
   }, [center, status]);
 
   useEffect(() => {
+    const container = mapElement.current;
+    if (status !== 'ready' || !container) return;
+    return observeAvatarMarkerImages(container);
+  }, [status]);
+
+  useEffect(() => {
     const map = mapInstance.current;
     const MarkerConstructor = window.mappls?.Marker;
     if (status !== 'ready' || !map || !MarkerConstructor) return;
@@ -643,17 +626,15 @@ export function MapplsMap({
         : '';
       const popupHtml = `<div style="font-family:sans-serif;padding:4px 6px;min-width:140px;color:#1C201D;">${badgeHtml}<strong style="font-size:13px;display:block;">${escapedTitle}</strong>${escapedDesc ? `<span style="font-size:12px;color:#636B65;display:block;margin-top:2px;">${escapedDesc}</span>` : ''}</div>`;
 
-      const markerElement = createAvatarMarkerElement(point);
-
       try {
         const marker = new MarkerConstructor({
           map,
           position: { lat: point.lat, lng: point.lng },
           title: point.title,
-          // markerElement provides both the DOM node (for SDKs/tests inspecting elements)
-          // and overrides toString() with markerHtml (for Mappls SDK setting innerHTML).
-          html: createAvatarMarkerElement(point),
-          element: markerElement,
+          // Mappls' HTML marker API is fed a markup string. Passing a DOM node
+          // through a custom toString() fallback causes some SDK builds to use
+          // their stock question-mark icon instead of the supplied avatar.
+          html: createAvatarMarkerHtml(point),
           width: 58,
           height: 68,
           offset: [0, -12],
@@ -666,15 +647,6 @@ export function MapplsMap({
         }
         try {
           marker.on?.('click', () => onMarkerClickRef.current?.(point));
-        } catch {
-          // Ignore
-        }
-        markerElement.addEventListener('click', () => onMarkerClickRef.current?.(point));
-        try {
-          const domEl = marker.getElement?.();
-          if (domEl && domEl !== markerElement) {
-            domEl.addEventListener('click', () => onMarkerClickRef.current?.(point));
-          }
         } catch {
           // Ignore
         }
