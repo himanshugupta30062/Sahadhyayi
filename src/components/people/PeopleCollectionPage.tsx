@@ -37,6 +37,7 @@ export function PeopleCollectionPage({ collectionKey }: { collectionKey: PeopleC
   const fallback = peopleCollections[collectionKey];
   const [search, setSearch] = useState("");
   const [activeTheme, setActiveTheme] = useState("All causes");
+  const [activeRegion, setActiveRegion] = useState("All regions");
   const { data: backendCollection, isLoading } = useQuery({
     queryKey: ["people-collection", collectionKey],
     queryFn: async () => {
@@ -57,14 +58,16 @@ export function PeopleCollectionPage({ collectionKey }: { collectionKey: PeopleC
   const accent = accentStyles[collection.accent];
 
   const causeFilters = useMemo(() => ["All causes", ...Array.from(new Set(collection.people.flatMap((person) => person.themes))).sort()], [collection.people]);
+  const regionFilters = useMemo(() => ["All regions", ...Array.from(new Set(collection.people.map((person) => person.origin).filter(Boolean))).sort()], [collection.people]);
   const visiblePeople = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
     return collection.people.filter((person) => {
       const matchesCause = activeTheme === "All causes" || person.themes.includes(activeTheme);
+      const matchesRegion = activeRegion === "All regions" || person.origin === activeRegion;
       const matchesSearch = !query || [person.name, person.role, person.origin, person.summary, ...person.themes, ...person.story].join(" ").toLocaleLowerCase().includes(query);
-      return matchesCause && matchesSearch;
+      return matchesCause && matchesRegion && matchesSearch;
     });
-  }, [collection.people, search, activeTheme]);
+  }, [collection.people, search, activeTheme, activeRegion]);
 
   return (
     <>
@@ -142,6 +145,12 @@ export function PeopleCollectionPage({ collectionKey }: { collectionKey: PeopleC
 
           <div className="mb-8 flex flex-wrap gap-2" aria-label="Filter activists by cause">
             {causeFilters.map((cause) => <button key={cause} type="button" onClick={() => setActiveTheme(cause)} aria-pressed={activeTheme === cause} className={"rounded-full border px-3.5 py-2 text-xs font-semibold transition " + (activeTheme === cause ? "border-[#1C442D] bg-[#1C442D] text-white dark:border-[#D5B16D] dark:bg-[#D5B16D] dark:text-[#101711]" : "border-[#D9D2C6] bg-white text-[#526052] hover:border-[#81A889] dark:border-[#34443A] dark:bg-[#111614] dark:text-[#B9C9BC]")}>{cause}</button>)}
+          </div>
+          <div className="mb-8 space-y-3" aria-label="Filter people by region">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#737B75] dark:text-[#89938B]">Region / origin</p>
+            <div className="flex flex-wrap gap-2">
+              {regionFilters.map((region) => <button key={region} type="button" onClick={() => setActiveRegion(region)} aria-pressed={activeRegion === region} className={"rounded-full border px-3.5 py-2 text-xs font-semibold transition " + (activeRegion === region ? "border-[#1C442D] bg-[#1C442D] text-white dark:border-[#D5B16D] dark:bg-[#D5B16D] dark:text-[#101711]" : "border-[#D9D2C6] bg-white text-[#526052] hover:border-[#81A889] dark:border-[#34443A] dark:bg-[#111614] dark:text-[#B9C9BC]")}>{region}</button>)}
+            </div>
           </div>
           {collection.people[0] && activeTheme === "All causes" && !search.trim() && <section className="mb-8 overflow-hidden rounded-3xl border border-[#B9CDB8]/50 bg-gradient-to-br from-[#173824] via-[#1C442D] to-[#263D2D] p-6 text-white sm:p-8">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#D5B16D]">Start with a story</p>
@@ -237,7 +246,7 @@ export function PeopleCollectionPage({ collectionKey }: { collectionKey: PeopleC
               <Search className="mx-auto h-7 w-7 text-[#8B9188]" aria-hidden="true" />
               <h3 className="mt-3 font-serif text-xl font-bold">No profiles match that search</h3>
               <p className="mt-2 text-sm text-[#687067] dark:text-[#A5ADA6]">Try another name, place or theme.</p>
-              <button type="button" onClick={() => { setSearch(""); setActiveTheme("All causes"); }} className="mt-4 rounded-lg border border-[#D5CEC2] px-4 py-2 text-xs font-semibold text-[#1C442D] hover:bg-[#EBF2EC] dark:border-[#34443A] dark:text-[#D5B16D] dark:hover:bg-[#1C3024]">Clear search</button>
+              <button type="button" onClick={() => { setSearch(""); setActiveTheme("All causes"); setActiveRegion("All regions"); }} className="mt-4 rounded-lg border border-[#D5CEC2] px-4 py-2 text-xs font-semibold text-[#1C442D] hover:bg-[#EBF2EC] dark:border-[#34443A] dark:text-[#D5B16D] dark:hover:bg-[#1C3024]">Clear search</button>
             </div>
           )}
 
