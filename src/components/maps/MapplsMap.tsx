@@ -195,7 +195,7 @@ const getSafeAvatarUrl = (value?: string | null): string | null => {
     return null;
   }
   if (trimmed.startsWith('data:image/')) {
-    const base64Match = /^data:image\/(?:svg\+xml|png|jpe?g|webp|gif)(?:;[a-z0-9=-]+)*;base64,\s*([A-Za-z0-9+/=\s_-]+)$/i.exec(trimmed);
+    const base64Match = /^data:image\/(?:svg\+xml|png|jpe?g|webp|gif)(?:;[a-z0-9=-]+)*;base64,\s*([A-Za-z0-9+/=_-]+)$/i.exec(trimmed);
     if (base64Match) {
       return trimmed;
     }
