@@ -18,8 +18,18 @@ vi.mock('@/contexts/authHelpers', () => ({
   useAuth: vi.fn(),
 }));
 
+const mapPageMocks = vi.hoisted(() => ({
+  friends: [] as any[],
+  refetchFriends: vi.fn(),
+}));
+
 vi.mock('@/hooks/useFriends', () => ({
-  useFriends: () => ({ data: [], isLoading: false }),
+  useFriends: () => ({
+    data: mapPageMocks.friends,
+    isLoading: false,
+    error: null,
+    refetch: mapPageMocks.refetchFriends,
+  }),
 }));
 
 vi.mock('@/hooks/useUserAvatar', () => ({
@@ -51,6 +61,8 @@ describe('MapPage', () => {
   let queryClient: QueryClient;
 
   beforeEach(() => {
+    mapPageMocks.friends = [];
+    mapPageMocks.refetchFriends.mockReset();
     queryClient = new QueryClient({
       defaultOptions: {
         queries: { retry: false },
@@ -129,5 +141,48 @@ describe('MapPage', () => {
       expect(mapEl.getAttribute('data-avatars')).toContain('https://cdn.sahadhyayi.com/avatars/friend.svg');
     });
   });
+  it('renders real friend avatars on the Friends tab and refreshes that tab when opened', async () => {
+    vi.mocked(useAuth).mockReturnValue({ user: { id: 'user-me' } } as any);
+    vi.mocked(getMyLocationSharingState).mockResolvedValue({
+      hasConsent: true,
+      isSharing: true,
+      location: { lat: 28.5, lng: 77.2 },
+    });
+    mapPageMocks.friends = [{
+      id: 'friendship-1',
+      user1_id: 'user-me',
+      user2_id: 'friend-1',
+      friend_profile: {
+        id: 'friend-1',
+        full_name: 'Friend One',
+        username: 'friendone',
+        profile_photo_url: 'https://cdn.sahadhyayi.com/avatars/friend-photo.svg',
+        avatar_img_url: 'https://cdn.sahadhyayi.com/avatars/friend-bitmoji.svg',
+        location_sharing: true,
+        location_lat: 28.61,
+        location_lng: 77.31,
+      },
+    }];
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <MapPage />
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    await screen.findByRole('tab', { name: /Friends Map/ });
+    fireEvent.click(screen.getByRole('tab', { name: /Friends Map/ }));
+
+    await waitFor(() => {
+      const mapEl = screen.getByTestId('mappls-map');
+      expect(mapEl).toHaveTextContent('friendship-1:Friend One');
+      expect(mapEl.getAttribute('data-avatars')).toContain('https://cdn.sahadhyayi.com/avatars/self.svg');
+      expect(mapEl.getAttribute('data-avatars')).toContain('https://cdn.sahadhyayi.com/avatars/friend-bitmoji.svg');
+    });
+    expect(mapPageMocks.refetchFriends).toHaveBeenCalled();
+  });
+
 });
 
