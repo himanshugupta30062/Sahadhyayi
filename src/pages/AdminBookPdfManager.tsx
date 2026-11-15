@@ -523,8 +523,8 @@ export default function AdminBookPdfManager() {
                         {book.isbn && <p className="mt-0.5 text-xs text-muted-foreground font-mono">ISBN {book.isbn}</p>}
                         <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
                           {book.language && <span>{book.language}</span>}
-                          {book.pdf_page_count && <span>{book.pdf_page_count} pp</span>}
-                          {book.pdf_file_size && <span>{formatFileSize(book.pdf_file_size)}</span>}
+                          {Boolean(book.pdf_page_count) && <span>{book.pdf_page_count} pp</span>}
+                          {Boolean(book.pdf_file_size) && <span>{formatFileSize(book.pdf_file_size)}</span>}
                           {book.pdf_verification_status && book.pdf_verification_status !== 'verified' && (
                             <span className="text-amber-600">{book.pdf_verification_status.replace(/_/g, ' ')}</span>
                           )}

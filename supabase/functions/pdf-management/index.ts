@@ -62,11 +62,11 @@ async function validatePDFStructure(blob: Blob): Promise<{ valid: boolean; pageC
     let pageCount: number | null = null;
     const countMatch = trailer.match(/\/Count\s+(\d+)/);
     if (countMatch) {
-      pageCount = parseInt(countMatch[1], 10);
+      pageCount = Number.parseInt(countMatch[1], 10);
     } else {
       const contentMatch = header.match(/\/Count\s+(\d+)/);
       if (contentMatch) {
-        pageCount = parseInt(contentMatch[1], 10);
+        pageCount = Number.parseInt(contentMatch[1], 10);
       }
     }
 
@@ -261,6 +261,15 @@ serve(async (req) => {
 
     const signature = new Uint8Array(await source.slice(0, 5).arrayBuffer());
     if (new TextDecoder().decode(signature) !== "%PDF-") return json({ error: "New PDF signature validation failed." }, 422);
+
+    // Validate PDF structure (check for corruption, encryption, etc.)
+    const structureValidation = await validatePDFStructure(source);
+    if (!structureValidation.valid) {
+      return json({ error: `Invalid PDF structure: ${structureValidation.error}` }, 422);
+    }
+    if (structureValidation.encrypted) {
+      return json({ error: "Encrypted PDFs are not accepted. Please provide an unencrypted PDF." }, 422);
+    }
 
     // Run malware scan on new PDF
     const scannerToken = Deno.env.get("BOUNCER_API_KEY");
@@ -472,8 +481,8 @@ serve(async (req) => {
   // GET PDF AUDIT - Get complete audit trail for a book
   if (action === "get_pdf_audit") {
     const bookId = typeof body.bookId === "string" ? body.bookId.trim() : "";
-    const page = typeof body.page === "string" ? parseInt(body.page, 10) : 1;
-    const pageSize = typeof body.pageSize === "string" ? parseInt(body.pageSize, 10) : 50;
+    const page = typeof body.page === "string" ? Number.parseInt(body.page, 10) : 1;
+    const pageSize = typeof body.pageSize === "string" ? Number.parseInt(body.pageSize, 10) : 50;
 
     if (!UUID.test(bookId)) return json({ error: "Valid book ID required." }, 400);
 

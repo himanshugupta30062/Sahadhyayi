@@ -137,7 +137,7 @@ async function fetchAndValidatePDF(pdfUrl: string): Promise<{ blob: Blob | null;
       if (trailer.includes("startxref") && trailer.includes("%%EOF")) {
         const countMatch = trailer.match(/\/Count\s+(\d+)/);
         if (countMatch) {
-          pageCount = parseInt(countMatch[1], 10);
+          pageCount = Number.parseInt(countMatch[1], 10);
         }
       }
     } catch {

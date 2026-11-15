@@ -264,7 +264,7 @@ export function CatalogueSelector({
     (e: React.UIEvent<HTMLDivElement>) => {
       const target = e.currentTarget;
       if (target.scrollTop + target.clientHeight >= target.scrollHeight - 100) {
-        loadMore();
+        void loadMore();
       }
     },
     [loadMore]
@@ -537,16 +537,16 @@ export function CatalogueSelector({
                                     <span className="font-mono">ISBN {book.isbn}</span>
                                   </span>
                                 )}
-                                {book.publication_year && (
+                                {Boolean(book.publication_year) && (
                                   <span>· {book.publication_year}</span>
                                 )}
                                 {book.language && (
                                   <span>· {book.language}</span>
                                 )}
-                                {book.pdf_page_count && (
+                                {Boolean(book.pdf_page_count) && (
                                   <span>· {book.pdf_page_count} pages</span>
                                 )}
-                                {book.pdf_file_size && (
+                                {Boolean(book.pdf_file_size) && (
                                   <span>· {formatFileSize(book.pdf_file_size)}</span>
                                 )}
                               </div>
