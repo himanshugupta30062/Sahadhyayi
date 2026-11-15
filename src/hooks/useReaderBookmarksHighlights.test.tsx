@@ -24,7 +24,7 @@ describe('reader bookmark and highlight hooks', () => {
     }
     b.order.mockResolvedValue({ data: [], error: null });
     b.single = vi.fn().mockResolvedValue({ data: { id: 'row-1' }, error: null });
-    b.eq.mockResolvedValue({ data: null, error: null });
+    b.eq.mockImplementation(() => b);
     mocks.builder = b;
     mocks.from.mockReturnValue(b);
   });
