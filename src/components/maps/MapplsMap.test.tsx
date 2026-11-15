@@ -612,7 +612,7 @@ describe('MapplsMap', () => {
     expect(friendHtml).toContain('>R</span>');
   });
 
-  it('gracefully hides broken images on image error without removing the fallback initial', async () => {
+  it('keeps initials beneath supported PNG and WebP avatar images in HTML markers', async () => {
     const createdMarkers: Array<Record<string, unknown>> = [];
     const Marker = vi.fn().mockImplementation(function (options: Record<string, unknown>) {
       createdMarkers.push(options);
