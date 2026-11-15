@@ -7,7 +7,9 @@ import { Pencil, Sparkles, UserRound } from 'lucide-react';
 export function MapAvatarControl() {
   const { data: avatar, isLoading } = useUserAvatar();
   const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const hasCustomBitmoji = Boolean(avatar?.avatar_json && avatar.avatar_img_url);
+  const isPhotoAvatar = avatar?.avatar_json?.avatarMode === 'photo';
+  const hasCustomBitmoji = Boolean(avatar?.avatar_json && avatar.avatar_img_url && !isPhotoAvatar);
+  const hasSavedAvatar = Boolean(avatar?.avatar_img_url);
 
   return (
     <>
@@ -16,7 +18,7 @@ export function MapAvatarControl() {
           {avatar?.avatar_img_url ? (
             <img
               src={avatar.avatar_img_url}
-              alt={hasCustomBitmoji ? 'Your reading Bitmoji' : 'Your profile photo'}
+              alt={hasCustomBitmoji ? 'Your reading Bitmoji' : isPhotoAvatar ? 'Your uploaded map avatar' : 'Your profile photo'}
               className="h-full w-full object-cover"
               loading="lazy"
             />
@@ -28,14 +30,16 @@ export function MapAvatarControl() {
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-[#1C201D] dark:text-[#F3F0E7]">
-            {hasCustomBitmoji ? 'Your map Bitmoji' : avatar?.avatar_img_url ? 'Your profile photo on the map' : 'Create your map Bitmoji'}
+            {hasCustomBitmoji ? 'Your map Bitmoji' : isPhotoAvatar ? 'Your uploaded map avatar' : avatar?.avatar_img_url ? 'Your profile photo on the map' : 'Create your map avatar'}
           </p>
           <p className="mt-0.5 text-xs text-[#636B65] dark:text-[#A5ADA6]">
             {hasCustomBitmoji
-              ? 'Your character appears on the reader map.'
-              : avatar?.avatar_img_url
-                ? 'Your profile photo is shown until you create a Bitmoji.'
-                : 'Give friends a recognizable character on the map.'}
+              ? 'Your illustrated character appears on the reader map.'
+              : isPhotoAvatar
+                ? 'Your uploaded photo appears on your shared map pin.'
+                : avatar?.avatar_img_url
+                  ? 'Your profile photo is shown on the map. You can keep it or upload another image.'
+                  : 'Upload a photo or create an illustrated Bitmoji for your map pin.'}
           </p>
         </div>
         <Button
@@ -46,8 +50,8 @@ export function MapAvatarControl() {
           onClick={() => setIsEditorOpen(true)}
           className="shrink-0 gap-1.5 border-[#D5B16D] text-[#1C442D] hover:bg-[#FAF7F2] dark:text-[#D5B16D]"
         >
-          {hasCustomBitmoji ? <Pencil className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
-          {hasCustomBitmoji ? 'Edit' : 'Create Bitmoji'}
+          {hasSavedAvatar ? <Pencil className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
+          {hasSavedAvatar ? 'Edit Avatar' : 'Create Avatar'}
         </Button>
       </div>
       <BitmojiCreator
@@ -55,6 +59,7 @@ export function MapAvatarControl() {
         onClose={() => setIsEditorOpen(false)}
         onSave={() => setIsEditorOpen(false)}
         initialFeatures={avatar?.avatar_json ?? null}
+        initialAvatarUrl={avatar?.avatar_img_url ?? null}
       />
     </>
   );
