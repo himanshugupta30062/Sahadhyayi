@@ -296,4 +296,19 @@ describe('BitmojiCreator', () => {
     expect(mocks.mapAvatar.upload).not.toHaveBeenCalled();
   });
 
+  it('offers the existing profile photo as the map avatar when no Bitmoji settings exist', () => {
+    const profilePhotoUrl = 'https://cdn.example.test/profile-photo.jpg';
+    render(
+      <BitmojiCreator
+        isOpen
+        onClose={vi.fn()}
+        onSave={vi.fn()}
+        initialAvatarUrl={profilePhotoUrl}
+      />,
+    );
+
+    expect(screen.getByRole('img', { name: 'Uploaded map avatar preview' })).toHaveAttribute('src', profilePhotoUrl);
+    expect(screen.getByRole('button', { name: 'Save Photo Avatar' })).toBeInTheDocument();
+  });
+
 });
