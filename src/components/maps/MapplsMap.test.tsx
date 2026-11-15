@@ -634,6 +634,6 @@ describe('MapplsMap', () => {
     const markerHtml = String(createdMarkers[0].html);
     expect(markerHtml).toContain('src="https://cdn.example.com/broken-avatar.png"');
     expect(markerHtml).toContain('>N</span>');
-    expect(markerHtml).toContain('data-sahadhyayi-avatar="true");
+    expect(markerHtml).toContain('data-sahadhyayi-avatar="true"');
   });
 });
