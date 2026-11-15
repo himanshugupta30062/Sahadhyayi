@@ -51,13 +51,13 @@ describe('MapplsMap', () => {
     expect(addListener).toHaveBeenCalledWith('error', expect.any(Function));
     const delhiMarker = (Marker as any).mock.calls[0][0];
     const mumbaiMarker = (Marker as any).mock.calls[1][0];
-    expect(delhiMarker.html).toBeInstanceOf(HTMLElement);
-    expect(delhiMarker.html.querySelector('img')?.getAttribute('src')).toBe('https://cdn.example.test/delhi.svg');
-    expect(delhiMarker.html.querySelector('img')?.referrerPolicy).toBe('no-referrer');
+    expect(delhiMarker.html).toContain('src="https://cdn.example.test/delhi.svg"');
+    expect(delhiMarker.html).toContain('data-sahadhyayi-avatar="true"');
+    expect(delhiMarker.html).toContain('referrerpolicy="no-referrer"');
     expect(delhiMarker.width).toBe(58);
     expect(delhiMarker.height).toBe(68);
-    expect(mumbaiMarker.html.querySelector('img')).toBeNull();
-    expect(mumbaiMarker.html.textContent).toContain('M');
+    expect(mumbaiMarker.html).toContain('>M</span>');
+    expect(mumbaiMarker.html).not.toContain('<img');
     expect(fitBounds).toHaveBeenCalledWith(expect.objectContaining({
       map,
       cType: 0,
@@ -436,25 +436,29 @@ describe('MapplsMap', () => {
     await waitFor(() => expect(markerRemove).toHaveBeenCalled());
   });
 
-  it('handles avatar image load error and replaces it with fallback letter', async () => {
+  it('removes a broken hosted avatar image while preserving the HTML marker initial', async () => {
     let markerHtmlElement: HTMLElement | undefined;
     const map = { addListener: vi.fn(), loaded: () => true, remove: vi.fn() };
     window.mappls = {
       Map: vi.fn().mockImplementation(function () { return map; }),
-      Marker: vi.fn().mockImplementation(function (opts: any) {
-        markerHtmlElement = opts.html;
+      Marker: vi.fn().mockImplementation(function (options: Record<string, unknown>) {
+        const markerHost = document.querySelector('[aria-label="Interactive Mappls map"]');
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = String(options.html ?? '');
+        markerHtmlElement = wrapper.firstElementChild as HTMLElement | undefined;
+        if (markerHtmlElement) markerHost?.append(markerHtmlElement);
         return {};
       }),
     };
 
     render(<MapplsMap apiKey="valid-key" points={[{ id: 'p1', lat: 10, lng: 20, title: 'Alice', avatarUrl: 'https://example.com/alice.jpg' }]} />);
-    await waitFor(() => expect(markerHtmlElement).toBeDefined());
+    await waitFor(() => expect(markerHtmlElement?.querySelector('img[data-sahadhyayi-avatar]')).toBeInTheDocument());
 
-    const img = markerHtmlElement?.querySelector('img');
+    const img = markerHtmlElement?.querySelector('img[data-sahadhyayi-avatar]');
     expect(img).not.toBeNull();
-    img?.dispatchEvent(new Event('error'));
+    fireEvent.error(img!);
 
-    expect(markerHtmlElement?.querySelector('img')).toBeNull();
+    await waitFor(() => expect(markerHtmlElement?.querySelector('img')).toBeNull());
     expect(markerHtmlElement?.textContent).toContain('A');
   });
 
@@ -595,17 +599,17 @@ describe('MapplsMap', () => {
     const selfMarker = createdMarkers[0];
     const friendMarker = createdMarkers[1];
 
-    const selfHtml = selfMarker.html as HTMLElement;
-    const friendHtml = friendMarker.html as HTMLElement;
+    const selfHtml = String(selfMarker.html);
+    const friendHtml = String(friendMarker.html);
 
-    // Self marker contains 'YOU' label and golden border
-    expect(selfHtml.textContent).toContain('YOU');
-    expect(selfHtml.querySelector('img')?.getAttribute('src')).toBe(pngDataUrl);
+    // Self marker contains its badge and hosted/data avatar.
+    expect(selfHtml).toContain('>YOU</span>');
+    expect(selfHtml).toContain(`src="${pngDataUrl}"`);
 
-    // Friend marker contains initial fallback and WebP image
-    expect(friendHtml.textContent).not.toContain('YOU');
-    expect(friendHtml.querySelector('img')?.getAttribute('src')).toBe(webpDataUrl);
-    expect(friendHtml.textContent).toContain('R');
+    // Friend marker keeps the initials underneath its WebP avatar.
+    expect(friendHtml).not.toContain('>YOU</span>');
+    expect(friendHtml).toContain(`src="${webpDataUrl}"`);
+    expect(friendHtml).toContain('>R</span>');
   });
 
   it('gracefully hides broken images on image error without removing the fallback initial', async () => {
@@ -627,17 +631,9 @@ describe('MapplsMap', () => {
 
     await waitFor(() => expect(Marker).toHaveBeenCalledTimes(1));
 
-    const markerHtml = createdMarkers[0].html as HTMLElement;
-    const img = markerHtml.querySelector('img') as HTMLImageElement;
-    expect(img).not.toBeNull();
-    expect(img.getAttribute('src')).toBe('https://cdn.example.com/broken-avatar.png');
-    expect(markerHtml.textContent).toContain('N');
-
-    // Simulate image error event
-    fireEvent.error(img);
-
-    // Fallback initial remains visible and broken image is hidden
-    expect(markerHtml.textContent).toContain('N');
-    expect(img.style.display).toBe('none');
+    const markerHtml = String(createdMarkers[0].html);
+    expect(markerHtml).toContain('src="https://cdn.example.com/broken-avatar.png"');
+    expect(markerHtml).toContain('>N</span>');
+    expect(markerHtml).toContain('data-sahadhyayi-avatar="true");
   });
 });
