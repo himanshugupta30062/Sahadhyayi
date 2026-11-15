@@ -452,7 +452,7 @@ describe('MapplsMap', () => {
     };
 
     render(<MapplsMap apiKey="valid-key" points={[{ id: 'p1', lat: 10, lng: 20, title: 'Alice', avatarUrl: 'https://example.com/alice.jpg' }]} />);
-    await waitFor(() => expect(markerHtmlElement?.querySelector('img[data-sahadhyayi-avatar]')).toBeInTheDocument());
+    await waitFor(() => expect(markerHtmlElement?.querySelector('img[data-sahadhyayi-avatar]')).toHaveAttribute('data-sahadhyayi-avatar-observed', 'true'));
 
     const img = markerHtmlElement?.querySelector('img[data-sahadhyayi-avatar]');
     expect(img).not.toBeNull();
