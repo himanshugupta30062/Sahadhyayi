@@ -213,61 +213,27 @@ const getSafeAvatarUrl = (value?: string | null): string | null => {
   }
 };
 
-const createAvatarMarkerElement = (point: MapplsPoint): HTMLElement => {
+const createAvatarMarkerHtml = (point: MapplsPoint): string => {
   const avatarUrl = getSafeAvatarUrl(point.avatarUrl);
   const isSelf = point.id === 'self';
   const borderColor = isSelf ? '#D5B16D' : '#1C442D';
-  const glowShadow = isSelf
-    ? '0 3px 12px rgba(213,177,109,.45),0 0 0 2px rgba(255,255,255,.96)'
-    : '0 3px 12px rgba(20,35,25,.28),0 0 0 2px rgba(255,255,255,.96)';
+  const fallback = escapeHtml((point.title.trim().charAt(0) || 'R').toUpperCase());
+  const label = escapeHtml(isSelf ? 'Your reading avatar' : `${point.title} reading avatar`);
+  const image = avatarUrl
+    ? `<img src="${escapeHtml(avatarUrl)}" alt="" referrerpolicy="no-referrer" draggable="false" style="position:absolute;inset:0;z-index:1;display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;background:transparent;" />`
+    : '';
 
-  const root = document.createElement('div');
-  root.className = `sahadhyayi-reader-map-marker sahadhyayi-marker-${isSelf ? 'self' : 'peer'}`;
-  root.setAttribute('role', 'img');
-  root.setAttribute('aria-label', isSelf ? 'Your reading avatar' : `${point.title} reading avatar`);
-  root.title = point.title;
-  root.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:58px;height:68px;overflow:visible;pointer-events:auto;cursor:pointer;user-select:none;';
-
-  const shell = document.createElement('div');
-  shell.style.cssText = `position:relative;box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:52px;height:52px;padding:3px;border:3px solid ${borderColor};border-radius:50%;background:#fff;box-shadow:${glowShadow};overflow:hidden;`;
-
-  const fallback = document.createElement('span');
-  fallback.textContent = (point.title.trim().charAt(0) || 'R').toUpperCase();
-  fallback.setAttribute('aria-hidden', 'true');
-  fallback.style.cssText = `position:absolute;inset:0;display:flex;width:100%;height:100%;align-items:center;justify-content:center;border-radius:50%;background:${isSelf ? '#FBF7EE' : '#E8EFE9'};color:${isSelf ? '#8F681C' : '#1C442D'};font:700 18px/1 system-ui,sans-serif;`;
-
-  if (avatarUrl) {
-    const image = document.createElement('img');
-    image.src = avatarUrl;
-    image.alt = '';
-    image.decoding = 'async';
-    image.referrerPolicy = 'no-referrer';
-    image.style.cssText = 'position:relative;z-index:1;display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;background:transparent;';
-    image.addEventListener('error', () => {
-      image.style.display = 'none';
-      if (image.parentElement === shell) {
-        image.remove();
-      }
-    }, { once: true });
-    shell.appendChild(fallback);
-    shell.appendChild(image);
-  } else {
-    shell.appendChild(fallback);
-  }
-
-  root.appendChild(shell);
-
-  const pointer = document.createElement('div');
-  pointer.style.cssText = `width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid ${borderColor};margin-top:-2px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));`;
-  root.appendChild(pointer);
-
-  if (isSelf) {
-    const label = document.createElement('span');
-    label.textContent = 'YOU';
-    label.style.cssText = 'margin-top:1px;padding:1px 5px;border-radius:999px;background:#1C442D;color:#fff;font:700 8px/1.4 system-ui,sans-serif;letter-spacing:.06em;box-shadow:0 1px 4px rgba(0,0,0,.2);border:1px solid #D5B16D;';
-    root.appendChild(label);
-  }
-  return root;
+  // Mappls' public Web SDK examples pass HTML strings to the Marker html option.
+  // Use that documented integration path rather than handing the SDK a live
+  // React-created DOM node that some SDK builds do not mount consistently.
+  return `<div class="sahadhyayi-reader-map-marker sahadhyayi-marker-${isSelf ? 'self' : 'peer'}" role="img" aria-label="${label}" title="${escapeHtml(point.title)}" style="display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:58px;height:68px;overflow:visible;pointer-events:auto;cursor:pointer;user-select:none;">
+    <div style="position:relative;box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:52px;height:52px;padding:3px;border:3px solid ${borderColor};border-radius:50%;background:#fff;box-shadow:0 3px 12px rgba(20,35,25,.28),0 0 0 2px rgba(255,255,255,.96);overflow:hidden;">
+      <span aria-hidden="true" style="position:absolute;inset:0;display:flex;width:100%;height:100%;align-items:center;justify-content:center;border-radius:50%;background:${isSelf ? '#FBF7EE' : '#E8EFE9'};color:${isSelf ? '#8F681C' : '#1C442D'};font:700 18px/1 system-ui,sans-serif;">${fallback}</span>
+      ${image}
+    </div>
+    <div aria-hidden="true" style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid ${borderColor};margin-top:-2px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));"></div>
+    ${isSelf ? '<span style="margin-top:1px;padding:1px 5px;border-radius:999px;background:#1C442D;color:#fff;font:700 8px/1.4 system-ui,sans-serif;letter-spacing:.06em;box-shadow:0 1px 4px rgba(0,0,0,.2);border:1px solid #D5B16D;">YOU</span>' : ''}
+  </div>`;
 };
 
 const getMarkerSignature = (point: MapplsPoint) => JSON.stringify([
@@ -597,7 +563,7 @@ export function MapplsMap({
           title: point.title,
           // Mappls v3 custom HTML markers accept a real DOM element. This lets
           // avatar image errors be handled with addEventListener (no inline JS).
-          html: createAvatarMarkerElement(point),
+          html: createAvatarMarkerHtml(point),
           width: 58,
           height: 68,
           offset: [0, -12],
