@@ -195,13 +195,29 @@ const getSafeAvatarUrl = (value?: string | null): string | null => {
     return null;
   }
   if (trimmed.startsWith('data:image/')) {
-    const base64Match = /^data:image\/(?:svg\+xml|png|jpe?g|webp|gif)(?:;[a-z0-9=-]+)*;base64,\s*([A-Za-z0-9+/=\s_-]+)$/i.exec(trimmed);
-    if (base64Match) {
+    const commaIndex = trimmed.indexOf(',');
+    if (commaIndex === -1) return null;
+
+    const meta = trimmed.slice(0, commaIndex).toLowerCase();
+    const payload = trimmed.slice(commaIndex + 1).trim();
+    if (!payload) return null;
+
+    const validImageTypes = ['data:image/svg+xml', 'data:image/png', 'data:image/jpeg', 'data:image/jpg', 'data:image/webp', 'data:image/gif'];
+    const isBase64 = meta.endsWith(';base64');
+    const mime = isBase64 ? meta.slice(0, -7) : meta;
+
+    const isValidMime = validImageTypes.some((t) => mime === t || mime.startsWith(`${t};`));
+    if (!isValidMime) return null;
+
+    if (isBase64) {
+      // Linear scan for valid base64 payload characters without nested quantifiers or whitespace backtracking
+      return /^[A-Za-z0-9+/=\s_-]+$/.test(payload) ? trimmed : null;
+    }
+
+    if (mime.startsWith('data:image/svg+xml')) {
       return trimmed;
     }
-    if (/^data:image\/svg\+xml(?:;[a-z0-9=-]+)*,(.+)$/i.test(trimmed)) {
-      return trimmed;
-    }
+
     return null;
   }
   if (trimmed.startsWith('<svg')) {
