@@ -216,8 +216,25 @@ const getSafeAvatarUrl = (value?: string | null): string | null => {
     if (!isValidMime) return null;
 
     if (isBase64) {
-      // Linear scan for valid base64 payload characters without nested quantifiers or whitespace backtracking
-      return /^[A-Za-z0-9+/=\s_-]+$/.test(payload) ? trimmed : null;
+      // Linear scan for valid base64 payload characters without nested quantifiers or regular expression backtracking
+      for (let i = 0; i < payload.length; i++) {
+        const code = payload.charCodeAt(i);
+        if (
+          (code >= 65 && code <= 90) || // A-Z
+          (code >= 97 && code <= 122) || // a-z
+          (code >= 48 && code <= 57) || // 0-9
+          code === 43 || // +
+          code === 47 || // /
+          code === 61 || // =
+          code === 45 || // -
+          code === 95 || // _
+          code === 32 || code === 9 || code === 10 || code === 13 // whitespace
+        ) {
+          continue;
+        }
+        return null;
+      }
+      return trimmed;
     }
 
     if (mime.startsWith('data:image/svg+xml')) {

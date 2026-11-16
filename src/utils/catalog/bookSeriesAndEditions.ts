@@ -152,7 +152,17 @@ export function parseBookSeries(
       const seriesName = inside.slice(0, sepIndex).trim();
       const descriptor = inside.slice(sepIndex + 1).trim();
 
-      const descMatch = descriptor.match(/^(?:(?:book|vol(?:ume)?\.?|part|खण्ड|भाग|अंक)\s*)?(?:#\s*)?([0-9ivxlcdm०-९]+(?:\.[0-9]+)?|prequel|novella|companion)(?:\s+of\s+([0-9०-९]{1,3}))?$/i);
+      let cleaned = descriptor.trim();
+      const prefixMatch = cleaned.match(/^(?:book|vol(?:ume)?\.?|part|खण्ड|भाग|अंक)(?:\s+|$)/i);
+      if (prefixMatch) {
+        cleaned = cleaned.slice(prefixMatch[0].length).trim();
+      }
+      if (cleaned.startsWith('#')) {
+        cleaned = cleaned.slice(1).trim();
+      }
+
+      // Linear non-backtracking match on parsed sequence and total volume tokens
+      const descMatch = cleaned.match(/^([0-9ivxlcdm०-९]+(?:\.[0-9]+)?|prequel|novella|companion)(?:\s+of\s+([0-9०-९]{1,3}))?$/i);
       if (descMatch && seriesName) {
         const rawSeq = descMatch[1].trim();
         const totalRaw = descMatch[2]?.trim();
@@ -202,8 +212,8 @@ export function parseBookSeries(
     }
   }
 
-  // 2. Format: "Book 1 of The Expanse" in description or title
-  const bookOfRegex = /\b(?:book|volume|vol\.|part)\s+([0-9]+)\s+of\s+([^.,\n\r()]+)/i;
+  // 2. Format: "Book 1 of The Expanse" in description or title (bounded quantifiers prevent ReDoS backtracking)
+  const bookOfRegex = /\b(?:book|volume|vol\.|part)\s+([0-9]{1,4})\s+of\s+([^.,\n\r()]{1,80})/i;
   const bookOfMatch = rawTitle.match(bookOfRegex) || (description ? description.match(bookOfRegex) : null);
 
   if (bookOfMatch) {
