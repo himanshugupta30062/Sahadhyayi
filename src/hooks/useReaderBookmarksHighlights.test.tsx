@@ -93,10 +93,11 @@ describe('reader bookmark and highlight hooks', () => {
     const remove = renderHook(() => useDeleteReaderHighlight(), { wrapper });
     await expect(remove.result.current.mutateAsync({ id: 'h1', bookId: 'b' })).rejects.toThrow('Sign in first.');
     const update = renderHook(() => useUpdateReaderHighlight(), { wrapper });
-    await expect(update.result.current.mutateAsync({ id: 'h1', text: 'quote' })).rejects.toThrow('Sign in to update reader highlights.');
+    await expect(update.result.current.mutateAsync({ id: 'h1', text: '' })).rejects.toThrow('Sign in to update reader highlights.');
     mocks.user = { id: 'user-1' };
-    await expect(update.result.current.mutateAsync({ id: 'h1', text: '' })).rejects.toThrow('Highlight text must be between 1 and 10,000 characters.');
-    await act(async () => { await update.result.current.mutateAsync({ id: 'h1', bookId: 'b', text: '  edited ', page: 0, color: 'blue' }); });
+    const authedUpdate = renderHook(() => useUpdateReaderHighlight(), { wrapper });
+    await expect(authedUpdate.result.current.mutateAsync({ id: 'h1', text: '' })).rejects.toThrow('Highlight text must be between 1 and 10,000 characters.');
+    await act(async () => { await authedUpdate.result.current.mutateAsync({ id: 'h1', bookId: 'b', text: '  edited ', page: 0, color: 'blue' }); });
     expect(mocks.builder.update).toHaveBeenCalledWith({ text: 'edited', page: 1, color: 'blue' });
     expect(mocks.builder.eq).toHaveBeenCalledWith('user_id', 'user-1');
   });
