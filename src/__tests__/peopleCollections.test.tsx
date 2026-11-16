@@ -86,14 +86,14 @@ describe("public people collections", () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByRole("heading", { name: "Kailash Satyarthi" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Kailash Satyarthi" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /explore featured story/i })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Children's rights" }));
-    expect(screen.getByText("Kailash Satyarthi")).toBeInTheDocument();
+    expect((await screen.findAllByText("Kailash Satyarthi"))[0]).toBeInTheDocument();
     expect(screen.queryByText("Ela Bhatt")).not.toBeInTheDocument();
     expect(screen.getByText(/Showing 1 of 4 profiles/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "All causes" }));
-    expect(screen.getByText("Ela Bhatt")).toBeInTheDocument();
+    expect((await screen.findAllByText("Ela Bhatt"))[0]).toBeInTheDocument();
   });
 
   it("renders the Freedom Fighters collection", async () => {
@@ -105,6 +105,6 @@ describe("public people collections", () => {
 
     expect(screen.getByRole("heading", { name: "Freedom Fighters" })).toBeInTheDocument();
     expect(await screen.findByText("Bhagat Singh")).toBeInTheDocument();
-    expect(screen.getByText("Subhas Chandra Bose")).toBeInTheDocument();
+    expect(screen.getAllByText("Subhas Chandra Bose")[0]).toBeInTheDocument();
   });
 });

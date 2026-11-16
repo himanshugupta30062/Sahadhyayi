@@ -892,6 +892,174 @@ describe('Library Book Sorting Hierarchy', () => {
       // No coverless report can rank above genuine books
       expect(sorted.findIndex(b => b.id.startsWith('coverless-doc'))).toBeGreaterThanOrEqual(7);
     });
+
+    it('ensures diversifyBooksPerPage keeps all genuine books on early pages ahead of technical reports', () => {
+      const coverlessDocs = Array.from({ length: 50 }, (_, i) => ({
+        id: `coverless-doc-${i}`,
+        title: `Technical Report ${i}: System Analysis and Data Evaluation`,
+        author: 'NASA Technical Reports Server (NTRS)',
+        cover_image_url: null,
+        pdf_url: `https://archive.org/download/report-${i}.pdf`,
+        description: `Technical analysis document number ${i}.`,
+        created_at: new Date(Date.now() - i * 1000).toISOString(),
+      }));
+
+      const mixedCatalog = [...coverlessDocs, ...genuineBooks];
+      const sorted = sortBooksByCompleteness(mixedCatalog);
+      const diversified = diversifyBooksPerPage(sorted, 12);
+
+      // Page 1 (first 12 books)
+      const page1 = diversified.slice(0, 12);
+      const page1Ids = page1.map(b => b.id);
+
+      // Every genuine book must appear on Page 1
+      genuineBooks.forEach(book => {
+        expect(page1Ids).toContain(book.id);
+      });
+
+      // Genuine books take the top 7 slots of Page 1 before any report is placed
+      const top7Page1Ids = page1.slice(0, 7).map(b => b.id);
+      genuineBooks.forEach(book => {
+        expect(top7Page1Ids).toContain(book.id);
+      });
+    });
+
+    it('prioritizes distinct high-quality book titles by prolific authors over lower-tier documents on Page 1', () => {
+      // 3 prolific authors with 4 high-quality verified books each = 12 high-quality books
+      const highQualityBooks = [
+        ...['War and Peace', 'Anna Karenina', 'Resurrection', 'The Death of Ivan Ilyich'].map((title, i) => ({
+          id: `tolstoy-${i}`,
+          title,
+          author: 'Leo Tolstoy',
+          cover_image_url: `https://example.com/tolstoy-${i}.jpg`,
+          description: `Masterpiece novel ${title} exploring human spirit and history.`,
+          language: 'English',
+          pdf_url: `https://example.com/tolstoy-${i}.pdf`,
+          created_at: '2026-01-01T00:00:00Z',
+        })),
+        ...['Godan', 'Karmabhoomi', 'Nirmala', 'Gaban'].map((title, i) => ({
+          id: `premchand-${i}`,
+          title,
+          author: 'Munshi Premchand',
+          cover_image_url: `https://example.com/premchand-${i}.jpg`,
+          description: `Classic Hindi novel ${title} exploring society, morality, and justice.`,
+          language: 'Hindi',
+          pdf_url: `https://example.com/premchand-${i}.pdf`,
+          created_at: '2026-01-02T00:00:00Z',
+        })),
+        ...['The Republic', 'Symposium', 'Phaedo', 'Apology'].map((title, i) => ({
+          id: `plato-${i}`,
+          title,
+          author: 'Plato',
+          cover_image_url: `https://example.com/plato-${i}.jpg`,
+          description: `Socratic philosophical dialogue ${title} on truth, virtue, and statecraft.`,
+          language: 'English',
+          pdf_url: `https://example.com/plato-${i}.pdf`,
+          created_at: '2026-01-03T00:00:00Z',
+        })),
+      ];
+
+      // 30 distinct technical reports by 30 unique authors
+      const reports = Array.from({ length: 30 }, (_, i) => ({
+        id: `tech-report-${i}`,
+        title: `Aerospace Technical Report ${i}`,
+        author: `Author Department ${i}`,
+        genre: 'Technical Report',
+        cover_image_url: null,
+        pdf_url: `https://example.com/report-${i}.pdf`,
+        description: `Aerospace analysis document ${i}.`,
+        created_at: '2026-01-04T00:00:00Z',
+      }));
+
+      const combinedCatalog = [...reports, ...highQualityBooks];
+      const sorted = sortBooksByCompleteness(combinedCatalog);
+      const diversified = diversifyBooksPerPage(sorted, 12);
+
+      // Page 1 must contain exactly the 12 high-quality books
+      const page1 = diversified.slice(0, 12);
+      const page1Scores = page1.map(b => getBookCompletenessScore(b));
+
+      // All 12 books on Page 1 must have high completeness scores (>= 10,000)
+      page1Scores.forEach(score => {
+        expect(score).toBeGreaterThanOrEqual(10000);
+      });
+
+      // No technical reports on Page 1
+      const page1Reports = page1.filter(b => b.id.startsWith('tech-report'));
+      expect(page1Reports).toHaveLength(0);
+
+      // Technical reports only appear on Page 2 and beyond
+      const page2 = diversified.slice(12, 24);
+      expect(page2.every(b => b.id.startsWith('tech-report'))).toBe(true);
+    });
+
+    it('ensures genuine books with covers rank ahead of non-book technical reports in paginated views', () => {
+      // 6 metadata-only genuine books with covers
+      const genuineBooksWithCover = [
+        'Introduction to Algorithms',
+        'Structure and Interpretation of Computer Programs',
+        'Clean Code',
+        'Design Patterns',
+        'Refactoring',
+        'The Pragmatic Programmer',
+      ].map((title, i) => ({
+        id: `book-meta-${i}`,
+        title,
+        author: `Tech Author ${i}`,
+        cover_image_url: `https://example.com/cover-${i}.jpg`,
+        description: `Comprehensive genuine computer science book on ${title}.`,
+        language: 'English',
+        isbn: `978000000000${i}`,
+        pages: 500,
+        created_at: '2026-01-01T00:00:00Z',
+      }));
+
+      // 6 verified PDF books with covers
+      const verifiedBooks = [
+        'Macbeth',
+        'Hamlet',
+        'Othello',
+        'King Lear',
+        'The Tempest',
+        'Julius Caesar',
+      ].map((title, i) => ({
+        id: `book-verified-${i}`,
+        title,
+        author: 'William Shakespeare',
+        cover_image_url: `https://example.com/ws-${i}.jpg`,
+        description: `Classic play ${title} by William Shakespeare with verified PDF edition.`,
+        language: 'English',
+        pdf_url: `https://example.com/ws-${i}.pdf`,
+        created_at: '2026-01-02T00:00:00Z',
+      }));
+
+      // 20 technical reports
+      const technicalReports = Array.from({ length: 20 }, (_, i) => ({
+        id: `doc-report-${i}`,
+        title: `Government Investigation Report ${i}`,
+        author: `Agency Officer ${i}`,
+        genre: 'Government Document',
+        cover_image_url: null,
+        pdf_url: `https://example.com/gov-${i}.pdf`,
+        created_at: '2026-01-03T00:00:00Z',
+      }));
+
+      const catalog = [...technicalReports, ...genuineBooksWithCover, ...verifiedBooks];
+      const sorted = sortBooksByCompleteness(catalog);
+      const diversified = diversifyBooksPerPage(sorted, 12);
+
+      // Page 1 should contain verified books and genuine books with cover
+      const page1 = diversified.slice(0, 12);
+
+      // All 12 items on Page 1 must have completeness score >= 4000 (genuine books)
+      page1.forEach(b => {
+        expect(getBookCompletenessScore(b)).toBeGreaterThanOrEqual(4000);
+      });
+
+      // No government technical report appears on Page 1
+      const page1Reports = page1.filter(b => b.id.startsWith('doc-report'));
+      expect(page1Reports).toHaveLength(0);
+    });
   });
 });
 
