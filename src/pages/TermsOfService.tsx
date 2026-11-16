@@ -151,7 +151,7 @@ const TermsOfService: React.FC = () => {
                     Copyright Indemnity
                   </div>
                   <p className="text-[#636B65] dark:text-[#A5ADA6]">
-                    Users who contribute PDFs or manuscripts certify they hold appropriate rights or that the material is in the public domain.
+                    Users who contribute PDFs or manuscripts must have the necessary rights, licences, or a valid public-domain basis to upload and share the material. A submission declaration does not transfer ownership or excuse infringement.
                   </p>
                 </div>
               </div>
@@ -216,7 +216,7 @@ const TermsOfService: React.FC = () => {
                 4. Acceptable Use
               </h2>
               <p>
-                Sahadhyayi is dedicated to respectful, thoughtful literary exchange. You explicitly agree not to:
+                Sahadhyayi is dedicated to respectful, thoughtful literary exchange. You agree not to, and not to encourage others to:
               </p>
               <ul className="list-disc list-inside space-y-2 pl-1 text-xs sm:text-sm">
                 <li>Upload, link, or distribute commercial copyrighted books or works for which you lack statutory authorization or publisher permission.</li>
@@ -309,7 +309,7 @@ const TermsOfService: React.FC = () => {
                 10. Changes to Terms
               </h2>
               <p>
-                We reserve the right to revise or update these Terms of Service at our sole discretion. We will inform users of significant modifications by updating the effective date on this page and dispatching an in-app notice. Continued access to the platform following revised Terms signifies your binding acceptance.
+                We reserve the right to revise or update these Terms of Service at our sole discretion. We will inform users of significant modifications by updating the effective date on this page and dispatching an in-app notice. Where a change materially affects your rights or obligations, we will provide notice and, where required by law, seek your acceptance before it takes effect. Continued use alone will not override any mandatory legal consent or notice requirement.
               </p>
             </section>
 
