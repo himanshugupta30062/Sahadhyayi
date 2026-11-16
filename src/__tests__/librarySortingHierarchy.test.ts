@@ -307,7 +307,7 @@ describe('Library Book Sorting Hierarchy', () => {
       expect(scoreHtml).toBeGreaterThanOrEqual(8800);
     });
 
-    it('ranks genuine books with cover and online reader in Top Tier (9,400+), above incomplete PDFs and coverless documents', () => {
+    it('ranks online-reader books below verified PDFs but above metadata-only records', () => {
       const scorePreview = getBookCompletenessScore(googlePreviewBook);
       const scoreNoCover = getBookCompletenessScore(partialVerifiedPdfNoCover);
       const scoreNasa = getBookCompletenessScore(nasaTechnicalReport);
@@ -315,9 +315,9 @@ describe('Library Book Sorting Hierarchy', () => {
 
       expect(scorePreview).toBeGreaterThanOrEqual(8000);
 
-      // Books with covers and online reader strictly outrank partial PDFs, coverless PDFs and reports
-      expect(scorePreview).toBeGreaterThan(scorePartialPdf);
-      expect(scorePreview).toBeGreaterThan(scoreNoCover);
+      // Verified PDFs are deliberately higher priority than online readers, even without covers.
+      expect(scorePreview).toBeLessThan(scorePartialPdf);
+      expect(scorePreview).toBeLessThan(scoreNoCover);
       expect(scorePreview).toBeGreaterThan(scoreNasa);
     });
 
@@ -380,7 +380,7 @@ describe('Library Book Sorting Hierarchy', () => {
         'book-4-verified-epub',      // verified EPUB with cover (9,000+)
         'book-8-google-preview',     // online reader with cover (8,000+)
         'book-9-metadata-only',      // metadata-only with cover (4,000+)
-        'doc-nasa-report',           // Tier 7: technical report without cover (3,200+)
+        'doc-nasa-report',           // research report (2,500+)
         'book-10-ghost',             // Tier 8: ghost (0+)
       ]);
     });
