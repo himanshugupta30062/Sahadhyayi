@@ -134,7 +134,7 @@ export const NAVIGATION_SECTIONS: NavigationSection[] = [
     href: "/activity",
     items: [
       { name: "Activity Hub", href: "/activity" },
-      { name: "Brain Lab", href: "/brain" },
+      { name: "IQ Test", href: "/brain" },
       { name: "Events & Festivals", href: "/events" },
       { name: "Reading Challenges", href: "/activity?tab=challenges" },
       { name: "Book Games", href: "/games" },
@@ -783,7 +783,7 @@ const Navigation = () => {
                           { title: "Hub & Gatherings", description: "Central home and local meetups", names: ["Activity Hub", "Reader Meetups"] },
                           { title: "Events & Festivals", description: "Literary sessions and festivals", names: ["Events & Festivals"] },
                           { title: "Challenges & Games", description: "Milestones and book trivia", names: ["Reading Challenges", "Book Games"] },
-                          { title: "Brain & Reasoning", description: "Visual puzzles and thinking practice", names: ["Brain Lab"] },
+                          { title: "IQ Test & Reasoning", description: "IQ-style practice and visual puzzles", names: ["IQ Test"] },
                         ];
                         const validGroups = groups
                           .map((group) => ({

@@ -189,7 +189,7 @@ export default function Activity() {
               <Link to="/brain">
                 <Button variant="outline" className="gap-2 rounded-xl bg-white dark:bg-[#111614] text-xs h-10 border-[#E8E2D9] dark:border-[#29332D]">
                   <BrainCircuit className="h-4 w-4 text-[#1C442D] dark:text-[#D5B16D]" />
-                  Brain Lab
+                  IQ Test
                 </Button>
               </Link>
               <Link to="/activity?tab=meetups">
@@ -229,8 +229,8 @@ export default function Activity() {
                 count: '4 Games',
               },
               {
-                id: 'brain',
-                title: 'Brain Lab',
+                id: 'iq-test',
+                title: 'IQ Test',
                 desc: 'Visual reasoning & puzzles',
                 icon: BrainCircuit,
                 count: 'Fresh puzzles',
@@ -349,7 +349,7 @@ export default function Activity() {
                   { id: 'events', label: 'Events' },
                   { id: 'challenges', label: 'Reading Challenges' },
                   { id: 'games', label: 'Book Games' },
-                  { id: 'brain', label: 'Brain Lab' },
+                  { id: 'iq-test', label: 'IQ Test' },
                   { id: 'meetups', label: 'Meetups' },
                 ].map(({ id, label }) => {
                   const isCurrent = activeCategory === id;
@@ -578,13 +578,13 @@ export default function Activity() {
             )}
 
             {/* 3. BRAIN LAB SECTION */}
-            {(activeCategory === 'all' || activeCategory === 'brain') && (
+            {(activeCategory === 'all' || activeCategory === 'iq-test') && (
               <section className="space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <h2 className="flex items-center gap-2 font-serif text-xl font-bold text-[#1C201D] dark:text-[#F3F0E7]">
                       <BrainCircuit className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-                      Brain Lab & Reasoning Puzzles
+                      IQ Test & Reasoning Puzzles
                     </h2>
                     <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">
                       Explore visual matrices, logical patterns and original reasoning challenges.
@@ -592,7 +592,7 @@ export default function Activity() {
                   </div>
                   <Link to="/brain">
                     <Button variant="ghost" size="sm" className="text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">
-                      Explore Brain Lab →
+                      Explore IQ Test →
                     </Button>
                   </Link>
                 </div>
@@ -600,10 +600,10 @@ export default function Activity() {
                   <Card className="rounded-2xl border-violet-200/70 bg-gradient-to-br from-violet-50 to-white p-5 shadow-xs dark:border-violet-900/40 dark:from-violet-950/20 dark:to-[#111614]">
                     <div className="flex items-center gap-3">
                       <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-300"><BrainCircuit className="h-5 w-5" /></span>
-                      <div><Badge variant="secondary" className="text-[10px]">Brain Lab</Badge><h3 className="mt-1 font-serif text-base font-bold">Reasoning playground</h3></div>
+                      <div><Badge variant="secondary" className="text-[10px]">IQ Test</Badge><h3 className="mt-1 font-serif text-base font-bold">Reasoning playground</h3></div>
                     </div>
                     <p className="mt-3 text-xs leading-relaxed text-[#636B65] dark:text-[#A5ADA6]">Practise patterns, logic and problem-solving with original learning activities.</p>
-                    <Link to="/brain" className="mt-4 block"><Button className="w-full rounded-xl text-xs">Open Brain Lab →</Button></Link>
+                    <Link to="/brain" className="mt-4 block"><Button className="w-full rounded-xl text-xs">Open IQ Test →</Button></Link>
                   </Card>
                   <Card className="rounded-2xl border-[#E8E2D9] bg-white p-5 shadow-xs dark:border-[#29332D] dark:bg-[#111614]">
                     <div className="flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-300"><Sparkles className="h-5 w-5" /></span><div><Badge variant="outline" className="text-[10px]">Fresh puzzles</Badge><h3 className="mt-1 font-serif text-base font-bold">Visual matrix practice</h3></div></div>

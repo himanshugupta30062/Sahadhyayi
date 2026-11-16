@@ -16,7 +16,7 @@ const activities = [
 export default function BrainLab() {
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-background text-foreground">
-      <SEO title="Brain Lab | Sahadhyayi" description="Explore original reasoning puzzles and IQ-style practice assessments in Sahadhyayi Brain Lab." />
+      <SEO title="IQ Test | Sahadhyayi" description="Explore original reasoning puzzles and IQ-style practice assessments in Sahadhyayi IQ Test." />
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-16">
         <section className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-violet-500/10 via-background to-indigo-500/10 p-6 sm:p-10">
           <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-violet-500/10 blur-3xl" />
@@ -24,7 +24,7 @@ export default function BrainLab() {
             <div>
               <Badge variant="secondary" className="mb-4 gap-1.5"><Brain className="h-3.5 w-3.5" /> SAHADHYAYI · BRAIN</Badge>
               <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">Curiosity is your superpower.</h1>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">Welcome to Brain Lab: a space for reasoning, visual matrices and thoughtful challenges. Practice for fun, learn how you solve problems, and keep your mind curious.</p>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">Welcome to IQ Test: a space for reasoning, visual matrices and thoughtful challenges. Practice for fun, learn how you solve problems, and keep your mind curious.</p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Button asChild size="lg"><Link to="/brain/iq-test">Start reasoning test <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
                 <Button asChild size="lg" variant="outline"><Link to="/games">Explore book quizzes</Link></Button>
