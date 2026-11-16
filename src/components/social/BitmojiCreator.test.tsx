@@ -22,6 +22,7 @@ const mocks = vi.hoisted(() => {
       Headphones: LucideIcon,
       BookOpen: LucideIcon,
       Bookmark: LucideIcon,
+      Sparkles: LucideIcon,
     },
   };
 });
@@ -208,5 +209,42 @@ describe('BitmojiCreator', () => {
     // Check for the larger preview dimensions (w-40 h-48 md:w-48 md:h-56)
     expect(preview).toHaveClass('w-40');
     expect(preview).toHaveClass('h-48');
+  });
+
+  it('applies a preset configuration when preset button is clicked', async () => {
+    const { container } = render(
+      <BitmojiCreator
+        isOpen
+        onClose={vi.fn()}
+        onSave={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'The Scholar' }));
+    await waitFor(() => {
+      // Scholar preset has academic outfit and square face
+      const preview = container.querySelector('[class*="rounded-2xl"]');
+      expect(preview?.innerHTML).toContain('fill="#d4a574"');
+    });
+  });
+
+  it('randomizes avatar features and displays live map pin preview', async () => {
+    const { container } = render(
+      <BitmojiCreator
+        isOpen
+        onClose={vi.fn()}
+        onSave={vi.fn()}
+      />,
+    );
+
+    // Map pin preview is rendered
+    expect(screen.getByText('Map Pin')).toBeInTheDocument();
+    expect(screen.getByText('YOU')).toBeInTheDocument();
+
+    // Click randomize
+    fireEvent.click(screen.getByRole('button', { name: 'Randomize' }));
+    await waitFor(() => {
+      expect(mocks.avatar.success).toHaveBeenCalledWith('Generated a random reader avatar!');
+    });
   });
 });

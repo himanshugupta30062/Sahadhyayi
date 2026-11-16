@@ -14,6 +14,7 @@ import { Upload, Camera, Link as LinkIcon, Sparkles, Check, Loader2, RotateCcw, 
 import { useUpdateUserAvatar } from '@/hooks/useUserAvatar';
 import { useUpsertUserProfile } from '@/hooks/useUserProfile';
 import { processAvatarImageFile } from '@/lib/avatarUtils';
+import { createDefaultMapAvatarSvg } from '@/components/maps/utils/mapAvatarSvg';
 import { toast } from 'sonner';
 
 interface AvatarUploadDialogProps {
@@ -189,9 +190,10 @@ export const AvatarUploadDialog: React.FC<AvatarUploadDialogProps> = ({
                     }}
                   />
                 ) : (
-                  <span className="flex h-full w-full items-center justify-center rounded-full bg-[#FBF7EE] text-sm font-bold text-[#8F681C]">
-                    YOU
-                  </span>
+                  <div
+                    className="flex h-full w-full items-center justify-center rounded-full overflow-hidden"
+                    dangerouslySetInnerHTML={{ __html: createDefaultMapAvatarSvg('self') }}
+                  />
                 )}
               </div>
               <div className="h-0 w-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[6px] border-t-[#D5B16D] -mt-[2px] drop-shadow-sm" />
