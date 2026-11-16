@@ -105,7 +105,7 @@ const generateFaceShape = (shape: string, skinTone: string): string => {
       return `<path d="M 100 151 C 91 145 60 120 58 94 C 56 72 73 58 89 64 C 94 66 98 70 100 75 C 102 70 106 66 111 64 C 127 58 144 72 142 94 C 140 120 109 145 100 151 Z" fill="${skinTone}" filter="url(#shadow)"/>`;
     case 'oval':
     default:
-      return `${generateFaceShape(faceShape, skinTone)}`;
+      return `<ellipse cx="100" cy="105" rx="42" ry="48" fill="${skinTone}" filter="url(#shadow)"/>`;
   }
 };
 
@@ -163,7 +163,7 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
         <path d="M 85 130 Q 100 125 115 130 L 110 140 L 90 140 Z" fill="${skinTone}" filter="url(#shadow)"/>
 
         <!-- Face -->
-        <ellipse cx="100" cy="105" rx="42" ry="48" fill="${skinTone}" filter="url(#shadow)"/>
+        ${generateFaceShape(faceShape, skinTone)}
 
         <!-- Ears -->
         <ellipse cx="58" cy="105" rx="8" ry="14" fill="${skinTone}" filter="url(#shadow)"/>

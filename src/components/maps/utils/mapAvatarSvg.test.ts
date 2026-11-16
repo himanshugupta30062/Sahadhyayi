@@ -11,6 +11,11 @@ describe('createDefaultMapAvatarSvg', () => {
     expect(svg).toContain('viewBox="0 0 96 96"');
   });
 
+  it('keeps SVG instances free of document-level IDs that collide across map markers', () => {
+    expect(createDefaultMapAvatarSvg('reader-a')).not.toContain('id=');
+    expect(createDefaultMapAvatarSvg('reader-b')).not.toContain('id=');
+  });
+
   it('generates the same portrait for the same seed and different portraits for different seeds', () => {
     expect(createDefaultMapAvatarSvg('same-reader')).toBe(createDefaultMapAvatarSvg('same-reader'));
     expect(createDefaultMapAvatarSvg('reader-a')).not.toBe(createDefaultMapAvatarSvg('reader-b'));

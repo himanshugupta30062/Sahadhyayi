@@ -51,12 +51,7 @@ export const createDefaultMapAvatarSvg = (seed: string): string => {
     : '';
 
   return `<svg class="sahadhyayi-default-avatar" data-face-shape="${face.name}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="100%" height="100%" style="position:absolute;inset:0;display:block;width:100%;height:100%;" aria-hidden="true">
-    <defs>
-      <clipPath id="reader-avatar-clip"><circle cx="48" cy="48" r="48"/></clipPath>
-      <linearGradient id="reader-avatar-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${backdrop}"/><stop offset="1" stop-color="#FFFFFF" stop-opacity=".45"/></linearGradient>
-    </defs>
-    <g clip-path="url(#reader-avatar-clip)">
-      <rect width="96" height="96" fill="url(#reader-avatar-bg)"/>
+      <rect width="96" height="96" fill="${backdrop}"/>
       <circle cx="48" cy="26" r="34" fill="#FFFFFF" opacity=".16"/>
       <path d="M7 98 C10 79 22 73 36 70 L42 67 H54 L60 70 C75 73 86 80 89 98Z" fill="${shirt}"/>
       <path d="M40 63 H56 L58 78 Q48 84 38 78Z" fill="${skin}"/>
@@ -77,6 +72,5 @@ export const createDefaultMapAvatarSvg = (seed: string): string => {
       ${facialHair}
       <path d="M41 64 Q48 69 55 64" stroke="#9C4F4B" stroke-width="2.4" stroke-linecap="round" fill="none"/>
       ${glasses}
-    </g>
   </svg>`;
 };
