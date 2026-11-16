@@ -46,10 +46,10 @@ describe('CookiePolicy Page', () => {
     expect(screen.getByRole('heading', { level: 2, name: /9\. Contact Us/i })).toBeInTheDocument();
 
     // Check itemized storage inventory table
-    expect(screen.getByText('sb-*-auth-token')).toBeInTheDocument();
-    expect(screen.getByText('theme')).toBeInTheDocument();
-    expect(screen.getByText('reader-font-settings')).toBeInTheDocument();
-    expect(screen.getByText('reader-offline-cache')).toBeInTheDocument();
+    expect(screen.getByText(/sb-.*-auth-token/i)).toBeInTheDocument();
+    expect(screen.getByText(/Theme preference keys/i)).toBeInTheDocument();
+    expect(screen.getByText(/Feature-specific localStorage keys/i)).toBeInTheDocument();
+    expect(screen.getByText(/Browser caches/i)).toBeInTheDocument();
 
     // Check browser instructions
     expect(screen.getByText(/Google Chrome:/i)).toBeInTheDocument();

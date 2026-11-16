@@ -636,4 +636,150 @@ describe('MapplsMap', () => {
     expect(markerHtml).toContain('>N</span>');
     expect(markerHtml).toContain('data-sahadhyayi-avatar="true"');
   });
+
+  it('exposes rich map actions via onMapActionsReady and performs zoom, 3D tilt, and recenter', async () => {
+    let capturedActions: any = null;
+    const zoomIn = vi.fn();
+    const zoomOut = vi.fn();
+    const easeTo = vi.fn();
+    const setZoom = vi.fn();
+    const getZoom = vi.fn(() => 10);
+    const setCenter = vi.fn();
+    const flyTo = vi.fn();
+
+    const map = {
+      addListener: vi.fn(),
+      loaded: () => true,
+      zoomIn,
+      zoomOut,
+      easeTo,
+      setZoom,
+      getZoom,
+      setCenter,
+      flyTo,
+      remove: vi.fn(),
+    };
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () { return map; }),
+      Marker: vi.fn().mockImplementation(function () { return { remove: vi.fn() }; }),
+      remove: vi.fn(),
+    };
+
+    render(
+      <MapplsMap
+        apiKey="valid-key"
+        points={[{ id: 'p1', lat: 28.5, lng: 77.2, title: 'Delhi' }]}
+        onMapActionsReady={(actions) => { capturedActions = actions; }}
+      />
+    );
+
+    await waitFor(() => expect(capturedActions).not.toBeNull());
+
+    // 1. Zoom In
+    capturedActions.zoomIn();
+    expect(zoomIn).toHaveBeenCalled();
+
+    // 2. Zoom Out
+    capturedActions.zoomOut();
+    expect(zoomOut).toHaveBeenCalled();
+
+    // 3. 3D Tilt toggle
+    const is3D = capturedActions.toggle3D();
+    expect(is3D).toBe(true);
+    expect(easeTo).toHaveBeenCalledWith(expect.objectContaining({ pitch: 60, bearing: 15 }));
+
+    // Toggle back to 2D
+    const is2D = capturedActions.toggle3D();
+    expect(is2D).toBe(false);
+    expect(easeTo).toHaveBeenCalledWith(expect.objectContaining({ pitch: 0, bearing: 0 }));
+
+    // 4. Recenter
+    capturedActions.recenter({ lat: 12.9, lng: 77.6 });
+    expect(flyTo).toHaveBeenCalledWith(expect.objectContaining({
+      center: { lat: 12.9, lng: 77.6 },
+      zoom: 12,
+    }));
+  });
+
+  it('supports keyboard shortcuts for zoom in (+/=), zoom out (-/_), 3D toggle (3), and reset (r)', async () => {
+    let capturedActions: any = null;
+    const easeTo = vi.fn();
+    const zoomIn = vi.fn();
+    const zoomOut = vi.fn();
+    const map = {
+      addListener: vi.fn(),
+      loaded: () => true,
+      zoomIn,
+      zoomOut,
+      easeTo,
+      remove: vi.fn(),
+    };
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () { return map; }),
+      Marker: vi.fn().mockImplementation(function () { return { remove: vi.fn() }; }),
+      remove: vi.fn(),
+    };
+
+    render(
+      <MapplsMap
+        apiKey="valid-key"
+        points={[]}
+        onMapActionsReady={(actions) => { capturedActions = actions; }}
+      />
+    );
+
+    await waitFor(() => expect(capturedActions).not.toBeNull());
+
+    const mapContainer = screen.getByLabelText('Interactive Mappls map');
+
+    // Test '+' key
+    fireEvent.keyDown(mapContainer, { key: '+' });
+    expect(zoomIn).toHaveBeenCalled();
+
+    // Test '-' key
+    fireEvent.keyDown(mapContainer, { key: '-' });
+    expect(zoomOut).toHaveBeenCalled();
+
+    // Test '_' key
+    fireEvent.keyDown(mapContainer, { key: '_' });
+    expect(zoomOut).toHaveBeenCalledTimes(2);
+
+    // Test '3' key (3D toggle)
+    fireEvent.keyDown(mapContainer, { key: '3' });
+    expect(easeTo).toHaveBeenCalledWith(expect.objectContaining({ pitch: 60 }));
+
+    // Test 'r' key (reset)
+    fireEvent.keyDown(mapContainer, { key: 'r' });
+    expect(easeTo).toHaveBeenCalledWith(expect.objectContaining({ pitch: 0 }));
+  });
+
+  it('renders integrated floating controls when showFloatingControls is enabled', async () => {
+    const map = {
+      addListener: vi.fn(),
+      loaded: () => true,
+      setCenter: vi.fn(),
+      setZoom: vi.fn(),
+      remove: vi.fn(),
+    };
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () { return map; }),
+      Marker: vi.fn().mockImplementation(function () { return { remove: vi.fn() }; }),
+      remove: vi.fn(),
+    };
+
+    render(
+      <MapplsMap
+        apiKey="valid-key"
+        points={[]}
+        center={{ lat: 28.5, lng: 77.2 }}
+        showFloatingControls={true}
+        hasUserLocation={true}
+      />
+    );
+
+    await waitFor(() => expect(screen.getByRole('button', { name: /switch to 3d view/i })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /zoom in/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /zoom out/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /recenter on my location/i })).toBeInTheDocument();
+  });
 });

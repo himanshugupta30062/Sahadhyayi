@@ -171,7 +171,7 @@ export const AvatarUploadDialog: React.FC<AvatarUploadDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Live Snap Map Marker Preview */}
+        {/* Live Map Marker Preview */}
         <div className="flex items-center justify-center gap-6 rounded-xl border border-[#E8E2D9] bg-[#FAF7F2] p-4 dark:border-[#29332D] dark:bg-[#0B0D0C]">
           <div className="text-center">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-[#636B65] dark:text-[#A5ADA6] mb-2">

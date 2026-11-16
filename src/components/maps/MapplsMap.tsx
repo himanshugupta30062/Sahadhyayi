@@ -1,14 +1,42 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { generateMarkerHtml } from './utils/mapMarkerGenerators';
+import { MapFloatingControls } from './MapFloatingControls';
 
-interface MapplsRuntimeMap {
+export interface MapplsRuntimeMap {
   addListener?: (eventName: string, callback: (event?: unknown) => void) => unknown;
   on?: (eventName: string, callback: (event?: unknown) => void) => unknown;
   loaded?: () => boolean;
-  setCenter?: (center: { lat: number; lng: number }) => void;
+  setCenter?: (center: { lat: number; lng: number } | [number, number]) => void;
+  getCenter?: () => { lat: number; lng: number } | [number, number];
   setZoom?: (zoom: number) => void;
+  getZoom?: () => number;
+  zoomIn?: () => void;
+  zoomOut?: () => void;
+  setPitch?: (pitch: number) => void;
+  getPitch?: () => number;
+  setTilt?: (tilt: number) => void;
+  getTilt?: () => number;
+  setBearing?: (bearing: number) => void;
+  getBearing?: () => number;
+  easeTo?: (options: Record<string, unknown>) => void;
+  flyTo?: (options: Record<string, unknown>) => void;
   resize?: () => void;
   remove?: () => void;
+  [key: string]: unknown;
+}
+
+export interface MapplsMapActions {
+  zoomIn: () => void;
+  zoomOut: () => void;
+  setZoom: (zoom: number) => void;
+  getZoom: () => number;
+  toggle3D: () => boolean;
+  set3D: (enable3D: boolean) => void;
+  is3D: () => boolean;
+  recenter: (coords?: { lat: number; lng: number } | null) => void;
+  resetView: () => void;
+  fitAllPoints: () => void;
+  getRawMap: () => MapplsRuntimeMap | null;
 }
 
 interface MapplsRuntimeMarker {
@@ -52,12 +80,17 @@ export interface MapplsPoint {
   data?: unknown;
 }
 
-interface MapplsMapProps {
+export interface MapplsMapProps {
   apiKey: string;
   points: MapplsPoint[];
   center?: { lat: number; lng: number } | null;
   emptyMessage?: string;
   onMarkerClick?: (point: MapplsPoint) => void;
+  onMapActionsReady?: (actions: MapplsMapActions) => void;
+  showFloatingControls?: boolean;
+  hasUserLocation?: boolean;
+  onRecenterRequested?: () => void;
+  className?: string;
 }
 
 const SDK_URL = 'https://sdk.mappls.com/map/sdk/web?v=3.0';
@@ -375,6 +408,11 @@ export function MapplsMap({
   center,
   emptyMessage = 'No shared reader locations are available yet.',
   onMarkerClick,
+  onMapActionsReady,
+  showFloatingControls = false,
+  hasUserLocation,
+  onRecenterRequested,
+  className,
 }: MapplsMapProps) {
   const generatedId = useId().replace(/:/g, '');
   const containerId = `mappls-map-${generatedId}`;
@@ -384,6 +422,11 @@ export function MapplsMap({
   const lastBoundsSignature = useRef('');
   const onMarkerClickRef = useRef(onMarkerClick);
   onMarkerClickRef.current = onMarkerClick;
+  const onMapActionsReadyRef = useRef(onMapActionsReady);
+  onMapActionsReadyRef.current = onMapActionsReady;
+  const is3DActive = useRef(false);
+  const [is3DState, setIs3DState] = useState(false);
+  const [mapActions, setMapActions] = useState<MapplsMapActions | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'missing-key'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
   const [mapWarning, setMapWarning] = useState('');
@@ -451,6 +494,13 @@ export function MapplsMap({
               center: { lat: initialCenter.lat, lng: initialCenter.lng },
               // The documented supported zoom range begins at level 5.
               zoom: center ? 10 : 5,
+              pitch: 0,
+              bearing: 0,
+              maxPitch: 85,
+              pitchWithRotate: true,
+              dragRotate: true,
+              rotateControl: true,
+              zoomControl: false,
               token_callback: tokenCallback,
             });
             mapInstance.current = map;
@@ -474,6 +524,191 @@ export function MapplsMap({
                 console.warn('Mappls resize after load failed; the map will retry on the next layout change:', error);
               }
             });
+
+            const actions: MapplsMapActions = {
+              zoomIn: () => {
+                const runtimeMap = mapInstance.current;
+                if (!runtimeMap) return;
+                try {
+                  if (typeof runtimeMap.zoomIn === 'function') {
+                    runtimeMap.zoomIn();
+                    return;
+                  }
+                  const current = typeof runtimeMap.getZoom === 'function' ? runtimeMap.getZoom() : 10;
+                  const target = Math.min(Math.round(current) + 1, 22);
+                  if (typeof runtimeMap.easeTo === 'function') {
+                    runtimeMap.easeTo({ zoom: target, duration: 300 });
+                  } else if (typeof runtimeMap.setZoom === 'function') {
+                    runtimeMap.setZoom(target);
+                  }
+                } catch (e) {
+                  console.warn('Mappls zoom in error:', e);
+                }
+              },
+              zoomOut: () => {
+                const runtimeMap = mapInstance.current;
+                if (!runtimeMap) return;
+                try {
+                  if (typeof runtimeMap.zoomOut === 'function') {
+                    runtimeMap.zoomOut();
+                    return;
+                  }
+                  const current = typeof runtimeMap.getZoom === 'function' ? runtimeMap.getZoom() : 10;
+                  const target = Math.max(Math.round(current) - 1, 2);
+                  if (typeof runtimeMap.easeTo === 'function') {
+                    runtimeMap.easeTo({ zoom: target, duration: 300 });
+                  } else if (typeof runtimeMap.setZoom === 'function') {
+                    runtimeMap.setZoom(target);
+                  }
+                } catch (e) {
+                  console.warn('Mappls zoom out error:', e);
+                }
+              },
+              setZoom: (targetZoom: number) => {
+                const runtimeMap = mapInstance.current;
+                if (!runtimeMap) return;
+                try {
+                  if (typeof runtimeMap.easeTo === 'function') {
+                    runtimeMap.easeTo({ zoom: targetZoom, duration: 300 });
+                  } else if (typeof runtimeMap.setZoom === 'function') {
+                    runtimeMap.setZoom(targetZoom);
+                  }
+                } catch (e) {
+                  console.warn('Mappls setZoom error:', e);
+                }
+              },
+              getZoom: () => {
+                const runtimeMap = mapInstance.current;
+                return typeof runtimeMap?.getZoom === 'function' ? runtimeMap.getZoom() : 10;
+              },
+              toggle3D: () => {
+                const runtimeMap = mapInstance.current;
+                if (!runtimeMap) return false;
+                const next3D = !is3DActive.current;
+                is3DActive.current = next3D;
+                setIs3DState(next3D);
+                const targetPitch = next3D ? 60 : 0;
+                const targetBearing = next3D ? 15 : 0;
+                try {
+                  if (typeof runtimeMap.easeTo === 'function') {
+                    runtimeMap.easeTo({ pitch: targetPitch, bearing: targetBearing, duration: 800 });
+                  } else {
+                    if (typeof runtimeMap.setPitch === 'function') {
+                      runtimeMap.setPitch(targetPitch);
+                    } else if (typeof runtimeMap.setTilt === 'function') {
+                      runtimeMap.setTilt(targetPitch);
+                    }
+                    if (typeof runtimeMap.setBearing === 'function') {
+                      runtimeMap.setBearing(targetBearing);
+                    }
+                  }
+                } catch (e) {
+                  console.warn('Mappls 3D toggle error:', e);
+                }
+                return next3D;
+              },
+              set3D: (enable3D: boolean) => {
+                const runtimeMap = mapInstance.current;
+                if (!runtimeMap) return;
+                is3DActive.current = enable3D;
+                setIs3DState(enable3D);
+                const targetPitch = enable3D ? 60 : 0;
+                const targetBearing = enable3D ? 15 : 0;
+                try {
+                  if (typeof runtimeMap.easeTo === 'function') {
+                    runtimeMap.easeTo({ pitch: targetPitch, bearing: targetBearing, duration: 800 });
+                  } else {
+                    if (typeof runtimeMap.setPitch === 'function') {
+                      runtimeMap.setPitch(targetPitch);
+                    } else if (typeof runtimeMap.setTilt === 'function') {
+                      runtimeMap.setTilt(targetPitch);
+                    }
+                    if (typeof runtimeMap.setBearing === 'function') {
+                      runtimeMap.setBearing(targetBearing);
+                    }
+                  }
+                } catch (e) {
+                  console.warn('Mappls set3D error:', e);
+                }
+              },
+              is3D: () => is3DActive.current,
+              recenter: (coords?: { lat: number; lng: number } | null) => {
+                const runtimeMap = mapInstance.current;
+                if (!runtimeMap) return;
+                const target = coords ?? center;
+                if (!target || !isValidPoint({ id: 'target', title: 'Target', lat: target.lat, lng: target.lng })) {
+                  return;
+                }
+                try {
+                  if (typeof runtimeMap.flyTo === 'function') {
+                    runtimeMap.flyTo({ center: { lat: target.lat, lng: target.lng }, zoom: 12, duration: 1000 });
+                  } else if (typeof runtimeMap.easeTo === 'function') {
+                    runtimeMap.easeTo({ center: { lat: target.lat, lng: target.lng }, zoom: 12, duration: 800 });
+                  } else if (typeof runtimeMap.setCenter === 'function') {
+                    runtimeMap.setCenter({ lat: target.lat, lng: target.lng });
+                    runtimeMap.setZoom?.(12);
+                  }
+                } catch (e) {
+                  console.warn('Mappls recenter error:', e);
+                }
+              },
+              resetView: () => {
+                const runtimeMap = mapInstance.current;
+                if (!runtimeMap) return;
+                is3DActive.current = false;
+                setIs3DState(false);
+                try {
+                  if (typeof runtimeMap.easeTo === 'function') {
+                    runtimeMap.easeTo({ pitch: 0, bearing: 0, duration: 600 });
+                  } else {
+                    runtimeMap.setPitch?.(0);
+                    runtimeMap.setTilt?.(0);
+                    runtimeMap.setBearing?.(0);
+                  }
+                } catch {
+                  // non-critical
+                }
+
+                const validPoints = points.filter(isValidPoint);
+                if (validPoints.length > 1 && typeof window.mappls?.fitBounds === 'function') {
+                  try {
+                    const boundsData = validPoints.map((p) => ({ lat: p.lat, lng: p.lng }));
+                    new window.mappls.fitBounds({ map: runtimeMap, bounds: boundsData });
+                    return;
+                  } catch {
+                    // fallback to India center
+                  }
+                }
+                const defaultCenter = { lat: 22.9734, lng: 78.6569 };
+                try {
+                  if (typeof runtimeMap.flyTo === 'function') {
+                    runtimeMap.flyTo({ center: defaultCenter, zoom: 5, duration: 800 });
+                  } else if (typeof runtimeMap.setCenter === 'function') {
+                    runtimeMap.setCenter(defaultCenter);
+                    runtimeMap.setZoom?.(5);
+                  }
+                } catch {
+                  // non-critical
+                }
+              },
+              fitAllPoints: () => {
+                const runtimeMap = mapInstance.current;
+                if (!runtimeMap) return;
+                const validPoints = points.filter(isValidPoint);
+                if (validPoints.length > 1 && typeof window.mappls?.fitBounds === 'function') {
+                  try {
+                    const boundsData = validPoints.map((p) => ({ lat: p.lat, lng: p.lng }));
+                    new window.mappls.fitBounds({ map: runtimeMap, bounds: boundsData });
+                  } catch {
+                    // non-critical
+                  }
+                }
+              },
+              getRawMap: () => mapInstance.current,
+            };
+
+            setMapActions(actions);
+            onMapActionsReadyRef.current?.(actions);
           };
 
           const addMapListener = (eventName: string, callback: (event?: unknown) => void) => {
@@ -767,12 +1002,39 @@ export function MapplsMap({
           border-radius: 50% !important;
           object-fit: cover !important;
         }
+        /* Suppress Mappls SDK duplicate default controls so our floating controls are clean and responsive */
+        .maplibregl-ctrl-top-right,
+        .mapboxgl-ctrl-top-right,
+        .mappls-ctrl-top-right,
+        .maplibregl-ctrl-bottom-right,
+        .mapboxgl-ctrl-bottom-right,
+        .mappls-ctrl-bottom-right {
+          display: none !important;
+        }
       `}</style>
       <div
         id={containerId}
         ref={mapElement}
-        className="h-[500px] w-full overflow-hidden rounded-xl border"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (!mapActions) return;
+          if (e.key === '+' || e.key === '=') {
+            e.preventDefault();
+            mapActions.zoomIn();
+          } else if (e.key === '-' || e.key === '_') {
+            e.preventDefault();
+            mapActions.zoomOut();
+          } else if (e.key === '3') {
+            e.preventDefault();
+            mapActions.toggle3D();
+          } else if (e.key.toLowerCase() === 'r') {
+            e.preventDefault();
+            mapActions.resetView();
+          }
+        }}
+        className={className || "h-[500px] w-full overflow-hidden rounded-xl border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"}
         aria-label="Interactive Mappls map"
+        title="Interactive Mappls map. Use plus (+) and minus (-) or underscore (_) keys to zoom, 3 to toggle 3D view, or r to reset view."
       />
       {status === 'loading' && (
         <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-background/80" aria-label="Loading map" aria-busy="true">
@@ -811,6 +1073,23 @@ export function MapplsMap({
         <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-lg bg-background/95 px-4 py-2 text-sm shadow">
           {emptyMessage}
         </div>
+      )}
+      {showFloatingControls && status === 'ready' && mapActions && (
+        <MapFloatingControls
+          hasUserLocation={Boolean(hasUserLocation ?? center)}
+          is3D={is3DState}
+          onToggle3D={() => mapActions.toggle3D()}
+          onZoomIn={() => mapActions.zoomIn()}
+          onZoomOut={() => mapActions.zoomOut()}
+          onRecenter={() => {
+            if (onRecenterRequested) {
+              onRecenterRequested();
+            } else if (center) {
+              mapActions.recenter(center);
+            }
+          }}
+          onResetView={() => mapActions.resetView()}
+        />
       )}
     </div>
   );
