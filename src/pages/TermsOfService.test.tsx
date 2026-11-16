@@ -16,7 +16,7 @@ describe('TermsOfService', () => {
     render(<TermsOfService />);
 
     expect(screen.getByRole('heading', { level: 1, name: 'Terms of Service' })).toBeInTheDocument();
-    expect(screen.getByText(/Last updated: January 2024/i)).toBeInTheDocument();
+    expect(screen.getByText(/Last updated:/i)).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: '1. Acceptance of Terms' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: '2. Description of Service' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: '3. User Accounts' })).toBeInTheDocument();

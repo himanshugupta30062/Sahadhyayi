@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +9,7 @@ import SEO from '@/components/SEO';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { useFriends } from '@/hooks/useFriends';
 import { BookFilterDropdown } from '@/components/social/BookFilterDropdown';
-import { MapplsMap, type MapplsPoint } from '@/components/maps/MapplsMap';
+import { MapplsMap, type MapplsPoint, type MapplsMapActions } from '@/components/maps/MapplsMap';
 import { BitmojiCreator } from '@/components/social/BitmojiCreator';
 import { AvatarUploadDialog } from '@/components/social/AvatarUploadDialog';
 import { useUserAvatar } from '@/hooks/useUserAvatar';
@@ -80,6 +80,47 @@ const MapPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ExploreCategory>('all');
   const [selectedMarker, setSelectedMarker] = useState<SelectedMapMarker | null>(null);
+  const [is3DMap, setIs3DMap] = useState<Record<MapMode, boolean>>({
+    readers: false,
+    friends: false,
+    explore: false,
+  });
+  const mapActionsRef = useRef<Record<MapMode, MapplsMapActions | null>>({
+    readers: null,
+    friends: null,
+    explore: null,
+  });
+
+  const handleToggle3D = (mode: MapMode) => {
+    const next = mapActionsRef.current[mode]?.toggle3D();
+    if (next !== undefined) {
+      setIs3DMap((prev) => ({ ...prev, [mode]: next }));
+      toast.info(next ? 'Switched to 3D perspective' : 'Switched to flat 2D view');
+    }
+  };
+
+  const handleZoomIn = (mode: MapMode) => {
+    mapActionsRef.current[mode]?.zoomIn();
+  };
+
+  const handleZoomOut = (mode: MapMode) => {
+    mapActionsRef.current[mode]?.zoomOut();
+  };
+
+  const handleRecenter = (mode: MapMode) => {
+    if (currentLocation) {
+      mapActionsRef.current[mode]?.recenter(currentLocation);
+      toast.info('Recentered to your location');
+    } else {
+      handleToggleSharing();
+    }
+  };
+
+  const handleResetView = (mode: MapMode) => {
+    mapActionsRef.current[mode]?.resetView();
+    setIs3DMap((prev) => ({ ...prev, [mode]: false }));
+    toast.info('Reset map view to all markers');
+  };
 
   const { user } = useAuth();
   const { data: userAvatar } = useUserAvatar();
@@ -481,15 +522,15 @@ const MapPage = () => {
   return (
     <>
       <SEO
-        title="Reader Snap Map — Live Reader Community & Book Discovery | Sahadhyayi"
-        description="Discover readers, friends, libraries, bookstores and literary events around you with custom Bitmojis and book sharing."
+        title="Reader Community Map — Live Readers & Book Discovery | Sahadhyayi"
+        description="Discover readers, friends, libraries, bookstores and literary events around you with custom avatars and book sharing."
         canonical="https://sahadhyayi.com/map"
         url="https://sahadhyayi.com/map"
       />
 
       <main className="min-h-screen px-3 sm:px-4 pb-16 pt-3 bg-[#FAF7F2] dark:bg-[#0B0D0C] text-[#202820] dark:text-[#F3F0E7] space-y-3">
         <div className="mx-auto max-w-5xl space-y-3">
-          {/* Snapchat Style Top HUD */}
+          {/* Top Navigation HUD */}
           <MapTopHUD
             mode={tab}
             onModeChange={handleModeChange}
@@ -600,19 +641,23 @@ const MapPage = () => {
                   points={readerPoints}
                   center={currentLocation}
                   onMarkerClick={handleMarkerClick}
-                  emptyMessage={!selectedBook ? 'Choose a book above to discover active readers.' : !locationSharingEnabled ? 'Enable location sharing to discover nearby readers on Snap Map.' : 'No nearby readers are sharing this book location yet.'}
+                  onMapActionsReady={(actions) => {
+                    mapActionsRef.current.readers = actions;
+                  }}
+                  emptyMessage={!selectedBook ? 'Choose a book above to discover active readers.' : !locationSharingEnabled ? 'Enable location sharing to discover nearby readers on the map.' : 'No nearby readers are sharing this book location yet.'}
                 />
                 <MapFloatingControls
                   hasUserLocation={Boolean(currentLocation)}
-                  onRecenter={() => {
-                    if (currentLocation) toast.info('Recentering to your location');
-                    else handleToggleSharing();
-                  }}
-                  onResetView={() => toast.info('Fitting all community markers')}
+                  is3D={is3DMap.readers}
+                  onToggle3D={() => handleToggle3D('readers')}
+                  onZoomIn={() => handleZoomIn('readers')}
+                  onZoomOut={() => handleZoomOut('readers')}
+                  onRecenter={() => handleRecenter('readers')}
+                  onResetView={() => handleResetView('readers')}
                 />
               </div>
 
-              {/* Snapchat Bottom Drawer of Active Readers */}
+              {/* Bottom Drawer of Active Readers */}
               {readers.length > 0 && (
                 <div className="space-y-2 pt-2">
                   <div className="flex items-center justify-between">
@@ -684,15 +729,19 @@ const MapPage = () => {
                   points={friendPoints}
                   center={currentLocation}
                   onMarkerClick={handleMarkerClick}
+                  onMapActionsReady={(actions) => {
+                    mapActionsRef.current.friends = actions;
+                  }}
                   emptyMessage="No friends have shared a mappable location with you yet."
                 />
                 <MapFloatingControls
                   hasUserLocation={Boolean(currentLocation)}
-                  onRecenter={() => {
-                    if (currentLocation) toast.info('Recentering to your location');
-                    else handleToggleSharing();
-                  }}
-                  onResetView={() => toast.info('Fitting all community markers')}
+                  is3D={is3DMap.friends}
+                  onToggle3D={() => handleToggle3D('friends')}
+                  onZoomIn={() => handleZoomIn('friends')}
+                  onZoomOut={() => handleZoomOut('friends')}
+                  onRecenter={() => handleRecenter('friends')}
+                  onResetView={() => handleResetView('friends')}
                 />
               </div>
 
@@ -710,15 +759,19 @@ const MapPage = () => {
                   points={explorePoints}
                   center={currentLocation}
                   onMarkerClick={handleMarkerClick}
+                  onMapActionsReady={(actions) => {
+                    mapActionsRef.current.explore = actions;
+                  }}
                   emptyMessage="No public reading spots or events found matching your filter."
                 />
                 <MapFloatingControls
                   hasUserLocation={Boolean(currentLocation)}
-                  onRecenter={() => {
-                    if (currentLocation) toast.info('Recentering to your location');
-                    else handleToggleSharing();
-                  }}
-                  onResetView={() => toast.info('Fitting all community markers')}
+                  is3D={is3DMap.explore}
+                  onToggle3D={() => handleToggle3D('explore')}
+                  onZoomIn={() => handleZoomIn('explore')}
+                  onZoomOut={() => handleZoomOut('explore')}
+                  onRecenter={() => handleRecenter('explore')}
+                  onResetView={() => handleResetView('explore')}
                 />
 
                 {!selectedMarker && (
@@ -741,7 +794,7 @@ const MapPage = () => {
         />
       </main>
 
-      {/* Snap Map Avatar Upload Dialog */}
+      {/* Map Avatar Upload Dialog */}
       <AvatarUploadDialog
         isOpen={showAvatarUpload}
         onClose={() => setShowAvatarUpload(false)}
@@ -749,7 +802,7 @@ const MapPage = () => {
         onSuccess={() => setShowAvatarUpload(false)}
       />
 
-      {/* Snap Map Bitmoji Creator Dialog */}
+      {/* Map Bitmoji Creator Dialog */}
       <BitmojiCreator
         isOpen={showBitmojiCreator}
         onClose={() => setShowBitmojiCreator(false)}

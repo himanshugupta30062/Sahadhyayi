@@ -119,6 +119,8 @@ const ReaderMap = () => {
         apiKey={MAPPLS_API_KEY}
         points={points}
         center={userLocation}
+        showFloatingControls={true}
+        hasUserLocation={Boolean(userLocation)}
         emptyMessage="No readers have shared a mappable location for this book yet."
       />
       {readers.length === 0 && !isSharingLocation && (
