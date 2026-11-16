@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Palette, Save, RotateCcw, Shirt, Glasses, HardHat, Headphones, BookOpen, Bookmark } from 'lucide-react';
+import { Palette, Save, RotateCcw, Shirt, Glasses, HardHat, Headphones, BookOpen, Bookmark, Sparkles } from 'lucide-react';
 import { useUpdateUserAvatar } from '@/hooks/useUserAvatar';
 import { toast } from 'sonner';
 import DOMPurify from 'dompurify';
@@ -113,6 +113,89 @@ const READING_ACCESSORIES = [
   'none', 'book', 'ebook', 'bookmark', 'glasses-reading', 'coffee-book',
 ] as const;
 
+const AVATAR_PRESETS: Array<{ name: string; features: BitmojiFeatures }> = [
+  {
+    name: 'Classic Reader',
+    features: {
+      skinTone: '#f4d1ae',
+      faceShape: 'oval',
+      hairStyle: 'short',
+      hairColor: '#8b4513',
+      eyeShape: 'normal',
+      eyeColor: '#654321',
+      noseShape: 'normal',
+      mouthShape: 'smile',
+      outfit: 'casual',
+      accessory: 'glasses',
+      readingAccessory: 'book',
+    },
+  },
+  {
+    name: 'Night Reader',
+    features: {
+      skinTone: '#f8d7c4',
+      faceShape: 'round',
+      hairStyle: 'curly',
+      hairColor: '#000000',
+      eyeShape: 'round',
+      eyeColor: '#2c3e50',
+      noseShape: 'small',
+      mouthShape: 'open-smile',
+      outfit: 'cozy',
+      accessory: 'none',
+      readingAccessory: 'ebook',
+    },
+  },
+  {
+    name: 'The Scholar',
+    features: {
+      skinTone: '#d4a574',
+      faceShape: 'square',
+      hairStyle: 'wavy',
+      hairColor: '#4a2c1a',
+      eyeShape: 'almond',
+      eyeColor: '#000000',
+      noseShape: 'pointed',
+      mouthShape: 'serious',
+      outfit: 'academic',
+      accessory: 'glasses',
+      readingAccessory: 'book',
+    },
+  },
+  {
+    name: 'The Avid Reader',
+    features: {
+      skinTone: '#f4d1ae',
+      faceShape: 'heart',
+      hairStyle: 'bob',
+      hairColor: '#8b4513',
+      eyeShape: 'normal',
+      eyeColor: '#654321',
+      noseShape: 'normal',
+      mouthShape: 'grin',
+      outfit: 'book-lover',
+      accessory: 'headphones',
+      readingAccessory: 'bookmark',
+    },
+  },
+  {
+    name: 'The Minimalist',
+    features: {
+      skinTone: '#f4d1ae',
+      faceShape: 'long',
+      hairStyle: 'pixie',
+      hairColor: '#2c3e50',
+      eyeShape: 'narrow',
+      eyeColor: '#2c3e50',
+      noseShape: 'normal',
+      mouthShape: 'neutral',
+      outfit: 'minimalist',
+      accessory: 'none',
+      readingAccessory: 'none',
+    },
+  },
+];
+
 interface BitmojiCreatorProps {
   isOpen: boolean;
   onClose: () => void;
@@ -142,6 +225,24 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
   const resetToDefault = useCallback(() => {
     setFeatures(DEFAULT_AVATAR_FEATURES);
     setActiveTab('appearance');
+  }, []);
+
+  const randomizeFeatures = useCallback(() => {
+    const pick = <T,>(arr: readonly T[]): T => arr[Math.floor(Math.random() * arr.length)];
+    setFeatures({
+      skinTone: pick(SKIN_TONES),
+      faceShape: pick(FACE_SHAPES),
+      hairStyle: pick(HAIR_STYLES),
+      hairColor: pick(HAIR_COLORS),
+      eyeShape: pick(EYE_SHAPES),
+      eyeColor: pick(EYE_COLORS),
+      noseShape: pick(NOSE_SHAPES),
+      mouthShape: pick(MOUTH_SHAPES),
+      outfit: pick(OUTFITS),
+      accessory: pick(ACCESSORIES),
+      readingAccessory: pick(READING_ACCESSORIES),
+    });
+    toast.success('Generated a random reader avatar!');
   }, []);
 
   // Generate avatar SVG with all features
@@ -828,6 +929,21 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
 
           {/* Content Area */}
           <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Quick Presets Bar */}
+            <div className="px-4 py-2 border-b bg-amber-50/50 flex items-center gap-1.5 overflow-x-auto">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900/70 whitespace-nowrap">Presets:</span>
+              {AVATAR_PRESETS.map((preset) => (
+                <button
+                  key={preset.name}
+                  type="button"
+                  onClick={() => setFeatures(preset.features)}
+                  className="px-2.5 py-1 rounded-full text-[11px] font-medium border border-amber-200 bg-white hover:bg-amber-100 text-amber-950 transition whitespace-nowrap shadow-xs cursor-pointer"
+                >
+                  {preset.name}
+                </button>
+              ))}
+            </div>
+
             <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5" role="tabpanel" id={`panel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>
               {renderTabContent()}
             </div>
@@ -837,17 +953,32 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
               <div className="flex items-center justify-between gap-4 flex-wrap">
                 <div className="text-center flex-1 min-w-[200px]">
                   <h3 className="font-semibold text-gray-900 mb-3">Live Preview</h3>
-                  <div className="flex justify-center">
+                  <div className="flex items-center justify-center gap-4 sm:gap-6 flex-wrap">
                     <div
                       className="w-40 h-48 md:w-48 md:h-56 rounded-2xl overflow-hidden border-4 border-orange-200 bg-gray-50 shadow-lg"
                       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(generateAvatarSvg(), { USE_PROFILES: { svg: true } }) }}
                       role="img"
                       aria-label="Avatar preview"
                     />
+                    <div className="hidden sm:flex flex-col items-center justify-center p-3 rounded-2xl border border-amber-200 bg-amber-50/60 shadow-xs">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 mb-2">Map Pin</span>
+                      <div className="flex flex-col items-center">
+                        <div className="relative flex h-[52px] w-[52px] items-center justify-center overflow-hidden rounded-full border-[3px] border-[#D5B16D] bg-white p-[3px] shadow-[0_3px_12px_rgba(213,177,109,0.55),0_0_0_2px_rgba(255,255,255,0.96)]">
+                          <div
+                            className="w-full h-full rounded-full overflow-hidden"
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(generateAvatarSvg(), { USE_PROFILES: { svg: true } }) }}
+                          />
+                        </div>
+                        <div className="h-0 w-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[6px] border-t-[#D5B16D] -mt-[2px] drop-shadow-sm" />
+                        <span className="mt-[1px] rounded-full border border-[#D5B16D] bg-[#1C442D] px-1.5 py-0.5 text-[8px] font-bold tracking-wider text-white shadow-sm">
+                          YOU
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3 md:flex-row md:items-end">
+                <div className="flex flex-col gap-2 md:flex-row md:items-end">
                   <Button
                     onClick={handleSave}
                     className="bg-orange-600 hover:bg-orange-700 w-full md:w-auto"
@@ -856,6 +987,15 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
                   >
                     <Save className="w-5 h-5 mr-2" />
                     {updateAvatarMutation.isPending ? 'Saving...' : 'Save Avatar'}
+                  </Button>
+                  <Button
+                    onClick={randomizeFeatures}
+                    variant="outline"
+                    size="lg"
+                    className="w-full md:w-auto text-amber-800 border-amber-300 hover:bg-amber-50"
+                  >
+                    <Sparkles className="w-5 h-5 mr-2 text-amber-600" />
+                    Randomize
                   </Button>
                   <Button onClick={resetToDefault} variant="outline" size="lg" className="w-full md:w-auto">
                     <RotateCcw className="w-5 h-5 mr-2" />

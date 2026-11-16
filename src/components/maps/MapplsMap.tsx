@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { createAvatarMarkerHtml as buildAvatarMarkerHtml } from './utils/mapMarkerGenerators';
+import { generateMarkerHtml } from './utils/mapMarkerGenerators';
 import { MapFloatingControls } from './MapFloatingControls';
 
 export interface MapplsRuntimeMap {
@@ -229,7 +229,7 @@ const escapeHtml = (value: string) => value
   .replace(/"/g, '&quot;')
   .replace(/'/g, '&#39;');
 
-const createAvatarMarkerHtml = (point: MapplsPoint): string => buildAvatarMarkerHtml(point);
+const createMarkerHtml = (point: MapplsPoint): string => generateMarkerHtml(point);
 
 const observeAvatarMarkerImages = (container: HTMLElement): (() => void) => {
   if (typeof MutationObserver === 'undefined') return () => undefined;
@@ -263,9 +263,12 @@ const observeAvatarMarkerImages = (container: HTMLElement): (() => void) => {
 };
 
 const getMarkerSignature = (point: MapplsPoint) => JSON.stringify([
+  point.id,
   point.lat,
   point.lng,
   point.title,
+  point.markerType ?? 'avatar',
+  point.category ?? '',
   point.description ?? '',
   point.avatarUrl ?? '',
   point.avatarSeed ?? '',
@@ -799,7 +802,7 @@ export function MapplsMap({
           // Mappls' HTML marker API is fed a markup string. Passing a DOM node
           // through a custom toString() fallback causes some SDK builds to use
           // their stock question-mark icon instead of the supplied avatar.
-          html: createAvatarMarkerHtml(point),
+          html: createMarkerHtml(point),
           width: 58,
           height: 68,
           offset: [0, -12],

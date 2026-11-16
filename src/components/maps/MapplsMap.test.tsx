@@ -437,7 +437,7 @@ describe('MapplsMap', () => {
     await waitFor(() => expect(markerRemove).toHaveBeenCalled());
   });
 
-  it('removes a broken hosted avatar image while preserving the HTML marker initial', async () => {
+  it('removes a broken hosted avatar image while preserving the fallback avatar', async () => {
     let markerHtmlElement: HTMLElement | undefined;
     const map = { addListener: vi.fn(), loaded: () => true, remove: vi.fn() };
     window.mappls = {
@@ -460,7 +460,7 @@ describe('MapplsMap', () => {
     fireEvent.error(img!);
 
     await waitFor(() => expect(markerHtmlElement?.querySelector('img')).toBeNull());
-    expect(markerHtmlElement?.textContent).toContain('A');
+    expect(markerHtmlElement?.querySelector('.sahadhyayi-default-avatar')).not.toBeNull();
   });
 
   it('formats unknown token error messages and generic map event messages', async () => {
@@ -607,13 +607,13 @@ describe('MapplsMap', () => {
     expect(selfHtml).toContain('>YOU</span>');
     expect(selfHtml).toContain(`src="${pngDataUrl}"`);
 
-    // Friend marker keeps the initials underneath its WebP avatar.
+    // Friend marker keeps the fallback avatar underneath its WebP avatar.
     expect(friendHtml).not.toContain('>YOU</span>');
     expect(friendHtml).toContain(`src="${webpDataUrl}"`);
-    expect(friendHtml).toContain('>R</span>');
+    expect(friendHtml).toContain('data-face-shape=');
   });
 
-  it('keeps initials beneath supported PNG and WebP avatar images in HTML markers', async () => {
+  it('keeps fallback avatar beneath supported PNG and WebP avatar images in HTML markers', async () => {
     const createdMarkers: Array<Record<string, unknown>> = [];
     const Marker = vi.fn().mockImplementation(function (options: Record<string, unknown>) {
       createdMarkers.push(options);
@@ -634,8 +634,58 @@ describe('MapplsMap', () => {
 
     const markerHtml = String(createdMarkers[0].html);
     expect(markerHtml).toContain('src="https://cdn.example.com/broken-avatar.png"');
-    expect(markerHtml).toContain('>N</span>');
+    expect(markerHtml).toContain('data-face-shape=');
     expect(markerHtml).toContain('data-sahadhyayi-avatar="true"');
+  });
+
+  it('correctly dispatches different marker types (place, event, book, avatar)', async () => {
+    const createdMarkers: Array<Record<string, unknown>> = [];
+    const Marker = vi.fn().mockImplementation(function (options: Record<string, unknown>) {
+      createdMarkers.push(options);
+      return { options, remove: vi.fn() };
+    });
+    const map = { addListener: vi.fn(), loaded: () => true, setCenter: vi.fn(), setZoom: vi.fn(), remove: vi.fn() };
+    window.mappls = {
+      Map: vi.fn().mockImplementation(function () { return map; }),
+      Marker,
+      remove: vi.fn(),
+    };
+
+    render(<MapplsMap apiKey="valid-key" points={[
+      { id: 'reader-1', lat: 28.5, lng: 77.1, title: 'Aarav', markerType: 'avatar' },
+      { id: 'place-lib', lat: 28.6, lng: 77.2, title: 'Delhi Central Library', markerType: 'place', category: 'library' },
+      { id: 'place-cafe', lat: 28.7, lng: 77.3, title: 'Book Cafe', markerType: 'place', category: 'cafe' },
+      { id: 'event-fest', lat: 28.8, lng: 77.4, title: 'Literature Festival', markerType: 'event' },
+      { id: 'book-godan', lat: 28.9, lng: 77.5, title: 'Godan', markerType: 'book' },
+    ]} />);
+
+    await waitFor(() => expect(Marker).toHaveBeenCalledTimes(5));
+
+    const avatarHtml = String(createdMarkers[0].html);
+    const libHtml = String(createdMarkers[1].html);
+    const cafeHtml = String(createdMarkers[2].html);
+    const eventHtml = String(createdMarkers[3].html);
+    const bookHtml = String(createdMarkers[4].html);
+
+    // Reader avatar uses reader marker
+    expect(avatarHtml).toContain('sahadhyayi-reader-map-marker');
+    expect(avatarHtml).toContain('data-face-shape=');
+
+    // Library uses place marker with library emoji
+    expect(libHtml).toContain('sahadhyayi-place-marker');
+    expect(libHtml).toContain('🏛️');
+
+    // Cafe uses place marker with cafe emoji
+    expect(cafeHtml).toContain('sahadhyayi-place-marker');
+    expect(cafeHtml).toContain('☕');
+
+    // Event uses event marker
+    expect(eventHtml).toContain('sahadhyayi-event-marker');
+    expect(eventHtml).toContain('EVENT');
+
+    // Book uses book marker
+    expect(bookHtml).toContain('sahadhyayi-book-marker');
+    expect(bookHtml).toContain('📚');
   });
 
   it('exposes rich map actions via onMapActionsReady and performs zoom, 3D tilt, and recenter', async () => {
