@@ -83,6 +83,7 @@ const Discovery = lazy(() => import('./pages/Discovery'));
 const Games = lazy(() => import('./pages/Games'));
 const BrainLab = lazy(() => import('./pages/BrainLab'));
 const BrainIQTest = lazy(() => import('./pages/BrainIQTest'));
+const BrainMatrixPractice = lazy(() => import('./pages/BrainMatrixPractice'));
 const PublishBook = lazy(() => import('./pages/PublishBook'));
 const MyPublications = lazy(() => import('./pages/MyPublications'));
 const Articles = lazy(() => import('./pages/Articles'));
@@ -639,6 +640,7 @@ const App = memo(() => {
         <Route path="/events/:slug" element={<Suspense fallback={<LoadingFallback message="Loading event..." />}><EventDetails /></Suspense>} />
                         <Route path="/brain" element={<Suspense fallback={<LoadingFallback message="Loading Brain Lab..." />}><BrainLab /></Suspense>} />
                         <Route path="/brain/iq-test" element={<Suspense fallback={<LoadingFallback message="Preparing reasoning test..." />}><BrainIQTest /></Suspense>} />
+                        <Route path="/brain/matrices" element={<Suspense fallback={<LoadingFallback message="Preparing matrix puzzles..." />}><BrainMatrixPractice /></Suspense>} />
                         <Route
                           path="/games"
                           element={
