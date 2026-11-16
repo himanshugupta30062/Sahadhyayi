@@ -35,43 +35,43 @@ const CookiePolicy: React.FC = () => {
 
   const cookieInventory = [
     {
-      name: "sb-*-auth-token",
+      name: "sb-<project-ref>-auth-token (when Supabase browser auth storage is enabled)",
       category: "Essential",
-      provider: "Sahadhyayi (Supabase)",
-      purpose: "Maintains secure authenticated session credentials and token refreshes for your reading profile.",
-      duration: "30 days / Persistent",
-      type: "HTTP Cookie / Storage",
+      provider: "Sahadhyayi / Supabase",
+      purpose: "Stores the Supabase authentication session in browser storage; exact key and persistence depend on the configured project and auth client.",
+      duration: "Until session expiry, sign-out, or storage is cleared (configuration-dependent)",
+      type: "Local Storage (not necessarily an HTTP cookie)",
     },
     {
-      name: "theme",
+      name: "Theme preference keys",
       category: "Functional",
       provider: "Sahadhyayi",
-      purpose: "Remembers your reading display preferences: Light, Warm Sepia, or Night Dark Mode.",
-      duration: "1 year",
-      type: "First-Party Cookie",
-    },
-    {
-      name: "reader-font-settings",
-      category: "Functional",
-      provider: "Sahadhyayi",
-      purpose: "Stores reader typography scale, line-height, and margin spacing for comfortable reading.",
-      duration: "Persistent",
+      purpose: "Persists appearance and reading-theme preferences in browser local storage.",
+      duration: "Until cleared by you or browser storage eviction",
       type: "Local Storage",
     },
     {
-      name: "reader-offline-cache",
+      name: "Feature-specific localStorage keys",
+      category: "Functional",
+      provider: "Sahadhyayi",
+      purpose: "Features may persist reading progress, goals, recent searches, engagement, quotes, preferences, and session activity locally. Keys vary by feature and may be user-scoped.",
+      duration: "Until cleared, removed by the feature, or browser storage eviction",
+      type: "Local Storage",
+    },
+    {
+      name: "Browser caches / IndexedDB (feature-dependent)",
       category: "Storage / Cache",
       provider: "Sahadhyayi",
-      purpose: "Stores book chapters, cover art, and reading milestones locally so you can continue reading offline.",
-      duration: "Persistent until cleared",
-      type: "IndexedDB / Cache API",
+      purpose: "May cache application assets or reading content where offline/cache features are enabled. Contents depend on the feature and browser.",
+      duration: "Until cache cleanup, browser eviction, or you clear site data",
+      type: "Cache Storage / IndexedDB (where used)",
     },
     {
       name: "cf_clearance",
       category: "Security & Performance",
       provider: "Cloudflare",
-      purpose: "Mitigates automated DDoS attacks, verifies human traffic, and accelerates content delivery across India and globally.",
-      duration: "1 year",
+      purpose: "Cloudflare may set this challenge/security cookie when its security checks require it; it is not an advertising tracker. It does not itself accelerate content delivery.",
+      duration: "Set by Cloudflare; varies with challenge and security configuration",
       type: "Third-Party Cookie",
     },
   ];
@@ -261,8 +261,9 @@ const CookiePolicy: React.FC = () => {
               {/* Itemized Cookie Inventory Table */}
               <div className="pt-2 space-y-2">
                 <h3 className="font-bold text-sm text-[#1C201D] dark:text-[#F3F0E7]">
-                  Itemized Storage Inventory
+                  Storage Inventory (representative identifiers)
                 </h3>
+                <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">This is a representative inventory, not an exhaustive list of every dynamically generated key, browser cache entry, or provider cookie. Names and lifetimes can vary by browser, authentication configuration, and enabled feature. We will update this page as the implementation changes.</p>
                 <div className="overflow-x-auto rounded-2xl border border-[#E8E2D9] dark:border-[#222B25]">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
