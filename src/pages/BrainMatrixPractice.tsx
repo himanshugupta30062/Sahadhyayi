@@ -68,12 +68,12 @@ export default function BrainMatrixPractice() {
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-background text-foreground">
       <SEO
-        title="Visual Matrix Practice | Sahadhyayi Brain Lab"
+        title="Visual Matrix Practice | Sahadhyayi IQ Test"
         description="Practise original 3×3 visual matrix reasoning puzzles with fresh generated questions and explanations."
       />
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
         <Link to="/brain" className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> Back to Brain Lab
+          <ArrowLeft className="h-4 w-4" /> Back to IQ Test
         </Link>
 
         <div className="mt-5 flex flex-wrap items-end justify-between gap-4">
