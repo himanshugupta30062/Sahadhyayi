@@ -274,7 +274,6 @@ export const peopleCollections: Record<string, PeopleCollection> = {
         story: ["After the British annexed Awadh in 1856 and exiled Nawab Wajid Ali Shah, Begum Hazrat Mahal emerged as a political leader in Lucknow.", "She declared her son Birjis Qadr ruler and helped coordinate resistance against East India Company forces, issuing proclamations that criticised colonial policies.", "After the uprising's defeat, she retreated to Nepal and lived in exile until her death, representing women's leadership in the resistance."],
         milestones: [{date:"1856",title:"Awadh annexed",description:"British annexation reshaped the political setting."},{date:"1857",title:"Resistance in Lucknow",description:"Helped lead the uprising and supported Birjis Qadr."},{date:"1879",title:"Exile in Nepal",description:"Died in Kathmandu after years in exile."}],
         themes: ["1857 uprising","Women in history","Anti-colonial resistance"], sources: [{label:"Begum Hazrat Mahal",publisher:"National Archives of India",url:"https://nationalarchives.nic.in/"}]
-      },
       }
     ]
   }

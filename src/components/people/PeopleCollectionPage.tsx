@@ -57,8 +57,8 @@ export function PeopleCollectionPage({ collectionKey }: { collectionKey: PeopleC
   const collection = backendCollection?.people?.length ? backendCollection : fallback;
   const accent = accentStyles[collection.accent];
 
-  const causeFilters = useMemo(() => ["All causes", ...Array.from(new Set(collection.people.flatMap((person) => person.themes))).sort()], [collection.people]);
-  const regionFilters = useMemo(() => ["All regions", ...Array.from(new Set(collection.people.map((person) => person.origin).filter(Boolean))).sort()], [collection.people]);
+  const causeFilters = useMemo<string[]>(() => ["All causes", ...(Array.from(new Set(collection.people.flatMap((person) => person.themes))) as string[]).sort()], [collection.people]);
+  const regionFilters = useMemo<string[]>(() => ["All regions", ...(Array.from(new Set(collection.people.map((person) => person.origin).filter(Boolean))) as string[]).sort()], [collection.people]);
   const visiblePeople = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
     return collection.people.filter((person) => {
