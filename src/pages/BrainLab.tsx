@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 
 const activities = [
   { title: "IQ-style reasoning test", description: "A timed practice assessment across logic, number patterns and verbal reasoning.", icon: BrainCircuit, href: "/brain/iq-test", badge: "Available", tone: "from-violet-500/15 to-indigo-500/5" },
+  { title: "Visual matrix practice", description: "Solve fresh 3×3 shape matrices with difficulty levels and explanations.", icon: Puzzle, href: "/brain/matrices", badge: "Available", tone: "from-indigo-500/15 to-violet-500/5" },
   { title: "Practice by skill", description: "Build confidence with focused reasoning exercises and worked explanations.", icon: Target, href: "/brain/iq-test?mode=practice", badge: "Starter set", tone: "from-blue-500/15 to-cyan-500/5" },
   { title: "Daily brain challenge", description: "A small puzzle to keep curiosity and problem-solving habits alive.", icon: Sparkles, href: "/brain/iq-test?mode=daily", badge: "Coming next", tone: "from-amber-500/15 to-orange-500/5" },
   { title: "My progress", description: "Review attempts, skill trends and practice milestones in one place.", icon: Trophy, href: "/brain#progress", badge: "Coming next", tone: "from-emerald-500/15 to-teal-500/5" },
@@ -23,7 +24,7 @@ export default function BrainLab() {
             <div>
               <Badge variant="secondary" className="mb-4 gap-1.5"><Brain className="h-3.5 w-3.5" /> SAHADHYAYI · BRAIN</Badge>
               <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">Curiosity is your superpower.</h1>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">Welcome to Brain Lab: a space for reasoning, patterns and thoughtful challenges. Practice for fun, learn how you solve problems, and keep your mind curious.</p>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">Welcome to Brain Lab: a space for reasoning, visual matrices and thoughtful challenges. Practice for fun, learn how you solve problems, and keep your mind curious.</p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Button asChild size="lg"><Link to="/brain/iq-test">Start reasoning test <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
                 <Button asChild size="lg" variant="outline"><Link to="/games">Explore book quizzes</Link></Button>
