@@ -27,6 +27,14 @@ const QUESTIONS: Question[] = [
   { id: "v2", domain: "Verbal reasoning", prompt: "Choose the word that does not belong.", options: ["Triangle", "Square", "Circle", "Cube"], answer: 3, explanation: "Cube is a three-dimensional solid; the others are two-dimensional shapes." },
   { id: "v3", domain: "Verbal reasoning", prompt: "Transparent is to opaque as scarce is to …", options: ["Rare", "Limited", "Abundant", "Precious"], answer: 2, explanation: "Opaque is the opposite of transparent; abundant is the opposite of scarce." },
   { id: "n4", domain: "Number patterns", prompt: "What comes next? 1, 1, 2, 3, 5, 8, …", options: ["11", "12", "13", "15"], answer: 2, explanation: "Each term is the sum of the two preceding terms (Fibonacci pattern)." },
+  { id: "n5", domain: "Number patterns", prompt: "What comes next? 4, 9, 16, 25, …", options: ["30", "32", "36", "49"], answer: 2, explanation: "These are consecutive squares: 2², 3², 4², 5²; next is 6² = 36." },
+  { id: "n6", domain: "Number patterns", prompt: "Complete the sequence: 3, 8, 15, 24, 35, …", options: ["42", "46", "48", "50"], answer: 2, explanation: "The differences are +5, +7, +9, +11; next is +13, giving 48." },
+  { id: "l4", domain: "Logic", prompt: "Mira is older than Dev. Dev is older than Asha. Which statement is certainly true?", options: ["Asha is older than Mira", "Mira is older than Asha", "Dev is oldest", "Asha and Mira are the same age"], answer: 1, explanation: "The order is Mira > Dev > Asha, so Mira is older than Asha." },
+  { id: "l5", domain: "Logic", prompt: "Every red card is numbered. This card is red. What must be true?", options: ["It is numbered", "It is blue", "It is unnumbered", "No conclusion follows"], answer: 0, explanation: "The rule applies to every red card, including this one." },
+  { id: "v4", domain: "Verbal reasoning", prompt: "Seed is to plant as egg is to …", options: ["Nest", "Bird", "Shell", "Feather"], answer: 1, explanation: "A seed can grow into a plant; an egg can develop into a bird." },
+  { id: "v5", domain: "Verbal reasoning", prompt: "Choose the closest meaning of 'concise'.", options: ["Brief", "Confusing", "Detailed", "Uncertain"], answer: 0, explanation: "Concise means expressing something clearly in few words." },
+  { id: "m5", domain: "Visual patterns", prompt: "Which symbol comes next? ★, ☆, ★, ☆, ★, …", options: ["★", "☆", "○", "△"], answer: 1, explanation: "Filled and outline stars alternate; the next is an outline star." },
+  { id: "m6", domain: "Visual patterns", prompt: "Complete the sequence: ↗, ↘, ↙, ↖, …", options: ["↗", "↘", "↙", "↖"], answer: 0, explanation: "The arrow rotates 90° clockwise each step, returning to ↗." },
 ];
 
 const TEST_SECONDS = 20 * 60;
