@@ -48,7 +48,7 @@ describe('mapMarkerGenerators', () => {
       expect(html).toContain('data-sahadhyayi-avatar="true"');
     });
 
-    it('creates peer avatar with initial fallback when avatarUrl is missing', () => {
+    it('creates an illustrated face when avatarUrl is missing', () => {
       const html = createAvatarMarkerHtml({
         id: 'user-1',
         lat: 28.6,
@@ -59,7 +59,8 @@ describe('mapMarkerGenerators', () => {
 
       expect(html).toContain('sahadhyayi-marker-peer');
       expect(html).not.toContain('YOU');
-      expect(html).toContain('>A</span>');
+      expect(html).toContain('sahadhyayi-default-avatar');
+      expect(html).toContain('data-face-shape=');
       expect(html).not.toContain('<img');
     });
   });

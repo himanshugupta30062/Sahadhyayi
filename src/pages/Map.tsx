@@ -299,6 +299,7 @@ const MapPage = () => {
         title: 'You (Your location)',
         description: selectedBook ? `Reading: ${selectedBook.title}` : 'Your shared location',
         avatarUrl: selfAvatarUrl,
+        avatarSeed: user?.id ?? 'self',
         markerType: 'avatar',
       });
     }
@@ -328,6 +329,7 @@ const MapPage = () => {
             ? `${reader.distance.toFixed(1)} km away`
             : 'Reading this book',
           avatarUrl: reader.avatar_img_url ?? null,
+          avatarSeed: reader.user_id,
           markerType: 'avatar',
           data: reader,
         });
@@ -345,6 +347,7 @@ const MapPage = () => {
         title: 'You (Your location)',
         description: 'Your shared location',
         avatarUrl: selfAvatarUrl,
+        avatarSeed: user?.id ?? 'self',
         markerType: 'avatar',
       });
     }
@@ -379,6 +382,7 @@ const MapPage = () => {
         title,
         description: 'Friend who has enabled location sharing',
         avatarUrl: profile.avatar_img_url ?? profile.profile_photo_url ?? null,
+        avatarSeed: String(profile.id ?? friend.id ?? title),
         markerType: 'avatar',
         data: friend,
       });
@@ -396,6 +400,7 @@ const MapPage = () => {
         title: 'You (Your location)',
         description: 'Your shared location',
         avatarUrl: selfAvatarUrl,
+        avatarSeed: user?.id ?? 'self',
         markerType: 'avatar',
       });
     }

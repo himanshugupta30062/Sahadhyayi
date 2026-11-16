@@ -8,6 +8,7 @@ import DOMPurify from 'dompurify';
 
 export interface BitmojiFeatures {
   skinTone: string;
+  faceShape: string;
   hairStyle: string;
   hairColor: string;
   eyeShape: string;
@@ -21,6 +22,7 @@ export interface BitmojiFeatures {
 
 const DEFAULT_AVATAR_FEATURES: BitmojiFeatures = {
   skinTone: '#f4d1ae',
+  faceShape: 'oval',
   hairStyle: 'short',
   hairColor: '#8b4513',
   eyeShape: 'normal',
@@ -39,6 +41,7 @@ const normalizeAvatarFeatures = (value?: unknown): BitmojiFeatures => {
 
   return {
     skinTone: pick(settings.skinTone, SKIN_TONES, DEFAULT_AVATAR_FEATURES.skinTone),
+    faceShape: pick(settings.faceShape, FACE_SHAPES, DEFAULT_AVATAR_FEATURES.faceShape),
     hairStyle: pick(settings.hairStyle, HAIR_STYLES, DEFAULT_AVATAR_FEATURES.hairStyle),
     hairColor: pick(settings.hairColor, HAIR_COLORS, DEFAULT_AVATAR_FEATURES.hairColor),
     eyeShape: pick(settings.eyeShape, EYE_SHAPES, DEFAULT_AVATAR_FEATURES.eyeShape),
@@ -52,6 +55,8 @@ const normalizeAvatarFeatures = (value?: unknown): BitmojiFeatures => {
 };
 
 // Expanded option arrays
+const FACE_SHAPES = ['oval', 'round', 'square', 'long', 'heart'] as const;
+
 const SKIN_TONES = [
   '#f4d1ae', '#deb887', '#d2691e', '#8b4513', '#654321', '#2f1b14',
   '#ffdbac', '#e0ac69', '#c68642', '#a0522d', '#8d5524', '#5d4037',
@@ -87,6 +92,22 @@ const ACCESSORIES = [
   'none', 'glasses', 'sunglasses', 'hat', 'cap', 'beanie',
   'headphones', 'earrings', 'necklace', 'scarf',
 ] as const;
+
+const generateFaceShape = (shape: string, skinTone: string): string => {
+  switch (shape) {
+    case 'round':
+      return `<ellipse cx="100" cy="105" rx="47" ry="45" fill="${skinTone}" filter="url(#shadow)"/>`;
+    case 'square':
+      return `<path d="M 60 82 C 60 62 75 51 93 51 H 107 C 125 51 140 62 140 82 V 118 C 140 141 123 153 100 153 C 77 153 60 141 60 118 Z" fill="${skinTone}" filter="url(#shadow)"/>`;
+    case 'long':
+      return `<ellipse cx="100" cy="105" rx="37" ry="54" fill="${skinTone}" filter="url(#shadow)"/>`;
+    case 'heart':
+      return `<path d="M 100 151 C 91 145 60 120 58 94 C 56 72 73 58 89 64 C 94 66 98 70 100 75 C 102 70 106 66 111 64 C 127 58 144 72 142 94 C 140 120 109 145 100 151 Z" fill="${skinTone}" filter="url(#shadow)"/>`;
+    case 'oval':
+    default:
+      return `<ellipse cx="100" cy="105" rx="42" ry="48" fill="${skinTone}" filter="url(#shadow)"/>`;
+  }
+};
 
 const READING_ACCESSORIES = [
   'none', 'book', 'ebook', 'bookmark', 'glasses-reading', 'coffee-book',
@@ -125,7 +146,7 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
 
   // Generate avatar SVG with all features
   const generateAvatarSvg = useCallback(() => {
-    const { skinTone, hairStyle, hairColor, eyeShape, eyeColor, noseShape, mouthShape, outfit, accessory, readingAccessory } = features;
+    const { skinTone, faceShape, hairStyle, hairColor, eyeShape, eyeColor, noseShape, mouthShape, outfit, accessory, readingAccessory } = features;
 
     return `
       <svg width="200" height="240" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
@@ -142,7 +163,7 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
         <path d="M 85 130 Q 100 125 115 130 L 110 140 L 90 140 Z" fill="${skinTone}" filter="url(#shadow)"/>
 
         <!-- Face -->
-        <ellipse cx="100" cy="105" rx="42" ry="48" fill="${skinTone}" filter="url(#shadow)"/>
+        ${generateFaceShape(faceShape, skinTone)}
 
         <!-- Ears -->
         <ellipse cx="58" cy="105" rx="8" ry="14" fill="${skinTone}" filter="url(#shadow)"/>
@@ -529,6 +550,24 @@ export const BitmojiCreator: React.FC<BitmojiCreatorProps> = ({
                     onClick={() => updateFeature('skinTone', tone)}
                     aria-label={`Skin tone ${index + 1}`}
                   />
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm font-medium text-gray-700 mb-2 block">Face Shape</p>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                {FACE_SHAPES.map((shape) => (
+                  <Button
+                    key={shape}
+                    size="sm"
+                    variant={features.faceShape === shape ? "default" : "outline"}
+                    aria-pressed={features.faceShape === shape}
+                    onClick={() => updateFeature('faceShape', shape)}
+                    className="text-xs h-10 capitalize"
+                  >
+                    {shape}
+                  </Button>
                 ))}
               </div>
             </div>
