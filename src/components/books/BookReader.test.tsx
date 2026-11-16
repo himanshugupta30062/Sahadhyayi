@@ -274,6 +274,24 @@ describe('BookReader', () => {
     expect(src).toContain('#toolbar=1&navpanes=1&scrollbar=1&page=3');
   });
 
+  it('offers the native browser PDF viewer after the canvas reader cannot access a host-restricted PDF', async () => {
+    renderReader('https://publisher.example/restricted.pdf');
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Preview blocked\?/i })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Preview blocked\?/i }));
+
+    expect(screen.getByText(/could not fetch this PDF for its in-page reader/i)).toBeInTheDocument();
+    const nativeViewer = screen.getByRole('button', { name: /Try Browser PDF Viewer/i });
+    fireEvent.click(nativeViewer);
+
+    await waitFor(() => {
+      const frame = screen.getByTitle('The Dispossessed');
+      expect(frame).toHaveAttribute('src', expect.stringContaining('restricted.pdf'));
+    });
+  });
+
   it('renders a clean fallback with external opening and download options when PDF embedding is blocked', async () => {
     const windowOpenSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
     renderReader('https://example.com/blocked-book.pdf');
