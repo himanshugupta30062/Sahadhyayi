@@ -134,6 +134,7 @@ export const NAVIGATION_SECTIONS: NavigationSection[] = [
     href: "/activity",
     items: [
       { name: "Activity Hub", href: "/activity" },
+      { name: "Brain Lab", href: "/brain" },
       { name: "Events & Festivals", href: "/events" },
       { name: "Reading Challenges", href: "/activity?tab=challenges" },
       { name: "Book Games", href: "/games" },
@@ -241,7 +242,8 @@ function pathMatches(pathname: string, href: string) {
     return (
       pathname === path ||
       pathname.startsWith("/events") ||
-      pathname.startsWith("/games")
+      pathname.startsWith("/games") ||
+      pathname.startsWith("/brain")
     );
   }
   return pathname === path || pathname.startsWith(path + "/");
