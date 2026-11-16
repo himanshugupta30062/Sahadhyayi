@@ -97,19 +97,18 @@ function generateDistribution(difficulty: MatrixDifficulty): MatrixPuzzle {
   const outer = uniqueShapes();
   const inner = uniqueShapes();
   const usesInner = difficulty !== "easy";
-  const usesFillRule = difficulty === "hard";
   const grid: MatrixCell[][] = [];
 
   for (let row = 0; row < 3; row += 1) {
     const rowCells: MatrixCell[] = [];
     for (let column = 0; column < 3; column += 1) {
       const layers: MatrixLayer[] = [
-        { shape: outer[(row + column) % 3], scale: 0.88, filled: usesFillRule && (row + column) % 2 === 0 },
+        { shape: outer[(row + column) % 3], scale: 0.88, filled: false },
       ];
       if (usesInner) {
         layers.push({
           shape: inner[(row + 2 * column) % 3],
-          scale: difficulty === "hard" ? 0.48 : 0.4,
+          scale: difficulty === "hard" ? 0.54 : 0.4,
           filled: false,
         });
       }
@@ -118,11 +117,9 @@ function generateDistribution(difficulty: MatrixDifficulty): MatrixPuzzle {
     grid.push(rowCells);
   }
 
-  const explanation = usesFillRule
-    ? "Three outer shapes and three inner shapes each appear once in every row and column. The fill also alternates like a checkerboard; the missing bottom-right tile follows all three rules."
-    : usesInner
-      ? "The outer shapes and the smaller inner shapes each follow their own once-per-row-and-column distribution. The missing tile uses the shapes absent from the final row and column."
-      : "Each row and column contains each of the three outer shapes exactly once. Choose the shape missing from the bottom row and rightmost column.";
+  const explanation = usesInner
+    ? "The outer shapes and the smaller inner shapes each follow their own once-per-row-and-column distribution. The missing tile uses the shapes absent from the final row and column."
+    : "Each row and column contains each of the three outer shapes exactly once. Choose the shape missing from the bottom row and rightmost column.";
 
   return makePuzzle("distribution", difficulty, grid, explanation);
 }
