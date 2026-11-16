@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { generateMarkerHtml } from './utils/mapMarkerGenerators';
+import { createAvatarMarkerHtml as buildAvatarMarkerHtml } from './utils/mapMarkerGenerators';
 import { MapFloatingControls } from './MapFloatingControls';
 
 export interface MapplsRuntimeMap {
@@ -75,6 +75,8 @@ export interface MapplsPoint {
   title: string;
   description?: string;
   avatarUrl?: string | null;
+  /** Stable identifier used only to seed a local fallback portrait. */
+  avatarSeed?: string | null;
   markerType?: 'avatar' | 'place' | 'event' | 'book';
   category?: string;
   data?: unknown;
@@ -227,104 +229,7 @@ const escapeHtml = (value: string) => value
   .replace(/"/g, '&quot;')
   .replace(/'/g, '&#39;');
 
-const getSafeAvatarUrl = (value?: string | null): string | null => {
-  if (!value) return null;
-  const trimmed = value.trim();
-  if (!trimmed || trimmed.startsWith('javascript:') || trimmed.startsWith('vbscript:')) {
-    return null;
-  }
-  if (trimmed.startsWith('data:image/')) {
-    const commaIndex = trimmed.indexOf(',');
-    if (commaIndex === -1) return null;
-
-    const meta = trimmed.slice(0, commaIndex).toLowerCase();
-    const payload = trimmed.slice(commaIndex + 1).trim();
-    if (!payload) return null;
-
-    const validImageTypes = ['data:image/svg+xml', 'data:image/png', 'data:image/jpeg', 'data:image/jpg', 'data:image/webp', 'data:image/gif'];
-    const isBase64 = meta.endsWith(';base64');
-    const mime = isBase64 ? meta.slice(0, -7) : meta;
-
-    const isValidMime = validImageTypes.some((t) => mime === t || mime.startsWith(`${t};`));
-    if (!isValidMime) return null;
-
-    if (isBase64) {
-      // Linear scan for valid base64 payload characters without nested quantifiers or regular expression backtracking
-      for (let i = 0; i < payload.length; i++) {
-        const code = payload.charCodeAt(i);
-        if (
-          (code >= 65 && code <= 90) || // A-Z
-          (code >= 97 && code <= 122) || // a-z
-          (code >= 48 && code <= 57) || // 0-9
-          code === 43 || // +
-          code === 47 || // /
-          code === 61 || // =
-          code === 45 || // -
-          code === 95 || // _
-          code === 32 || code === 9 || code === 10 || code === 13 // whitespace
-        ) {
-          continue;
-        }
-        return null;
-      }
-      return trimmed;
-    }
-
-    if (mime.startsWith('data:image/svg+xml')) {
-      return trimmed;
-    }
-
-    return null;
-  }
-  if (trimmed.startsWith('<svg')) {
-    try {
-      const base64Svg = btoa(unescape(encodeURIComponent(trimmed)));
-      return `data:image/svg+xml;base64,${base64Svg}`;
-    } catch {
-      return null;
-    }
-  }
-  try {
-    const base = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'https://sahadhyayi.com';
-    const url = new URL(trimmed, base);
-    return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : null;
-  } catch {
-    return null;
-  }
-};
-
-const createAvatarMarkerHtml = (point: MapplsPoint): string => {
-  if (point.markerType && point.markerType !== 'avatar') {
-    return generateMarkerHtml(point);
-  }
-  const avatarUrl = getSafeAvatarUrl(point.avatarUrl);
-  const isSelf = point.id === 'self';
-  const borderColor = isSelf ? '#D5B16D' : '#1C442D';
-  const backgroundColor = isSelf ? '#FBF7EE' : '#E8EFE9';
-  const primaryColor = isSelf ? '#8F681C' : '#1C442D';
-  const glowShadow = isSelf
-    ? '0 3px 12px rgba(213,177,109,.45),0 0 0 2px rgba(255,255,255,.96)'
-    : '0 3px 12px rgba(20,35,25,.28),0 0 0 2px rgba(255,255,255,.96)';
-  const escapedTitle = escapeHtml(point.title);
-  const initial = escapeHtml((point.title.trim().charAt(0) || 'R').toUpperCase());
-
-  const imageHtml = avatarUrl
-    ? `<img data-sahadhyayi-avatar="true" src="${escapeHtml(avatarUrl)}" alt="" aria-hidden="true" draggable="false" decoding="async" referrerpolicy="no-referrer" style="position:absolute;inset:0;z-index:1;display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;background:transparent;" />`
-    : '';
-
-  const youBadgeHtml = isSelf
-    ? '<span style="margin-top:1px;padding:1px 5px;border-radius:999px;background:#1C442D;color:#fff;font:700 8px/1.4 system-ui,sans-serif;letter-spacing:.06em;box-shadow:0 1px 4px rgba(0,0,0,.2);border:1px solid #D5B16D;">YOU</span>'
-    : '';
-
-  return `<div class="sahadhyayi-reader-map-marker sahadhyayi-marker-${isSelf ? 'self' : 'peer'}" role="img" aria-label="${isSelf ? 'Your reading avatar' : `${escapedTitle} reading avatar`}" title="${escapedTitle}" style="display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:58px;height:68px;overflow:visible;pointer-events:auto;cursor:pointer;user-select:none;">
-    <div style="position:relative;box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:52px;height:52px;padding:3px;border:3px solid ${borderColor};border-radius:50%;background:#fff;box-shadow:${glowShadow};overflow:hidden;">
-      <span aria-hidden="true" style="position:absolute;inset:0;display:flex;width:100%;height:100%;align-items:center;justify-content:center;border-radius:50%;background:${backgroundColor};color:${primaryColor};font:700 18px/1 system-ui,sans-serif;">${initial}</span>
-      ${imageHtml}
-    </div>
-    <div aria-hidden="true" style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid ${borderColor};margin-top:-2px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));"></div>
-    ${youBadgeHtml}
-  </div>`;
-};
+const createAvatarMarkerHtml = (point: MapplsPoint): string => buildAvatarMarkerHtml(point);
 
 const observeAvatarMarkerImages = (container: HTMLElement): (() => void) => {
   if (typeof MutationObserver === 'undefined') return () => undefined;
@@ -363,6 +268,7 @@ const getMarkerSignature = (point: MapplsPoint) => JSON.stringify([
   point.title,
   point.description ?? '',
   point.avatarUrl ?? '',
+  point.avatarSeed ?? '',
 ]);
 
 const getPointBoundsSignature = (points: MapplsPoint[]) => JSON.stringify(

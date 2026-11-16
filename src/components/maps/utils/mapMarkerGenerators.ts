@@ -1,4 +1,5 @@
 import type { MapplsPoint } from '@/components/maps/MapplsMap';
+import { createDefaultMapAvatarSvg } from './mapAvatarSvg';
 
 const escapeHtml = (value: string): string =>
   value
@@ -52,16 +53,15 @@ export const createAvatarMarkerHtml = (point: MapplsPoint): string => {
   const avatarUrl = getSafeMediaUrl(point.avatarUrl);
   const isSelf = point.id === 'self';
   const borderColor = isSelf ? '#D5B16D' : '#1C442D';
-  const backgroundColor = isSelf ? '#FBF7EE' : '#E8EFE9';
-  const primaryColor = isSelf ? '#8F681C' : '#1C442D';
   const glowShadow = isSelf
     ? '0 3px 12px rgba(213,177,109,.55),0 0 0 2px rgba(255,255,255,.96)'
     : '0 3px 12px rgba(20,35,25,.35),0 0 0 2px rgba(255,255,255,.96)';
   const escapedTitle = escapeHtml(point.title);
-  const initial = escapeHtml((point.title.trim().charAt(0) || 'R').toUpperCase());
-
+  // Keep a generated face beneath uploaded photos so a blocked image request
+  // still leaves a recognizable portrait rather than an initial.
+  const fallbackAvatarSvg = createDefaultMapAvatarSvg(point.avatarSeed ?? point.id ?? point.title);
   const imageHtml = avatarUrl
-    ? `<img data-sahadhyayi-avatar="true" src="${escapeHtml(avatarUrl)}" alt="" aria-hidden="true" draggable="false" decoding="async" referrerpolicy="no-referrer" style="position:absolute;inset:0;z-index:1;display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;background:transparent;" />`
+    ? `<img data-sahadhyayi-avatar="true" src="${escapeHtml(avatarUrl)}" alt="" aria-hidden="true" draggable="false" decoding="async" referrerpolicy="no-referrer" style="position:absolute;inset:0;z-index:2;display:block;width:100%;height:100%;object-fit:cover;border-radius:50%;background:transparent;" />`
     : '';
 
   const youBadgeHtml = isSelf
@@ -70,7 +70,7 @@ export const createAvatarMarkerHtml = (point: MapplsPoint): string => {
 
   return `<div class="sahadhyayi-reader-map-marker sahadhyayi-marker-${isSelf ? 'self' : 'peer'}" role="img" aria-label="${isSelf ? 'Your reading avatar' : `${escapedTitle} reading avatar`}" title="${escapedTitle}" style="display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:58px;height:68px;overflow:visible;pointer-events:auto;cursor:pointer;user-select:none;">
     <div style="position:relative;box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:52px;height:52px;padding:3px;border:3px solid ${borderColor};border-radius:50%;background:#fff;box-shadow:${glowShadow};overflow:hidden;">
-      <span aria-hidden="true" style="position:absolute;inset:0;display:flex;width:100%;height:100%;align-items:center;justify-content:center;border-radius:50%;background:${backgroundColor};color:${primaryColor};font:700 18px/1 system-ui,sans-serif;">${initial}</span>
+      ${fallbackAvatarSvg}
       ${imageHtml}
     </div>
     <div aria-hidden="true" style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid ${borderColor};margin-top:-2px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));"></div>

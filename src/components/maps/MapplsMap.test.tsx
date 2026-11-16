@@ -56,7 +56,8 @@ describe('MapplsMap', () => {
     expect(delhiMarker.html).toContain('referrerpolicy="no-referrer"');
     expect(delhiMarker.width).toBe(58);
     expect(delhiMarker.height).toBe(68);
-    expect(mumbaiMarker.html).toContain('>M</span>');
+    expect(mumbaiMarker.html).toContain('sahadhyayi-default-avatar');
+    expect(mumbaiMarker.html).toContain('data-face-shape=');
     expect(mumbaiMarker.html).not.toContain('<img');
     expect(fitBounds).toHaveBeenCalledWith(expect.objectContaining({
       map,
