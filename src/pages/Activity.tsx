@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   CalendarDays,
+  BrainCircuit,
   CheckCircle2,
   ChevronRight,
   Flame,
@@ -35,7 +36,7 @@ import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 import SignInLink from '@/components/SignInLink';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
-type ActivityCategory = 'all' | 'events' | 'challenges' | 'games' | 'meetups';
+type ActivityCategory = 'all' | 'events' | 'challenges' | 'games' | 'brain' | 'meetups';
 
 export default function Activity() {
   const { user } = useAuth();
@@ -185,6 +186,12 @@ export default function Activity() {
                   Book Games
                 </Button>
               </Link>
+              <Link to="/brain">
+                <Button variant="outline" className="gap-2 rounded-xl bg-white dark:bg-[#111614] text-xs h-10 border-[#E8E2D9] dark:border-[#29332D]">
+                  <BrainCircuit className="h-4 w-4 text-[#1C442D] dark:text-[#D5B16D]" />
+                  Brain Lab
+                </Button>
+              </Link>
               <Link to="/activity?tab=meetups">
                 <Button variant="outline" className="gap-2 rounded-xl bg-white dark:bg-[#111614] text-xs h-10 border-[#E8E2D9] dark:border-[#29332D]">
                   <MapPin className="h-4 w-4 text-[#1C442D] dark:text-[#D5B16D]" />
@@ -198,7 +205,7 @@ export default function Activity() {
         {/* ── Main Activity Workspace ── */}
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 space-y-10">
           {/* ── Category Quick Jump Cards ── */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {[
               {
                 id: 'events',
@@ -220,6 +227,13 @@ export default function Activity() {
                 desc: 'Quizzes & trivia',
                 icon: Gamepad2,
                 count: '4 Games',
+              },
+              {
+                id: 'brain',
+                title: 'Brain Lab',
+                desc: 'Visual reasoning & puzzles',
+                icon: BrainCircuit,
+                count: 'Fresh puzzles',
               },
               {
                 id: 'meetups',
@@ -335,6 +349,7 @@ export default function Activity() {
                   { id: 'events', label: 'Events' },
                   { id: 'challenges', label: 'Reading Challenges' },
                   { id: 'games', label: 'Book Games' },
+                  { id: 'brain', label: 'Brain Lab' },
                   { id: 'meetups', label: 'Meetups' },
                 ].map(({ id, label }) => {
                   const isCurrent = activeCategory === id;
@@ -562,7 +577,49 @@ export default function Activity() {
               </section>
             )}
 
-            {/* 3. EVENTS & MEETUPS SECTION */}
+            {/* 3. BRAIN LAB SECTION */}
+            {(activeCategory === 'all' || activeCategory === 'brain') && (
+              <section className="space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="flex items-center gap-2 font-serif text-xl font-bold text-[#1C201D] dark:text-[#F3F0E7]">
+                      <BrainCircuit className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+                      Brain Lab & Reasoning Puzzles
+                    </h2>
+                    <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">
+                      Explore visual matrices, logical patterns and original reasoning challenges.
+                    </p>
+                  </div>
+                  <Link to="/brain">
+                    <Button variant="ghost" size="sm" className="text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">
+                      Explore Brain Lab →
+                    </Button>
+                  </Link>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <Card className="rounded-2xl border-violet-200/70 bg-gradient-to-br from-violet-50 to-white p-5 shadow-xs dark:border-violet-900/40 dark:from-violet-950/20 dark:to-[#111614]">
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-300"><BrainCircuit className="h-5 w-5" /></span>
+                      <div><Badge variant="secondary" className="text-[10px]">Brain Lab</Badge><h3 className="mt-1 font-serif text-base font-bold">Reasoning playground</h3></div>
+                    </div>
+                    <p className="mt-3 text-xs leading-relaxed text-[#636B65] dark:text-[#A5ADA6]">Practise patterns, logic and problem-solving with original learning activities.</p>
+                    <Link to="/brain" className="mt-4 block"><Button className="w-full rounded-xl text-xs">Open Brain Lab →</Button></Link>
+                  </Card>
+                  <Card className="rounded-2xl border-[#E8E2D9] bg-white p-5 shadow-xs dark:border-[#29332D] dark:bg-[#111614]">
+                    <div className="flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-300"><Sparkles className="h-5 w-5" /></span><div><Badge variant="outline" className="text-[10px]">Fresh puzzles</Badge><h3 className="mt-1 font-serif text-base font-bold">Visual matrix practice</h3></div></div>
+                    <p className="mt-3 text-xs leading-relaxed text-[#636B65] dark:text-[#A5ADA6]">Complete 3 × 3 shape patterns and learn the rules behind each answer.</p>
+                    <Link to="/brain/matrices" className="mt-4 block"><Button variant="outline" className="w-full rounded-xl text-xs">Practise matrices →</Button></Link>
+                  </Card>
+                  <Card className="rounded-2xl border-[#E8E2D9] bg-white p-5 shadow-xs dark:border-[#29332D] dark:bg-[#111614]">
+                    <div className="flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"><Target className="h-5 w-5" /></span><div><Badge variant="outline" className="text-[10px]">Timed practice</Badge><h3 className="mt-1 font-serif text-base font-bold">Reasoning assessment</h3></div></div>
+                    <p className="mt-3 text-xs leading-relaxed text-[#636B65] dark:text-[#A5ADA6]">Try a broader practice set covering logic, numbers, words and visual patterns.</p>
+                    <Link to="/brain/iq-test" className="mt-4 block"><Button variant="outline" className="w-full rounded-xl text-xs">Start assessment →</Button></Link>
+                  </Card>
+                </div>
+              </section>
+            )}
+
+            {/* 4. EVENTS & MEETUPS SECTION */}
             {(activeCategory === 'all' || activeCategory === 'events' || activeCategory === 'meetups') && (
               <section id="activity-meetups-section" className="space-y-4">
                 <div className="flex items-center justify-between">
