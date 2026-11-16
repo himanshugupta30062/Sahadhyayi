@@ -129,7 +129,7 @@ const PrivacyPolicy: React.FC = () => {
                 Official Legal Document
               </Badge>
               <Badge variant="outline" className="border-[#1C442D]/30 text-[#1C442D] dark:border-[#D5B16D]/40 dark:text-[#D5B16D] text-[11px]">
-                DPDP Act 2023 Compliant
+                DPDP-aware privacy practices
               </Badge>
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#1C201D] dark:text-[#F3F0E7]">
@@ -207,7 +207,7 @@ const PrivacyPolicy: React.FC = () => {
                 1. Introduction
               </h2>
               <p>
-                Welcome to Sahadhyayi ("we," "our," or "us"). Sahadhyayi is a digital sanctuary for readers, researchers, authors, and literary communities operated from India. We are committed to protecting your personal information and upholding your fundamental right to privacy in accordance with India's <strong>Digital Personal Data Protection (DPDP) Act 2023</strong>, the <strong>Information Technology Act, 2000</strong>, and international privacy standards.
+                Welcome to Sahadhyayi ("we," "our," or "us"). Sahadhyayi is a digital sanctuary for readers, researchers, authors, and literary communities operated from India. We aim to protect personal information and design our practices around India's <strong>Digital Personal Data Protection Act, 2023</strong>, applicable provisions of the <strong>Information Technology Act, 2000</strong> and rules, and relevant privacy principles. This policy describes our stated practices; it is not a certification of legal compliance. Applicable provisions and commencement dates depend on the law and rules in force
               </p>
               <p>
                 This Privacy Policy explains how we collect, process, safeguard, and respect your data when you visit our website (<strong>sahadhyayi.com</strong>), use our digital library, interact with fellow readers on the Social Map, or engage with our AI reading companions.
@@ -424,7 +424,7 @@ const PrivacyPolicy: React.FC = () => {
                 <p><strong>Helpline:</strong> {SAHADHYAYI_PHONE}</p>
                 <p><strong>Jurisdiction:</strong> New Delhi, India</p>
                 <p className="text-[#636B65] dark:text-[#A5ADA6] text-xs pt-1">
-                  Turnaround commitment: All privacy grievances are acknowledged within 24 hours and addressed within 15 calendar days.
+                  We aim to acknowledge grievances within 24 hours and resolve them within 15 calendar days where practicable. Statutory timelines and escalation rights under applicable law prevail
                 </p>
               </div>
             </section>
