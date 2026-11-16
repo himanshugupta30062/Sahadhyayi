@@ -1276,11 +1276,27 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                         Inline PDF Preview Restricted
                       </h4>
                       <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                        This document host server blocks in-browser iframe embedding (via security headers) or requires direct browser access. You can open or download the complete PDF directly.
+                        Sahadhyayi could not fetch this PDF for its in-page reader. The host may restrict cross-origin access (CORS) or embedded viewing; this does not necessarily mean the PDF is broken. Try the browser's native PDF viewer or open the source directly.
                       </p>
                     </div>
 
                     <div className="flex flex-wrap gap-2.5 justify-center pt-2">
+                      {activeReadUrl && pdfViewMode === 'canvas' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setPdfViewMode('embed');
+                            setPdfStatus('loading');
+                            setPdfIframeLoaded(false);
+                            setPdfManualFallback(false);
+                          }}
+                          className="gap-2 text-xs"
+                        >
+                          <FileText className="w-4 h-4" />
+                          Try Browser PDF Viewer
+                        </Button>
+                      )}
                       {activeReadUrl && (
                         <Button
                           variant="default"
