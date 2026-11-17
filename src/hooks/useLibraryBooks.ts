@@ -62,7 +62,7 @@ export const BOOK_SELECT_COLUMNS = BASE_BOOK_SELECT_COLUMNS;
 // Sorting rules (displayed to users via SortingInfoTooltip)
 export const SORTING_RULES = [
   { label: 'Verified PDF + cover + complete metadata', points: 'Top Tier (14,500+)', priority: 'highest' },
-  { label: 'Direct PDF URL + cover (pending link audit)', points: 'Top Tier (14,200+)', priority: 'high' },
+  { label: 'Direct PDF URL + cover (pending link audit)', points: 'Top Tier (14,500+)', priority: 'high' },
   { label: 'Verified PDF + cover (partial metadata)', points: 'Top Tier (14,000+)', priority: 'highest' },
   { label: 'Verified EPUB / official full text + cover', points: 'High Tier (13,000+)', priority: 'high' },
   { label: 'Supported online reader + cover (including Google Books previews)', points: 'High Tier (12,000+)', priority: 'high' },
@@ -551,7 +551,7 @@ export const getBookCompletenessScore = (book: any): number => {
     // reader previews and generic external pages. This prevents older records
     // such as Godan from being buried solely because their audit is still pending.
     if (withCover && completeMeta) {
-      baseScore = 14200;
+      baseScore = 14500;
     } else if (withCover) {
       baseScore = 14000;
     } else {
