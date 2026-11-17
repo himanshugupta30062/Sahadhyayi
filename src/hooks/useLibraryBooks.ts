@@ -36,6 +36,13 @@ export interface Book {
   licenseEvidence?: LicenseEvidence;
   qualityScore?: number;
   qualityReasons?: string[];
+  cover_quality_score?: number | null;
+  pdf_quality_score?: number | null;
+  metadata_match_score?: number | null;
+  asset_quality_score?: number | null;
+  asset_quality_status?: 'pending' | 'verified' | 'needs_review' | 'failed';
+  asset_quality_evidence?: Record<string, unknown>;
+  asset_quality_checked_at?: string | null;
   whyThisEdition?: string;
   isPreferredEdition?: boolean;
   alternativeEditionsCount?: number;
