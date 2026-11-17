@@ -67,6 +67,7 @@ describe('SEO build-script coverage', () => {
     mocks.rows = {
       books_library: [
         { id: 'book-1', title: 'A <script>alert(1)</script> Book', description: '<p>A &amp; B story</p>', cover_image_url: 'https://images.example/cover.jpg', author_id: 'author-1', author: 'Munshi Premchand', isbn: '9780000000001', genre: 'Literary fiction', language: 'en', pages: 240, publication_year: 1936 },
+        { id: 'book-2', title: 'A Related Literary Work', description: 'Another book in the same genre.', cover_image_url: null, author: 'Another Author', genre: 'Literary fiction' },
         { id: '../unsafe', title: 'Unsafe route', description: null, cover_image_url: null },
       ],
       authors: [
@@ -164,7 +165,9 @@ describe('SEO build-script coverage', () => {
     expect(book).toContain('"mainEntityOfPage":{"@type":"WebPage","@id":"https://sahadhyayi.com/book/book-1"}');
     expect(book).toContain('<p>By <a href="/authors/munshi-premchand">Munshi Premchand</a></p>');
     expect(book).toContain('<section aria-label="Book details"><h2>About this book</h2>');
-    expect(book).toContain('<dt>Genre</dt><dd>Literary fiction</dd>');
+    expect(book).toContain('<dt>Genre</dt><dd><a href="/library?genre=Literary%20fiction">Literary fiction</a></dd>');
+    expect(book).toContain('More books by Munshi Premchand and in this genre');
+    expect(book).toContain('<a href="/book/book-2">A Related Literary Work</a>');
     expect(book).toContain('<dt>Publication year</dt><dd>1936</dd>');
     expect(book).toContain('<dt>ISBN</dt><dd>9780000000001</dd>');
     expect(book).toContain('"@type":"BreadcrumbList"');
