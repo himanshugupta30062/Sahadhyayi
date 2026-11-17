@@ -67,7 +67,7 @@ describe("everyday science attempt persistence", () => {
       user_id: "user-123",
       overall_score: 75,
       question_count: 1,
-      question_set_version: "everyday-science-v1-beginner-difficulty-calibration-v1",
+      question_set_version: "everyday-science-v2-beginner-difficulty-calibration-v1",
       difficulty: "beginner",
     }));
   });
