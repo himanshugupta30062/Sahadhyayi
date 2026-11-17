@@ -144,13 +144,14 @@ function scoreCover(e: any): number {
   if ((e.width || 0) >= 300 && (e.height || 0) >= 450) s += 15;
   else if ((e.width || 0) >= 150 && (e.height || 0) >= 225) s += 7;
   if ((e.byteSize || 0) >= 12000) s += 10;
-  return Math.min(70, s);
+  return Math.round(Math.min(70, s) * (100 / 70));
 }
 function scorePdf(e: any): number {
   if (!e.reachable || !e.signatureValid || !e.parseable || e.encrypted) return 0;
-  return Math.min(70, 35 + (e.contentType === "application/pdf" ? 10 : 0) +
+  const score = 35 + (e.contentType === "application/pdf" ? 10 : 0) +
     ((e.pageCount || 0) >= 10 ? 15 : (e.pageCount || 0) > 0 ? 5 : 0) +
-    (e.textExtractable ? 10 : 0));
+    (e.textExtractable ? 10 : 0);
+  return Math.round(Math.min(70, score) * (100 / 70));
 }
 
 Deno.serve(async (req) => {
