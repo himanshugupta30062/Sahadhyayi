@@ -134,6 +134,15 @@ export const MapBottomSheetPreview: React.FC<MapBottomSheetPreviewProps> = ({
           </div>
         </div>
 
+        {marker.type === 'spot' && (marker.openingHours || marker.phone || marker.source) && (
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-[#636B65] dark:text-[#A5ADA6]">
+            {marker.openingHours && <span>Hours: {marker.openingHours}</span>}
+            {marker.phone && <a href={`tel:${marker.phone}`} className="underline underline-offset-2">{marker.phone}</a>}
+            {marker.source && <span>Source: {marker.source}</span>}
+            {marker.sourceUrl && <a href={marker.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">View map data</a>}
+          </div>
+        )}
+
         {/* Description snippet if present */}
         {marker.type !== 'user' && marker.type !== 'self' && marker.description && (
           <p className="text-xs text-[#4F5751] dark:text-[#CBD5CD] line-clamp-2 leading-relaxed">
@@ -162,6 +171,7 @@ export const MapBottomSheetPreview: React.FC<MapBottomSheetPreviewProps> = ({
 
           {marker.type === 'spot' && (
             <>
+              {marker.isSaveable !== false && (
               <Button
                 size="sm"
                 variant={isSaved(marker.id) ? 'default' : 'outline'}
@@ -181,6 +191,7 @@ export const MapBottomSheetPreview: React.FC<MapBottomSheetPreviewProps> = ({
                   </>
                 )}
               </Button>
+              )}
               <a
                 href={directionsUrl}
                 target="_blank"

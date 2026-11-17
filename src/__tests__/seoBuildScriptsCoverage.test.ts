@@ -67,6 +67,8 @@ describe('SEO build-script coverage', () => {
     mocks.rows = {
       books_library: [
         { id: 'book-1', title: 'A <script>alert(1)</script> Book', description: '<p>A &amp; B story</p>', cover_image_url: 'https://images.example/cover.jpg', author_id: 'author-1', author: 'Munshi Premchand', isbn: '9780000000001', genre: 'Literary fiction', language: 'en', pages: 240, publication_year: 1936 },
+        { id: 'book-2', title: 'A Related Literary Work', description: 'A Related Literary Work', cover_image_url: null, author: 'Another Author', genre: 'Literary fiction', language: 'en', publication_year: 1940 },
+        { id: 'book-3', title: 'Placeholder Example', description: 'Coming soon', cover_image_url: null, author: 'Another Author', genre: 'History' },
         { id: '../unsafe', title: 'Unsafe route', description: null, cover_image_url: null },
       ],
       authors: [
@@ -148,6 +150,8 @@ describe('SEO build-script coverage', () => {
   it('prerenders safe public book and author HTML with metadata and canonical URLs', async () => {
     await runScript('../../scripts/prerender-public-content.mjs');
     const book = mocks.writes.find((entry) => entry.path.endsWith('/book/book-1/index.html'))?.content || '';
+    const fallbackBook = mocks.writes.find((entry) => entry.path.endsWith('/book/book-2/index.html'))?.content || '';
+    const placeholderBook = mocks.writes.find((entry) => entry.path.endsWith('/book/book-3/index.html'))?.content || '';
     const author = mocks.writes.find((entry) => entry.path.endsWith('/authors/munshi-premchand/index.html'))?.content || '';
     const article = mocks.writes.find((entry) => entry.path.endsWith('/articles/useful-reading-guide/index.html'))?.content || '';
     expect(book).toContain('<title>A &lt;script&gt;alert(1)&lt;/script&gt; Book by Munshi Premchand — Book Details &amp; Reading Options | Sahadhyayi</title>');
@@ -156,8 +160,11 @@ describe('SEO build-script coverage', () => {
     expect(book).not.toContain('<script>alert(1)</script>');
     expect(book).toContain('A &amp; B story');
     expect(book).toContain('<section aria-label="About the author"><h2>About the author</h2><p>Writer &amp; storyteller</p></section>');
-    expect(book).toContain('Genre: Literary fiction');
-    expect(book).toContain('Publication year: 1936');
+    expect(fallbackBook).toContain('Genre: Literary fiction.');
+    expect(fallbackBook).toContain('Language: en.');
+    expect(fallbackBook).toContain('Publication year: 1940.');
+    expect(fallbackBook).not.toContain('<p>A Related Literary Work</p>');
+    expect(placeholderBook).toContain('Explore Placeholder Example by Another Author on Sahadhyayi.');
     expect(book).toContain('"@type":"Book"');
     expect(book).toContain('"isbn":"9780000000001"');
     expect(book).toContain('"genre":"Literary fiction"');
@@ -167,7 +174,9 @@ describe('SEO build-script coverage', () => {
     expect(book).toContain('"mainEntityOfPage":{"@type":"WebPage","@id":"https://sahadhyayi.com/book/book-1"}');
     expect(book).toContain('<p>By <a href="/authors/munshi-premchand">Munshi Premchand</a></p>');
     expect(book).toContain('<section aria-label="Book details"><h2>About this book</h2>');
-    expect(book).toContain('<dt>Genre</dt><dd>Literary fiction</dd>');
+    expect(book).toContain('<dt>Genre</dt><dd><a href="/library?genre=Literary%20fiction">Literary fiction</a></dd>');
+    expect(book).toContain('Related books by Munshi Premchand or in this genre');
+    expect(book).toContain('<a href="/book/book-2">A Related Literary Work</a>');
     expect(book).toContain('<dt>Publication year</dt><dd>1936</dd>');
     expect(book).toContain('<dt>ISBN</dt><dd>9780000000001</dd>');
     expect(book).toContain('"@type":"BreadcrumbList"');

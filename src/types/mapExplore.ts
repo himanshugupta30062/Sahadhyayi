@@ -85,6 +85,11 @@ export type SelectedMapMarker =
       description?: string;
       amenities?: string[];
       websiteUrl?: string;
+      openingHours?: string;
+      phone?: string;
+      source?: string;
+      sourceUrl?: string;
+      isSaveable?: boolean;
       isSaved?: boolean;
     }
   | {
