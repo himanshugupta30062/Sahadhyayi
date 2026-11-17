@@ -23,6 +23,7 @@ const DesktopNavItems = () => {
     { path: "/articles", label: "Articles", icon: FileText },
     { path: "/blog", label: "Publish", icon: BookOpen },
     { path: "/games", label: "Games", icon: Gamepad2 },
+    { path: "/science-around-you", label: "Explain Science Around You", icon: BookOpen },
     { path: "/authors", label: "Authors", icon: Users },
     { path: "/social", label: "Social Media", icon: Radio },
   ];

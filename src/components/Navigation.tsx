@@ -141,6 +141,13 @@ export const NAVIGATION_SECTIONS: NavigationSection[] = [
       { name: "Reader Meetups", href: "/activity?tab=meetups" },
     ],
   },
+  {
+    name: "Learn",
+    href: "/science-around-you",
+    items: [
+      { name: "Explain Science Around You", href: "/science-around-you" },
+    ],
+  },
 ];
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -150,6 +157,7 @@ export const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
   NAVIGATION_SECTIONS[2],
   NAVIGATION_SECTIONS[3],
   NAVIGATION_SECTIONS[4],
+  NAVIGATION_SECTIONS[5],
 ];
 
 const SOCIAL_ITEM_ICONS: Record<string, LucideIcon> = {
@@ -272,7 +280,7 @@ function isNavigationItemActive(pathname: string, search: string, href: string) 
   return true;
 }
 
-const NAVIGATION_ORDER = ["Library", "Social", "Read & Write", "Authors", "Activity"];
+const NAVIGATION_ORDER = ["Library", "Social", "Read & Write", "Authors", "Activity", "Learn"];
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
