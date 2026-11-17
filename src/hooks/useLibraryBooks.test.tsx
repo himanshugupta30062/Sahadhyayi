@@ -120,20 +120,25 @@ describe('useLibraryBooks utility functions', () => {
       expect(hasUnverifiedDirectPdf({ ...godanCandidate, reader_link_status: 'working', reader_link_http_status: 200, reader_link_content_type: 'text/html' })).toBe(false);
     });
 
-    it('accepts direct .pdf extensions and trusted hosts', () => {
-      expect(isVerifiedPdf({ pdf_url: 'https://cdn.example.com/book.pdf' })).toBe(true);
-      expect(isVerifiedPdf({ pdf_url: 'https://cdn.example.com/book.pdf?token=123' })).toBe(true);
-      expect(isVerifiedPdf({ pdf_url: '/storage/books/test.pdf' })).toBe(true);
-      expect(isVerifiedPdf({ pdf_url: 'https://supabase.co/storage/v1/object/public/doc' })).toBe(true);
-      expect(isVerifiedPdf({ pdf_url: 'https://www.gutenberg.org/files/123' })).toBe(true);
-      expect(isVerifiedPdf({ pdf_url: 'https://open.umn.edu/opentextbooks/textbooks/1' })).toBe(true);
-      expect(isVerifiedPdf({ pdf_url: 'https://openstax.org/details/books/physics' })).toBe(true);
-      expect(isVerifiedPdf({ pdf_url: 'https://archive.org/download/item123' })).toBe(true);
-      expect(isVerifiedPdf({ pdf_url: 'https://ncert.nic.in/textbook/pdf' })).toBe(true);
-      expect(isVerifiedPdf({ pdf_url: 'https://doabooks.org/handle/123' })).toBe(true);
-      expect(isVerifiedPdf({ pdf_url: 'https://example.com/doc', accessStatus: 'verified_full_text' })).toBe(true);
-      expect(isVerifiedPdf({ pdf_url: 'https://example.com/doc', accessStatus: 'open_textbook' })).toBe(true);
-      expect(isVerifiedPdf({ pdf_url: 'https://example.com/doc', accessStatus: 'public_domain' })).toBe(true);
+    it('requires a successful HTTP and PDF MIME audit instead of trusting extensions or hosts', () => {
+      const verifiedAudit = {
+        reader_link_status: 'working',
+        reader_link_http_status: 200,
+        reader_link_content_type: 'application/pdf',
+      };
+      expect(isVerifiedPdf({ ...verifiedAudit, pdf_url: 'https://cdn.example.com/book.pdf' })).toBe(true);
+      expect(isVerifiedPdf({ ...verifiedAudit, pdf_url: 'https://cdn.example.com/book.pdf?token=123' })).toBe(true);
+      expect(isVerifiedPdf({ ...verifiedAudit, pdf_url: '/storage/books/test.pdf' })).toBe(true);
+      expect(isVerifiedPdf({ pdf_url: 'https://supabase.co/storage/v1/object/public/doc' })).toBe(false);
+      expect(isVerifiedPdf({ pdf_url: 'https://www.gutenberg.org/files/123' })).toBe(false);
+      expect(isVerifiedPdf({ pdf_url: 'https://open.umn.edu/opentextbooks/textbooks/1' })).toBe(false);
+      expect(isVerifiedPdf({ pdf_url: 'https://openstax.org/details/books/physics' })).toBe(false);
+      expect(isVerifiedPdf({ pdf_url: 'https://archive.org/download/item123' })).toBe(false);
+      expect(isVerifiedPdf({ pdf_url: 'https://ncert.nic.in/textbook/pdf' })).toBe(false);
+      expect(isVerifiedPdf({ pdf_url: 'https://doabooks.org/handle/123' })).toBe(false);
+      expect(isVerifiedPdf({ pdf_url: 'https://example.com/doc', accessStatus: 'verified_full_text' })).toBe(false);
+      expect(isVerifiedPdf({ pdf_url: 'https://example.com/doc', accessStatus: 'open_textbook' })).toBe(false);
+      expect(isVerifiedPdf({ pdf_url: 'https://example.com/doc', accessStatus: 'public_domain' })).toBe(false);
     });
   });
 
@@ -262,7 +267,7 @@ describe('useLibraryBooks utility functions', () => {
     it('classifies resources into expected types', () => {
       expect(getBookResourceType(null)).toBe('no_reading_resource');
       expect(getBookResourceType({ isBrokenLink: true })).toBe('no_reading_resource');
-      expect(getBookResourceType({ pdf_url: 'https://example.com/book.pdf' })).toBe('verified_direct_pdf');
+      expect(getBookResourceType({ pdf_url: 'https://example.com/book.pdf' })).toBe('unverified_direct_pdf');
       expect(getBookResourceType({ external_url: 'https://books.google.com/details' })).toBe('online_reader');
       expect(getBookResourceType({ external_url: 'https://goodreads.com/book/show/1' })).toBe('external_book_page');
       expect(getBookResourceType({ title: 'Ghost Book' })).toBe('no_reading_resource');
@@ -270,7 +275,7 @@ describe('useLibraryBooks utility functions', () => {
 
     it('identifies unverified or broken reading links', () => {
       expect(hasUnverifiedOrBrokenLink(null)).toBe(false);
-      expect(hasUnverifiedOrBrokenLink({ pdf_url: 'https://example.com/book.pdf' })).toBe(false);
+      expect(hasUnverifiedOrBrokenLink({ pdf_url: 'https://example.com/book.pdf' })).toBe(true);
       expect(hasUnverifiedOrBrokenLink({ isBrokenLink: true })).toBe(true);
       expect(hasUnverifiedOrBrokenLink({ accessStatus: 'access_unverified' })).toBe(true);
       expect(hasUnverifiedOrBrokenLink({ pdf_url: 'https://example.com/broken-url' })).toBe(true);

@@ -46,6 +46,7 @@ describe('mapRawToEdition', () => {
     expect(mapRawToEdition({ title: 'Book', author: 'Author' }).language).toBe('');
     expect(edition.accessStatus).toBe('public_domain');
     expect(edition.assets.map(asset => asset.format)).toEqual(['epub', 'pdf']);
+    expect(edition.assets.find(asset => asset.format === 'pdf')?.verified).toBe(false);
     expect(edition.sources[0]).toMatchObject({
       provider: 'gutenberg',
       providerId: '42',
