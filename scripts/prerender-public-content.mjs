@@ -53,7 +53,7 @@ function setMeta(html, attribute, key, content) {
   return pattern.test(html) ? html.replace(pattern, tag) : html.replace("</head>", `  ${tag}\n</head>`);
 }
 
-function createPage({ title, description, route, image, type, entityType, entityName }) {
+function createPage({ title, description, route, image, type, entityType, entityName, bodyText, publishedAt, modifiedAt, authorName, wordCount }) {
   const canonical = `${SITE_URL}${route}`;
   let html = template.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
   html = setMeta(html, "name", "description", description);
@@ -71,7 +71,21 @@ function createPage({ title, description, route, image, type, entityType, entity
     ? { "@type": "Book", name: entityName, description, url: canonical, ...(image && /^https:\/\//i.test(image) ? { image } : {}) }
     : entityType === "Person"
       ? { "@type": "Person", name: entityName, description, url: canonical }
-      : null;
+      : entityType === "Article"
+        ? {
+            "@type": "Article",
+            headline: entityName,
+            description,
+            url: canonical,
+            ...(image && /^https:\/\//i.test(image) ? { image } : {}),
+            ...(publishedAt ? { datePublished: publishedAt } : {}),
+            ...(modifiedAt ? { dateModified: modifiedAt } : {}),
+            ...(authorName ? { author: { "@type": "Person", name: authorName } } : {}),
+            ...(Number.isFinite(wordCount) && wordCount > 0 ? { wordCount } : {}),
+            publisher: { "@type": "Organization", name: "Sahadhyayi", url: SITE_URL },
+            mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
+          }
+        : null;
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebPage",
@@ -90,9 +104,11 @@ function createPage({ title, description, route, image, type, entityType, entity
     : html.replace("</head>", `  ${canonicalTag}\n</head>`);
   // Keep useful, route-specific HTML in the initial response for crawlers and
   // visitors with JavaScript disabled. React replaces this fallback when it mounts.
+  const safeBodyText = bodyText ? plainText(bodyText, 1800) : "";
   const fallback = `<main id="seo-fallback" style="max-width:900px;margin:3rem auto;padding:0 1.25rem;font-family:system-ui,sans-serif;line-height:1.65">
     <h1>${escapeHtml(title.replace(/[ \t]{0,16}\|[ \t]{0,16}Sahadhyayi$/i, ""))}</h1>
     <p>${escapeHtml(description)}</p>
+    ${safeBodyText ? `<p>${escapeHtml(safeBodyText)}</p>` : ""}
     <p><a href="/library">Explore the library</a> · <a href="/articles">Read articles</a> · <a href="/groups">Find reading groups</a> · <a href="/authors">Discover authors</a></p>
   </main>`;
   html = html.replace(/<div id="root">[^]*?div>/i, `<div id="root">${fallback}</div>`);
@@ -187,6 +203,70 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 });
 let bookCount = 0;
 let authorCount = 0;
+let articleCount = 0;
+
+const { data: articles, error: articlesError } = await fetchPaginatedRows(
+  supabase.from("articles")
+    .select("id,user_id,title,subtitle,content,cover_image_url,slug,published_at,updated_at,created_at")
+    .eq("is_published", true)
+    .not("slug", "is", null)
+    .not("title", "is", null),
+  "published articles",
+  50000,
+  (label, maxRows) => console.warn(`[prerender] Reached the ${maxRows}-row ${label} safety cap; additional records were not prerendered.`),
+);
+
+if (articlesError) {
+  console.warn(`[prerender] Could not fetch published articles: ${articlesError.message}`);
+} else {
+  const userIds = [...new Set((articles ?? []).map(article => article.user_id).filter(Boolean))];
+  let profiles = [];
+  if (userIds.length) {
+    const { data: publicProfiles, error: publicProfilesError } = await supabase
+      .from("public_profiles")
+      .select("id,full_name")
+      .in("id", userIds);
+    if (!publicProfilesError && publicProfiles?.length) {
+      profiles = publicProfiles;
+    } else {
+      const { data: fallbackProfiles, error: fallbackProfilesError } = await supabase
+        .from("profiles")
+        .select("id,full_name")
+        .in("id", userIds);
+      if (!fallbackProfilesError) profiles = fallbackProfiles ?? [];
+    }
+  }
+  const profileNames = new Map(profiles.map(profile => [profile.id, profile.full_name]));
+  for (const article of articles ?? []) {
+    const slug = String(article.slug ?? "").trim();
+    const title = String(article.title ?? "").trim();
+    if (!title || !/^[a-z0-9][a-z0-9-]{0,139}$/i.test(slug)) continue;
+    const route = `/articles/${encodeURIComponent(slug)}`;
+    const contentText = plainText(article.content, 1800);
+    const description = plainText(article.subtitle || article.content) ||
+      `Read ${title} on Sahadhyayi, a community for readers and thoughtful ideas.`;
+    const authorName = String(profileNames.get(article.user_id) || "").trim();
+    const image = typeof article.cover_image_url === "string" && /^https:\/\//i.test(article.cover_image_url)
+      ? article.cover_image_url
+      : undefined;
+    const wordCount = contentText ? contentText.split(/\s+/).length : 0;
+    writeRoute(route, createPage({
+      title: `${title} | Sahadhyayi`,
+      description,
+      route,
+      image,
+      type: "article",
+      entityType: "Article",
+      entityName: title,
+      bodyText: contentText,
+      publishedAt: article.published_at || article.created_at,
+      modifiedAt: article.updated_at || article.published_at || article.created_at,
+      authorName,
+      wordCount,
+    }));
+    articleCount += 1;
+  }
+}
 
 const { data: books, error: booksError } = await fetchPaginatedRows(
   supabase.from("books_library")
@@ -252,4 +332,4 @@ if (authorsError) {
   }
 }
 
-console.log(`[prerender] Generated ${bookCount} book and ${authorCount} author HTML routes in dist/.`);
+console.log(`[prerender] Generated ${articleCount} article, ${bookCount} book and ${authorCount} author HTML routes in dist/.`);

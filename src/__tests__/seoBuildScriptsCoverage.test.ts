@@ -42,6 +42,8 @@ function configureMockBackend() {
       const query: any = {
         select: () => query,
         not: () => query,
+        eq: () => query,
+        in: () => query,
         range: async (start: number, end: number) => ({
           data: (mocks.rows[table] || []).slice(start, end + 1),
           error: mocks.errors[table] || null,
@@ -71,6 +73,11 @@ describe('SEO build-script coverage', () => {
         { name: 'Munshi Premchand', bio: '<p>Writer &amp; storyteller</p>' },
         { name: '   ', bio: null },
       ],
+      articles: [
+        { id: 'article-1', user_id: 'user-1', title: 'A Useful Reading Guide', subtitle: 'A guide &amp; reflection', content: '<p>Read deeply and think carefully.</p>', cover_image_url: 'https://images.example/article.jpg', slug: 'useful-reading-guide', published_at: '2026-11-10T00:00:00Z', updated_at: '2026-11-11T00:00:00Z', created_at: '2026-11-09T00:00:00Z', is_published: true },
+        { id: 'article-2', user_id: 'user-1', title: 'Unsafe article', content: 'private?', slug: '../unsafe', is_published: true },
+      ],
+      public_profiles: [{ id: 'user-1', full_name: 'Reader One' }],
     };
     mocks.errors = {};
     mocks.writes = [];
@@ -105,6 +112,8 @@ describe('SEO build-script coverage', () => {
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/library</loc>');
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/book/book-1</loc>');
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/authors/munshi-premchand</loc>');
+    expect(sitemap).toContain('<loc>https://sahadhyayi.com/articles/useful-reading-guide</loc>');
+    expect(sitemap).not.toContain('/articles/../unsafe');
     expect(sitemap).not.toContain('/book/../unsafe');
     expect(sitemap).toContain('sahadhyayi-logo-digital-reading.png');
     expect(sitemap).toContain('<urlset');
@@ -137,6 +146,7 @@ describe('SEO build-script coverage', () => {
     await runScript('../../scripts/prerender-public-content.mjs');
     const book = mocks.writes.find((entry) => entry.path.endsWith('/book/book-1/index.html'))?.content || '';
     const author = mocks.writes.find((entry) => entry.path.endsWith('/authors/munshi-premchand/index.html'))?.content || '';
+    const article = mocks.writes.find((entry) => entry.path.endsWith('/articles/useful-reading-guide/index.html'))?.content || '';
     expect(book).toContain('<title>A &lt;script&gt;alert(1)&lt;/script&gt; Book - Read Online | Sahadhyayi</title>');
     expect(book).toContain('<meta property="og:image" content="https://images.example/cover.jpg" />');
     expect(book).toContain('<link rel="canonical" href="https://sahadhyayi.com/book/book-1" />');
@@ -148,8 +158,15 @@ describe('SEO build-script coverage', () => {
     expect(author).toContain('"name":"Munshi Premchand"');
     expect(author).toContain('<title>Munshi Premchand - Author Profile | Sahadhyayi</title>');
     expect(author).toContain('Writer &amp; storyteller');
+    expect(article).toContain('<title>A Useful Reading Guide | Sahadhyayi</title>');
+    expect(article).toContain('<meta property="og:type" content="article" />');
+    expect(article).toContain('"@type":"Article"');
+    expect(article).toContain('"headline":"A Useful Reading Guide"');
+    expect(article).toContain('"name":"Reader One"');
+    expect(article).toContain('Read deeply and think carefully.');
+    expect(article).toContain('<link rel="canonical" href="https://sahadhyayi.com/articles/useful-reading-guide" />');
     expect(mocks.writes.some((entry) => entry.path.includes('unsafe'))).toBe(false);
-    expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Generated 1 book and 1 author'));
+    expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Generated 1 article, 1 book and 1 author'));
   });
 
   it('fails early if the Vite HTML template is missing', async () => {

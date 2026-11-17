@@ -68,7 +68,7 @@ if (SUPABASE_URL && SUPABASE_KEY) {
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false }
   });
-  const [booksResult, authorsResult] = await Promise.all([
+  const [booksResult, authorsResult, articlesResult] = await Promise.all([
     fetchPaginatedRows(
       supabase.from('books_library').select('id,cover_image_url').not('id', 'is', null),
       'books', 100000, label => console.warn(`[sitemap] Stopped ${label} pagination at 100,000 rows.`)
@@ -76,6 +76,10 @@ if (SUPABASE_URL && SUPABASE_KEY) {
     fetchPaginatedRows(
       supabase.from('authors').select('name').not('name', 'is', null),
       'authors', 100000, label => console.warn(`[sitemap] Stopped ${label} pagination at 100,000 rows.`)
+    ),
+    fetchPaginatedRows(
+      supabase.from('articles').select('slug,cover_image_url,published_at').eq('is_published', true).not('slug', 'is', null),
+      'published articles', 50000, label => console.warn(`[sitemap] Stopped ${label} pagination at 50,000 rows.`)
     )
   ]);
   if (booksResult.error) {
@@ -93,6 +97,15 @@ if (SUPABASE_URL && SUPABASE_KEY) {
     (authorsResult.data || []).filter(author => author.name).forEach(author =>
       addUrl('/authors/' + encodeURIComponent(slugify(author.name)), 'monthly', '0.5')
     );
+  }
+  if (articlesResult.error) {
+    console.warn('[sitemap] Could not fetch published articles:', articlesResult.error.message);
+  } else {
+    (articlesResult.data || []).forEach(article => {
+      const slug = String(article.slug ?? '').trim();
+      if (!/^[a-z0-9][a-z0-9-]{0,139}$/i.test(slug)) return;
+      addUrl('/articles/' + encodeURIComponent(slug), 'weekly', '0.7', article.cover_image_url);
+    });
   }
 } else {
   console.warn('[sitemap] Supabase environment variables are missing; only static public URLs will be generated. No placeholder book or author URLs will be added');
