@@ -1,18 +1,42 @@
 
 import { useParams, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, ArrowRight, BookOpen, Calendar, User, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SEO from '@/components/SEO';
 import { toSeoDescription } from '@/utils/seoText';
 import DOMPurify from 'dompurify';
-import { blogPostDetails } from '@/data/blogPostDetails';
+
+
+type BlogPostData = {
+  title: string;
+  content: string;
+  author: string;
+  date: string;
+  readTime: string;
+  image: string;
+  description?: string;
+};
 
 const BlogPost = () => {
   const { slug } = useParams();
+  const [blogPosts, setBlogPosts] = useState<Record<string, BlogPostData> | null>(null);
 
-  
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch('/blog-posts.json', { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error('Unable to load journal stories');
+        return response.json() as Promise<Record<string, BlogPostData>>;
+      })
+      .then(setBlogPosts)
+      .catch((error: unknown) => {
+        if (error instanceof Error && error.name !== 'AbortError') setBlogPosts({});
+      });
+    return () => controller.abort();
+  }, []);
 
-  const post = blogPostDetails[slug as keyof typeof blogPostDetails];
+  const post = slug && blogPosts ? blogPosts[slug] : undefined;
 
   // Build a lightweight table of contents from the article's existing H2/H3 headings.
   // This keeps every article's content as the source of truth and avoids hard-coded section lists.
@@ -26,6 +50,14 @@ const BlogPost = () => {
     articleSections.push({ id, title, level: tag.toLowerCase() === 'h2' ? 2 : 3 });
     return `<${tag}${attributes} id="${id}" class="scroll-mt-24">${innerHtml}</${tag}>`;
   }) || '';
+
+  if (!blogPosts) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-[#F7F5EF] text-[#202820]" aria-live="polite">
+        <p className="text-sm text-[#687168]">Loading journal story…</p>
+      </main>
+    );
+  }
 
   if (!post) {
     return (
