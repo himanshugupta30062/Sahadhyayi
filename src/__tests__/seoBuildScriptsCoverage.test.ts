@@ -183,6 +183,22 @@ describe('SEO build-script coverage', () => {
     expect(research).toContain('"@type":"BreadcrumbList"');
     expect(research).toContain('"name":"Artificial intelligence"');
     expect(research).toContain('"name":"Research Papers"');
+    const activists = mocks.writes.find((entry) => entry.path.endsWith('/social-activists/index.html'))?.content || '';
+    const fighters = mocks.writes.find((entry) => entry.path.endsWith('/freedom-fighters/index.html'))?.content || '';
+    const scientist = mocks.writes.find((entry) => entry.path.endsWith('/scientists/c-v-raman/index.html'))?.content || '';
+    expect(activists).toContain('"@type":"CollectionPage"');
+    expect(activists).toContain('"@type":"ItemList"');
+    expect(activists).toContain('"name":"Kailash Satyarthi"');
+    expect(activists).toContain('/social-activists#profile-kailash-satyarthi');
+    expect(activists).toContain('"@type":"BreadcrumbList"');
+    expect(activists).toContain('Profiles in this collection');
+    expect(fighters).toContain('"@type":"ItemList"');
+    expect(fighters).toContain('"name":"Bhagat Singh"');
+    expect(fighters).toContain('/freedom-fighters#profile-bhagat-singh');
+    expect(scientist).toContain('"@type":"Person"');
+    expect(scientist).toContain('"jobTitle":"Physicist"');
+    expect(scientist).toContain('"knowsAbout":["Raman effect","Light scattering","Optics"]');
+
     expect(aiResearch).toContain('<title>Artificial intelligence Research Papers &amp; Studies | Sahadhyayi</title>');
     expect(aiResearch).toContain('<link rel="canonical" href="https://sahadhyayi.com/research-papers/topic/artificial-intelligence" />');
     expect(aiResearch).toContain('"@type":"CollectionPage"');

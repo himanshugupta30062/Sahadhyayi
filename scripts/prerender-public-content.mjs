@@ -53,7 +53,7 @@ function setMeta(html, attribute, key, content) {
   return pattern.test(html) ? html.replace(pattern, tag) : html.replace("</head>", `  ${tag}\n</head>`);
 }
 
-function createPage({ title, description, route, image, type, entityType, entityName, bodyText, publishedAt, modifiedAt, authorName, wordCount, schemaType, about, breadcrumbs, relatedBooks, relatedArticles, sameAs, bookAuthor, bookIsbn, bookGenre, bookLanguage, bookPages, bookPublicationYear }) {
+function createPage({ title, description, route, image, type, entityType, entityName, bodyText, publishedAt, modifiedAt, authorName, wordCount, schemaType, about, breadcrumbs, relatedBooks, relatedArticles, sameAs, personDetails, itemList, bookAuthor, bookIsbn, bookGenre, bookLanguage, bookPages, bookPublicationYear }) {
   const canonical = `${SITE_URL}${route}`;
   let html = template.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
   html = setMeta(html, "name", "description", description);
@@ -91,6 +91,9 @@ function createPage({ title, description, route, image, type, entityType, entity
           mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
           ...(image && /^https:\/\/i.test(image) ? { image } : {}),
           ...(Array.isArray(sameAs) && sameAs.length ? { sameAs: sameAs.filter((value) => typeof value === "string" && /^https:\/\/i.test(value)) } : {}),
+          ...(personDetails?.jobTitle ? { jobTitle: personDetails.jobTitle } : {}),
+          ...(personDetails?.birthPlace ? { birthPlace: { "@type": "Place", name: personDetails.birthPlace } } : {}),
+          ...(Array.isArray(personDetails?.knowsAbout) && personDetails.knowsAbout.length ? { knowsAbout: personDetails.knowsAbout } : {}),
         }
       : entityType === "Article"
         ? {
@@ -115,6 +118,7 @@ function createPage({ title, description, route, image, type, entityType, entity
     url: canonical,
     isPartOf: { "@type": "WebSite", name: "Sahadhyayi", url: SITE_URL },
     ...(mainEntity ? { mainEntity } : {}),
+    ...(Array.isArray(itemList) && itemList.length ? { mainEntity: { "@type": "ItemList", numberOfItems: itemList.length, itemListElement: itemList.map((entry, index) => ({ "@type": "ListItem", position: index + 1, item: { "@type": "Person", name: entry.name, url: `${SITE_URL}${route}#profile-${entry.slug}`, ...(entry.description ? { description: entry.description } : {}), ...(Array.isArray(entry.knowsAbout) && entry.knowsAbout.length ? { knowsAbout: entry.knowsAbout } : {}) } })) } } : {}),
     ...(Array.isArray(about) && about.length ? { about: about.map((name) => ({ "@type": "Thing", name })) } : {}),
     ...(Array.isArray(breadcrumbs) && breadcrumbs.length ? {
       breadcrumb: {
@@ -145,6 +149,7 @@ function createPage({ title, description, route, image, type, entityType, entity
     ${bookAuthor?.url ? `<p>By <a href="${escapeHtml(bookAuthor.url)}">${escapeHtml(bookAuthor.name)}</a></p>` : bookAuthor?.name ? `<p>By ${escapeHtml(bookAuthor.name)}</p>` : ""}
     ${Array.isArray(relatedBooks) && relatedBooks.length ? `<section aria-label="Books by this author"><h2>Books by ${escapeHtml(entityName || "this author")}</h2><ul>${relatedBooks.map((book) => `<li><a href="${escapeHtml(book.route)}">${escapeHtml(book.title)}</a></li>`).join("")}</ul></section>` : ""}
     ${Array.isArray(relatedArticles) && relatedArticles.length ? `<nav aria-label="Related articles"><h2>More articles by this reader</h2><ul>${relatedArticles.map((article) => `<li><a href="${escapeHtml(article.route)}">${escapeHtml(article.title)}</a></li>`).join("")}</ul></nav>` : ""}
+    ${Array.isArray(itemList) && itemList.length ? `<nav aria-label="People in this collection"><h2>Profiles in this collection</h2><ul>${itemList.map((entry) => `<li><a href="${escapeHtml(route)}#profile-${escapeHtml(entry.slug)}">${escapeHtml(entry.name)}</a></li>`).join("")}</ul></nav>` : ""}
     <p><a href="/library">Explore the library</a> · <a href="/articles">Read articles</a> · <a href="/groups">Find reading groups</a> · <a href="/authors">Discover authors</a></p>
   </main>`;
   html = html.replace(/<div id="root">[^]*?div>/i, `<div id="root">${fallback}</div>`);
@@ -176,8 +181,23 @@ const publicPages = [
   { route: "/about", title: "About Sahadhyayi - A Community for Readers", description: "Learn about Sahadhyayi's mission to bring readers together, support deeper reading, and make literature more social." },
   { route: "/community-stories", title: "Reader Stories and Reading Experiences | Sahadhyayi", description: "Explore stories and perspectives from readers who share a love of books, literature, and learning together." },
   { route: "/life-stories", title: "Life Stories — Real People, Remarkable Journeys | Sahadhyayi", description: "Discover true stories of remarkable people from India and around the world: their lives, challenges, achievements and the lessons they leave behind." },
-  { route: "/social-activists", title: "Social Activists and Their Work | Sahadhyayi", description: "Discover source-linked profiles of activists organising for children's rights, workers, environmental justice and public accountability." },
-  { route: "/freedom-fighters", title: "Indian Freedom Fighters | Sahadhyayi", description: "Explore source-linked profiles of people and movements that shaped India's struggle against colonial rule." },
+  { route: "/social-activists", title: "Social Activists and Their Work | Sahadhyayi", description: "Discover source-linked profiles of activists organising for children's rights, workers, environmental justice and public accountability.", schemaType: "CollectionPage", about: ["Children's rights", "Workers' rights", "Environmental justice", "Women's rights", "Public accountability"], breadcrumbs: [{ name: "Home", route: "/" }, { name: "Social Activists", route: "/social-activists" }], itemList: [
+    { slug: "kailash-satyarthi", name: "Kailash Satyarthi", description: "Children's rights activist and Nobel Peace Prize laureate." },
+    { slug: "ela-bhatt", name: "Ela Bhatt", description: "Women's rights activist and founder of the Self-Employed Women's Association." },
+    { slug: "medha-patkar", name: "Medha Patkar", description: "Environmental justice organiser associated with the Narmada Bachao Andolan." },
+    { slug: "aruna-roy", name: "Aruna Roy", description: "Transparency and right-to-information campaigner." },
+  ] },
+  { route: "/freedom-fighters", title: "Indian Freedom Fighters | Sahadhyayi", description: "Explore source-linked profiles of people and movements that shaped India's struggle against colonial rule.", schemaType: "CollectionPage", about: ["Indian independence movement", "Anti-colonial resistance", "National movement", "Political history"], breadcrumbs: [{ name: "Home", route: "/" }, { name: "Freedom Fighters", route: "/freedom-fighters" }], itemList: [
+    { slug: "subhas-chandra-bose", name: "Subhas Chandra Bose", description: "Nationalist leader associated with the Indian National Army." },
+    { slug: "bhagat-singh", name: "Bhagat Singh", description: "Revolutionary and anti-colonial political writer." },
+    { slug: "sarojini-naidu", name: "Sarojini Naidu", description: "Poet, women's rights campaigner and freedom fighter." },
+    { slug: "rani-lakshmibai", name: "Rani Lakshmibai", description: "Queen of Jhansi and leader in the 1857 uprising." },
+    { slug: "mahatma-gandhi", name: "Mahatma Gandhi", description: "Advocate of satyagraha and non-violent resistance." },
+    { slug: "bal-gangadhar-tilak", name: "Bal Gangadhar Tilak", description: "Nationalist leader, journalist and Home Rule organiser." },
+    { slug: "chandrashekhar-azad", name: "Chandrashekhar Azad", description: "Revolutionary organiser associated with the HSRA." },
+    { slug: "maulana-abul-kalam-azad", name: "Maulana Abul Kalam Azad", description: "Nationalist leader and independent India's first education minister." },
+    { slug: "begum-hazrat-mahal", name: "Begum Hazrat Mahal", description: "Leader of resistance in Awadh during the 1857 uprising." },
+  ] },
   { route: "/quotes", title: "Book Quotes and Literary Inspiration | Sahadhyayi", description: "Discover memorable literary quotes and ideas that inspire reflection, reading, and conversation." },
   { route: "/games", title: "Literary Games and Book Quizzes | Sahadhyayi", description: "Challenge your book knowledge with literary games, reading quizzes, and activities for book lovers." },
 ];
@@ -254,13 +274,13 @@ for (const person of lifeStoryProfiles) {
 }
 
 const scientistProfiles = [
-  { slug: "amal-kumar-raychaudhuri", name: "Amal Kumar Raychaudhuri", description: "Explore the life and work of Indian physicist Amal Kumar Raychaudhuri, whose equation became a key result in general relativity and cosmology." },
-  { slug: "c-v-raman", name: "C. V. Raman", description: "Learn about C. V. Raman, the Indian physicist whose discovery of the Raman Effect earned the 1930 Nobel Prize in Physics." },
-  { slug: "satyendra-nath-bose", name: "Satyendra Nath Bose", description: "Discover the life and quantum physics contributions of Satyendra Nath Bose, whose work led to Bose–Einstein statistics." },
-  { slug: "srinivasa-ramanujan", name: "Srinivasa Ramanujan", description: "Explore the life, notebooks and mathematical contributions of Srinivasa Ramanujan, one of India's most influential mathematicians." },
-  { slug: "marie-curie", name: "Marie Curie", description: "Explore Marie Curie's pioneering research on radioactivity and the discoveries of polonium and radium." },
-  { slug: "albert-einstein", name: "Albert Einstein", description: "Learn about Albert Einstein's life and contributions to relativity, quantum theory and modern physics." },
-  { slug: "katherine-johnson", name: "Katherine Johnson", description: "Discover NASA mathematician Katherine Johnson's calculations for Mercury, Apollo and early human spaceflight." }
+  { slug: "amal-kumar-raychaudhuri", name: "Amal Kumar Raychaudhuri", description: "Explore the life and work of Indian physicist Amal Kumar Raychaudhuri, whose equation became a key result in general relativity and cosmology.", jobTitle: "Theoretical physicist", knowsAbout: ["Raychaudhuri equation", "General relativity", "Relativistic cosmology"] },
+  { slug: "c-v-raman", name: "C. V. Raman", description: "Learn about C. V. Raman, the Indian physicist whose discovery of the Raman Effect earned the 1930 Nobel Prize in Physics.", jobTitle: "Physicist", knowsAbout: ["Raman effect", "Light scattering", "Optics"] },
+  { slug: "satyendra-nath-bose", name: "Satyendra Nath Bose", description: "Discover the life and quantum physics contributions of Satyendra Nath Bose, whose work led to Bose–Einstein statistics.", jobTitle: "Physicist", knowsAbout: ["Bose–Einstein statistics", "Quantum mechanics", "Bosons"] },
+  { slug: "srinivasa-ramanujan", name: "Srinivasa Ramanujan", description: "Explore the life, notebooks and mathematical contributions of Srinivasa Ramanujan, one of India's most influential mathematicians.", jobTitle: "Mathematician", knowsAbout: ["Number theory", "Infinite series", "Partitions", "Mock theta functions"] },
+  { slug: "marie-curie", name: "Marie Curie", description: "Explore Marie Curie's pioneering research on radioactivity and the discoveries of polonium and radium.", jobTitle: "Physicist and chemist", knowsAbout: ["Radioactivity", "Polonium", "Radium"] },
+  { slug: "albert-einstein", name: "Albert Einstein", description: "Learn about Albert Einstein's life and contributions to relativity, quantum theory and modern physics.", jobTitle: "Theoretical physicist", knowsAbout: ["Special relativity", "General relativity", "Photoelectric effect", "Brownian motion"] },
+  { slug: "katherine-johnson", name: "Katherine Johnson", description: "Discover NASA mathematician Katherine Johnson's calculations for Mercury, Apollo and early human spaceflight.", jobTitle: "Mathematician", knowsAbout: ["Orbital mechanics", "Mercury programme", "Apollo programme", "Spaceflight trajectory calculations"] }
 ];
 
 for (const scientist of scientistProfiles) {
@@ -272,6 +292,7 @@ for (const scientist of scientistProfiles) {
     type: "profile",
     entityType: "Person",
     entityName: scientist.name,
+    personDetails: { jobTitle: scientist.jobTitle, knowsAbout: scientist.knowsAbout },
   }));
 }
 
