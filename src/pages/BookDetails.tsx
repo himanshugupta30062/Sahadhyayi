@@ -30,8 +30,8 @@ import { BookEditionPicker } from '@/components/books/BookEditionPicker';
 import BookReviews from '@/components/books/BookReviews';
 import BookExperienceTags from '@/components/books/BookExperienceTags';
 import BookLiteraryVoices from '@/components/books/BookLiteraryVoices';
-import BookAIReader from '@/components/books/BookAIReader';
-import AIReadingToolkit from '@/components/books/AIReadingToolkit';
+const BookAIReader = React.lazy(() => import('@/components/books/BookAIReader'));
+const AIReadingToolkit = React.lazy(() => import('@/components/books/AIReadingToolkit'));
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { validateReaderUrl } from '@/utils/bookReaderPreview';
 
@@ -64,6 +64,31 @@ const BookDetails = () => {
   const { data: ratingData, isLoading: ratingLoading } = useBookRatings(id);
   const rateMutation = useRateBook(id);
   const { toast } = useToast();
+  const aiSectionsRef = React.useRef<HTMLDivElement>(null);
+  const [shouldLoadAISections, setShouldLoadAISections] = useState(false);
+
+  useEffect(() => {
+    const target = aiSectionsRef.current;
+    if (!target) return;
+
+    if (typeof IntersectionObserver === 'undefined') {
+      setShouldLoadAISections(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoadAISections(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '400px 0px' }
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
 
   // Validate PDF URL to determine if "Read Book" tab should be shown
   const hasValidPdfUrl = useMemo(() => {
@@ -405,11 +430,22 @@ const BookDetails = () => {
                 </div>
               </div>
 
-              {/* Book-specific Gemini AI */}
-              <BookAIReader book={{ id: book.id, title: book.title, author: book.author, description: book.description, language: book.language }} />
-
-              {/* AI Reading Toolkit (Quizzes, Flashcards, Discussion Guide, Key Takeaways) */}
-              <AIReadingToolkit book={{ id: book.id, title: book.title, author: book.author, description: book.description, language: book.language }} />
+              {/* Defer AI tools until the reader approaches this section. */}
+              <div ref={aiSectionsRef}>
+                {shouldLoadAISections ? (
+                  <ErrorBoundary fallback={<BookTabErrorFallback title="Unable to load AI reading tools" message="The AI tools are temporarily unavailable. The rest of the book page is still usable." />}>
+                    <React.Suspense fallback={<div className="space-y-4" role="status" aria-label="Loading AI reading tools"><div className="h-40 animate-pulse rounded-xl bg-muted" /><div className="h-48 animate-pulse rounded-xl bg-muted" /></div>}>
+                      <BookAIReader book={{ id: book.id, title: book.title, author: book.author, description: book.description, language: book.language }} />
+                      <AIReadingToolkit book={{ id: book.id, title: book.title, author: book.author, description: book.description, language: book.language }} />
+                    </React.Suspense>
+                  </ErrorBoundary>
+                ) : (
+                  <div className="space-y-4" aria-hidden="true">
+                    <div className="h-40 rounded-xl bg-muted/40" />
+                    <div className="h-48 rounded-xl bg-muted/40" />
+                  </div>
+                )}
+              </div>
 
               {/* Quality & Edition Transparency */}
               <BookEditionTransparency book={book} />
