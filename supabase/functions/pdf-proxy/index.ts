@@ -265,7 +265,41 @@ serve(async (req) => {
     }
     if (!responseHeaders.has("Accept-Ranges")) responseHeaders.set("Accept-Ranges", "bytes");
 
-    return new Response(req.method === "HEAD" ? null : response.body, {
+    let responseBody: ReadableStream<Uint8Array> | null = null;
+    if (req.method !== "HEAD" && response.body) {
+      const reader = response.body.getReader();
+      responseBody = new ReadableStream<Uint8Array>({
+        async pull(controller) {
+          try {
+            const { done, value } = await reader.read();
+            if (done) {
+              controller.close();
+              reader.releaseLock();
+              return;
+            }
+            // Keep a hard cap even when an upstream omits Content-Length.
+            // For byte-range responses this counts only the requested chunk.
+            const nextSize = (Number(responseHeaders.get("x-streamed-bytes")) || 0) + value.byteLength;
+            if (nextSize > MAX_RESPONSE_SIZE) {
+              await reader.cancel("PDF response chunk exceeded the configured limit");
+              controller.error(new Error("Response chunk too large"));
+              return;
+            }
+            responseHeaders.set("x-streamed-bytes", String(nextSize));
+            controller.enqueue(value);
+          } catch (error) {
+            controller.error(error);
+          }
+        },
+        async cancel(reason) {
+          await reader.cancel(reason);
+        },
+      });
+    }
+
+    // Do not expose internal stream accounting to the client.
+    responseHeaders.delete("x-streamed-bytes");
+    return new Response(responseBody, {
       status: response.status,
       headers: responseHeaders,
     });
