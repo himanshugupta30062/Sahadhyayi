@@ -130,6 +130,29 @@ describe('bookCoverResolver', () => {
   });
 
   describe('resolveGenuineBookCover', () => {
+    it('does not accept a same-title cover from a different author', async () => {
+      const fetchSpy = vi.spyOn(globalThis, 'fetch')
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            docs: [{ title: 'The Color Purple', author_name: ['Different Author'], cover_i: 123456 }],
+          }),
+        } as unknown as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ items: [] }),
+        } as unknown as Response);
+
+      const cover = await resolveGenuineBookCover({
+        id: 'color-purple-author-check',
+        title: 'The Color Purple',
+        author: 'Alice Walker',
+      });
+
+      expect(cover).toBeNull();
+      expect(fetchSpy).toHaveBeenCalledTimes(2);
+    });
+
 
     it('replaces a generic Archive.org thumbnail with a matched Open Library cover', async () => {
       vi.spyOn(globalThis, 'fetch').mockResolvedValue({
