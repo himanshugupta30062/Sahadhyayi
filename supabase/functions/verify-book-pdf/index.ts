@@ -142,7 +142,7 @@ function calculateMatchConfidence(matches: Array<Record<string, unknown>>): numb
  */
 function parseVerificationReport(rawText: string): Record<string, unknown> {
   const cleaned = rawText
-    .replace(/^\\uFEFF/, "")
+    .replace(/^\uFEFF/, "")
     .trim()
     .replace(/^\x60{3}(?:json)?\s*/i, "")
     .replace(/\s*\x60{3}\s*$/, "")
