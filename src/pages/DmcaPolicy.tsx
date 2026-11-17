@@ -1,5 +1,5 @@
 import React from "react";
-import { Copyright, ShieldCheck, FileText, Scale, Printer, Mail, AlertTriangle, BookOpen } from "lucide-react";
+import { ShieldCheck, FileText, Printer, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
