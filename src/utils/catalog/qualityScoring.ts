@@ -383,7 +383,9 @@ export function buildAssetOptions(
       readerUrl: pdfUrl,
       isDirectDownload: !isGoogle,
       isDirectRead: true,
-      verified: !isGoogle,
+      // URL presence and a trusted provider are candidates, not proof of a valid PDF.
+      // Only the server-side HTTP/MIME audit may promote this asset to verified.
+      verified: false,
       sourceProvider,
     });
   }
