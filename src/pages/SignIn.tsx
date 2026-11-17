@@ -16,7 +16,6 @@ import { ForgotPasswordDialog } from '@/components/auth/ForgotPasswordDialog';
 import { HCaptchaWidget } from '@/components/auth/HCaptchaWidget';
 
 import { Separator } from '@/components/ui/separator';
-import { motion } from 'framer-motion';
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
@@ -206,22 +205,14 @@ const SignIn = () => {
           <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-orange-200/20 dark:bg-orange-500/10 blur-3xl" />
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="w-full max-w-md relative z-10"
+        <div className="auth-page-enter w-full max-w-md relative z-10"
         >
           <Card className="border-none shadow-elevated bg-white/95 backdrop-blur-sm rounded-2xl overflow-hidden">
             <CardHeader className="text-center pb-2 pt-8">
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.4 }}
-                className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/25"
+              <div className="auth-icon-enter mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/25"
               >
                 <BookOpen className="w-8 h-8 text-white" />
-              </motion.div>
+              </div>
               <h1 className="text-2xl font-bold tracking-tight text-slate-950">
                 Welcome Back
               </h1>
@@ -232,11 +223,11 @@ const SignIn = () => {
             <CardContent className="px-6 pb-8">
               <form onSubmit={handleSubmit} className="space-y-5" noValidate>
                 {error && (
-                  <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
+                  <div className="auth-feedback-enter">
                     <Alert variant="destructive" className="rounded-xl" role="alert">
                       <AlertDescription>{error}</AlertDescription>
                     </Alert>
-                  </motion.div>
+                  </div>
                 )}
                 
                 <div className="space-y-1.5">
@@ -356,7 +347,7 @@ const SignIn = () => {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       </div>
     </>
   );
