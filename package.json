@@ -31,7 +31,8 @@
     "verify:licenses": "node scripts/verifyLicenses.js",
     "size": "size-limit",
     "test:coverage": "vitest run --coverage.enabled=true",
-    "prepare:life-stories": "node scripts/export-life-stories.mjs"
+    "prepare:life-stories": "node scripts/export-life-stories.mjs",
+    "audit:books:seo": "node scripts/audit-book-seo-quality.mjs"
   },
   "size-limit": [
     {
