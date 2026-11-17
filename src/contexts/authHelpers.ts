@@ -3,6 +3,17 @@ import type { AuthError, Provider } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { recordAuthAudit } from '@/lib/authAudit';
 
+/** Keep optional audit requests outside active Supabase auth operations. */
+const deferAuthAudit = (
+  event: Parameters<typeof recordAuthAudit>[0],
+  method: Parameters<typeof recordAuthAudit>[1],
+  details?: Parameters<typeof recordAuthAudit>[2],
+) => {
+  setTimeout(() => {
+    void recordAuthAudit(event, method, details);
+  }, 0);
+};
+
 export const normalizeAuthEmail = (email: string): string =>
   email.trim().toLowerCase();
 
@@ -40,7 +51,6 @@ export const useAuth = () => {
       };
     }
 
-    void recordAuthAudit('signup_submitted', 'password');
     const { data, error } = await supabase.auth.signUp({
       email: normalizedEmail,
       password,
@@ -56,10 +66,12 @@ export const useAuth = () => {
     // identities array is the documented client-side signal; do not query
     // auth.users directly from the browser. Keep the UI wording non-definitive
     // to avoid disclosing whether a particular email is registered.
+    // The auth request has completed; optional telemetry can now safely run.
+    deferAuthAudit('signup_submitted', 'password');
     const emailMayAlreadyExist = !error && Boolean(data.user) && Array.isArray(data.user.identities) && data.user.identities.length === 0;
     if (error) {
       const code = typeof (error as { code?: unknown }).code === 'string' ? (error as { code: string }).code : 'auth_error';
-      void recordAuthAudit('signup_failed', 'password', { errorCode: code });
+      deferAuthAudit('signup_failed', 'password', { errorCode: code });
     }
     // Supabase returns a session when confirmation is disabled, and no session
     // while the user still needs to verify their email.
@@ -75,16 +87,17 @@ export const useAuth = () => {
     // Use a fixed same-origin destination; never accept arbitrary external redirect URLs.
     redirectTo.searchParams.set('next', '/dashboard');
 
-    void recordAuthAudit('sign_in_attempted', 'oauth');
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
         redirectTo: redirectTo.toString(),
       },
     });
+    // Do not start a functions.invoke request while the OAuth request is active.
+    deferAuthAudit('sign_in_attempted', 'oauth');
     if (error) {
       const code = typeof (error as { code?: unknown }).code === 'string' ? (error as { code: string }).code : 'oauth_error';
-      void recordAuthAudit('sign_in_failed', 'oauth', { errorCode: code });
+      deferAuthAudit('sign_in_failed', 'oauth', { errorCode: code });
       throw error;
     }
   };
