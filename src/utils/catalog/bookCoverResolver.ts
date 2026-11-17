@@ -37,7 +37,7 @@ interface CacheEntry {
   timestamp: number;
 }
 
-const CACHE_KEY = 'sahadhyayi_cover_cache_v1';
+const CACHE_KEY = 'sahadhyayi_cover_cache_v2'; // v2 invalidates unverified URL-only cache entries
 const CACHE_TTL_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
 
 // Memory cache for fast synchronous access during session
@@ -275,11 +275,11 @@ export async function fetchOpenLibraryCoverBySearch(
  * Synchronous or asynchronous resolution of the best available book cover.
  */
 export async function resolveGenuineBookCover(book: BookCoverTarget): Promise<string | null> {
-  // 1. Existing valid URL in book record
+  // 1. Accept only structurally plausible existing URLs. Known generic thumbnail
+  // endpoints are deliberately rejected by normalizeCoverUrl because they can return
+  // HTTP 200 with placeholder/blank artwork.
   const existing = normalizeCoverUrl(book.cover_image_url);
-  if (existing) {
-    return existing;
-  }
+  if (existing) return existing;
 
   // 2. Check persistent cache
   const cached = getCachedCover(book);
@@ -287,16 +287,8 @@ export async function resolveGenuineBookCover(book: BookCoverTarget): Promise<st
     return cached;
   }
 
-  // 3. Try Open Library ISBN cover URL directly if valid
-  const olCover = getOpenLibraryCoverUrl(book.isbn, 'M');
-  if (olCover) {
-    setCachedCover(book, olCover);
-    if (book.id) {
-      void persistVerifiedCoverToDatabase(book.id, olCover);
-    }
-    return olCover;
-  }
-
+  // 3. Search catalogue records first: unlike the ISBN CDN endpoint, this returns
+  // a matched work/edition with a concrete cover ID and avoids default placeholders.
   // 4. Try Open Library search by Title and Author
   const olSearchCover = await fetchOpenLibraryCoverBySearch(book.title, book.author);
   if (olSearchCover) {
@@ -307,7 +299,16 @@ export async function resolveGenuineBookCover(book: BookCoverTarget): Promise<st
     return olSearchCover;
   }
 
-  // 5. Try Google Books API metadata lookup
+  // 5. Try Open Library ISBN CDN only after title/author search. default=false
+  // ensures a missing cover is a 404 rather than a generated blank placeholder.
+  const olCover = getOpenLibraryCoverUrl(book.isbn, 'M');
+  if (olCover) {
+    setCachedCover(book, olCover);
+    if (book.id) void persistVerifiedCoverToDatabase(book.id, olCover);
+    return olCover;
+  }
+
+  // 6. Try Google Books API metadata lookup
   const gbCover = await fetchGoogleBooksCover(book.title, book.author, book.isbn);
   if (gbCover) {
     setCachedCover(book, gbCover);
@@ -317,7 +318,7 @@ export async function resolveGenuineBookCover(book: BookCoverTarget): Promise<st
     return gbCover;
   }
 
-  // 6. No genuine cover found — record negative in cache to avoid repetitive queries
+  // 7. No genuine cover found — record negative in cache to avoid repetitive queries
   setCachedCover(book, null);
   return null;
 }
