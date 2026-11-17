@@ -101,13 +101,19 @@ export const validateReaderUrl = (rawUrl: string | null | undefined): {
       !isGoogleBooks &&
       (/\.epub($|\?|#)/i.test(trimmed) ||
         /\/epub\//i.test(trimmed));
+    // Publishers such as Pressbooks can serve a PDF from a download route
+    // without a .pdf suffix. Require an explicit type=pdf query on that route.
+    const isExplicitPdfDownload =
+      /\/(?:open\/)?download\/?$/i.test(parsed.pathname) &&
+      parsed.searchParams.get('type')?.toLowerCase() === 'pdf';
     const isPdf =
       !isGoogleBooks &&
       !isEpub &&
       (/\.pdf($|\?|#)/i.test(trimmed) ||
         /\/pdf\//i.test(trimmed) ||
         hostname.includes('archive.org') ||
-        trimmed.includes('/pdf-proxy'));
+        parsed.pathname.includes('/pdf-proxy') ||
+        isExplicitPdfDownload);
 
     return {
       isValid: true,
