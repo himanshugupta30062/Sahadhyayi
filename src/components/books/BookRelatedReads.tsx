@@ -26,20 +26,23 @@ export default function BookRelatedReads({ book }: BookRelatedReadsProps) {
     queryFn: async () => {
       const capabilities = await detectBookSchemaCapabilities();
       const columns = getPublicBookSelectColumns(capabilities);
-      const queries = [
-        author
-          ? applyPublicBookFilter(
-              supabase.from('books_library').select(columns).eq('author', author).neq('id', book.id).limit(30),
-              capabilities,
-            )
-          : null,
-        genre
-          ? applyPublicBookFilter(
-              supabase.from('books_library').select(columns).eq('genre', genre).neq('id', book.id).limit(30),
-              capabilities,
-            )
-          : null,
-      ].filter(Boolean);
+      const queries: Array<PromiseLike<any>> = [];
+      if (author) {
+        queries.push(
+          applyPublicBookFilter(
+            supabase.from('books_library').select(columns).eq('author', author).neq('id', book.id).limit(30),
+            capabilities,
+          ),
+        );
+      }
+      if (genre) {
+        queries.push(
+          applyPublicBookFilter(
+            supabase.from('books_library').select(columns).eq('genre', genre).neq('id', book.id).limit(30),
+            capabilities,
+          ),
+        );
+      }
 
       const results = await Promise.all(queries);
       const successful = results.filter((result) => !result.error);
