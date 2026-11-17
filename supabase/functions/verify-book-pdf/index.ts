@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.0";
+import { parseVerificationReport } from "../_shared/pdfVerification.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -140,36 +141,6 @@ function calculateMatchConfidence(matches: Array<Record<string, unknown>>): numb
  * Parse Gemini's JSON response defensively. Some model responses wrap JSON in
  * markdown fences or add a short preamble despite responseMimeType=json.
  */
-function parseVerificationReport(rawText: string): Record<string, unknown> {
-  const cleaned = rawText
-    .replace(/^\uFEFF/, "")
-    .trim()
-    .replace(/^\x60{3}(?:json)?\s*/i, "")
-    .replace(/\s*\x60{3}\s*$/, "")
-    .trim();
-
-  const candidates = [cleaned];
-  const firstBrace = cleaned.indexOf("{");
-  const lastBrace = cleaned.lastIndexOf("}");
-  if (firstBrace >= 0 && lastBrace > firstBrace) {
-    const extracted = cleaned.slice(firstBrace, lastBrace + 1);
-    if (extracted !== cleaned) candidates.push(extracted);
-  }
-
-  for (const candidate of candidates) {
-    try {
-      const parsed: unknown = JSON.parse(candidate);
-      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-        return parsed as Record<string, unknown>;
-      }
-    } catch {
-      // Try the bounded JSON object extraction before failing.
-    }
-  }
-
-  throw new Error("Gemini returned an invalid verification report. Please retry verification; the PDF remains private.");
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed." }, 405);
