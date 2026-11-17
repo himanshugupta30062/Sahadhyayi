@@ -27,6 +27,9 @@ export interface Book {
   language?: string;
   pdf_url?: string;
   epub_url?: string;
+  reader_link_status?: string;
+  reader_link_http_status?: number;
+  reader_link_content_type?: string;
   created_at: string;
   price?: number;
   rating?: number;
@@ -62,12 +65,13 @@ export const SORTING_RULES = [
   { label: 'Verified PDF + cover (partial metadata)', points: 'Top Tier (14,000+)', priority: 'highest' },
   { label: 'Verified EPUB / official full text + cover', points: 'High Tier (13,000+)', priority: 'high' },
   { label: 'Supported online reader + cover (including Google Books previews)', points: 'High Tier (12,000+)', priority: 'high' },
-  { label: 'Verified PDF without cover', points: 'High Tier (11,500+)', priority: 'high' },
-  { label: 'Verified EPUB / official full text without cover', points: 'Medium Tier (11,000+)', priority: 'medium' },
-  { label: 'Supported online reader without cover', points: 'Medium Tier (10,500+)', priority: 'medium' },
-  { label: 'External book/resource page + cover', points: 'Medium Tier (9,200+)', priority: 'medium' },
-  { label: 'Metadata-only genuine book with cover', points: 'Lower Tier (7,500+)', priority: 'low' },
+  { label: 'Metadata-only genuine book with cover', points: 'High Tier (11,000+)', priority: 'high' },
+  { label: 'Verified PDF without cover', points: 'Medium Tier (10,000+)', priority: 'medium' },
+  { label: 'Verified EPUB / official full text without cover', points: 'Medium Tier (9,500+)', priority: 'medium' },
+  { label: 'Supported online reader without cover', points: 'Medium Tier (9,000+)', priority: 'medium' },
+  { label: 'External book/resource page + cover', points: 'High Tier (11,500+)', priority: 'high' },
   { label: 'Academic papers, technical reports & preprints', points: 'Discovery Tier (2,500+)', priority: 'low' },
+  { label: 'External book/resource page without cover', points: 'Medium Tier (8,500+)', priority: 'medium' },
   { label: 'Metadata-only records without cover photo', points: 'Bottom (1,500+)', priority: 'low' },
   { label: 'Per-page diversity (max 1 / author & title per page)', points: 'Spread across pages', priority: 'info' },
   { label: 'Tie-breaker', points: 'newest first, then title, then ID', priority: 'info' },
@@ -79,6 +83,17 @@ export const SORTING_RULES = [
  */
 export function isVerifiedPdf(book: any): boolean {
   if (!book) return false;
+
+  // Production catalog records carry an explicit server-side link check.
+  // Never let buildAssetOptions' legacy "verified: true" shortcut override it.
+  const readerStatus = book.reader_link_status ?? book.readerLinkStatus;
+  if (typeof readerStatus === 'string') {
+    if (readerStatus.trim().toLowerCase() !== 'working') return false;
+    const httpStatus = book.reader_link_http_status ?? book.readerLinkHttpStatus;
+    const contentType = String(book.reader_link_content_type ?? book.readerLinkContentType ?? '').toLowerCase();
+    if (typeof httpStatus !== 'number' || httpStatus < 200 || httpStatus >= 300) return false;
+    if (!contentType.includes('application/pdf')) return false;
+  }
 
   // 1. Explicit broken link flags or unverified access status
   if (book.isBrokenLink === true) return false;
@@ -463,13 +478,14 @@ export function isMetadataOnly(book: any): boolean {
  * 2. Verified direct PDF + valid cover + partial metadata (14,000+)
  * 3. Other verified full text + valid cover (13,000+)
  * 4. Supported online reader + valid cover (12,000+)
- * 5. Verified direct PDF without a cover (11,500+)
- * 6. Other verified full text without a cover (11,000+)
- * 7. Supported online reader without a cover (10,500+)
- * 8. External resource page + cover (9,200+)
- * 9. Metadata-only genuine books with cover (7,500+)
- * 10. Academic papers, reports & preprints (2,500+)
- * 11. Incomplete records / ghost entries (1,500 or lower)
+ * 5. External resource page + cover (11,500+)
+ * 6. Metadata-only genuine books with cover (11,000+)
+ * 7. Verified direct PDF without a cover (10,000+)
+ * 8. Other verified full text without a cover (9,500+)
+ * 9. Supported online reader without a cover (9,000+)
+ * 10. External resource page without a cover (8,500+)
+ * 11. Academic papers, reports & preprints (2,500+)
+ * 12. Incomplete records / ghost entries (1,500 or lower)
  *
  * A Google Books preview is an online reader, not a downloadable PDF. Its valid
  * cover now keeps it ahead of a coverless PDF record in the visual browse catalog,
@@ -496,7 +512,7 @@ export const getBookCompletenessScore = (book: any): number => {
     } else if (withCover) {
       baseScore = 14000; // Verified direct PDF + cover, even when metadata is partial
     } else {
-      baseScore = 11500; // A real PDF without a cover remains valuable, but loses visual priority
+      baseScore = 10000; // A real PDF remains valuable, but any genuine cover-bearing book ranks ahead
     }
   } else if (hasOtherVerifiedFullText(book)) {
     if (withCover && completeMeta) {
@@ -504,7 +520,7 @@ export const getBookCompletenessScore = (book: any): number => {
     } else if (withCover) {
       baseScore = 13000; // Verified EPUB / official HTML + cover
     } else {
-      baseScore = 11000; // Verified full text without cover
+      baseScore = 9500; // Verified full text without cover
     }
   } else if (resourceType === 'online_reader') {
     if (withCover && completeMeta) {
@@ -512,13 +528,13 @@ export const getBookCompletenessScore = (book: any): number => {
     } else if (withCover) {
       baseScore = 12000; // Supported preview/reader + cover
     } else {
-      baseScore = 10500; // Supported reader without cover
+      baseScore = 9000; // Supported reader without cover
     }
   } else if (resourceType === 'external_book_page') {
     if (withCover && completeMeta) {
-      baseScore = 9500; // External book/resource page + cover + complete metadata
+      baseScore = 11500; // External book/resource page + cover + complete metadata
     } else if (withCover) {
-      baseScore = 9200; // External book/resource page + cover
+      baseScore = 11000; // External book/resource page + cover
     } else {
       baseScore = 8500; // External resource page without cover
     }
@@ -530,7 +546,7 @@ export const getBookCompletenessScore = (book: any): number => {
     if (!withCover && (!desc || desc.length < 20) && (!title || title.length < 3)) {
       baseScore = 0; // Empty ghost record
     } else if (withCover) {
-      baseScore = 7500; // Metadata-only genuine book with a valid cover
+      baseScore = 11000; // Genuine book with a valid cover outranks coverless PDF records
       if (completeMeta) baseScore += 300;
     } else {
       baseScore = 1500; // Metadata-only book without a cover
