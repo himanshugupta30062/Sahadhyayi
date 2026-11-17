@@ -132,8 +132,10 @@ describe('Activity Page', () => {
     expect(screen.getByRole('button', { name: 'All Activities' })).toBeInTheDocument();
     expect(screen.getAllByText('Reading Challenges').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Book Games').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Events').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Meetups').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Clubs & Events').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Brain & Science').length).toBeGreaterThan(0);
+    expect(screen.getByText('Club Hubs')).toBeInTheDocument();
+    expect(screen.getByText('Explain Science Around You')).toBeInTheDocument();
   });
 
   it('displays user active challenge progress', () => {

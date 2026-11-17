@@ -733,7 +733,7 @@ const Navigation = () => {
                           {key === "social" || key === "social-media"
                             ? "Connect, read stories, meet readers and join discussions"
                             : key === "activity"
-                            ? "Events, challenges, reading groups, meetups and games"
+                            ? "Clubs, gatherings, events, challenges, games, reasoning and everyday science"
                             : key === "library"
                             ? "Browse the library, publications and research papers"
                             : key === "read-write"
@@ -782,11 +782,9 @@ const Navigation = () => {
                       })() : key === "activity" ? (() => {
                         const activityItems = visibleItems(section.items);
                         const groups = [
-                          { title: "Hub & Gatherings", description: "Central home and local meetups", names: ["Activity Hub", "Reader Meetups"] },
-                          { title: "Events & Festivals", description: "Literary sessions and festivals", names: ["Events & Festivals"] },
-                          { title: "Challenges & Games", description: "Milestones and book trivia", names: ["Reading Challenges", "Book Games"] },
-                          { title: "IQ Test & Reasoning", description: "IQ-style practice and visual puzzles", names: ["IQ Test"] },
-                          { title: "Science & Understanding", description: "Explain the science behind everyday life", names: ["Explain Science Around You"] },
+                          { title: "Clubs & Events", description: "Club hubs, reader gatherings, literary events and festivals", names: ["Activity Hub", "Reader Meetups", "Events & Festivals"] },
+                          { title: "Challenges & Games", description: "Reading milestones and book trivia", names: ["Reading Challenges", "Book Games"] },
+                          { title: "Brain & Science", description: "IQ tests, reasoning puzzles and everyday science", names: ["IQ Test", "Explain Science Around You"] },
                         ];
                         const validGroups = groups
                           .map((group) => ({

@@ -21,7 +21,7 @@ import { listEverydayScienceAttempts, saveEverydayScienceAttempt } from "./attem
 
 const evaluation = {
   difficulty: "beginner" as const,
-  questionSetVersion: "everyday-science-v2-beginner-difficulty-calibration-v1",
+  questionSetVersion: "everyday-science-v2-beginner-difficulty-calibration-v1-evaluation-calibration-v1",
   overallScore: 75,
   categoryScores: { Physics: 75 },
   results: [],
@@ -67,7 +67,7 @@ describe("everyday science attempt persistence", () => {
       user_id: "user-123",
       overall_score: 75,
       question_count: 1,
-      question_set_version: "everyday-science-v2-beginner-difficulty-calibration-v1",
+      question_set_version: "everyday-science-v2-beginner-difficulty-calibration-v1-evaluation-calibration-v1",
       difficulty: "beginner",
     }));
   });
