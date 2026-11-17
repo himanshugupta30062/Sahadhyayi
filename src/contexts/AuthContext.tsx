@@ -115,8 +115,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     // Prefer revoking all sessions. If that fails (e.g. a deleted account or
     // transient server issue), still attempt to clear this browser's session.
-    const { error: globalError } = await supabase.auth.signOut({ scope: "global" });
-    if (globalError) {
+    let shouldSignOutLocally = false;
+    try {
+      const { error: globalError } = await supabase.auth.signOut({ scope: "global" });
+      shouldSignOutLocally = Boolean(globalError);
+    } catch {
+      // A network exception while revoking all sessions must not prevent a
+      // best-effort local sign-out from clearing this browser's credentials.
+      shouldSignOutLocally = true;
+    }
+
+    if (shouldSignOutLocally) {
       const { error: localError } = await supabase.auth.signOut({ scope: "local" });
       if (localError) {
         // Keep the in-memory state consistent with the SDK's still-present
