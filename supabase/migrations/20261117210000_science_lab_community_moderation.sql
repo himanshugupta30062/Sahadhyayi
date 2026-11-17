@@ -6,6 +6,9 @@ alter table public.science_experiment_attempts
   add column if not exists moderation_note text
     check (moderation_note is null or char_length(moderation_note) <= 500);
 
+-- Require an explicit opt-in at the database layer as well as in the UI.
+alter table public.science_experiment_attempts alter column share_public set default false;
+
 -- Existing community submissions are not grandfathered into public visibility.
 update public.science_experiment_attempts
 set moderation_status = case when share_public then 'pending' else 'private' end
