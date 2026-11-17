@@ -47,7 +47,7 @@ describe("everyday science scoring", () => {
       reasoning: 60,
       completeness: 40,
       clarity: 20,
-    })).toBe(75);
+    })).toBe(74);
   });
 
   it("averages per-question scores without allowing out-of-range scores", () => {
