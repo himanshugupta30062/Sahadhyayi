@@ -15,7 +15,7 @@ import AuthorBio from '@/components/books/AuthorBio';
 import BookReadersConnection from '@/components/books/BookReadersConnection';
 import CreateYourVersionSection from '@/components/books/CreateYourVersionSection';
 import BookIdeasSection from '@/components/books/BookIdeasSection';
-import BookReader from '@/components/books/BookReader';
+const BookReader = React.lazy(() => import('@/components/books/BookReader'));
 import { BookSocialStrip } from '@/components/books/BookSocialStrip';
 import { useBookById } from '@/hooks/useBookById';
 import { useBookRatings, useRateBook } from '@/hooks/useBookRatings';
@@ -564,16 +564,18 @@ const BookDetails = () => {
               {hasValidPdfUrl && (
                 <TabsContent value="read" className="mt-0">
                   <ErrorBoundary fallback={<BookTabErrorFallback title="Unable to load book reader" message="A temporary issue occurred while initializing the reader." />}>
-                    <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 border-orange-200 shadow-lg">
-                      <CardContent className="p-2 sm:p-6">
-                        <BookReader
-                          bookId={book.id}
-                          bookTitle={book.title}
-                          pdfUrl={book.pdf_url}
-                          epubUrl={undefined}
-                        />
-                      </CardContent>
-                    </Card>
+                    <React.Suspense fallback={<div className="rounded-xl border bg-card p-8 text-center text-sm text-muted-foreground" role="status">Preparing your book reader…</div>}>
+                      <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 border-orange-200 shadow-lg">
+                        <CardContent className="p-2 sm:p-6">
+                          <BookReader
+                            bookId={book.id}
+                            bookTitle={book.title}
+                            pdfUrl={book.pdf_url}
+                            epubUrl={undefined}
+                          />
+                        </CardContent>
+                      </Card>
+                    </React.Suspense>
                   </ErrorBoundary>
                 </TabsContent>
               )}
