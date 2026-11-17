@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
   order: vi.fn(),
   limit: vi.fn(),
   upload: vi.fn(),
+  download: vi.fn(),
   invalidateQueries: vi.fn(),
 }));
 
@@ -48,7 +49,7 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
       limit: mocks.limit,
     }),
     storage: {
-      from: () => ({ upload: mocks.upload }),
+      from: () => ({ upload: mocks.upload, download: mocks.download }),
     },
     functions: {
       invoke: vi.fn().mockResolvedValue({ data: { accepted: true }, error: null }),
@@ -105,6 +106,7 @@ beforeEach(() => {
   mocks.order.mockReset();
   mocks.limit.mockReset().mockResolvedValue({ data: [], error: null });
   mocks.upload.mockReset().mockResolvedValue({ error: null });
+  mocks.download.mockReset().mockResolvedValue({ data: null, error: new Error('object not found') });
   mocks.invalidateQueries.mockReset().mockResolvedValue(undefined);
   mocks.select.mockReturnValue({ eq: mocks.eq });
   mocks.eq.mockReturnValue({ order: mocks.order });
@@ -221,6 +223,31 @@ describe('ContributeBookPdfDialog', () => {
       expect.objectContaining({ contentType: 'application/pdf', upsert: false }),
     ));
     expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'PDF submitted privately' }));
+  });
+
+  it('retries a transient storage failure without inserting a duplicate submission', async () => {
+    mocks.upload
+      .mockResolvedValueOnce({ error: new Error('temporary storage network failure') })
+      .mockResolvedValueOnce({ error: null });
+    renderDialog();
+    await goToUploadStep();
+    fireEvent.change(screen.getByLabelText(/PDF file/i), {
+      target: { files: [makePdf()] },
+    });
+    fireEvent.change(screen.getByLabelText(/Book title/i), {
+      target: { value: 'Retry Test Book' },
+    });
+    fireEvent.click(screen.getByRole('checkbox'));
+    await waitFor(() => expect(screen.getByRole('checkbox')).toBeChecked());
+    const submitButton = screen.getByRole('button', { name: /Submit for verification/i });
+    await waitFor(() => expect(submitButton).toBeEnabled());
+    fireEvent.submit(submitButton.closest('form')!);
+
+    await waitFor(() => expect(mocks.upload).toHaveBeenCalledTimes(2), { timeout: 5000 });
+    expect(mocks.insert).toHaveBeenCalledTimes(1);
+    expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'PDF submitted privately',
+    }));
   });
 
   it('does not upload when the database submission insert fails', async () => {
