@@ -1002,12 +1002,6 @@ export const useLibraryBooks = (
       // first response silently excludes older books from the first pages.
       const fetchMatchingBooks = async (selectColumns: string, fallback = false) => {
         const pageSize = 500;
-        if (limit && limit > 0) {
-          const result = await buildQuery(selectColumns, fallback).limit(limit);
-          if (result.error) throw result.error;
-          return result.data || [];
-        }
-
         const allRows: any[] = [];
         for (let offset = 0; ; offset += pageSize) {
           const result = await buildQuery(selectColumns, fallback).range(offset, offset + pageSize - 1);
@@ -1036,7 +1030,9 @@ export const useLibraryBooks = (
 
       const visible = filterPublicBooks(data || []);
       const mapped = visible.map(mapBook);
-      return sortBooksByCompleteness(requireCover ? mapped.filter((book) => hasValidCover(book)) : mapped);
+      const ranked = sortBooksByCompleteness(requireCover ? mapped.filter((book) => hasValidCover(book)) : mapped);
+      // Apply result limits only after ranking the complete matching catalogue.
+      return limit && limit > 0 ? ranked.slice(0, limit) : ranked;
     },
     retry: 2,
     ...CACHE_OPTIONS,
