@@ -30,7 +30,7 @@ describe('Library Book Sorting Hierarchy', () => {
     };
 
     expect(isVerifiedPdf(misleadingPdf)).toBe(false);
-    expect(getBookResourceType(misleadingPdf)).toBe('no_reading_resource');
+    expect(getBookResourceType(misleadingPdf)).toBe('external_book_page');
   });
 
   it('does not consider missing language complete bibliographic metadata', () => {
