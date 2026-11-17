@@ -5,6 +5,7 @@ export type AuthAuditEvent =
   | 'sign_in_succeeded'
   | 'sign_in_failed'
   | 'signup_submitted'
+  | 'signup_failed'
   | 'account_created';
 
 export type AuthAuditMethod = 'password' | 'oauth' | 'unknown';
