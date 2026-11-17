@@ -1,14 +1,13 @@
 
-import { useParams, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BookOpen, Calendar, User, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SEO from '@/components/SEO';
 import { toSeoDescription } from '@/utils/seoText';
 import DOMPurify from 'dompurify';
 
-
-type BlogPostData = {
+type BlogPostEntry = {
   title: string;
   content: string;
   author: string;
@@ -18,25 +17,54 @@ type BlogPostData = {
   description?: string;
 };
 
+type BlogPostMap = Record<string, BlogPostEntry>;
+
+
 const BlogPost = () => {
+
   const { slug } = useParams();
-  const [blogPosts, setBlogPosts] = useState<Record<string, BlogPostData> | null>(null);
+  const [posts, setPosts] = useState<BlogPostMap | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch('/blog-posts.json', { signal: controller.signal })
+
+    fetch('/data/blog-post-details.json', { signal: controller.signal })
       .then((response) => {
-        if (!response.ok) throw new Error('Unable to load journal stories');
-        return response.json() as Promise<Record<string, BlogPostData>>;
+        if (!response.ok) throw new Error('Unable to load blog articles');
+        return response.json() as Promise<BlogPostMap>;
       })
-      .then(setBlogPosts)
+      .then(setPosts)
       .catch((error: unknown) => {
-        if (error instanceof Error && error.name !== 'AbortError') setBlogPosts({});
+        if (error instanceof Error && error.name !== 'AbortError') {
+          setLoadError(true);
+        }
       });
+
     return () => controller.abort();
   }, []);
 
-  const post = slug && blogPosts ? blogPosts[slug] : undefined;
+  const post = slug ? posts?.[slug] : undefined;
+
+  if (!posts && !loadError) {
+    return (
+      <main className="min-h-screen flex items-center justify-center" aria-live="polite">
+        <p className="text-muted-foreground">Loading article…</p>
+      </main>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Unable to load this article</h1>
+          <p className="mb-4 text-muted-foreground">Please check your connection and try again.</p>
+          <Link to="/blog"><Button>Back to Blog</Button></Link>
+        </div>
+      </main>
+    );
+  }
 
   // Build a lightweight table of contents from the article's existing H2/H3 headings.
   // This keeps every article's content as the source of truth and avoids hard-coded section lists.
@@ -50,14 +78,6 @@ const BlogPost = () => {
     articleSections.push({ id, title, level: tag.toLowerCase() === 'h2' ? 2 : 3 });
     return `<${tag}${attributes} id="${id}" class="scroll-mt-24">${innerHtml}</${tag}>`;
   }) || '';
-
-  if (!blogPosts) {
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-[#F7F5EF] text-[#202820]" aria-live="polite">
-        <p className="text-sm text-[#687168]">Loading journal story…</p>
-      </main>
-    );
-  }
 
   if (!post) {
     return (

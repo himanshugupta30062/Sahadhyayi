@@ -207,39 +207,12 @@ export default function AdminBookPdfManager() {
   };
 
   const handleDelete = async () => {
-    if (!user || !selectedBook || !deleteReason.trim()) return;
-
-    setIsDeleting(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('pdf-management', {
-        body: {
-          action: 'delete_pdf',
-          bookId: selectedBook.id,
-          reason: deleteReason.trim(),
-        },
-      });
-      if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || 'Deletion failed');
-
-      toast({ title: 'PDF deleted', description: data.message || `PDF removed from “${selectedBook.title}”` });
-      setShowDeleteConfirm(false);
-      setDeleteReason('');
-      setSelectedId('');
-
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['admin-book-pdf-manager-books'] }),
-        queryClient.invalidateQueries({ queryKey: ['books'] }),
-      ]);
-    } catch (error) {
-      console.error('PDF deletion failed:', error);
-      toast({
-        title: 'Deletion failed',
-        description: error instanceof Error ? error.message : 'Could not delete the PDF.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsDeleting(false);
-    }
+    setShowDeleteConfirm(false);
+    toast({
+      title: 'PDF deletion is temporarily unavailable',
+      description: 'The production database does not yet have the audited delete_pdf_safely operation. No PDF or catalogue record was changed.',
+      variant: 'destructive',
+    });
   };
 
   const handleViewAudit = async () => {
@@ -265,7 +238,7 @@ export default function AdminBookPdfManager() {
             <div className="rounded-xl border bg-card p-4"><p className="text-sm text-muted-foreground">Catalog books loaded</p><p className="mt-1 text-2xl font-semibold">{books.length}</p></div>
             <div className="rounded-xl border bg-card p-4"><p className="text-sm text-muted-foreground">Missing PDF</p><p className="mt-1 text-2xl font-semibold">{books.filter((book) => !book.pdf_url).length}</p></div>
             <div className="rounded-xl border bg-card p-4"><p className="text-sm text-muted-foreground">Already linked</p><p className="mt-1 text-2xl font-semibold">{books.filter((book) => Boolean(book.pdf_url)).length}</p></div>
-            <div className="rounded-xl border bg-card p-4"><p className="text-sm text-muted-foreground">Verified PDFs</p><p className="mt-1 text-2xl font-semibold">{books.filter((book) => book.pdf_verification_status === 'verified').length}</p></div>
+            <div className="rounded-xl border bg-card p-4"><p className="text-sm text-muted-foreground">PDF links</p><p className="mt-1 text-2xl font-semibold">{books.filter((book) => Boolean(book.pdf_url)).length}</p></div>
           </div>
         </header>
 

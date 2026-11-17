@@ -277,6 +277,15 @@ const BookDetails = () => {
     // placeholder for author click action
   };
 
+  const handleMobilePrimaryAction = () => {
+    const targetTab = hasValidPdfUrl ? 'read' : 'connect';
+    handleTabChange(targetTab);
+    document.getElementById('book-community-tabs')?.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      block: 'start',
+    });
+  };
+
   return (
     <>
       <SEO
@@ -521,7 +530,7 @@ const BookDetails = () => {
           )}
 
           {/* Interactive Tabs Section - Mobile Responsive */}
-          <div className="w-full">
+          <div id="book-community-tabs" className="w-full scroll-mt-24">
             {/* Book Social Strip: Active Rooms, Margins, Threads */}
             <BookSocialStrip
               bookId={book.id}
@@ -618,6 +627,16 @@ const BookDetails = () => {
               )}
             </Tabs>
           </div>
+        </div>
+        <div className="book-details-mobile-action-bar" role="region" aria-label="Quick book action">
+          <div className="book-details-mobile-action-copy">
+            <span className="book-details-mobile-action-title">{hasValidPdfUrl ? 'Ready when you are' : 'Find fellow readers'}</span>
+            <span className="book-details-mobile-action-subtitle">{hasValidPdfUrl ? 'Continue to the online reader' : 'Join the conversation about this book'}</span>
+          </div>
+          <Button type="button" size="lg" className="shrink-0 rounded-full px-5" onClick={handleMobilePrimaryAction}>
+            <BookOpen className="mr-2 h-4 w-4" />
+            {hasValidPdfUrl ? 'Read book' : 'Connect'}
+          </Button>
         </div>
       </div>
     </>

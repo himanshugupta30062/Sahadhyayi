@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
 
 import React from 'react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen, within } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
 import BlogPost from './BlogPost';
+import { blogPostDetails } from '@/data/blogPostDetails';
 
 const renderPost = (slug: string) => render(
   <MemoryRouter initialEntries={[`/blog/${slug}`]}>
@@ -34,22 +35,32 @@ const posts = [
 ] as const;
 
 describe('BlogPost', () => {
-  afterEach(() => cleanup());
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => blogPostDetails,
+    }));
+  });
 
-  it.each(posts)('renders the article for slug %s', (slug, title, author) => {
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
+
+  it.each(posts)('renders the article for slug %s', async (slug, title, author) => {
     renderPost(slug);
 
-    expect(screen.getByRole('heading', { name: title })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: title })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: title })).toBeInTheDocument();
     expect(screen.getByText(author)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to Journal' })).toHaveAttribute('href', '/blog');
     expect(screen.getByRole('link', { name: /Explore the Library/ })).toHaveAttribute('href', '/library');
   });
 
-  it('builds working table-of-contents anchors from article headings', () => {
+  it('builds working table-of-contents anchors from article headings', async () => {
     renderPost('what-is-sahadhyayi-meaning-story');
 
-    const navigation = screen.getByRole('navigation', { name: 'Article contents' });
+    const navigation = await screen.findByRole('navigation', { name: 'Article contents' });
     const links = within(navigation).getAllByRole('link');
     expect(links.length).toBeGreaterThanOrEqual(3);
 
@@ -60,10 +71,10 @@ describe('BlogPost', () => {
     }
   });
 
-  it('shows a not-found state for unknown slugs', () => {
+  it('shows a not-found state for unknown slugs', async () => {
     renderPost('this-article-does-not-exist');
 
-    expect(screen.getByRole('heading', { name: 'Blog post not found' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Blog post not found' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to Blog' })).toHaveAttribute('href', '/blog');
     expect(screen.queryByText('Himanshu Gupta')).not.toBeInTheDocument();
   });

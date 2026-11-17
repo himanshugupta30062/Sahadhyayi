@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BookOpen, ExternalLink, MapPin, ScrollText, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -6,6 +6,8 @@ import Breadcrumb from '@/components/Breadcrumb';
 import SEO from '@/components/SEO';
 import { getScientistBySlug, scientists as fallbackScientists, type ScientistProfile as ScientistProfileType } from '@/data/scientists';
 import { fetchScientistProfiles } from '@/lib/scientistsRepository';
+
+const isSafeExternalUrl = (value: string | undefined): value is string => Boolean(value && /^https:\/\//i.test(value));
 
 const ScientistProfile = () => {
   const { slug = '' } = useParams<{ slug: string }>();
@@ -22,6 +24,64 @@ const ScientistProfile = () => {
     });
     return () => { active = false; };
   }, [slug]);
+
+  const profileSchema = useMemo<Record<string, unknown> | undefined>(() => {
+    if (!scientist) return undefined;
+
+    const canonical = `https://sahadhyayi.com/scientists/${scientist.slug}`;
+    const subjectOf: Record<string, unknown>[] = [
+      ...(scientist.publications ?? [])
+        .filter((paper) => isSafeExternalUrl(paper.url))
+        .map((paper) => ({
+          '@type': 'ScholarlyArticle',
+          name: paper.title,
+          headline: paper.title,
+          datePublished: paper.year,
+          url: paper.url,
+          author: paper.authors,
+          isPartOf: paper.venue,
+          ...(paper.doi ? { identifier: { '@type': 'PropertyValue', propertyID: 'DOI', value: paper.doi } } : {}),
+        })),
+      ...(scientist.archives ?? [])
+        .filter((record) => isSafeExternalUrl(record.url))
+        .map((record) => ({
+          '@type': 'CreativeWork',
+          name: record.title,
+          url: record.url,
+          publisher: record.institution,
+          description: record.material,
+        })),
+      ...(scientist.sources ?? [])
+        .filter((source) => isSafeExternalUrl(source.url))
+        .map((source) => ({
+          '@type': 'CreativeWork',
+          name: source.label,
+          url: source.url,
+          publisher: source.publisher,
+        })),
+    ];
+
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'Person',
+      '@id': `${canonical}#person`,
+      name: scientist.name,
+      description: scientist.summary,
+      url: canonical,
+      mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
+      ...(isSafeExternalUrl(scientist.portrait?.imageUrl) ? { image: scientist.portrait.imageUrl } : {}),
+      ...(scientist.discipline ? { jobTitle: scientist.discipline } : {}),
+      ...(scientist.birthplace ? { birthPlace: { '@type': 'Place', name: scientist.birthplace } } : {}),
+      ...(scientist.knownFor.length ? { knowsAbout: scientist.knownFor } : {}),
+      ...(subjectOf.length ? { subjectOf } : {}),
+    };
+  }, [scientist]);
+
+  const profileBreadcrumbs = useMemo(() => scientist ? [
+    { name: 'Home', url: 'https://sahadhyayi.com/' },
+    { name: 'Scientists', url: 'https://sahadhyayi.com/scientists' },
+    { name: scientist.name, url: `https://sahadhyayi.com/scientists/${scientist.slug}` },
+  ] : [], [scientist]);
 
   if (!scientist) {
     return (
@@ -44,6 +104,9 @@ const ScientistProfile = () => {
         description={scientist.summary}
         canonical={`https://sahadhyayi.com/scientists/${scientist.slug}`}
         url={`https://sahadhyayi.com/scientists/${scientist.slug}`}
+        image={isSafeExternalUrl(scientist.portrait?.imageUrl) ? scientist.portrait.imageUrl : undefined}
+        schema={profileSchema}
+        breadcrumbs={profileBreadcrumbs}
       />
 
       <div className="min-h-screen bg-[#FAF7F2] text-[#1C201D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
