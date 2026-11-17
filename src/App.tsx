@@ -137,6 +137,7 @@ const AdminBookPdfManager = lazy(() => import('./pages/AdminBookPdfManager'));
 const AdminBookPdfReviews = lazy(() => import('./pages/AdminBookPdfReviews'));
 const AdminLibraryArchive = lazy(() => import('./pages/AdminLibraryArchive'));
 const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
+const AdminScienceLabModeration = lazy(() => import('./pages/AdminScienceLabModeration'));
 const AdminBookExpertRag = lazy(() => import('./pages/AdminBookExpertRag'));
 const AdminAuthorEnrichment = lazy(() => import('./pages/AdminAuthorEnrichment'));
 const AdminScientists = lazy(() => import('./pages/AdminScientists'));
@@ -818,6 +819,16 @@ const App = memo(() => {
                             <AdminRoute>
                               <Suspense fallback={<LoadingFallback message="Loading book SEO review queue..." />}>
                                 <AdminBookSeoReview />
+                              </Suspense>
+                            </AdminRoute>
+                          }
+                        />
+                        <Route
+                          path="/admin/science-lab"
+                          element={
+                            <AdminRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading Science Lab moderation..." />}>
+                                <AdminScienceLabModeration />
                               </Suspense>
                             </AdminRoute>
                           }
