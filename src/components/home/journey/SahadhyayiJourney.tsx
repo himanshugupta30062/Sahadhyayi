@@ -190,7 +190,7 @@ export const SahadhyayiJourney: React.FC = () => {
       className="sahadhyayi-bicycle-adventure relative isolate pt-12 pb-10 sm:pt-16 sm:pb-12 lg:pt-20 lg:pb-14 px-4 sm:px-6 lg:px-8 bg-background transition-colors duration-300 overflow-hidden"
       aria-label="Sahadhyayi interactive cycling journey"
     >
-      <style>{`@keyframes journey-stop-enter{from{opacity:0;transform:translate3d(0,12px,0)}to{opacity:1;transform:translate3d(0,0,0)}}@media(prefers-reduced-motion:no-preference){.sahadhyayi-bicycle-adventure .journey-stop-enter{animation:journey-stop-enter 420ms cubic-bezier(.2,.7,.2,1) both}}@media(prefers-reduced-motion:reduce){.sahadhyayi-bicycle-adventure .journey-stop-enter{animation:none!important;opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){.sahadhyayi-bicycle-adventure button,.sahadhyayi-bicycle-adventure a,.sahadhyayi-bicycle-adventure [class*='transition-']{transition-duration:0.01ms!important;animation-duration:0.01ms!important}}`}</style>
+      <style>{`@keyframes journey-stop-enter{from{opacity:0;transform:translate3d(0,12px,0)}to{opacity:1;transform:translate3d(0,0,0)}}@keyframes journey-heading-word-enter{from{opacity:0;transform:translate3d(0,14px,0)}to{opacity:1;transform:translate3d(0,0,0)}}@media(prefers-reduced-motion:no-preference){.sahadhyayi-bicycle-adventure .journey-stop-enter{animation:journey-stop-enter 420ms cubic-bezier(.2,.7,.2,1) both}.sahadhyayi-bicycle-adventure .journey-heading-word{animation:journey-heading-word-enter 560ms cubic-bezier(.2,.7,.2,1) both}}@media(prefers-reduced-motion:reduce){.sahadhyayi-bicycle-adventure .journey-stop-enter,.sahadhyayi-bicycle-adventure .journey-heading-word{animation:none!important;opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){.sahadhyayi-bicycle-adventure button,.sahadhyayi-bicycle-adventure a,.sahadhyayi-bicycle-adventure [class*='transition-']{transition-duration:0.01ms!important;animation-duration:0.01ms!important}}`}</style>
       {/* Ambient background glows */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
         <div className="absolute top-1/4 -left-40 w-[700px] h-[700px] rounded-full bg-[hsl(var(--brand-primary)/0.05)] blur-[160px]" />
@@ -274,7 +274,8 @@ export const SahadhyayiJourney: React.FC = () => {
           </div>
 
           <h2 className="text-3xl sm:text-4xl md:text-[2.75rem] font-serif font-bold text-foreground tracking-tight leading-[1.15] mb-4">
-            A Journey Through<br className="hidden sm:block" /> Sahadhyayi
+            <span className="journey-heading-word inline-block" style={{ animationDelay: '80ms' }}>Reading</span>{' '}
+            <span className="journey-heading-word inline-block" style={{ animationDelay: '240ms' }}>Journey</span>
           </h2>
 
           <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
