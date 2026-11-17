@@ -12,6 +12,7 @@ describe('normalizeCoverUrl', () => {
   });
 
   it('trims valid URLs without changing their content', () => {
+    expect(normalizeCoverUrl('/storage/v1/object/public/covers/local-cover.jpg')).toBe('/storage/v1/object/public/covers/local-cover.jpg');
     expect(normalizeCoverUrl('  https://example.com/cover.jpg  ')).toBe('https://example.com/cover.jpg');
   });
   it('rejects known placeholder and unusable provider thumbnail URLs', () => {
