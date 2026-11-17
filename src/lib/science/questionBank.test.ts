@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SCIENCE_QUESTIONS, shuffleScienceQuestions } from "./questionBank";
+import { SCIENCE_QUESTIONS, getScienceQuestionsForDifficulty, shuffleScienceQuestions } from "./questionBank";
 
 describe("everyday science question bank", () => {
   it("contains ten distinct open-ended questions across real-world science domains", () => {
@@ -12,6 +12,16 @@ describe("everyday science question bank", () => {
       expect(question.youtubeSearch.trim().length).toBeGreaterThan(0);
       expect(question.book.title.trim().length).toBeGreaterThan(0);
     }
+  });
+
+  it("provides progressively deeper challenge prompts without changing the stable question IDs", () => {
+    const beginner = getScienceQuestionsForDifficulty("beginner");
+    const intermediate = getScienceQuestionsForDifficulty("intermediate");
+    const advanced = getScienceQuestionsForDifficulty("advanced");
+    expect(beginner.map((question) => question.id)).toEqual(SCIENCE_QUESTIONS.map((question) => question.id));
+    expect(intermediate[0].prompt).toContain("cause-and-effect sequence");
+    expect(advanced[0].prompt).toContain("interacting factors");
+    expect(advanced[0].prompt).not.toEqual(beginner[0].prompt);
   });
 
   it("shuffles without mutating the canonical question bank", () => {

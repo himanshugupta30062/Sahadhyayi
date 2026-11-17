@@ -23,7 +23,8 @@ vi.mock("@/lib/science/attempts", () => ({
 
 function makeEvaluation(score = 80) {
   return {
-    questionSetVersion: "everyday-science-v1",
+    difficulty: "beginner",
+    questionSetVersion: "everyday-science-v1-beginner-difficulty-calibration-v1",
     overallScore: score,
     categoryScores: {
       Physics: score,
@@ -91,6 +92,7 @@ describe("Explain Science Around You", () => {
 
     expect(mocks.invoke).toHaveBeenCalledWith("everyday-science-evaluate", {
       body: expect.objectContaining({
+        difficulty: "beginner",
         answers: expect.arrayContaining([
           expect.objectContaining({ questionId: expect.any(String), answer: expect.stringContaining("Moving air") }),
         ]),
@@ -117,6 +119,25 @@ describe("Explain Science Around You", () => {
     expect(screen.getByText(/Question 1 of 10/i)).toBeInTheDocument();
   });
 
+  it("sends the selected advanced level and shows its deeper prompt", async () => {
+    const advancedEvaluation = makeEvaluation();
+    advancedEvaluation.difficulty = "advanced";
+    mocks.invoke.mockResolvedValue({ data: advancedEvaluation, error: null });
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: /Advanced.*Deeper mechanisms/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Start the science test/i }));
+    expect(screen.getByText(/Analyze the underlying mechanism in depth/i)).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Your explanation"), {
+      target: { value: "The bus slows due to braking forces while the passenger's body tends to maintain its velocity because of inertia." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Go to question 10" }));
+    fireEvent.click(screen.getByRole("button", { name: /Evaluate my answers/i }));
+    await screen.findByRole("heading", { name: /Your everyday science report/i });
+    expect(mocks.invoke).toHaveBeenCalledWith("everyday-science-evaluate", {
+      body: expect.objectContaining({ difficulty: "advanced" }),
+    });
+  });
+
   it("shows a previous attempt and confirms successful profile history saving", async () => {
     mocks.listAttempts
       .mockResolvedValueOnce([{
@@ -125,6 +146,7 @@ describe("Explain Science Around You", () => {
         question_count: 10,
         category_scores: { Physics: 68 },
         created_at: "2026-11-16T10:00:00.000Z",
+        difficulty: "beginner",
       }])
       .mockResolvedValue([]);
     mocks.saveAttempt.mockResolvedValue(true);

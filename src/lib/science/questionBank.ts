@@ -3,10 +3,11 @@ import {
   SCIENCE_QUESTION_SET_VERSION,
   type ScienceDomain,
   type SciencePrompt,
+  type ScienceDifficulty,
 } from "../../../supabase/functions/_shared/sciencePrompts";
 
 export { SCIENCE_QUESTION_SET_VERSION };
-export type { ScienceDomain };
+export type { ScienceDomain, ScienceDifficulty };
 
 export type ScienceQuestion = SciencePrompt & {
   context: string;
@@ -142,4 +143,22 @@ export function shuffleScienceQuestions(
     [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
   }
   return shuffled;
+}
+
+
+/**
+ * Keep one stable ten-question topic set while progressively increasing the
+ * reasoning expected at each level. The difficulty version is stored with
+ * each attempt so future question-bank changes remain comparable.
+ */
+export function getScienceQuestionsForDifficulty(difficulty: ScienceDifficulty): ScienceQuestion[] {
+  const challengeByDifficulty: Record<ScienceDifficulty, string> = {
+    beginner: "Explain the main idea in everyday language. Identify what is happening and why.",
+    intermediate: "Explain the cause-and-effect sequence. Name the important components or scientific principles and connect them clearly.",
+    advanced: "Analyze the underlying mechanism in depth. Discuss interacting factors, relevant limitations or exceptions, and use a precise scientific explanation rather than only naming the concept.",
+  };
+  return SCIENCE_QUESTIONS.map((question) => ({
+    ...question,
+    prompt: question.prompt + "\n\nChallenge level: " + challengeByDifficulty[difficulty],
+  }));
 }

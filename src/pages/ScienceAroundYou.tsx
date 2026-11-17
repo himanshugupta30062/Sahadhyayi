@@ -31,9 +31,10 @@ import {
   type ScienceQuestionEvaluation,
 } from "@/lib/science/attempts";
 import {
-  SCIENCE_QUESTIONS,
+  getScienceQuestionsForDifficulty,
   shuffleScienceQuestions,
   type ScienceQuestion,
+  type ScienceDifficulty,
 } from "@/lib/science/questionBank";
 
 type Phase = "intro" | "test" | "results";
@@ -198,6 +199,7 @@ function AnswerResultCard({
 
 export default function ScienceAroundYou() {
   const [phase, setPhase] = useState<Phase>("intro");
+  const [difficulty, setDifficulty] = useState<ScienceDifficulty>("beginner");
   const [questions, setQuestions] = useState<ScienceQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -227,7 +229,7 @@ export default function ScienceAroundYou() {
   const progress = questions.length ? ((currentIndex + 1) / questions.length) * 100 : 0;
 
   const startAssessment = () => {
-    setQuestions(shuffleScienceQuestions());
+    setQuestions(shuffleScienceQuestions(getScienceQuestionsForDifficulty(difficulty)));
     setAnswers({});
     setCurrentIndex(0);
     setEvaluation(null);
@@ -254,13 +256,14 @@ export default function ScienceAroundYou() {
     try {
       const { data, error } = await supabase.functions.invoke<ScienceAssessmentEvaluation>(
         "everyday-science-evaluate",
-        { body: { answers: submission } },
+        { body: { difficulty, answers: submission } },
       );
       if (error) throw error;
       const expectedIds = new Set(questions.map((question) => question.id));
       const resultIds = new Set(Array.isArray(data?.results) ? data.results.map((item) => item?.questionId) : []);
       if (
         !data ||
+        data.difficulty !== difficulty ||
         !Array.isArray(data.results) ||
         data.results.length !== questions.length ||
         resultIds.size !== questions.length ||
@@ -329,6 +332,27 @@ export default function ScienceAroundYou() {
                     Why does a fan cool you? How does an AC move heat? Why does a bus jerk when it brakes?
                     Explain everyday phenomena in your own words and discover how well you understand the world.
                   </p>
+                  <div className="mt-6 space-y-3">
+                    <p className="text-sm font-semibold">Choose your challenge level</p>
+                    <div className="grid gap-2 sm:grid-cols-3" role="group" aria-label="Science assessment difficulty">
+                      {([
+                        { value: "beginner", title: "Beginner", detail: "Core ideas and everyday explanations" },
+                        { value: "intermediate", title: "Intermediate", detail: "Cause, effect and connected concepts" },
+                        { value: "advanced", title: "Advanced", detail: "Deeper mechanisms and nuanced reasoning" },
+                      ] as const).map((level) => (
+                        <button
+                          key={level.value}
+                          type="button"
+                          aria-pressed={difficulty === level.value}
+                          onClick={() => setDifficulty(level.value)}
+                          className={"rounded-xl border p-3 text-left transition-colors " + (difficulty === level.value ? "border-primary bg-primary/10 ring-1 ring-primary" : "border-border bg-background hover:bg-muted/60")}
+                        >
+                          <span className="block text-sm font-semibold">{level.title}</span>
+                          <span className="mt-1 block text-xs leading-5 text-muted-foreground">{level.detail}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <div className="mt-6 flex flex-wrap gap-3">
                     <Button size="lg" onClick={startAssessment} className="gap-2">
                       Start the science test <ArrowRight className="h-4 w-4" />
@@ -363,6 +387,7 @@ export default function ScienceAroundYou() {
                 <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
                   <div>
                     <p className="text-sm font-semibold">Your last science assessment</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{lastAttempt.difficulty ?? "beginner"} level</p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {new Date(lastAttempt.created_at).toLocaleDateString()} · {lastAttempt.question_count} questions
                     </p>
@@ -426,7 +451,7 @@ export default function ScienceAroundYou() {
               <Button asChild variant="ghost" size="sm" className="-ml-2">
                 <Link to="/activity"><ArrowLeft className="mr-2 h-4 w-4" /> Exit assessment</Link>
               </Button>
-              <Badge variant="outline">Everyday Science · Mixed topics</Badge>
+              <Badge variant="outline">Everyday Science · {difficulty[0].toUpperCase() + difficulty.slice(1)}</Badge>
             </div>
 
             <div className="mb-5 space-y-2">
@@ -530,7 +555,7 @@ export default function ScienceAroundYou() {
               <div>
                 <Badge variant="secondary" className="mb-2 gap-1.5"><Trophy className="h-3.5 w-3.5" /> ASSESSMENT COMPLETE</Badge>
                 <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Your everyday science report</h1>
-                <p className="mt-1 text-sm text-muted-foreground">A learning snapshot of how you explained the world around you.</p>
+                <p className="mt-1 text-sm text-muted-foreground">A {difficulty} level learning snapshot of how you explained the world around you.</p>
               </div>
               <Button variant="outline" onClick={startAssessment}><RotateCcw className="mr-2 h-4 w-4" /> Try again</Button>
             </div>
