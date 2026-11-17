@@ -2,6 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import type { ReactNode } from 'react';
 
 const mocks = vi.hoisted(() => ({
   mutateAsync: vi.fn(),
@@ -34,7 +35,7 @@ vi.mock('@/components/ui/select', () => ({
   }: {
     value: string;
     onValueChange: (value: string) => void;
-    children: React.ReactNode;
+    children: ReactNode;
   }) => (
     <select aria-label="Post Type" value={value} onChange={(event) => onValueChange(event.target.value)}>
       {children}
@@ -42,8 +43,8 @@ vi.mock('@/components/ui/select', () => ({
   ),
   SelectTrigger: () => null,
   SelectValue: () => null,
-  SelectContent: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  SelectItem: ({ value, children }: { value: string; children: React.ReactNode }) => (
+  SelectContent: ({ children }: { children: ReactNode }) => <>{children}</>,
+  SelectItem: ({ value, children }: { value: string; children: ReactNode }) => (
     <option value={value}>{children}</option>
   ),
 }));
