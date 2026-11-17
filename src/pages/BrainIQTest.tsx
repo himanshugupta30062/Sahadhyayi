@@ -216,7 +216,7 @@ export default function BrainIQTest() {
       }
       const unique = new Map<string, AttemptHistoryEntry>();
       [...cloudEntries, ...localEntries].forEach((entry) => {
-        unique.set(`${entry.date}|${entry.mode}|${entry.score}|${entry.total}`, entry);
+        unique.set(`${entry.date}|${entry.score}|${entry.total}`, entry);
       });
       const merged = [...unique.values()].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 90);
       setAttemptHistory(merged);
@@ -249,7 +249,7 @@ export default function BrainIQTest() {
         setHistorySyncStatus("synced");
         setAttemptHistory((previous) => {
           const unique = new Map(previous.map((item) => [`${item.date}|${item.mode}|${item.score}|${item.total}`, item]));
-          unique.set(`${saved.date}|${saved.mode}|${saved.score}|${saved.total}`, saved);
+          unique.set(`${saved.date}|${saved.score}|${saved.total}`, saved);
           return [...unique.values()].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 90);
         });
       }
