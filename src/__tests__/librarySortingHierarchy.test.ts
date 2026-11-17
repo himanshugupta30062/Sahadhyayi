@@ -30,6 +30,19 @@ describe('Library Book Sorting Hierarchy', () => {
     expect(getBookResourceType(unauditedPdf)).toBe('unverified_direct_pdf');
   });
 
+  it('does not treat a structured PDF asset as verified without explicit verifier evidence', () => {
+    const assetWithoutVerification = {
+      id: 'asset-without-verification',
+      title: 'A Real Book',
+      author: 'A Known Author',
+      pdf_url: 'https://example.com/book.pdf',
+      assets: [{ format: 'pdf', downloadUrl: 'https://example.com/book.pdf' }],
+    };
+
+    expect(isVerifiedPdf(assetWithoutVerification)).toBe(false);
+    expect(getBookResourceType(assetWithoutVerification)).toBe('unverified_direct_pdf');
+  });
+
   it('does not treat a URL ending in .pdf as verified when the server audit reports a non-PDF response', () => {
     const misleadingPdf = {
       id: 'misleading-pdf',

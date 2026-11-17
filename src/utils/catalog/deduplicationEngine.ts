@@ -79,7 +79,7 @@ export function mapRawToEdition(raw: any, sourceProvider?: string): Edition {
     publicationYear: raw.publication_year,
     pages: raw.pages,
     genre: raw.genre,
-    language: raw.language || 'English',
+    language: raw.language || '',
     sourceProvider: provider,
   });
 
@@ -94,7 +94,7 @@ export function mapRawToEdition(raw: any, sourceProvider?: string): Edition {
     author: normAuthor.normalizedAuthor,
     publisher: raw.publisher,
     publicationYear: raw.publication_year,
-    language: raw.language || 'English',
+    language: raw.language || '',
     isbn10: normIsbn.isbn10,
     isbn13: normIsbn.isbn13,
     pages: raw.pages,
