@@ -6,6 +6,7 @@ import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   isVerifiedPdf,
+  hasUnverifiedDirectPdf,
   hasValidCover,
   hasCompleteMetadata,
   hasOtherVerifiedFullText,
@@ -106,6 +107,17 @@ describe('useLibraryBooks utility functions', () => {
         reader_link_http_status: 404,
         reader_link_content_type: 'application/pdf',
       })).toBe(false);
+    });
+
+    it('recognizes an unchecked direct PDF URL as a candidate without calling it verified', () => {
+      const godanCandidate = {
+        pdf_url: 'https://rknxtatvlzunatpyqxro.supabase.co/storage/v1/object/public/books/Godan/godan_by_premchand.pdf',
+        reader_link_status: 'unchecked',
+      };
+      expect(hasUnverifiedDirectPdf(godanCandidate)).toBe(true);
+      expect(isVerifiedPdf(godanCandidate)).toBe(false);
+      expect(hasUnverifiedDirectPdf({ ...godanCandidate, reader_link_status: 'broken' })).toBe(false);
+      expect(hasUnverifiedDirectPdf({ ...godanCandidate, reader_link_status: 'working', reader_link_http_status: 200, reader_link_content_type: 'text/html' })).toBe(false);
     });
 
     it('accepts direct .pdf extensions and trusted hosts', () => {
@@ -495,7 +507,10 @@ describe('useLibraryBooks React Query Hooks', () => {
     const rangeMock = vi.fn()
       .mockResolvedValueOnce({ data: firstPage, error: null })
       .mockResolvedValueOnce({ data: secondPage, error: null });
-    const queryMock = { range: rangeMock };
+    const queryMock = {
+      order: vi.fn().mockReturnThis(),
+      range: rangeMock,
+    };
 
     (supabase.from as any).mockReturnValue({
       select: vi.fn().mockReturnValue(queryMock),
@@ -520,6 +535,7 @@ describe('useLibraryBooks React Query Hooks', () => {
     const initialQuery: any = {
       or: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
       then: (resolve: any, reject?: any) =>
         Promise.resolve({ data: null, error: { message: 'column mismatch' } }).then(resolve, reject),
     };

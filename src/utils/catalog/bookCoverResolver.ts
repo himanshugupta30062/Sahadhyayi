@@ -258,7 +258,7 @@ export async function fetchOpenLibraryCoverBySearch(
     if (!res.ok) return null;
 
     const data = await res.json();
-    let docWithCover = data.docs?.find((d: any) => d.cover_i && isTitleMatch(cleanTitle, d.title) && isAuthorMatch(normAuthor, d.author_name));
+    const docWithCover = data.docs?.find((d: any) => d.cover_i && isTitleMatch(cleanTitle, d.title) && isAuthorMatch(normAuthor, d.author_name));
 
     // Do not fall back to title-only matching when an author is known: a plausible
     // title match by a different author can silently put the wrong book jacket on a card.

@@ -10,7 +10,7 @@ const CATEGORIES: { id: ExploreCategory; label: string; icon: string }[] = [
   { id: 'all', label: 'All', icon: '🌟' },
   { id: 'library', label: 'Libraries', icon: '🏛️' },
   { id: 'bookstore', label: 'Bookstores', icon: '📖' },
-  { id: 'cafe', label: 'Reading Cafes', icon: '☕' },
+  { id: 'cafe', label: 'Cafés', icon: '☕' },
   { id: 'events', label: 'Literary Events', icon: '🎭' },
 ];
 

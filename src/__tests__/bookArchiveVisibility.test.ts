@@ -122,8 +122,8 @@ describe('Fix 1: Enforce Archived Book Visibility Across Sahadhyayi', () => {
     it('omits status columns from SELECT if schema lacks them, preventing Postgres 42703 error', () => {
       setDetectedBookSchemaCapabilities({ hasStatus: false, hasCatalogStatus: false });
       const selectCols = getPublicBookSelectColumns();
-      expect(selectCols).not.toContain('status');
-      expect(selectCols).not.toContain('catalog_status');
+      expect(selectCols).not.toMatch(/(^|,)status(,|$)/);
+      expect(selectCols).not.toMatch(/(^|,)catalog_status(,|$)/);
       expect(selectCols).toContain('id,title,author');
     });
 
