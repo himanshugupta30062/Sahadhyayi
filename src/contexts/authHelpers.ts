@@ -59,7 +59,7 @@ export const useAuth = () => {
     const emailMayAlreadyExist = !error && Boolean(data.user) && Array.isArray(data.user.identities) && data.user.identities.length === 0;
     if (error) {
       const code = typeof (error as { code?: unknown }).code === 'string' ? (error as { code: string }).code : 'auth_error';
-      void recordAuthAudit('sign_in_failed', 'password', { errorCode: code });
+      void recordAuthAudit('signup_failed', 'password', { errorCode: code });
     }
     // Supabase returns a session when confirmation is disabled, and no session
     // while the user still needs to verify their email.
