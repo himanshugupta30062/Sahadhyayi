@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/authHelpers';
 import { BOOK_CONTENT_WARNINGS, BOOK_MOODS, BookExperience, useBookExperience } from '@/hooks/useBookExperience';
 
 const empty: BookExperience = { moods: [], pacing: null, content_warnings: [], custom_warning: null };
-const labelize = (s: string) => s.replace(/\\b\\w/g, c => c.toUpperCase());
+const labelize = (s: string) => s.replace(/\b\w/g, c => c.toUpperCase());
 
 export default function BookExperienceTags({ bookId }: { bookId: string }) {
   const { user } = useAuth();
