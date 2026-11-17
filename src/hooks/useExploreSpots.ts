@@ -24,6 +24,27 @@ const OVERPASS_ENDPOINTS = [
   'https://overpass.nchc.org.tw/api/interpreter',
 ] as const;
 
+export const normalizeExploreRadiusKm = (radiusKm: number): number =>
+  Number.isFinite(radiusKm) ? Math.min(Math.max(radiusKm, 1), 50) : 25;
+
+export const isValidExploreCoordinates = (coords: { lat: number; lng: number }): boolean =>
+  Number.isFinite(coords.lat) &&
+  Number.isFinite(coords.lng) &&
+  Math.abs(coords.lat) <= 90 &&
+  Math.abs(coords.lng) <= 180;
+
+export const getExploreBoundingBox = (coords: { lat: number; lng: number }, radiusKm: number) => {
+  const radius = normalizeExploreRadiusKm(radiusKm);
+  const latDelta = radius / 111;
+  const lngDelta = radius / (111 * Math.max(Math.cos((coords.lat * Math.PI) / 180), 0.15));
+  return {
+    south: Math.max(-90, coords.lat - latDelta),
+    west: Math.max(-180, coords.lng - lngDelta),
+    north: Math.min(90, coords.lat + latDelta),
+    east: Math.min(180, coords.lng + lngDelta),
+  };
+};
+
 const distanceBetween = (
   from: { lat: number; lng: number },
   to: { lat: number; lng: number },
@@ -44,13 +65,9 @@ const fetchOpenMapPlaces = async (
 ): Promise<ExploreMapItem[]> => {
   if (category === 'events') return [];
 
-  const radiusMeters = Math.min(Math.max(radiusKm, 1), 50) * 1000;
-  const latDelta = radiusKm / 111;
-  const lngDelta = radiusKm / (111 * Math.max(Math.cos((coords.lat * Math.PI) / 180), 0.15));
-  const south = coords.lat - latDelta;
-  const north = coords.lat + latDelta;
-  const west = coords.lng - lngDelta;
-  const east = coords.lng + lngDelta;
+  const normalizedRadiusKm = normalizeExploreRadiusKm(radiusKm);
+  const radiusMeters = normalizedRadiusKm * 1000;
+  const { south, west, north, east } = getExploreBoundingBox(coords, normalizedRadiusKm);
   const bounds = `${south},${west},${north},${east}`;
 
   const selectors = category === 'library'
@@ -249,9 +266,14 @@ export function useExploreSpots({ category = 'all', userCoords, radiusKm = 25 }:
       }
 
       // OpenStreetMap adds real nearby public POIs without requiring another paid API key.
-      if (userCoords && category !== 'events') {
+      if (userCoords && category !== 'events' && isValidExploreCoordinates(userCoords)) {
         try {
-          const openMapItems = await fetchOpenMapPlaces(userCoords, category, radiusKm, signal);
+          const openMapItems = await fetchOpenMapPlaces(
+            userCoords,
+            category,
+            normalizeExploreRadiusKm(radiusKm),
+            signal,
+          );
           openMapItems.forEach((item) => {
             if (!itemsById.has(item.id)) itemsById.set(item.id, item);
           });
@@ -261,7 +283,22 @@ export function useExploreSpots({ category = 'all', userCoords, radiusKm = 25 }:
         }
       }
 
-      return [...itemsById.values()].sort((a, b) => {
+      // Merge duplicate venues from the verified directory and OpenStreetMap.
+      // Prefer the curated record when both sources describe the same venue.
+      const uniqueItems = new Map<string, ExploreMapItem>();
+      for (const item of itemsById.values()) {
+        const normalizedTitle = item.title.trim().toLocaleLowerCase();
+        const locationKey = `${normalizedTitle}:${item.latitude.toFixed(4)}:${item.longitude.toFixed(4)}`;
+        const existing = uniqueItems.get(locationKey);
+        const itemIsCurated = item.extra_meta?.source === 'Sahadhyayi verified directory';
+        const existingIsCurated = existing?.extra_meta?.source === 'Sahadhyayi verified directory';
+        if (!existing || (itemIsCurated && !existingIsCurated)) {
+          uniqueItems.set(locationKey, item);
+        }
+      }
+
+      return [...uniqueItems.values()].sort((a, b) => {
+        if (a.distance_km == null && b.distance_km == null) return a.title.localeCompare(b.title);
         if (a.distance_km == null) return 1;
         if (b.distance_km == null) return -1;
         return a.distance_km - b.distance_km;
