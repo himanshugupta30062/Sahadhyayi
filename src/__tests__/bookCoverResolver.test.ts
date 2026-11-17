@@ -130,6 +130,23 @@ describe('bookCoverResolver', () => {
   });
 
   describe('resolveGenuineBookCover', () => {
+
+    it('replaces a generic Archive.org thumbnail with a matched Open Library cover', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+        ok: true,
+        json: async () => ({ docs: [{ title: 'On the Origin of Species', author_name: ['Charles Darwin'], cover_i: 987654 }] }),
+      } as unknown as Response);
+
+      const cover = await resolveGenuineBookCover({
+        id: 'darwin-origin',
+        title: 'On the Origin of Species',
+        author: 'Charles Darwin',
+        cover_image_url: 'https://archive.org/services/img/originofspecies00darwuoft',
+      });
+
+      expect(cover).toBe('https://covers.openlibrary.org/b/id/987654-L.jpg');
+    });
+
     it('returns existing valid cover without network calls', async () => {
       const fetchSpy = vi.spyOn(globalThis, 'fetch');
       const cover = await resolveGenuineBookCover({
