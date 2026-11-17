@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { SCIENCE_QUESTIONS, getScienceQuestionsForDifficulty, shuffleScienceQuestions } from "./questionBank";
 
 describe("everyday science question bank", () => {
-  it("contains ten distinct open-ended questions across real-world science domains", () => {
+  it("contains thirty distinct open-ended questions across three real-world science difficulty banks", () => {
     expect(SCIENCE_QUESTIONS).toHaveLength(30);
-    expect(new Set(SCIENCE_QUESTIONS.map((question) => question.id)).size).toBe(10);
+    expect(new Set(SCIENCE_QUESTIONS.map((question) => question.id)).size).toBe(30);
     expect(new Set(SCIENCE_QUESTIONS.map((question) => question.domain)).size).toBeGreaterThanOrEqual(3);
     for (const question of SCIENCE_QUESTIONS) {
       expect(question.prompt.trim().length).toBeGreaterThan(25);
