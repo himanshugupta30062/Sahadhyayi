@@ -101,19 +101,36 @@ export const validateReaderUrl = (rawUrl: string | null | undefined): {
       !isGoogleBooks &&
       (/\.epub($|\?|#)/i.test(trimmed) ||
         /\/epub\//i.test(trimmed));
-    // Publishers such as Pressbooks can serve a PDF from a download route
-    // without a .pdf suffix. Require an explicit type=pdf query on that route.
-    const isExplicitPdfDownload =
-      /\/(?:open\/)?download\/?$/i.test(parsed.pathname) &&
-      parsed.searchParams.get('type')?.toLowerCase() === 'pdf';
+    // Many publishers expose PDFs through extension-less download/export routes.
+    // Accept only explicit PDF signals; never treat a generic HTML page as a reader.
+    const pdfQueryKeys = [
+      'type',
+      'format',
+      'filetype',
+      'content_type',
+      'response-content-type',
+      'download',
+      'export',
+    ];
+    const hasExplicitPdfQuery = pdfQueryKeys.some((key) => {
+      const value = parsed.searchParams.get(key)?.toLowerCase().trim();
+      return value === 'pdf' || value === 'application/pdf' || value?.endsWith('.pdf');
+    });
+    const hasPdfFilename =
+      /(?:^|[?&])(?:filename|file|name)=[^&#]*\\.pdf(?:[&#]|$)/i.test(trimmed) ||
+      /\\.pdf($|[?#])/i.test(parsed.searchParams.get('response-content-disposition') || '');
+    const isPdfDownloadRoute =
+      /\\/(?:open\\/)?(?:download|export|file)\\/?$/i.test(parsed.pathname) &&
+      (hasExplicitPdfQuery || hasPdfFilename);
     const isPdf =
       !isGoogleBooks &&
       !isEpub &&
-      (/\.pdf($|\?|#)/i.test(trimmed) ||
-        /\/pdf\//i.test(trimmed) ||
+      (/\\.pdf($|\\?|#)/i.test(trimmed) ||
+        /\\/pdf\\//i.test(trimmed) ||
         hostname.includes('archive.org') ||
         parsed.pathname.includes('/pdf-proxy') ||
-        isExplicitPdfDownload);
+        hasPdfFilename ||
+        isPdfDownloadRoute);
 
     return {
       isValid: true,
