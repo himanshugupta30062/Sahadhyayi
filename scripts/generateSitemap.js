@@ -79,7 +79,7 @@ if (SUPABASE_URL && SUPABASE_KEY) {
   });
   const [booksResult, authorsResult, articlesResult] = await Promise.all([
     fetchPaginatedRows(
-      supabase.from('books_library').select('id,cover_image_url').not('id', 'is', null),
+      supabase.from('books_library').select('id,cover_image_url,updated_at,created_at').not('id', 'is', null),
       'books', 100000, label => console.warn(`[sitemap] Stopped ${label} pagination at 100,000 rows.`)
     ),
     fetchPaginatedRows(
@@ -97,7 +97,7 @@ if (SUPABASE_URL && SUPABASE_KEY) {
     (booksResult.data || []).forEach(book => {
       const id = String(book.id ?? '').trim();
       if (!id || id.includes('/') || id === '.' || id === '..') return;
-      addUrl('/book/' + encodeURIComponent(id), 'monthly', '0.5', book.cover_image_url);
+      addUrl('/book/' + encodeURIComponent(id), 'monthly', '0.7', book.cover_image_url, book.updated_at || book.created_at);
     });
   }
   if (authorsResult.error) {
