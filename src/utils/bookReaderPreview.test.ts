@@ -77,6 +77,27 @@ describe('bookReaderPreview utility', () => {
       ).toBe(false);
     });
 
+    it('recognizes explicit PDF signals on common publisher download and export routes', () => {
+      for (const url of [
+        'https://publisher.example/books/123/download?format=pdf',
+        'https://publisher.example/export/book?filetype=application%2Fpdf',
+        'https://cdn.example/file?filename=classic-book.pdf',
+        'https://publisher.example/book/download?download=pdf',
+      ]) {
+        expect(validateReaderUrl(url).isPdf, url).toBe(true);
+      }
+    });
+
+    it('does not expose generic HTML download or export pages as PDF readers', () => {
+      for (const url of [
+        'https://publisher.example/books/123/download',
+        'https://publisher.example/export/book?format=html',
+        'https://publisher.example/file?filename=book.html',
+      ]) {
+        expect(validateReaderUrl(url).isPdf, url).toBe(false);
+      }
+    });
+
     it('rejects unsafe schemes like javascript: or data:', () => {
       expect(validateReaderUrl('javascript:alert(1)').isValid).toBe(false);
       expect(validateReaderUrl('data:text/html,evil').isValid).toBe(false);
