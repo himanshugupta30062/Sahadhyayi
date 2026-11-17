@@ -14,6 +14,17 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType>(null!);
 
+/** Clear app-owned session metadata without touching Supabase's auth storage. */
+const clearLocalSessionMetadata = () => {
+  try {
+    localStorage.removeItem("sessionStart");
+    localStorage.removeItem("lastActivity");
+    localStorage.removeItem("browserSession");
+  } catch {
+    // Browser storage may be unavailable; Supabase session cleanup must continue.
+  }
+};
+
 /**
  * Core authenticated session state only. Import useAuth from authHelpers for
  * the application-level wrapper that adds sign-up, OAuth, and password-reset actions.
@@ -64,7 +75,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         if (event === "SIGNED_OUT") {
-          // Cache clearing is local-only and safe inside this synchronous callback.
+          // Supabase may emit SIGNED_OUT after an invalid refresh token. Clear
+          // app-owned metadata as well as cached user data so stale activity
+          // state cannot survive the transition to the signed-out UI.
+          clearLocalSessionMetadata();
           queryClient.clear();
         }
       },
@@ -138,13 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     queryClient.clear();
 
-    try {
-      localStorage.removeItem("sessionStart");
-      localStorage.removeItem("lastActivity");
-      localStorage.removeItem("browserSession");
-    } catch {
-      // Storage cleanup is best-effort; sign-out itself has already succeeded.
-    }
+    clearLocalSessionMetadata();
   };
 
   return (
