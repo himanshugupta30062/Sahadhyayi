@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, BookOpen, Bookmark, BookmarkCheck,
   CheckCircle2, Download, ExternalLink, FileText, GitBranch,
@@ -33,7 +33,7 @@ type OpenAlexWork = {
   abstract_inverted_index?: Record<string, number[]> | null;
 };
 type OpenAlexResponse = { meta?: { count?: number }; results?: OpenAlexWork[] };
-type Topic = { label: string; query: string };
+type Topic = { slug: string; label: string; query: string; description: string };
 type ResearchPaperCategory = {
   slug: string;
   name: string;
@@ -74,13 +74,13 @@ const PAGE_SIZE = 12;
 const MAX_OPENALEX_BASIC_RESULTS = 10000;
 const MAX_NUMBERED_PAGES = Math.floor(MAX_OPENALEX_BASIC_RESULTS / PAGE_SIZE);
 const TOPICS: Topic[] = [
-  { label: 'All research', query: '' },
-  { label: 'Artificial intelligence', query: 'artificial intelligence' },
-  { label: 'Machine learning', query: 'machine learning' },
-  { label: 'Climate science', query: 'climate change' },
-  { label: 'Psychology', query: 'psychology' },
-  { label: 'Medicine', query: 'medicine' },
-  { label: 'Physics', query: 'physics' },
+  { slug: '', label: 'All research', query: '', description: 'Explore research papers and academic studies across disciplines.' },
+  { slug: 'artificial-intelligence', label: 'Artificial intelligence', query: 'artificial intelligence', description: 'Explore research papers on artificial intelligence, including machine reasoning, generative models, responsible AI, and real-world applications.' },
+  { slug: 'machine-learning', label: 'Machine learning', query: 'machine learning', description: 'Discover machine learning research on algorithms, model training, evaluation, deep learning, and practical applications.' },
+  { slug: 'climate-science', label: 'Climate science', query: 'climate change', description: 'Explore climate science research on climate change, impacts, mitigation, adaptation, and evidence from environmental studies.' },
+  { slug: 'psychology', label: 'Psychology', query: 'psychology', description: 'Discover psychology research on cognition, behaviour, mental processes, development, and social experience.' },
+  { slug: 'medicine', label: 'Medicine', query: 'medicine', description: 'Explore medical and health research across clinical studies, public health, diagnosis, treatment, and biomedical science.' },
+  { slug: 'physics', label: 'Physics', query: 'physics', description: 'Discover physics research across fundamental theory, materials, particles, quantum science, and the physical universe.' },
 ];
 
 
@@ -135,9 +135,11 @@ function isUsableWork(value: unknown): value is OpenAlexWork {
 }
 
 const ResearchPapers = () => {
+  const { topicSlug } = useParams<{ topicSlug?: string }>();
+  const routeTopic = TOPICS.find((topic) => topic.slug && topic.slug === topicSlug);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
-  const [activeTopic, setActiveTopic] = useState(searchParams.get('topic') || '');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || routeTopic?.query || '');
+  const [activeTopic, setActiveTopic] = useState(routeTopic?.label || searchParams.get('topic') || '');
   const [year, setYear] = useState(searchParams.get('year') || 'all');
   const [category, setCategory] = useState(searchParams.get('category') || 'all');
   const [sort, setSort] = useState(searchParams.get('sort') || 'cited_by_count');
@@ -238,12 +240,13 @@ const ResearchPapers = () => {
   const serializedSearchParams = searchParams.toString();
   useEffect(() => {
     const urlParams = new URLSearchParams(serializedSearchParams);
-    setSearchQuery(urlParams.get('search') || '');
+    setSearchQuery(urlParams.get('search') || routeTopic?.query || '');
+    setActiveTopic(routeTopic?.label || urlParams.get('topic') || '');
     setYear(urlParams.get('year') || 'all');
     setCategory(urlParams.get('category') || 'all');
     setSort(['cited_by_count', 'publication_date', 'relevance_score'].includes(urlParams.get('sort') || '') ? urlParams.get('sort')! : 'cited_by_count');
     setPage(Math.max(1, Math.min(MAX_NUMBERED_PAGES, Number(urlParams.get('page')) || 1)));
-  }, [serializedSearchParams]);
+  }, [serializedSearchParams, routeTopic]);
 
   useEffect(() => {
     setSearchParams((currentParams) => {
@@ -335,10 +338,10 @@ const ResearchPapers = () => {
   return (
     <>
       <SEO
-        title="Research Papers & Open Access Studies | Sahadhyayi"
-        description="Discover influential research papers, academic studies and open-access publications from across the world's scholarly literature."
-        canonical="https://sahadhyayi.com/research-papers"
-        keywords={['research papers', 'open access research', 'academic papers', 'scientific studies', 'scholarly articles']}
+        title={routeTopic ? `${routeTopic.label} Research Papers & Studies | Sahadhyayi` : "Research Papers & Open Access Studies | Sahadhyayi"}
+        description={routeTopic?.description || "Discover influential research papers, academic studies and open-access publications from across the world's scholarly literature."}
+        canonical={routeTopic ? `https://sahadhyayi.com/research-papers/topic/${routeTopic.slug}` : "https://sahadhyayi.com/research-papers"}
+        keywords={routeTopic ? [routeTopic.label, `${routeTopic.label} research`, 'research papers', 'academic studies'] : ['research papers', 'open access research', 'academic papers', 'scientific studies', 'scholarly articles']}
       />
       <main className="min-h-screen bg-[#FAFAF8] text-[#1C201D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
         <section className="relative isolate overflow-hidden border-b border-[#E8E8E3] bg-[#F4F3EF] dark:border-[#29332D] dark:bg-[#101711]">
@@ -356,7 +359,7 @@ const ResearchPapers = () => {
           <div aria-hidden="true" className="hidden sm:block absolute inset-0 z-0 bg-gradient-to-t from-[#F4F3EF]/70 via-transparent to-transparent dark:from-[#101711]/80 dark:via-transparent dark:to-transparent" />
           <div className="relative mx-auto max-w-7xl px-4 py-9 sm:px-6 sm:py-12 lg:px-8">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#8A7350] dark:text-[#D5B16D]">Explore scholarly knowledge</p>
-            <h1 className="mt-2 font-serif text-3xl font-bold tracking-tight sm:text-4xl">Research Papers</h1>
+            <h1 className="mt-2 font-serif text-3xl font-bold tracking-tight sm:text-4xl">{routeTopic ? `${routeTopic.label} Research Papers` : "Research Papers"}</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-[#636B65] dark:text-white/70 sm:text-base">Find research, compare evidence and read papers from their original sources.</p>
             <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
               <a href="/research-papers/submit?kind=publish" className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#1C442D] px-4 text-sm font-semibold text-white hover:bg-[#163824] dark:bg-[#D5B16D] dark:text-[#101711] dark:hover:bg-[#E3C58B]">Publish Research Paper</a>
@@ -420,6 +423,11 @@ const ResearchPapers = () => {
                   </button>
                 ))}
               </div>
+              <nav aria-label="Research topics" className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-[#E8E8E3] pt-4 text-xs dark:border-[#26302A]">
+                {TOPICS.filter((topic) => topic.slug).map((topic) => (
+                  <a key={topic.slug} href={`/research-papers/topic/${topic.slug}`} className="font-medium text-[#315D43] underline-offset-4 hover:underline dark:text-[#D5B16D]">{topic.label} research</a>
+                ))}
+              </nav>
             </div>
           </div>
 
