@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   generateMatrixPuzzle,
   matrixCellKey,
@@ -69,11 +69,10 @@ describe("generateMatrixPuzzle", () => {
     }
   });
   it("combines shape distribution with alternating fill in the new rule family", () => {
-    let observed = false;
-    for (let attempt = 0; attempt < 300; attempt += 1) {
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.99);
+    try {
       const puzzle = generateMatrixPuzzle("hard");
-      if (puzzle.rule !== "fill-alternation") continue;
-      observed = true;
+      expect(puzzle.rule).toBe("fill-alternation");
       const answer = puzzle.options[puzzle.answerIndex];
       const visibleShapes = [puzzle.cells[6]!, puzzle.cells[7]!, puzzle.cells[2]!, puzzle.cells[5]!]
         .map((cell) => cell.layers[0].shape);
@@ -84,8 +83,8 @@ describe("generateMatrixPuzzle", () => {
       expect(puzzle.cells[7]!.layers[0].filled).toBe(false);
       expect(puzzle.cells[2]!.layers[0].filled).toBe(true);
       expect(puzzle.cells[5]!.layers[0].filled).toBe(false);
+    } finally {
+      randomSpy.mockRestore();
     }
-    expect(observed).toBe(true);
   });
-
 });
