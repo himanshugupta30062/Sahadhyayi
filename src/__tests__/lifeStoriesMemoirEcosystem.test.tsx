@@ -6,6 +6,8 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import LifeStories from '@/pages/LifeStories';
+import { lifeStories } from '@/data/lifeStories';
+
 
 const mockCreateStory = vi.fn();
 const mockCreateStoryPart = vi.fn();
@@ -49,10 +51,12 @@ describe('LifeStories and Memoir Ecosystem', () => {
   beforeEach(() => {
     queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     vi.restoreAllMocks();
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => lifeStories }));
   });
 
   afterEach(() => {
     cleanup();
+    vi.unstubAllGlobals();
   });
 
   it('renders both scopes: Historical Icons & Legends and Community Memoirs', async () => {
@@ -65,14 +69,14 @@ describe('LifeStories and Memoir Ecosystem', () => {
     );
 
     // Verify Scope switcher buttons
-    const legendsButton = screen.getByRole('button', { name: /Historical Icons & Legends/i });
+    const legendsButton = await screen.findByRole('button', { name: /Historical Icons & Legends/i });
     const communityButton = screen.getByRole('button', { name: /Everyday People Memoirs/i });
     expect(legendsButton).toBeInTheDocument();
     expect(communityButton).toBeInTheDocument();
 
     // Default scope: Legends
     expect(screen.getByText('Pioneers, Thinkers & Trailblazers')).toBeInTheDocument();
-    expect(screen.getByText('Kalpana Chawla')).toBeInTheDocument();
+    expect(await screen.findByText('Kalpana Chawla')).toBeInTheDocument();
 
     // Switch to Community Memoirs
     fireEvent.click(communityButton);
@@ -94,6 +98,7 @@ describe('LifeStories and Memoir Ecosystem', () => {
       </QueryClientProvider>
     );
 
+    await screen.findByRole('button', { name: /Historical Icons & Legends/i });
     const writeButtons = screen.getAllByRole('button', { name: /Write Your Life Story/i });
     fireEvent.click(writeButtons[0]);
 
