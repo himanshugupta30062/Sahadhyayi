@@ -67,7 +67,7 @@ BEGIN
     IF coalesce((v_change->>'requiresHumanApproval')::boolean, false) IS NOT TRUE THEN
       RAISE EXCEPTION 'Every proposed change must explicitly require human approval' USING ERRCODE = '22023';
     END IF;
-    IF v_field NOT IN ('title', 'author', 'genre', 'language', 'isbn') THEN
+    IF v_field IS NULL OR v_field NOT IN ('title', 'author', 'genre', 'language', 'isbn') THEN
       RAISE EXCEPTION 'Unsupported book field in review payload' USING ERRCODE = '22023';
     END IF;
 
