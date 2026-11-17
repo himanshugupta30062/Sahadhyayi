@@ -75,7 +75,8 @@ describe('SEO build-script coverage', () => {
       ],
       articles: [
         { id: 'article-1', user_id: 'user-1', title: 'A Useful Reading Guide', subtitle: 'A guide &amp; reflection', content: '<p>Read deeply and think carefully.</p>', cover_image_url: 'https://images.example/article.jpg', slug: 'useful-reading-guide', published_at: '2026-11-10T00:00:00Z', updated_at: '2026-11-11T00:00:00Z', created_at: '2026-11-09T00:00:00Z', is_published: true },
-        { id: 'article-2', user_id: 'user-1', title: 'Unsafe article', content: 'private?', slug: '../unsafe', is_published: true },
+        { id: 'article-2', user_id: 'user-1', title: 'More Reading Notes', content: '<p>Another public article by the same reader.</p>', slug: 'more-reading-notes', published_at: '2026-11-12T00:00:00Z', created_at: '2026-11-12T00:00:00Z', is_published: true },
+        { id: 'article-3', user_id: 'user-2', title: 'Unsafe article', content: 'private?', slug: '../unsafe', is_published: true },
       ],
       public_profiles: [{ id: 'user-1', full_name: 'Reader One' }],
     };
@@ -186,9 +187,14 @@ describe('SEO build-script coverage', () => {
     expect(article).toContain('"headline":"A Useful Reading Guide"');
     expect(article).toContain('"name":"Reader One"');
     expect(article).toContain('Read deeply and think carefully.');
+    expect(article).toContain('"@type":"BreadcrumbList"');
+    expect(article).toContain('"name":"Articles"');
+    expect(article).toContain('<nav aria-label="Related articles">');
+    expect(article).toContain('<a href="/articles/more-reading-notes">More Reading Notes</a>');
+    expect(article).not.toContain('/articles/../unsafe');
     expect(article).toContain('<link rel="canonical" href="https://sahadhyayi.com/articles/useful-reading-guide" />');
     expect(mocks.writes.some((entry) => entry.path.includes('unsafe'))).toBe(false);
-    expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Generated 1 article, 1 book and 1 author'));
+    expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Generated 2 article, 1 book and 1 author'));
   });
 
   it('fails early if the Vite HTML template is missing', async () => {
