@@ -1,6 +1,7 @@
 import { useAuth as useBaseAuth } from './AuthContext';
 import type { AuthError, Provider } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client-universal';
+import { recordAuthAudit } from '@/lib/authAudit';
 
 export const normalizeAuthEmail = (email: string): string =>
   email.trim().toLowerCase();
@@ -39,6 +40,7 @@ export const useAuth = () => {
       };
     }
 
+    void recordAuthAudit('signup_submitted', 'password');
     const { data, error } = await supabase.auth.signUp({
       email: normalizedEmail,
       password,
@@ -55,6 +57,10 @@ export const useAuth = () => {
     // auth.users directly from the browser. Keep the UI wording non-definitive
     // to avoid disclosing whether a particular email is registered.
     const emailMayAlreadyExist = !error && Boolean(data.user) && Array.isArray(data.user.identities) && data.user.identities.length === 0;
+    if (error) {
+      const code = typeof (error as { code?: unknown }).code === 'string' ? (error as { code: string }).code : 'auth_error';
+      void recordAuthAudit('sign_in_failed', 'password', { errorCode: code });
+    }
     // Supabase returns a session when confirmation is disabled, and no session
     // while the user still needs to verify their email.
     return {
@@ -69,13 +75,18 @@ export const useAuth = () => {
     // Use a fixed same-origin destination; never accept arbitrary external redirect URLs.
     redirectTo.searchParams.set('next', '/dashboard');
 
+    void recordAuthAudit('sign_in_attempted', 'oauth');
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
         redirectTo: redirectTo.toString(),
       },
     });
-    if (error) throw error;
+    if (error) {
+      const code = typeof (error as { code?: unknown }).code === 'string' ? (error as { code: string }).code : 'oauth_error';
+      void recordAuthAudit('sign_in_failed', 'oauth', { errorCode: code });
+      throw error;
+    }
   };
 
   const resetPassword = async (email: string) => {
