@@ -84,6 +84,7 @@ const Games = lazy(() => import('./pages/Games'));
 const BrainLab = lazy(() => import('./pages/BrainLab'));
 const BrainIQTest = lazy(() => import('./pages/BrainIQTest'));
 const ScienceAroundYou = lazy(() => import('./pages/ScienceAroundYou'));
+const ScienceLab = lazy(() => import('./pages/ScienceLab'));
 const BrainMatrixPractice = lazy(() => import('./pages/BrainMatrixPractice'));
 const PublishBook = lazy(() => import('./pages/PublishBook'));
 const MyPublications = lazy(() => import('./pages/MyPublications'));
@@ -645,6 +646,7 @@ const App = memo(() => {
                         <Route path="/events" element={<Suspense fallback={<LoadingFallback message="Loading events..." />}><Events /></Suspense>} />
         <Route path="/events/:slug" element={<Suspense fallback={<LoadingFallback message="Loading event..." />}><EventDetails /></Suspense>} />
                         <Route path="/science-around-you" element={<Suspense fallback={<LoadingFallback message="Loading everyday science..." />}><ScienceAroundYou /></Suspense>} />
+                        <Route path="/science-lab" element={<Suspense fallback={<LoadingFallback message="Opening Science Lab..." />}><ScienceLab /></Suspense>} />
                         <Route path="/brain" element={<Suspense fallback={<LoadingFallback message="Loading Brain Lab..." />}><BrainLab /></Suspense>} />
                         <Route path="/brain/iq-test" element={<Suspense fallback={<LoadingFallback message="Preparing reasoning test..." />}><BrainIQTest /></Suspense>} />
                         <Route path="/brain/matrices" element={<Suspense fallback={<LoadingFallback message="Preparing matrix puzzles..." />}><BrainMatrixPractice /></Suspense>} />

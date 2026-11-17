@@ -108,6 +108,7 @@ export const NAVIGATION_SECTIONS: NavigationSection[] = [
     href: "/articles",
     items: [
       { name: "Articles", href: "/articles", tourTarget: "articles" },
+      { name: "Science Lab", href: "/science-lab" },
       { name: "Stories & Serials", href: "/stories" },
       { name: "Life Stories & Memoirs", href: "/life-stories" },
       { name: "Newsroom", href: "/news" },
