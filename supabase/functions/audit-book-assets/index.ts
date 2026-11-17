@@ -12,7 +12,8 @@ const ALLOWED_HOSTS = [
   "supabase.co", "supabase.in", "archive.org", "gutenberg.org",
   "standardebooks.org", "openstax.org", "open.umn.edu", "doabooks.org",
   "oapen.org", "books.google.com", "googleusercontent.com",
-  "openlibrary.org", "ncert.nic.in",
+  "openlibrary.org", "ncert.nic.in", "google.co.in", "torontomu.ca",
+  "wikimedia.org", "geneseo.edu", "globalgreyebooks.com", "onemorelibrary.com",
 ];
 
 function safeUrl(raw: unknown): URL | null {
