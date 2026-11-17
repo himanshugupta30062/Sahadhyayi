@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, MapPin, Sparkles } from 'lucide-react';
+import { ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import type { ExploreMapItem, MapMode, SelectedMapMarker } from '@/types/mapExplore';
 
 interface MapDiscoveryDrawerProps {
@@ -16,6 +16,22 @@ interface MapDiscoveryDrawerProps {
   }>;
   onSelectItem: (marker: SelectedMapMarker) => void;
 }
+
+const getExploreItemIcon = (item: ExploreMapItem): string => {
+  if (item.item_type === 'literary_event') return '🎭';
+  if (item.category === 'library') return '🏛️';
+  if (item.category === 'bookstore') return '📚';
+  if (item.category === 'cafe') return '☕';
+  return '📍';
+};
+
+const getExploreItemLabel = (item: ExploreMapItem): string => {
+  if (item.item_type === 'literary_event') return 'Literary event';
+  if (item.category === 'library') return 'Library';
+  if (item.category === 'bookstore') return 'Bookstore';
+  if (item.category === 'cafe') return 'Café · verify reading suitability';
+  return 'Reading spot';
+};
 
 export const MapDiscoveryDrawer: React.FC<MapDiscoveryDrawerProps> = ({
   mode,
@@ -82,10 +98,8 @@ export const MapDiscoveryDrawer: React.FC<MapDiscoveryDrawerProps> = ({
                   <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 bg-[#E8EFE9] dark:bg-[#1C3024] flex items-center justify-center font-bold text-sm">
                     {item.image_url ? (
                       <img src={item.image_url} alt="" className="w-full h-full object-cover" />
-                    ) : item.item_type === 'literary_event' ? (
-                      '🎭'
                     ) : (
-                      '🏛️'
+                      getExploreItemIcon(item)
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -93,7 +107,7 @@ export const MapDiscoveryDrawer: React.FC<MapDiscoveryDrawerProps> = ({
                       {item.title}
                     </p>
                     <p className="text-[10px] text-muted-foreground truncate">
-                      {item.distance_km != null ? `${item.distance_km} km away` : item.city || item.category}
+                      {item.distance_km != null ? `${getExploreItemLabel(item)} · ${item.distance_km} km away` : `${getExploreItemLabel(item)}${item.city ? ` · ${item.city}` : ''}`}
                     </p>
                   </div>
                 </button>
