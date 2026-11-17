@@ -61,6 +61,22 @@ describe('bookReaderPreview utility', () => {
       expect(result.isGoogleBooks).toBe(false);
     });
 
+    it('recognizes Pressbooks PDF download endpoints without a .pdf suffix', () => {
+      const result = validateReaderUrl(
+        'https://pressbooks.library.torontomu.ca/flintandfeather/open/download?type=pdf'
+      );
+      expect(result.isValid).toBe(true);
+      expect(result.isPdf).toBe(true);
+      expect(result.isGoogleBooks).toBe(false);
+      expect(result.isEpub).toBe(false);
+    });
+
+    it('does not classify arbitrary download pages as PDFs without type=pdf', () => {
+      expect(
+        validateReaderUrl('https://publisher.example/book/open/download?type=html').isPdf
+      ).toBe(false);
+    });
+
     it('rejects unsafe schemes like javascript: or data:', () => {
       expect(validateReaderUrl('javascript:alert(1)').isValid).toBe(false);
       expect(validateReaderUrl('data:text/html,evil').isValid).toBe(false);
