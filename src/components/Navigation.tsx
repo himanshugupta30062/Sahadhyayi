@@ -135,6 +135,7 @@ export const NAVIGATION_SECTIONS: NavigationSection[] = [
     items: [
       { name: "Activity Hub", href: "/activity" },
       { name: "IQ Test", href: "/brain" },
+      { name: "Explain Science Around You", href: "/science-around-you" },
       { name: "Events & Festivals", href: "/events" },
       { name: "Reading Challenges", href: "/activity?tab=challenges" },
       { name: "Book Games", href: "/games" },
@@ -243,7 +244,8 @@ function pathMatches(pathname: string, href: string) {
       pathname === path ||
       pathname.startsWith("/events") ||
       pathname.startsWith("/games") ||
-      pathname.startsWith("/brain")
+      pathname.startsWith("/brain") ||
+      pathname.startsWith("/science-around-you")
     );
   }
   return pathname === path || pathname.startsWith(path + "/");
@@ -784,6 +786,7 @@ const Navigation = () => {
                           { title: "Events & Festivals", description: "Literary sessions and festivals", names: ["Events & Festivals"] },
                           { title: "Challenges & Games", description: "Milestones and book trivia", names: ["Reading Challenges", "Book Games"] },
                           { title: "IQ Test & Reasoning", description: "IQ-style practice and visual puzzles", names: ["IQ Test"] },
+                          { title: "Everyday Science", description: "Explain the science behind real-world things", names: ["Explain Science Around You"] },
                         ];
                         const validGroups = groups
                           .map((group) => ({
