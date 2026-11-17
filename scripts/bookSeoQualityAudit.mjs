@@ -56,6 +56,35 @@ export function auditBookSeoQuality(books = [], authors = [], currentYear = new 
       add("invalid_page_count", "low", "Page count must be a positive integer.");
     }
 
+    // Only propose reversible whitespace cleanup. Missing or uncertain facts
+    // remain manual research tasks and are never auto-filled.
+    const suggestedChanges = [];
+    for (const field of ["title", "author", "genre", "language", "isbn"]) {
+      const original = book?.[field];
+      if (typeof original === "string" && original !== original.trim() && original.trim()) {
+        suggestedChanges.push({
+          field,
+          currentValue: original,
+          proposedValue: original.trim(),
+          reason: "Remove leading/trailing whitespace only; confirm before applying.",
+          requiresHumanApproval: true,
+        });
+      }
+    }
+    const reviewActions = issues.map((issue) => ({
+      issueCode: issue.code,
+      action: issue.code === "missing_cover" || issue.code === "invalid_cover_url"
+        ? "Find and verify the correct edition cover from a trusted source."
+        : issue.code === "missing_description" || issue.code === "weak_description"
+          ? "Add a factual description from a publisher, author, library catalogue, or book source."
+          : issue.code === "missing_author" || issue.code === "unlinked_author"
+            ? "Verify the author identity and link the correct author profile."
+            : issue.code === "missing_isbn" || issue.code === "invalid_isbn"
+              ? "Check the ISBN against a trusted bibliographic source; do not guess."
+              : "Verify this field against a reliable bibliographic source.",
+      status: "pending_review",
+    }));
+
     const weights = { critical: 30, high: 15, medium: 8, low: 3 };
     const score = Math.max(0, 100 - issues.reduce((total, issue) => total + weights[issue.severity], 0));
     return {
@@ -66,6 +95,9 @@ export function auditBookSeoQuality(books = [], authors = [], currentYear = new 
       grade: score >= 90 ? "A" : score >= 80 ? "B" : score >= 65 ? "C" : score >= 45 ? "D" : "F",
       issueCount: issues.length,
       issues,
+      suggestedChanges,
+      reviewActions,
+      reviewStatus: issues.length || suggestedChanges.length ? "pending_review" : "no_action_needed",
       updatedAt: book?.updated_at ?? null,
     };
   }).sort((a, b) => a.score - b.score || a.title.localeCompare(b.title));

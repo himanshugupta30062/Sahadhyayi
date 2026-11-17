@@ -42,6 +42,23 @@ describe("book SEO catalogue quality audit", () => {
     expect(record.score).toBeLessThan(80);
   });
 
+  it("proposes only reversible whitespace cleanup and leaves factual corrections for review", () => {
+    const [record] = auditBookSeoQuality([{
+      id: "book-review",
+      title: "  A Book  ",
+      author: " Writer ",
+      genre: " History ",
+      language: " English ",
+      description: "A useful, sufficiently long description for this particular book.",
+      cover_image_url: "https://images.example/cover.jpg",
+      isbn: "9780306406157",
+    }], [{ id: "author-1", name: "Writer" }], 2026);
+    expect(record.suggestedChanges.map((change) => change.field)).toEqual(["title", "author", "genre", "language"]);
+    expect(record.suggestedChanges.every((change) => change.requiresHumanApproval)).toBe(true);
+    expect(record.reviewStatus).toBe("pending_review");
+    expect(record.reviewActions).toEqual([]);
+  });
+
   it("reports missing book assets and summarizes catalogue-wide issue counts", () => {
     const records = auditBookSeoQuality([{ id: "book-3", title: "Bare Record" }], []);
     const summary = summarizeBookSeoAudit(records);
