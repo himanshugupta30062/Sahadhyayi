@@ -330,7 +330,7 @@ describe('Library Book Sorting Hierarchy', () => {
         description: `A complete catalog description for covered reader book ${index}.`,
         language: 'English',
         pdf_url: `https://books.google.com/books?id=reader-${index}`,
-        created_at: '2026-01-01T00:00:00Z',
+        created_at: new Date(Date.UTC(2026, 0, 12 - index)).toISOString(),
       }));
       const coverlessPdfs = Array.from({ length: 12 }, (_, index) => ({
         id: `coverless-pdf-${index}`,
@@ -339,7 +339,7 @@ describe('Library Book Sorting Hierarchy', () => {
         description: `A complete catalog description for coverless PDF book ${index}.`,
         language: 'English',
         pdf_url: `https://example.com/books/coverless-${index}.pdf`,
-        created_at: '2026-01-02T00:00:00Z',
+        created_at: new Date(Date.UTC(2026, 0, 12 - index)).toISOString(),
       }));
 
       const sorted = sortBooksByCompleteness([...coverlessPdfs, ...coveredReaders]);
