@@ -595,7 +595,7 @@ if (booksError) {
       booksByGenre.get(entry.genreKey).push(entry);
     }
   }
-  const bookIndexById = new Map(bookIndex.map((entry) => [String(entry.book.id), entry]));
+  const bookIndexById = new Map(bookIndex.map((entry) => [String(entry.book.id ?? "").trim(), entry]));
   for (const book of books ?? []) {
     const id = String(book.id ?? "").trim();
     const title = String(book.title ?? "").trim();
@@ -610,23 +610,20 @@ if (booksError) {
       ? { name: authorName, ...(authorSlug ? { url: `/authors/${authorSlug}` } : {}) }
       : undefined;
     const currentIndexEntry = bookIndexById.get(id);
-    const relatedCandidates = [
-      ...(currentIndexEntry?.authorKey ? booksByAuthor.get(currentIndexEntry.authorKey) ?? [] : []),
-      ...(currentIndexEntry?.genreKey ? booksByGenre.get(currentIndexEntry.genreKey) ?? [] : []),
-    ];
     const seenRelatedIds = new Set([id]);
-    const relatedBooks = relatedCandidates
-      .filter(({ book: candidate }) => {
+    const relatedBooks = [];
+    const appendRelatedBooks = (entries = []) => {
+      for (const { book: candidate } of entries) {
+        if (relatedBooks.length >= 5) break;
         const candidateId = String(candidate.id ?? "").trim();
-        if (!candidateId || seenRelatedIds.has(candidateId)) return false;
+        const candidateTitle = String(candidate.title ?? "").trim();
+        if (!candidateId || !candidateTitle || seenRelatedIds.has(candidateId)) continue;
         seenRelatedIds.add(candidateId);
-        return true;
-      })
-      .slice(0, 5)
-      .map(({ book: candidate }) => ({
-        title: String(candidate.title).trim(),
-        route: `/book/${encodeURIComponent(String(candidate.id).trim())}`,
-      }));
+        relatedBooks.push({ title: candidateTitle, route: `/book/${encodeURIComponent(candidateId)}` });
+      }
+    };
+    appendRelatedBooks(currentIndexEntry?.authorKey ? booksByAuthor.get(currentIndexEntry.authorKey) : []);
+    appendRelatedBooks(currentIndexEntry?.genreKey ? booksByGenre.get(currentIndexEntry.genreKey) : []);
     writeRoute(route, createPage({
       title: `${title}${authorName ? ` by ${authorName}` : ""} — Book Details & Reading Options | Sahadhyayi`,
       description,
@@ -644,7 +641,7 @@ if (booksError) {
       bookPages: Number(book.pages),
       bookPublicationYear: book.publication_year,
       relatedBooks,
-      relatedBooksTitle: authorName && book.genre ? `More books by ${authorName} and in this genre` : (authorName ? `More books by ${authorName}` : (book.genre ? `More ${book.genre} books` : "Related books")),
+      relatedBooksTitle: authorName && book.genre ? `Related books by ${authorName} or in this genre` : (authorName ? `More books by ${authorName}` : (book.genre ? `More ${book.genre} books` : "Related books")),
       breadcrumbs: [{ name: "Home", route: "/" }, { name: "Library", route: "/library" }, { name: title, route }],
     }));
     bookCount += 1;
