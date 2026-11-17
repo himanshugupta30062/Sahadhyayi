@@ -159,7 +159,7 @@ export const useCreateMarginNoteReply = () => {
       const { data, error } = await supabase
         .from("margin_note_replies")
         .insert({ margin_note_id: noteId, user_id: user.id, body: body.trim() })
-        .select("*, profiles:user_id(full_name, profile_photo_url, username)")
+        .select("id, margin_note_id, user_id, body, created_at")
         .single();
       if (error) throw error;
       return data;
