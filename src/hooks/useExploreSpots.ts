@@ -9,10 +9,118 @@ interface ExploreSpotsParams {
   radiusKm?: number;
 }
 
-export function useExploreSpots({ category = 'all', userCoords, radiusKm = 100 }: ExploreSpotsParams = {}) {
+interface OverpassElement {
+  type: string;
+  id: number;
+  lat?: number;
+  lon?: number;
+  center?: { lat: number; lon: number };
+  tags?: Record<string, string>;
+}
+
+const OVERPASS_ENDPOINT = 'https://overpass-api.de/api/interpreter';
+
+const distanceBetween = (
+  from: { lat: number; lng: number },
+  to: { lat: number; lng: number },
+): number => {
+  const radians = (value: number) => (value * Math.PI) / 180;
+  const dLat = radians(to.lat - from.lat);
+  const dLng = radians(to.lng - from.lng);
+  const a = Math.sin(dLat / 2) ** 2
+    + Math.cos(radians(from.lat)) * Math.cos(radians(to.lat)) * Math.sin(dLng / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
+const fetchOpenMapPlaces = async (
+  coords: { lat: number; lng: number },
+  category: ExploreCategory,
+  radiusKm: number,
+  signal: AbortSignal,
+): Promise<ExploreMapItem[]> => {
+  if (category === 'events') return [];
+
+  const radiusMeters = Math.min(Math.max(radiusKm, 1), 50) * 1000;
+  const latDelta = radiusKm / 111;
+  const lngDelta = radiusKm / (111 * Math.max(Math.cos((coords.lat * Math.PI) / 180), 0.15));
+  const south = coords.lat - latDelta;
+  const north = coords.lat + latDelta;
+  const west = coords.lng - lngDelta;
+  const east = coords.lng + lngDelta;
+  const bounds = `${south},${west},${north},${east}`;
+
+  const selectors = category === 'library'
+    ? `nwr["amenity"="library"](${bounds});`
+    : category === 'bookstore'
+      ? `nwr["shop"="books"](${bounds});`
+      : category === 'cafe'
+        ? `nwr["amenity"="cafe"](${bounds});`
+        : category === 'places'
+          ? `nwr["amenity"="library"](${bounds});nwr["shop"="books"](${bounds});`
+          : `nwr["amenity"="library"](${bounds});nwr["shop"="books"](${bounds});nwr["amenity"="cafe"](${bounds});`;
+
+  const query = `[out:json][timeout:20];(${selectors})out center tags;`;
+  const response = await fetch(OVERPASS_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    body: query,
+    signal,
+  });
+  if (!response.ok) throw new Error(`OpenStreetMap search failed (${response.status})`);
+
+  const payload = await response.json() as { elements?: OverpassElement[] };
+  return (payload.elements ?? []).flatMap((element): ExploreMapItem[] => {
+    const lat = element.lat ?? element.center?.lat;
+    const lng = element.lon ?? element.center?.lon;
+    const tags = element.tags ?? {};
+    const name = tags.name || tags['name:en'];
+    if (!name || lat == null || lng == null || !Number.isFinite(lat) || !Number.isFinite(lng)) return [];
+
+    const itemCategory = tags.amenity === 'library' ? 'library'
+      : tags.shop === 'books' ? 'bookstore' : 'cafe';
+    const distance = distanceBetween(coords, { lat, lng });
+    if (distance > radiusMeters / 1000) return [];
+
+    const address = [
+      tags['addr:housenumber'],
+      tags['addr:street'],
+      tags['addr:suburb'],
+    ].filter(Boolean).join(', ') || tags['addr:full'] || 'Address not listed on OpenStreetMap';
+
+    return [{
+      id: `osm-${element.type}-${element.id}`,
+      item_type: 'reading_spot',
+      title: name,
+      slug: `osm-${element.type}-${element.id}`,
+      category: itemCategory,
+      latitude: lat,
+      longitude: lng,
+      address,
+      city: tags['addr:city'] || tags['addr:town'] || tags['addr:city_district'] || null,
+      image_url: null,
+      description: itemCategory === 'cafe'
+        ? 'Nearby café listed on OpenStreetMap. Check the venue details for reading-friendly seating.'
+        : tags.description || tags.note || null,
+      distance_km: Math.round(distance * 10) / 10,
+      extra_meta: {
+        website_url: tags.website || tags['contact:website'] || null,
+        opening_hours: tags.opening_hours || null,
+        phone: tags.phone || tags['contact:phone'] || null,
+        source: 'OpenStreetMap',
+        osm_url: `https://www.openstreetmap.org/${element.type}/${element.id}`,
+      },
+    }];
+  });
+};
+
+export function useExploreSpots({ category = 'all', userCoords, radiusKm = 25 }: ExploreSpotsParams = {}) {
   return useQuery({
     queryKey: ['explore-map-items', category, userCoords?.lat, userCoords?.lng, radiusKm],
-    queryFn: async (): Promise<ExploreMapItem[]> => {
+    queryFn: async ({ signal }): Promise<ExploreMapItem[]> => {
+      const itemsById = new Map<string, ExploreMapItem>();
+      let rpcSucceeded = false;
+
+      // Curated and admin-verified Sahadhyayi locations remain the trusted baseline.
       try {
         const { data, error } = await supabase.rpc('get_explore_map_items', {
           p_lat: userCoords?.lat ?? null,
@@ -20,88 +128,126 @@ export function useExploreSpots({ category = 'all', userCoords, radiusKm = 100 }
           p_radius_km: radiusKm,
           p_category: category,
         });
-
-        if (!error && Array.isArray(data) && data.length > 0) {
-          return data as ExploreMapItem[];
+        if (!error && Array.isArray(data)) {
+          rpcSucceeded = true;
+          (data as ExploreMapItem[]).forEach((item) => itemsById.set(item.id, item));
         }
       } catch (err) {
-        console.warn('get_explore_map_items RPC unavailable, falling back to direct table queries:', err);
+        console.warn('Explore map RPC unavailable; using direct table queries.', err);
       }
 
-      // Fallback: direct table select from reading_spots
-      let query = supabase
-        .from('reading_spots')
-        .select('*')
-        .eq('is_verified', true);
-
-      if (category !== 'all' && category !== 'places' && category !== 'events') {
-        query = query.eq('category', category);
+      // Direct-table fallback also runs when the RPC returns an empty array.
+      if (!rpcSucceeded || itemsById.size === 0) {
+        if (category !== 'events') {
+          let spotsQuery = supabase.from('reading_spots').select('*').eq('is_verified', true);
+          if (category !== 'all' && category !== 'places') {
+            spotsQuery = spotsQuery.eq('category', category);
+          }
+          const { data: spots, error: spotsError } = await spotsQuery;
+          if (spotsError) {
+            console.warn('Could not load curated reading spots:', spotsError.message);
+          } else {
+            (spots ?? []).forEach((spot: any) => {
+              const latitude = Number(spot.latitude);
+              const longitude = Number(spot.longitude);
+              if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
+              const distance = userCoords
+                ? distanceBetween(userCoords, { lat: latitude, lng: longitude })
+                : null;
+              if (distance != null && distance > radiusKm) return;
+              itemsById.set(spot.id, {
+                id: spot.id,
+                item_type: 'reading_spot',
+                title: spot.name,
+                slug: spot.slug,
+                category: spot.category,
+                latitude,
+                longitude,
+                address: spot.address,
+                city: spot.city,
+                image_url: spot.image_url,
+                description: spot.description,
+                distance_km: distance == null ? null : Math.round(distance * 10) / 10,
+                extra_meta: {
+                  amenities: spot.amenities,
+                  website_url: spot.website_url,
+                  country: spot.country,
+                  source: 'Sahadhyayi verified directory',
+                },
+              });
+            });
+          }
+        }
       }
 
-      const { data: spots, error: spotsErr } = await query;
-      if (spotsErr) {
-        console.error('Failed to load reading spots:', spotsErr);
-        return [];
-      }
-
-      const items: ExploreMapItem[] = (spots || []).map((spot: any) => ({
-        id: spot.id,
-        item_type: 'reading_spot',
-        title: spot.name,
-        slug: spot.slug,
-        category: spot.category,
-        latitude: Number(spot.latitude),
-        longitude: Number(spot.longitude),
-        address: spot.address,
-        city: spot.city,
-        image_url: spot.image_url,
-        description: spot.description,
-        extra_meta: {
-          amenities: spot.amenities,
-          website_url: spot.website_url,
-          country: spot.country,
-        },
-      }));
-
-      // Also include literary events if category allows
+      // Events are supplied by Sahadhyayi's editorial/event database, not inferred from POIs.
       if (category === 'all' || category === 'events') {
-        const { data: events } = await supabase
+        const { data: events, error: eventsError } = await supabase
           .from('literary_events')
           .select('*')
           .eq('status', 'published')
           .not('latitude', 'is', null)
           .not('longitude', 'is', null);
-
-        if (events && Array.isArray(events)) {
-          events.forEach((ev: any) => {
-            items.push({
-              id: ev.id,
+        if (eventsError) {
+          console.warn('Could not load geocoded literary events:', eventsError.message);
+        } else {
+          (events ?? []).forEach((event: any) => {
+            const latitude = Number(event.latitude);
+            const longitude = Number(event.longitude);
+            if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
+            const distance = userCoords
+              ? distanceBetween(userCoords, { lat: latitude, lng: longitude })
+              : null;
+            if (distance != null && distance > radiusKm) return;
+            itemsById.set(event.id, {
+              id: event.id,
               item_type: 'literary_event',
-              title: ev.title,
-              slug: ev.slug,
+              title: event.title,
+              slug: event.slug,
               category: 'event',
-              latitude: Number(ev.latitude),
-              longitude: Number(ev.longitude),
-              address: ev.venue || ev.city || 'Event Venue',
-              city: ev.city,
-              image_url: ev.image_url,
-              description: ev.description,
+              latitude,
+              longitude,
+              address: event.venue || event.city || 'Event venue',
+              city: event.city,
+              image_url: event.image_url,
+              description: event.description,
+              distance_km: distance == null ? null : Math.round(distance * 10) / 10,
               extra_meta: {
-                start_at: ev.start_at,
-                end_at: ev.end_at,
-                price_type: ev.price_type,
-                registration_url: ev.registration_url,
-                organizer_name: ev.organizer_name,
+                start_at: event.start_at,
+                end_at: event.end_at,
+                price_type: event.price_type,
+                registration_url: event.registration_url,
+                organizer_name: event.organizer_name,
+                source: 'Sahadhyayi events',
               },
             });
           });
         }
       }
 
-      return items;
+      // OpenStreetMap adds real nearby public POIs without requiring another paid API key.
+      if (userCoords && category !== 'events') {
+        try {
+          const openMapItems = await fetchOpenMapPlaces(userCoords, category, radiusKm, signal);
+          openMapItems.forEach((item) => {
+            if (!itemsById.has(item.id)) itemsById.set(item.id, item);
+          });
+        } catch (error) {
+          if (signal.aborted) throw error;
+          console.warn('OpenStreetMap nearby discovery is temporarily unavailable:', error);
+        }
+      }
+
+      return [...itemsById.values()].sort((a, b) => {
+        if (a.distance_km == null) return 1;
+        if (b.distance_km == null) return -1;
+        return a.distance_km - b.distance_km;
+      });
     },
-    staleTime: 5 * 60_000,
+    staleTime: 10 * 60_000,
+    gcTime: 30 * 60_000,
     refetchOnWindowFocus: false,
+    retry: 1,
   });
 }
 
