@@ -90,12 +90,14 @@ export function isVerifiedPdf(book: any): boolean {
   // Production catalog records carry an explicit server-side link check.
   // Never let buildAssetOptions' legacy "verified: true" shortcut override it.
   const readerStatus = book.reader_link_status ?? book.readerLinkStatus;
+  let serverAuditVerified = false;
   if (typeof readerStatus === 'string') {
     if (readerStatus.trim().toLowerCase() !== 'working') return false;
     const httpStatus = book.reader_link_http_status ?? book.readerLinkHttpStatus;
     const contentType = String(book.reader_link_content_type ?? book.readerLinkContentType ?? '').toLowerCase();
     if (typeof httpStatus !== 'number' || httpStatus < 200 || httpStatus >= 300) return false;
     if (!contentType.includes('application/pdf')) return false;
+    serverAuditVerified = true;
   }
 
   // 1. Explicit broken link flags or unverified access status
@@ -108,7 +110,7 @@ export function isVerifiedPdf(book: any): boolean {
     if (pdfAsset) {
       // A structured PDF is verified only when the verifier explicitly marks it true.
       // Missing verification metadata must never be treated as proof of a working file.
-      if (pdfAsset.verified !== true) return false;
+      if (pdfAsset.verified !== true && !serverAuditVerified) return false;
       const url = (pdfAsset.downloadUrl || pdfAsset.readerUrl || '').trim();
       if (!url || url.includes('books.google.') || url.includes('broken') || url.includes('404')) {
         return false;
@@ -150,7 +152,7 @@ export function isVerifiedPdf(book: any): boolean {
   // stale, return HTML, point to previews, or contain the wrong edition.
   // Direct PDFs are verified only by the server-side HTTP/MIME audit above
   // or by an explicitly verified structured PDF asset handled earlier.
-  return false;
+  return serverAuditVerified;
 }
 
 /**
