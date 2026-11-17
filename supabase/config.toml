@@ -108,4 +108,5 @@ verify_jwt = true
 [functions.auth-audit]
 verify_jwt = false
 [functions.everyday-science-evaluate]
-verify_jwt = true
+# Guests may take the assessment; personal history writes remain authenticated and RLS-protected.
+verify_jwt = false

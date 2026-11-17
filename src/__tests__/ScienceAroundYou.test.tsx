@@ -85,7 +85,7 @@ describe("Explain Science Around You", () => {
     renderPage();
 
     expect(screen.getByRole("heading", { name: /Explain the science around you/i })).toBeInTheDocument();
-    expect(screen.getByText(/It is not an IQ score/i)).toBeInTheDocument();
+    expect(screen.getByText(/Your Everyday Science Understanding Score summarises/i)).toBeInTheDocument();
 
     await completeAssessment();
 
