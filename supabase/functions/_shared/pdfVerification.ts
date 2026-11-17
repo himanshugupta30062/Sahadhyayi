@@ -1,4 +1,4 @@
-function parseVerificationReport(rawText: string): Record<string, unknown> {
+export function parseVerificationReport(rawText: string): Record<string, unknown> {
   const cleaned = rawText
     .replace(/^\uFEFF/, "")
     .trim()
