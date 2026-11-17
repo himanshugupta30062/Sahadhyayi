@@ -61,21 +61,17 @@ export const BOOK_SELECT_COLUMNS = BASE_BOOK_SELECT_COLUMNS;
 
 // Sorting rules (displayed to users via SortingInfoTooltip)
 export const SORTING_RULES = [
-  { label: 'Verified PDF + cover + complete metadata', points: 'Top Tier (14,500+)', priority: 'highest' },
-  { label: 'Direct PDF URL + cover (pending link audit)', points: 'Top Tier (14,500+)', priority: 'high' },
-  { label: 'Verified PDF + cover (partial metadata)', points: 'Top Tier (14,000+)', priority: 'highest' },
-  { label: 'Verified EPUB / official full text + cover', points: 'High Tier (13,000+)', priority: 'high' },
-  { label: 'Supported online reader + cover (including Google Books previews)', points: 'High Tier (12,000+)', priority: 'high' },
-  { label: 'Metadata-only genuine book with cover', points: 'High Tier (11,000+)', priority: 'high' },
-  { label: 'Verified PDF without cover', points: 'Medium Tier (10,000+)', priority: 'medium' },
-  { label: 'Verified EPUB / official full text without cover', points: 'Medium Tier (9,500+)', priority: 'medium' },
-  { label: 'Supported online reader without cover', points: 'Medium Tier (9,000+)', priority: 'medium' },
-  { label: 'External book/resource page + cover', points: 'High Tier (11,500+)', priority: 'high' },
-  { label: 'Academic papers, technical reports & preprints', points: 'Discovery Tier (2,500+)', priority: 'low' },
-  { label: 'External book/resource page without cover', points: 'Medium Tier (8,500+)', priority: 'medium' },
-  { label: 'Metadata-only records without cover photo', points: 'Bottom (1,500+)', priority: 'low' },
-  { label: 'Per-page diversity (max 1 / author & title per page)', points: 'Spread across pages', priority: 'info' },
-  { label: 'Tie-breaker', points: 'newest first, then title, then ID', priority: 'info' },
+  { label: 'Overall book correctness (identity, metadata, assets and access)', points: '0–100 points', priority: 'highest' },
+  { label: 'Verified reading file with matching title/author and valid PDF evidence', points: 'Up to 25 points', priority: 'highest' },
+  { label: 'Bibliographic identity (title, author, language, year, ISBN, pages)', points: 'Up to 20 points', priority: 'high' },
+  { label: 'Cover presence and verified cover quality', points: 'Up to 15 points', priority: 'high' },
+  { label: 'Description, genre, author and edition metadata', points: 'Up to 15 points', priority: 'high' },
+  { label: 'Metadata match, PDF quality and asset verification evidence', points: 'Up to 25 points', priority: 'highest' },
+  { label: 'Pending direct PDF link audit', points: 'Partial access credit only', priority: 'medium' },
+  { label: 'Failed asset checks, weak metadata matches or broken access', points: 'Explicit score penalties', priority: 'highest' },
+  { label: 'Legacy resource/cover tier', points: 'Secondary tie-breaker', priority: 'medium' },
+  { label: 'Per-page diversity', points: 'Avoid repeated authors and titles', priority: 'info' },
+  { label: 'Final tie-breaker', points: 'newest first, then title, then ID', priority: 'info' },
 ];
 
 /**
