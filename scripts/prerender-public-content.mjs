@@ -53,7 +53,7 @@ function setMeta(html, attribute, key, content) {
   return pattern.test(html) ? html.replace(pattern, tag) : html.replace("</head>", `  ${tag}\n</head>`);
 }
 
-function createPage({ title, description, route, image, type, entityType, entityName, bodyText, publishedAt, modifiedAt, authorName, wordCount, schemaType, about, breadcrumbs, relatedBooks, relatedArticles, sameAs, personDetails, itemList, bookAuthor, bookIsbn, bookGenre, bookLanguage, bookPages, bookPublicationYear }) {
+function createPage({ title, description, route, image, type, entityType, entityName, bodyText, publishedAt, modifiedAt, authorName, wordCount, schemaType, about, breadcrumbs, relatedBooks, relatedArticles, sameAs, personDetails, itemList, bookAuthor, bookIsbn, bookGenre, bookLanguage, bookPages, bookPublicationYear, relatedBooksTitle }) {
   const canonical = `${SITE_URL}${route}`;
   let html = template.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
   html = setMeta(html, "name", "description", description);
@@ -153,7 +153,7 @@ function createPage({ title, description, route, image, type, entityType, entity
     ${safeBodyText ? `<p>${escapeHtml(safeBodyText)}</p>` : ""}
     ${bookAuthor?.url ? `<p>By <a href="${escapeHtml(bookAuthor.url)}">${escapeHtml(bookAuthor.name)}</a></p>` : bookAuthor?.name ? `<p>By ${escapeHtml(bookAuthor.name)}</p>` : ""}
     ${entityType === "Book" ? "<section aria-label=\"Book details\"><h2>About this book</h2><dl>" + (bookGenre ? "<dt>Genre</dt><dd>" + escapeHtml(bookGenre) + "</dd>" : "") + (bookPublicationYear ? "<dt>Publication year</dt><dd>" + escapeHtml(bookPublicationYear) + "</dd>" : "") + (bookLanguage ? "<dt>Language</dt><dd>" + escapeHtml(bookLanguage) + "</dd>" : "") + (bookIsbn ? "<dt>ISBN</dt><dd>" + escapeHtml(bookIsbn) + "</dd>" : "") + (bookPages ? "<dt>Pages</dt><dd>" + escapeHtml(bookPages) + "</dd>" : "") + "</dl></section>" : ""}
-    ${Array.isArray(relatedBooks) && relatedBooks.length ? `<section aria-label="Books by this author"><h2>Books by ${escapeHtml(entityName || "this author")}</h2><ul>${relatedBooks.map((book) => `<li><a href="${escapeHtml(book.route)}">${escapeHtml(book.title)}</a></li>`).join("")}</ul></section>` : ""}
+    ${Array.isArray(relatedBooks) && relatedBooks.length ? `<section aria-label="Books by this author"><h2>${escapeHtml(relatedBooksTitle || "Related books")}</h2><ul>${relatedBooks.map((book) => `<li><a href="${escapeHtml(book.route)}">${escapeHtml(book.title)}</a></li>`).join("")}</ul></section>` : ""}
     ${Array.isArray(relatedArticles) && relatedArticles.length ? `<nav aria-label="Related articles"><h2>More articles by this reader</h2><ul>${relatedArticles.map((article) => `<li><a href="${escapeHtml(article.route)}">${escapeHtml(article.title)}</a></li>`).join("")}</ul></nav>` : ""}
     ${Array.isArray(itemList) && itemList.length ? `<nav aria-label="People in this collection"><h2>Profiles in this collection</h2><ul>${itemList.map((entry) => `<li><a href="${escapeHtml(route)}#profile-${escapeHtml(entry.slug)}">${escapeHtml(entry.name)}</a></li>`).join("")}</ul></nav>` : ""}
     <p><a href="/library">Explore the library</a> · <a href="/articles">Read articles</a> · <a href="/groups">Find reading groups</a> · <a href="/authors">Discover authors</a></p>
@@ -574,25 +574,34 @@ if (booksError) {
     const title = String(book.title ?? "").trim();
     if (!id || !title || id.includes("/") || id === "." || id === "..") continue;
     const route = `/book/${encodeURIComponent(id)}`;
-    const description = plainText(book.description) ||
-      `Explore ${title} on Sahadhyayi, the digital reading community for fellow readers.`;
     const authorRecord = (book.author_id && authorById.get(book.author_id)) || authorByName.get(String(book.author ?? "").trim().toLowerCase());
     const authorName = String(authorRecord?.name || book.author || "").trim();
+    const description = plainText(book.description, 260) ||
+      `Explore ${title}${authorName ? ` by ${authorName}` : ""} on Sahadhyayi. Check its book details, language, genre, and available reading options.`;
     const authorSlug = authorRecord?.name ? slugify(authorRecord.name) : "";
     const bookAuthor = authorName
       ? { name: authorName, ...(authorSlug ? { url: `/authors/${authorSlug}` } : {}) }
       : undefined;
     const relatedBooks = (books ?? [])
-      .filter((candidate) => candidate.id !== book.id && ((book.author_id && candidate.author_id === book.author_id) || (!book.author_id && authorName && String(candidate.author ?? "").trim().toLowerCase() === authorName.toLowerCase())))
+      .filter((candidate) => {
+        if (String(candidate.id ?? "") === id) return false;
+        const sameAuthor = (book.author_id && candidate.author_id === book.author_id) ||
+          (!book.author_id && authorName && String(candidate.author ?? "").trim().toLowerCase() === authorName.toLowerCase());
+        const sameGenre = book.genre && candidate.genre &&
+          String(candidate.genre).trim().toLowerCase() === String(book.genre).trim().toLowerCase();
+        return Boolean(sameAuthor || sameGenre);
+      })
       .slice(0, 5)
       .map((candidate) => {
         const relatedId = String(candidate.id ?? "").trim();
         const relatedTitle = String(candidate.title ?? "").trim();
-        return relatedId && relatedTitle && !relatedId.includes("/") && relatedId !== "." && relatedId !== ".." ? { title: relatedTitle, route: `/book/${encodeURIComponent(relatedId)}` } : null;
+        return relatedId && relatedTitle && !relatedId.includes("/") && relatedId !== "." && relatedId !== ".."
+          ? { title: relatedTitle, route: `/book/${encodeURIComponent(relatedId)}` }
+          : null;
       })
       .filter(Boolean);
     writeRoute(route, createPage({
-      title: `${title} - Read Online & Book Details | Sahadhyayi`,
+      title: `${title}${authorName ? ` by ${authorName}` : ""} — Book Details & Reading Options | Sahadhyayi`,
       description,
       route,
       image: book.cover_image_url,
@@ -607,6 +616,7 @@ if (booksError) {
       bookPages: Number(book.pages),
       bookPublicationYear: book.publication_year,
       relatedBooks,
+      relatedBooksTitle: authorName ? `More books by ${authorName}` : (book.genre ? `More ${book.genre} books` : "Related books"),
       breadcrumbs: [{ name: "Home", route: "/" }, { name: "Library", route: "/library" }, { name: title, route }],
     }));
     bookCount += 1;
