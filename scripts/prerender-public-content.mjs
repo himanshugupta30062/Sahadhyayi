@@ -76,8 +76,8 @@ function createPage({ title, description, route, image, type, entityType, entity
           description,
           url: canonical,
           mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
-          ...(image && /^https:\\/\\//i.test(image) ? { image } : {}),
-          ...(Array.isArray(sameAs) && sameAs.length ? { sameAs: sameAs.filter((value) => typeof value === "string" && /^https:\\/\\//i.test(value)) } : {}),
+          ...(image && /^https:\/\/i.test(image) ? { image } : {}),
+          ...(Array.isArray(sameAs) && sameAs.length ? { sameAs: sameAs.filter((value) => typeof value === "string" && /^https:\/\/i.test(value)) } : {}),
         }
       : entityType === "Article"
         ? {
@@ -351,10 +351,10 @@ if (authorsError) {
           : null;
       })
       .filter(Boolean);
-    const authorImage = typeof author.profile_image_url === "string" && /^https:\\/\\//i.test(author.profile_image_url)
+    const authorImage = typeof author.profile_image_url === "string" && /^https:\/\/i.test(author.profile_image_url)
       ? author.profile_image_url
       : undefined;
-    const sameAs = typeof author.website_url === "string" && /^https:\\/\\//i.test(author.website_url)
+    const sameAs = typeof author.website_url === "string" && /^https:\/\/i.test(author.website_url)
       ? [author.website_url]
       : [];
     writeRoute(route, createPage({
