@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { Beaker, BookOpen, CheckCircle2, Clock3, FlaskConical, Lightbulb, Loader2, Search, Send, ShieldCheck, Sparkles, Users, X } from "lucide-react";
 import SEO from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +25,15 @@ type Experiment = {
   image_url: string | null;
 };
 
+type ScienceAiFeedback = {
+  summary: string;
+  science_connection: string;
+  what_went_well: string[];
+  possible_reasons: string[];
+  next_steps: string[];
+  safety_reminder: string;
+};
+
 type ExperimentAttempt = {
   id: string;
   experiment_id: string;
@@ -33,6 +41,8 @@ type ExperimentAttempt = {
   what_learned: string | null;
   worked: boolean | null;
   created_at: string;
+  ai_feedback?: ScienceAiFeedback | null;
+  mediaUrls?: Array<{ url: string; media_type: "image" | "video" }>;
   experiment?: Pick<Experiment, "title" | "slug" | "category"> | null;
 };
 
@@ -128,6 +138,9 @@ export default function ScienceLab() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+  const [aiFeedback, setAiFeedback] = useState<ScienceAiFeedback | null>(null);
+  const [aiReviewing, setAiReviewing] = useState(false);
   const [observations, setObservations] = useState("");
   const [whatLearned, setWhatLearned] = useState("");
   const [worked, setWorked] = useState("yes");
@@ -141,7 +154,7 @@ export default function ScienceLab() {
     setLoading(true);
     const [catalogResult, communityResult] = await Promise.all([
       supabase.from("science_experiments" as any).select("*").eq("is_published", true).order("created_at", { ascending: false }),
-      supabase.from("science_experiment_attempts" as any).select("id,experiment_id,observations,what_learned,worked,created_at,experiment:science_experiments(title,slug,category)").eq("share_public", true).order("created_at", { ascending: false }).limit(30),
+      supabase.from("science_experiment_attempts" as any).select("id,experiment_id,observations,what_learned,worked,created_at,ai_feedback,experiment:science_experiments(title,slug,category)").eq("share_public", true).order("created_at", { ascending: false }).limit(30),
     ]);
     if (!catalogResult.error && Array.isArray(catalogResult.data) && catalogResult.data.length) {
       setExperiments(catalogResult.data as unknown as Experiment[]);
@@ -168,10 +181,18 @@ export default function ScienceLab() {
       return;
     }
     const { data, error } = await supabase.from("science_experiment_attempts" as any)
-      .select("id,experiment_id,observations,what_learned,worked,created_at,experiment:science_experiments(title,slug,category)")
+      .select("id,experiment_id,observations,what_learned,worked,created_at,ai_feedback,experiment:science_experiments(title,slug,category),media:science_experiment_media(storage_path,media_type)")
       .eq("user_id", authData.user.id).order("created_at", { ascending: false }).limit(50);
     if (error) { toast.error("Could not load your experiment journal."); return; }
-    setAttempts(data as unknown as ExperimentAttempt[]);
+    const withMedia = await Promise.all((data ?? []).map(async (row: any) => {
+      const mediaRows = Array.isArray(row.media) ? row.media : [];
+      const mediaUrls = await Promise.all(mediaRows.map(async (media: any) => {
+        const { data: signed } = await supabase.storage.from("science-experiment-media").createSignedUrl(media.storage_path, 3600);
+        return signed?.signedUrl ? { url: signed.signedUrl, media_type: media.media_type as "image" | "video" } : null;
+      }));
+      return { ...row, mediaUrls: mediaUrls.filter(Boolean) };
+    }));
+    setAttempts(withMedia as unknown as ExperimentAttempt[]);
     setActiveTab("mine");
   };
 
@@ -182,7 +203,24 @@ export default function ScienceLab() {
       window.location.assign("/signin?redirect=" + encodeURIComponent("/science-lab"));
       return;
     }
+    setAiFeedback(null);
+    setMediaFiles([]);
     setShowLog(true);
+  };
+
+  const handleMediaSelection = (files: FileList | null) => {
+    if (!files) return;
+    const selectedFiles = Array.from(files);
+    const allowed = new Set(["image/jpeg", "image/png", "image/webp", "video/mp4", "video/webm"]);
+    if (selectedFiles.length > 3) { toast.error("Choose up to 3 photos or videos."); return; }
+    if (selectedFiles.some((file) => !allowed.has(file.type))) { toast.error("Use JPG, PNG, WebP, MP4 or WebM files only."); return; }
+    if (selectedFiles.some((file) => file.size > (file.type.startsWith("video/") ? 25 : 10) * 1024 * 1024)) {
+      toast.error("Each photo must be 10 MB or less and each video 25 MB or less."); return;
+    }
+    if (selectedFiles.reduce((total, file) => total + file.size, 0) > 30 * 1024 * 1024) {
+      toast.error("The total upload limit is 30 MB."); return;
+    }
+    setMediaFiles(selectedFiles);
   };
 
   const submitAttempt = async () => {
@@ -197,22 +235,79 @@ export default function ScienceLab() {
       toast.error("Your session has expired. Please sign in again.");
       return;
     }
-    const { error } = await supabase.from("science_experiment_attempts" as any).insert({
-      experiment_id: selected.id,
-      user_id: authData.user.id,
-      observations: observations.trim(),
-      what_learned: whatLearned.trim() || null,
-      worked: worked === "yes" ? true : worked === "no" ? false : null,
-      share_public: sharePublic,
-      status: "completed",
+
+    const { data: savedAttempt, error } = await supabase.from("science_experiment_attempts" as any)
+      .insert({
+        experiment_id: selected.id,
+        user_id: authData.user.id,
+        observations: observations.trim(),
+        what_learned: whatLearned.trim() || null,
+        worked: worked === "yes" ? true : worked === "no" ? false : null,
+        share_public: sharePublic,
+        status: "completed",
+      })
+      .select("id")
+      .single();
+
+    if (error || !savedAttempt?.id) {
+      setSaving(false);
+      toast.error("Your experiment could not be saved. Please try again.");
+      return;
+    }
+
+    const attemptId = savedAttempt.id as string;
+    const uploadedPaths: string[] = [];
+    let uploadFailed = false;
+
+    for (const file of mediaFiles) {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-").slice(-90) || "experiment-media";
+      const path = `${authData.user.id}/${attemptId}/${crypto.randomUUID()}-${safeName}`;
+      const { error: uploadError } = await supabase.storage.from("science-experiment-media")
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (uploadError) { uploadFailed = true; break; }
+
+      const { error: metadataError } = await supabase.from("science_experiment_media" as any).insert({
+        attempt_id: attemptId,
+        user_id: authData.user.id,
+        storage_path: path,
+        media_type: file.type.startsWith("video/") ? "video" : "image",
+        mime_type: file.type,
+        size_bytes: file.size,
+        caption: null,
+      });
+      if (metadataError) {
+        await supabase.storage.from("science-experiment-media").remove([path]);
+        uploadFailed = true;
+        break;
+      }
+      uploadedPaths.push(path);
+    }
+
+    if (uploadFailed) {
+      await supabase.from("science_experiment_media" as any).delete().eq("attempt_id", attemptId);
+      if (uploadedPaths.length) await supabase.storage.from("science-experiment-media").remove(uploadedPaths);
+      toast.warning("Your experiment notes were saved, but the media could not be uploaded. You can submit the media with a new journal entry.");
+    }
+
+    setAiReviewing(true);
+    const firstImageIndex = mediaFiles.findIndex((file) => file.type.startsWith("image/"));
+    const imagePath = firstImageIndex >= 0 ? uploadedPaths[firstImageIndex] ?? null : null;
+    const { data: aiResult, error: aiError } = await supabase.functions.invoke("science-lab-review", {
+      body: { attemptId, imagePath },
     });
+    setAiReviewing(false);
     setSaving(false);
-    if (error) { toast.error("Your experiment could not be saved. Please try again."); return; }
+
+    if (!aiError && aiResult?.feedback) {
+      setAiFeedback(aiResult.feedback as ScienceAiFeedback);
+    } else {
+      toast.warning("Your experiment was saved. AI feedback is temporarily unavailable.");
+    }
     toast.success(sharePublic ? "Experiment saved and shared with the community!" : "Experiment saved to your journal.");
     setShowLog(false);
     setObservations("");
     setWhatLearned("");
-    setSelected(null);
+    setMediaFiles([]);
     await loadData();
   };
 
@@ -286,7 +381,7 @@ export default function ScienceLab() {
         {activeTab !== "discover" && (
           <section className="space-y-5">
             <div><h2 className="text-2xl font-bold">{activeTab === "community" ? "What readers discovered" : "Your experiment journal"}</h2><p className="mt-1 text-sm text-muted-foreground">{activeTab === "community" ? "Real observations shared by the Sahadhyayi community." : "A record of the experiments you have tried."}</p></div>
-            {attempts.length === 0 ? <Card><CardContent className="py-12 text-center"><FlaskConical className="mx-auto mb-3 h-8 w-8 text-muted-foreground" /><p className="font-medium">No experiment notes yet</p><p className="mt-1 text-sm text-muted-foreground">Try an experiment and share what you discover.</p><Button className="mt-4" onClick={() => setActiveTab("discover")}>Explore experiments</Button></CardContent></Card> : <div className="grid gap-4 md:grid-cols-2">{attempts.map((attempt) => <Card key={attempt.id}><CardHeader className="pb-2"><div className="flex items-center justify-between gap-2"><Badge variant="secondary">{attempt.experiment?.category || "Science"}</Badge><span className="text-xs text-muted-foreground">{new Date(attempt.created_at).toLocaleDateString()}</span></div><CardTitle className="text-base">{attempt.experiment?.title || "Science experiment"}</CardTitle></CardHeader><CardContent className="space-y-3"><p className="whitespace-pre-wrap text-sm leading-6 text-muted-foreground">{attempt.observations}</p>{attempt.what_learned && <div className="rounded-lg bg-muted/50 p-3"><p className="mb-1 text-xs font-semibold">What they learned</p><p className="text-sm">{attempt.what_learned}</p></div>}{attempt.worked !== null && <p className="flex items-center gap-2 text-xs">{attempt.worked ? <CheckCircle2 className="h-4 w-4 text-emerald-600" /> : <Lightbulb className="h-4 w-4 text-amber-600" />}{attempt.worked ? "The experiment worked as expected" : "The result was different or didn't work"}</p>}</CardContent></Card>)}</div>}
+            {attempts.length === 0 ? <Card><CardContent className="py-12 text-center"><FlaskConical className="mx-auto mb-3 h-8 w-8 text-muted-foreground" /><p className="font-medium">No experiment notes yet</p><p className="mt-1 text-sm text-muted-foreground">Try an experiment and share what you discover.</p><Button className="mt-4" onClick={() => setActiveTab("discover")}>Explore experiments</Button></CardContent></Card> : <div className="grid gap-4 md:grid-cols-2">{attempts.map((attempt) => <Card key={attempt.id}><CardHeader className="pb-2"><div className="flex items-center justify-between gap-2"><Badge variant="secondary">{attempt.experiment?.category || "Science"}</Badge><span className="text-xs text-muted-foreground">{new Date(attempt.created_at).toLocaleDateString()}</span></div><CardTitle className="text-base">{attempt.experiment?.title || "Science experiment"}</CardTitle></CardHeader><CardContent className="space-y-3"><p className="whitespace-pre-wrap text-sm leading-6 text-muted-foreground">{attempt.observations}</p>{attempt.what_learned && <div className="rounded-lg bg-muted/50 p-3"><p className="mb-1 text-xs font-semibold">What they learned</p><p className="text-sm">{attempt.what_learned}</p></div>}{attempt.mediaUrls && attempt.mediaUrls.length > 0 && <div className="grid grid-cols-2 gap-2">{attempt.mediaUrls.map((media, index) => media.media_type === "image" ? <img key={media.url} src={media.url} alt={`Experiment upload ${index + 1}`} className="aspect-video w-full rounded-lg object-cover" loading="lazy" /> : <video key={media.url} src={media.url} controls playsInline className="aspect-video w-full rounded-lg bg-black" />)}</div>}{attempt.ai_feedback && <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3"><p className="mb-1 flex items-center gap-1 text-xs font-semibold"><Sparkles className="h-3.5 w-3.5" /> Gemini Science Review</p><p className="text-sm leading-6">{attempt.ai_feedback.summary}</p></div>}{attempt.worked !== null && <p className="flex items-center gap-2 text-xs">{attempt.worked ? <CheckCircle2 className="h-4 w-4 text-emerald-600" /> : <Lightbulb className="h-4 w-4 text-amber-600" />}{attempt.worked ? "The experiment worked as expected" : "The result was different or didn't work"}</p>}</CardContent></Card>)}</div>}
           </section>
         )}
 
@@ -305,8 +400,21 @@ export default function ScienceLab() {
               <div><h3 className="mb-3 font-semibold">Step-by-step instructions</h3><ol className="space-y-3">{selected.steps.map((step, index) => <li key={step} className="flex gap-3 text-sm leading-6"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">{index + 1}</span><span className="pt-0.5">{step}</span></li>)}</ol></div>
               <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4"><h3 className="mb-2 flex items-center gap-2 font-semibold"><Lightbulb className="h-4 w-4 text-emerald-600" /> What's the science?</h3><p className="text-sm leading-6 text-muted-foreground">{selected.science_explanation}</p></div>
               <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4"><h3 className="mb-2 flex items-center gap-2 font-semibold"><ShieldCheck className="h-4 w-4 text-amber-600" /> Safety first</h3><ul className="list-disc space-y-1 pl-5 text-sm leading-6 text-muted-foreground">{selected.safety_notes.map((note) => <li key={note}>{note}</li>)}</ul></div>
-              {!showLog ? <Button className="w-full" onClick={() => void startLogging()}><Beaker className="mr-2 h-4 w-4" /> I've tried this — record my results</Button> : <div className="space-y-4 rounded-xl border border-border p-4"><h3 className="font-semibold">Record your experiment</h3><div><label className="mb-2 block text-sm font-medium" htmlFor="science-observations">What did you observe? *</label><Textarea id="science-observations" value={observations} onChange={(event) => setObservations(event.target.value.slice(0, 3000))} placeholder="Describe what happened. Include anything unexpected..." rows={4} maxLength={3000} /><p className="mt-1 text-right text-xs text-muted-foreground">{observations.length}/3000</p></div><div><label className="mb-2 block text-sm font-medium" htmlFor="science-learning">What did you learn? (optional)</label><Textarea id="science-learning" value={whatLearned} onChange={(event) => setWhatLearned(event.target.value.slice(0, 1500))} placeholder="What did this experiment help you understand?" rows={3} maxLength={1500} /></div><div><span className="mb-2 block text-sm font-medium">Did it work as expected?</span><div className="flex flex-wrap gap-2">{[{value:"yes",label:"Yes"},{value:"no",label:"No / different result"},{value:"unsure",label:"Not sure"}].map((option) => <Button key={option.value} size="sm" type="button" variant={worked === option.value ? "default" : "outline"} onClick={() => setWorked(option.value)}>{option.label}</Button>)}</div></div><label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={sharePublic} onChange={(event) => setSharePublic(event.target.checked)} className="mt-1" /><span>Share my observations with the community. If unchecked, save privately in my journal.</span></label><Button className="w-full" disabled={saving} onClick={() => void submitAttempt()}>{saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}Save experiment results</Button></div>}
+              {!showLog ? <Button className="w-full" onClick={() => void startLogging()}><Beaker className="mr-2 h-4 w-4" /> I've tried this — record my results</Button> : <div className="space-y-4 rounded-xl border border-border p-4"><h3 className="font-semibold">Record your experiment</h3><div><label className="mb-2 block text-sm font-medium" htmlFor="science-observations">What did you observe? *</label><Textarea id="science-observations" value={observations} onChange={(event) => setObservations(event.target.value.slice(0, 3000))} placeholder="Describe what happened. Include anything unexpected..." rows={4} maxLength={3000} /><p className="mt-1 text-right text-xs text-muted-foreground">{observations.length}/3000</p></div><div><label className="mb-2 block text-sm font-medium" htmlFor="science-learning">What did you learn? (optional)</label><Textarea id="science-learning" value={whatLearned} onChange={(event) => setWhatLearned(event.target.value.slice(0, 1500))} placeholder="What did this experiment help you understand?" rows={3} maxLength={1500} /></div><div><span className="mb-2 block text-sm font-medium">Did it work as expected?</span><div className="flex flex-wrap gap-2">{[{value:"yes",label:"Yes"},{value:"no",label:"No / different result"},{value:"unsure",label:"Not sure"}].map((option) => <Button key={option.value} size="sm" type="button" variant={worked === option.value ? "default" : "outline"} onClick={() => setWorked(option.value)}>{option.label}</Button>)}</div></div><label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={sharePublic} onChange={(event) => setSharePublic(event.target.checked)} className="mt-1" /><span>Share my observations with the community. If unchecked, save privately in my journal.</span></label><div><label htmlFor="science-media" className="mb-2 block text-sm font-medium">Add photos or a short video (optional)</label><Input id="science-media" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" multiple onChange={(event) => handleMediaSelection(event.target.files)} className="h-auto py-2" /><p className="mt-1 text-xs text-muted-foreground">Up to 3 files · photos up to 8 MB each · videos up to 25 MB each · 30 MB total. Uploads stay private in this release; community media sharing is not enabled yet. Gemini reviews your notes and one optional photo; video analysis is coming later.</p>{mediaFiles.length > 0 && <ul className="mt-2 space-y-1 text-xs text-muted-foreground">{mediaFiles.map((file) => <li key={file.name} className="flex items-center justify-between gap-2"><span className="truncate">{file.name}</span><span>{(file.size / 1024 / 1024).toFixed(1)} MB</span></li>)}</ul>}</div><Button className="w-full" disabled={saving || aiReviewing} onClick={() => void submitAttempt()}>{saving || aiReviewing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}{aiReviewing ? "AI is reviewing your experiment..." : "Save results & get AI feedback"}</Button></div>}
             </div>
+          </div>
+        </div>
+      )}
+
+      {aiFeedback && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/60 p-3" role="dialog" aria-modal="true" aria-labelledby="science-ai-feedback-title">
+          <div className="w-full max-w-2xl rounded-2xl border border-border bg-background p-5 shadow-2xl sm:p-7">
+            <div className="mb-4 flex items-center justify-between gap-3"><div><Badge className="mb-2"><Sparkles className="mr-1 h-3 w-3" /> Gemini Science Guide</Badge><h2 id="science-ai-feedback-title" className="text-2xl font-bold">Your experiment review</h2></div><Button size="icon" variant="ghost" aria-label="Close AI feedback" onClick={() => setAiFeedback(null)}><X className="h-4 w-4" /></Button></div>
+            <p className="text-sm leading-6 text-muted-foreground">{aiFeedback.summary}</p>
+            <div className="mt-4 rounded-xl bg-emerald-500/5 p-4"><h3 className="mb-1 font-semibold">The science behind it</h3><p className="text-sm leading-6">{aiFeedback.science_connection}</p></div>
+            {[{title:"What you did well",items:aiFeedback.what_went_well},{title:"What might explain your result",items:aiFeedback.possible_reasons},{title:"Try this next",items:aiFeedback.next_steps}].map((section) => <div key={section.title} className="mt-4"><h3 className="mb-2 font-semibold">{section.title}</h3><ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">{section.items.map((item) => <li key={item}>{item}</li>)}</ul></div>)}
+            <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3"><p className="text-sm"><strong>Safety reminder:</strong> {aiFeedback.safety_reminder}</p></div>
+            <Button className="mt-5 w-full" onClick={() => setAiFeedback(null)}>Continue exploring</Button>
           </div>
         </div>
       )}
