@@ -32,15 +32,16 @@ describe('Navigation Menu Routes Audit', () => {
     }
   });
 
-  it('keeps everyday science in its own public Learn section, separate from IQ Test', () => {
-    const learnSection = PUBLIC_NAVIGATION_SECTIONS.find((section) => section.name === 'Learn');
+  it('places everyday science inside Activity without creating a separate Learn section', () => {
     const activitySection = NAVIGATION_SECTIONS.find((section) => section.name === 'Activity');
 
-    expect(learnSection?.items).toEqual([
+    expect(NAVIGATION_SECTIONS.some((section) => section.name === 'Learn')).toBe(false);
+    expect(PUBLIC_NAVIGATION_SECTIONS.some((section) => section.name === 'Learn')).toBe(false);
+    expect(activitySection?.items).toEqual(expect.arrayContaining([
+      { name: 'IQ Test', href: '/brain' },
       { name: 'Explain Science Around You', href: '/science-around-you' },
-    ]);
-    expect(activitySection?.items.some((item) => item.name === 'IQ Test' && item.href === '/brain')).toBe(true);
-    expect(activitySection?.items.some((item) => item.name === 'Explain Science Around You')).toBe(false);
+    ]));
+    expect(activitySection?.items.filter((item) => item.href === '/science-around-you')).toHaveLength(1);
   });
 
   it('properly redirects alias paths to canonical destinations', () => {
