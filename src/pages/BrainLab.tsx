@@ -7,7 +7,6 @@ import {
   Compass,
   Grid3X3,
   Lightbulb,
-  LockKeyhole,
   Puzzle,
   Sparkles,
   Target,
