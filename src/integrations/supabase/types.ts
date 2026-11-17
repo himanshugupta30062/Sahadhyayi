@@ -4392,6 +4392,53 @@ export type Database = {
           },
         ]
       }
+      reading_room_members: {
+        Row: {
+          joined_at: string
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          joined_at?: string
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          joined_at?: string
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_room_members_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "reading_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_room_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_room_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_room_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reading_room_messages: {
         Row: {
           body: string
@@ -6590,6 +6637,22 @@ export type Database = {
         }
         Returns: string
       }
+      create_reading_room: {
+        Args: { p_book_id: string; p_name: string }
+        Returns: {
+          book_id: string
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "reading_rooms"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       disable_my_location_sharing: { Args: never; Returns: undefined }
       dispatch_reading_group_daily_digest: { Args: never; Returns: number }
       dispatch_reading_group_event_reminders: { Args: never; Returns: number }
@@ -6879,6 +6942,19 @@ export type Database = {
           username: string
         }[]
       }
+      get_reading_rooms: {
+        Args: never
+        Returns: {
+          book_author: string
+          book_id: string
+          book_title: string
+          cover_image_url: string
+          created_at: string
+          id: string
+          is_member: boolean
+          name: string
+        }[]
+      }
       get_sequel_vote_counts: {
         Args: { p_book_id: string }
         Returns: {
@@ -6941,6 +7017,7 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      is_reading_room_member: { Args: { p_room_id: string }; Returns: boolean }
       leave_reading_group: { Args: { p_group_id: string }; Returns: undefined }
       link_books_to_authors: { Args: never; Returns: number }
       match_book_expert_chunks: {
