@@ -10,6 +10,9 @@ export function normalizeCoverUrl(url?: string | null): string | null {
   const trimmed = url.trim();
   if (!trimmed || /^(null|undefined)$/i.test(trimmed)) return null;
 
+  // Same-origin storage paths are valid image sources too.
+  if (trimmed.startsWith('/') && !trimmed.startsWith('//')) return trimmed;
+
   let parsed: URL;
   try {
     parsed = new URL(trimmed);
