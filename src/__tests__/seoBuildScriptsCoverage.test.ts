@@ -166,7 +166,7 @@ describe('SEO build-script coverage', () => {
     expect(book).toContain('<p>By <a href="/authors/munshi-premchand">Munshi Premchand</a></p>');
     expect(book).toContain('<section aria-label="Book details"><h2>About this book</h2>');
     expect(book).toContain('<dt>Genre</dt><dd><a href="/library?genre=Literary%20fiction">Literary fiction</a></dd>');
-    expect(book).toContain('More books by Munshi Premchand and in this genre');
+    expect(book).toContain('Related books by Munshi Premchand or in this genre');
     expect(book).toContain('<a href="/book/book-2">A Related Literary Work</a>');
     expect(book).toContain('<dt>Publication year</dt><dd>1936</dd>');
     expect(book).toContain('<dt>ISBN</dt><dd>9780000000001</dd>');
