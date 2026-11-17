@@ -42,6 +42,7 @@ import {
   Database,
   Plus,
   Lock,
+  FileCheck2,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -50,7 +51,10 @@ export const AdminLibraryQuality: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [activeTab, setActiveTab] = useState<'audit' | 'history' | 'vault'>('audit');
+  const [activeTab, setActiveTab] = useState<'audit' | 'history' | 'vault' | 'assets'>('audit');
+  const [assetAuditRunning, setAssetAuditRunning] = useState(false);
+  const [assetAuditResults, setAssetAuditResults] = useState<Array<{ id: string; title: string; coverScore: number; pdfScore: number; overall: number; status: string; error?: string }>>([]);
+  const [assetAuditProcessed, setAssetAuditProcessed] = useState(0);
   const [filter, setFilter] = useState<'all' | 'high_confidence' | 'needs_review'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [vaultSearchQuery, setVaultSearchQuery] = useState('');
@@ -141,6 +145,31 @@ export const AdminLibraryQuality: React.FC = () => {
       });
     },
   });
+
+  const handleRunAssetAudit = async () => {
+    setAssetAuditRunning(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('audit-book-assets', {
+        body: { limit: 20 },
+      });
+      if (error) throw error;
+      const results = Array.isArray(data?.results) ? data.results : [];
+      setAssetAuditResults((previous) => [...results, ...previous].slice(0, 40));
+      setAssetAuditProcessed((previous) => previous + Number(data?.processed || results.length));
+      toast({
+        title: 'Asset audit batch completed',
+        description: `${Number(data?.processed || results.length)} books inspected. Structural checks are saved for admin review; no book was auto-approved.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Asset audit failed',
+        description: error instanceof Error ? error.message : 'Could not run the book asset audit.',
+        variant: 'destructive',
+      });
+    } finally {
+      setAssetAuditRunning(false);
+    }
+  };
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups((prev) => ({
@@ -344,6 +373,15 @@ export const AdminLibraryQuality: React.FC = () => {
                 Audit Logs
               </button>
               <button
+                onClick={() => setActiveTab('assets')}
+                className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
+                  activeTab === 'assets' ? 'bg-white shadow-xs text-slate-900 font-semibold' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <FileCheck2 className="w-3.5 h-3.5" />
+                Asset Checks
+              </button>
+              <button
                 onClick={() => setActiveTab('vault')}
                 className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
                   activeTab === 'vault' ? 'bg-white shadow-xs text-slate-900 font-semibold' : 'text-slate-600 hover:text-slate-900'
@@ -371,6 +409,82 @@ export const AdminLibraryQuality: React.FC = () => {
             </Button>
           </div>
         </div>
+
+        {activeTab === 'assets' && (
+          <div className="space-y-6">
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <FileCheck2 className="w-5 h-5 text-indigo-600" />
+                    Book cover & PDF verification
+                  </h2>
+                  <p className="text-sm text-slate-500 mt-1">
+                    Inspect real image responses, dimensions, PDF signatures and structural markers in batches of 20.
+                  </p>
+                </div>
+                <Button onClick={handleRunAssetAudit} disabled={assetAuditRunning}>
+                  <RefreshCw className={`w-4 h-4 mr-2 ${assetAuditRunning ? 'animate-spin' : ''}`} />
+                  {assetAuditRunning ? 'Checking assets…' : 'Audit next 20 books'}
+                </Button>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="rounded-xl bg-slate-50 p-3">
+                  <div className="text-xs text-slate-500">Inspected this session</div>
+                  <div className="text-2xl font-bold tabular-nums">{assetAuditProcessed}</div>
+                </div>
+                <div className="rounded-xl bg-slate-50 p-3">
+                  <div className="text-xs text-slate-500">Results shown</div>
+                  <div className="text-2xl font-bold tabular-nums">{assetAuditResults.length}</div>
+                </div>
+                <div className="rounded-xl bg-amber-50 p-3 col-span-2 sm:col-span-1">
+                  <div className="text-xs text-amber-800">Automatic approvals</div>
+                  <div className="text-2xl font-bold text-amber-900">0</div>
+                </div>
+              </div>
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+                Automated checks do not yet perform OCR or visual title/author matching. Every result is saved as <strong>Needs review</strong>; a URL or structural pass alone never marks a book verified.
+              </div>
+            </div>
+            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+              <div className="p-4 border-b border-slate-100 font-semibold text-sm">Latest asset audit results</div>
+              {assetAuditResults.length === 0 ? (
+                <div className="p-10 text-center text-sm text-slate-500">No asset checks have been run in this session.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 text-slate-600">
+                      <tr>
+                        <th className="p-3">Book</th>
+                        <th className="p-3">Cover / 70</th>
+                        <th className="p-3">PDF / 70</th>
+                        <th className="p-3">Combined / 100</th>
+                        <th className="p-3">Review status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {assetAuditResults.map((result) => (
+                        <tr key={result.id}>
+                          <td className="p-3 min-w-56">
+                            <div className="font-medium text-slate-900">{result.title}</div>
+                            <div className="font-mono text-[10px] text-slate-400">{result.id}</div>
+                          </td>
+                          <td className="p-3 tabular-nums">{result.coverScore}</td>
+                          <td className="p-3 tabular-nums">{result.pdfScore}</td>
+                          <td className="p-3 tabular-nums font-semibold">{result.overall}</td>
+                          <td className="p-3">
+                            <Badge variant="outline" className="border-amber-200 text-amber-800">{result.error ? 'Update failed' : 'Needs review'}</Badge>
+                            {result.error && <div className="text-[10px] text-red-600 mt-1">{result.error}</div>}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {activeTab === 'audit' && (
           <>
