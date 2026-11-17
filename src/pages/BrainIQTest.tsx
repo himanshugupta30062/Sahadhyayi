@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { scoreBrainAssessment } from "@/lib/brain/scoring";\nimport { generateMatrixPuzzle, type MatrixDifficulty, type MatrixPuzzle } from "@/lib/brain/matrixGenerator";\nimport MatrixTile from "@/components/brain/MatrixTile";
+import { scoreBrainAssessment } from "@/lib/brain/scoring";
+import { generateMatrixPuzzle, type MatrixDifficulty, type MatrixPuzzle } from "@/lib/brain/matrixGenerator";
+import MatrixTile from "@/components/brain/MatrixTile";
 
 type Domain = "Visual patterns" | "Logic" | "Number patterns" | "Verbal reasoning";
 type Question = { id: string; domain: Domain; prompt: string; options: string[]; answer: number; explanation: string; visual?: string[]; visualOptions?: string[]; matrixPuzzle?: MatrixPuzzle };
