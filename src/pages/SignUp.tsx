@@ -191,11 +191,11 @@ const SignUp = () => {
           <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-orange-200/20 dark:bg-orange-500/10 blur-3xl" />
         </div>
 
-        <div className="auth-page-enter "w-full max-w-md relative z-10"
+        <div className="auth-page-enter w-full max-w-md relative z-10"
         >
           <Card className="border-none shadow-elevated bg-white/95 dark:bg-card/95 backdrop-blur-sm rounded-2xl overflow-hidden">
             <CardHeader className="text-center pb-2 pt-8">
-              <div className="auth-icon-enter "mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/25"
+              <div className="auth-icon-enter mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/25"
               >
                 <UserPlus className="w-8 h-8 text-white" />
               </div>
