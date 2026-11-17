@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Activity, ArrowUpRight, BookOpen, CalendarDays, FileCheck2, MessageSquare, ShieldCheck, Users, UserRoundCog, WandSparkles } from "lucide-react";
+import { Activity, ArrowUpRight, Beaker, BookOpen, CalendarDays, FileCheck2, MessageSquare, ShieldCheck, Users, UserRoundCog, WandSparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client-universal";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ const shortcuts = [
   { title: "Review PDF submissions", description: "Inspect quarantined uploads and verification results.", href: "/admin/book-pdf-reviews", icon: FileCheck2 },
   { title: "Manage the library", description: "Review library quality and archived records.", href: "/admin/library-quality", icon: BookOpen },
   { title: "Manage platform access", description: "Assign roles and configure granular permissions.", href: "/admin/roles", icon: UserRoundCog },
+  { title: "Science Lab moderation", description: "Review experiment observations before they are shared publicly.", href: "/admin/science-lab", icon: Beaker },
   { title: "Review user feedback", description: "Read feedback submitted by the community.", href: "/admin/feedback", icon: MessageSquare },
   { title: "Website analytics", description: "Inspect visits and engagement activity.", href: "/admin/visitors", icon: Activity },
   { title: "Enrich author records", description: "Improve author metadata and profile completeness.", href: "/admin/author-enrichment", icon: WandSparkles },
