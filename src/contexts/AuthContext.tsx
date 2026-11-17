@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { Session, User } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client-universal";
-import { recordAuthAudit } from '@/lib/authAudit';
+import { recordAuthAudit } from "@/lib/authAudit";
 
 type AuthContextType = {
   user: User | null;
@@ -21,6 +21,22 @@ const AuthContext = createContext<AuthContextType>(null!);
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);
 
+/**
+ * Supabase auth callbacks run while the auth client's internal lock may be held.
+ * Never make another Supabase request from inside the callback: defer optional
+ * telemetry until the callback has returned and the auth operation can release
+ * its lock. Telemetry must never delay session restoration or sign-in.
+ */
+const deferAuthAudit = (
+  event: Parameters<typeof recordAuthAudit>[0],
+  method: Parameters<typeof recordAuthAudit>[1],
+  details?: Parameters<typeof recordAuthAudit>[2],
+) => {
+  setTimeout(() => {
+    void recordAuthAudit(event, method, details);
+  }, 0);
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -28,80 +44,95 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    let mounted = true;
+
+    // Register the listener first. INITIAL_SESSION is the single source of
+    // truth for restoring persisted sessions; do not race it with getSession().
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, sess) => {
-        setSession(sess);
-        setUser(sess?.user ?? null);
+      (event, nextSession) => {
+        if (!mounted) return;
+
+        setSession(nextSession);
+        setUser(nextSession?.user ?? null);
+        // A null INITIAL_SESSION is a valid signed-out state, not a loading error.
         setLoading(false);
-        if (event === 'SIGNED_IN' && sess?.user) {
-          void recordAuthAudit('sign_in_succeeded', 'unknown', { userId: sess.user.id });
+
+        if (event === "SIGNED_IN" && nextSession?.user) {
+          deferAuthAudit("sign_in_succeeded", "unknown", {
+            userId: nextSession.user.id,
+          });
         }
+
         if (event === "SIGNED_OUT") {
-          try {
-            queryClient.clear();
-          } catch {
-            // Ignore cache reset issues if query client is unmounted
-          }
+          // Cache clearing is local-only and safe inside this synchronous callback.
+          queryClient.clear();
         }
-      }
+      },
     );
 
-    // Do not race getSession() against this listener; INITIAL_SESSION owns startup.
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [queryClient]);
 
   const signIn = async (email: string, password: string, captchaToken?: string) => {
-    void recordAuthAudit('sign_in_attempted', 'password');
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-      ...(captchaToken ? { options: { captchaToken } } : {}),
-    });
-    if (error) {
-      const code = typeof (error as { code?: unknown }).code === 'string'
-        ? (error as { code: string }).code
-        : 'auth_error';
-      void recordAuthAudit('sign_in_failed', 'password', { errorCode: code });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+        ...(captchaToken ? { options: { captchaToken } } : {}),
+      });
+
+      if (error) {
+        const code = typeof (error as { code?: unknown }).code === "string"
+          ? (error as { code: string }).code
+          : "auth_error";
+        deferAuthAudit("sign_in_attempted", "password");
+        deferAuthAudit("sign_in_failed", "password", { errorCode: code });
+        throw error;
+      }
+
+      if (data.session) {
+        setUser(data.session.user);
+        setSession(data.session);
+      }
+      // Record the attempt only after the auth request has released its lock.
+      deferAuthAudit("sign_in_attempted", "password");
+    } catch (error) {
+      // Network/transport exceptions do not necessarily arrive as AuthError.
+      // Record them after the failed auth operation, without masking the error.
+      if (!(error && typeof error === "object" && "status" in error)) {
+        deferAuthAudit("sign_in_attempted", "password");
+        deferAuthAudit("sign_in_failed", "password", { errorCode: "network_or_transport_error" });
+      }
       throw error;
-    }
-    if (data.session) {
-      setUser(data.session.user);
-      setSession(data.session);
     }
   };
 
   const signOut = async () => {
-    try {
-      // Revoke all sessions when the Auth user still exists.
-      const { error } = await supabase.auth.signOut({ scope: "global" });
+    // Prefer revoking all sessions. If that fails (e.g. a deleted account or
+    // transient server issue), still attempt to clear this browser's session.
+    const { error: globalError } = await supabase.auth.signOut({ scope: "global" });
+    if (globalError) {
+      const { error: localError } = await supabase.auth.signOut({ scope: "local" });
+      if (localError) {
+        // Keep the in-memory state consistent with the SDK's still-present
+        // session instead of pretending the user has been signed out.
+        throw localError;
+      }
+    }
 
-      if (error) {
-        // A deleted account cannot have its global sessions revoked. Still
-        // remove this browser's stale session so the user can sign in again.
-        const { error: localError } = await supabase.auth.signOut({ scope: "local" });
-        if (localError) {
-          console.warn("Local signOut warning:", localError);
-        }
-      }
-    } catch (err) {
-      console.warn("SignOut network error:", err);
-    } finally {
-      // Never leave the UI in an authenticated state after a logout attempt.
-      setUser(null);
-      setSession(null);
-      try {
-        queryClient.clear();
-      } catch {
-        // Ignore cache clear error
-      }
-      try {
-        localStorage.removeItem("sessionStart");
-        localStorage.removeItem("lastActivity");
-        localStorage.removeItem("browserSession");
-      } catch {
-        // Ignore storage cleanup issues
-      }
+    setUser(null);
+    setSession(null);
+    queryClient.clear();
+
+    try {
+      localStorage.removeItem("sessionStart");
+      localStorage.removeItem("lastActivity");
+      localStorage.removeItem("browserSession");
+    } catch {
+      // Storage cleanup is best-effort; sign-out itself has already succeeded.
     }
   };
 
