@@ -44,6 +44,7 @@ import {
 } from '@/hooks/useCommunityPulse';
 import { useToast } from '@/hooks/use-toast';
 import './CommunityPulseDialog.theme.css';
+import AuthActivityPanel from './AuthActivityPanel';
 
 export type CommunityPulseDialogProps = {
   open: boolean;
@@ -200,7 +201,7 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
   } = pulse;
 
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<'overview' | 'visitors' | 'insights' | 'diagnostics'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'visitors' | 'insights' | 'diagnostics' | 'auth'>('overview');
   const [metricView, setMetricView] = useState<'views' | 'unique' | 'dual'>('views');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [showAllCountries, setShowAllCountries] = useState(false);
@@ -568,6 +569,26 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
 
             {isAdmin && (
               <button
+                onClick={() => setActiveTab('auth')}
+                role="tab"
+                id="pulse-tab-auth"
+                aria-controls="pulse-panel-auth"
+                aria-selected={activeTab === 'auth'}
+                tabIndex={activeTab === 'auth' ? 0 : -1}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
+                  activeTab === 'auth'
+                    ? 'bg-[#18241e] text-[#D5B16D] shadow-sm border border-[#2f4639]/60'
+                    : 'text-stone-400 hover:text-stone-200'
+                }`}
+              >
+                <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                <span>Auth Activity</span>
+                <span className="text-[9px] uppercase tracking-wider px-1 py-0.2 rounded bg-emerald-950/70 text-emerald-400 font-bold border border-emerald-800/40">Admin</span>
+              </button>
+            )}
+
+            {isAdmin && (
+              <button
                 onClick={() => setActiveTab('diagnostics')}
                 role="tab"
                 id="pulse-tab-diagnostics"
@@ -606,6 +627,8 @@ export const CommunityPulseDialog: React.FC<CommunityPulseDialogProps> = ({
 
         {/* Scrollable Body: Content Area Scrolls Smoothly with No Nested Scrollbars */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-6 md:px-8 py-4 sm:py-6 space-y-5 sm:space-y-6 min-w-0">
+          {activeTab === 'auth' && isAdmin && <AuthActivityPanel />}
+
           {/* TAB 1: OVERVIEW */}
           {activeTab === 'overview' && (
             <div role="tabpanel" id="pulse-panel-overview" aria-labelledby="pulse-tab-overview" tabIndex={0}>
