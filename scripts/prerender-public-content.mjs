@@ -82,7 +82,7 @@ function createPage({ title, description, route, image, type, entityType, entity
     ...(mainEntity ? { mainEntity } : {}),
   };
   const jsonLd = JSON.stringify(structuredData).replace(/</g, "\\u003c");
-  html = html.replace("</head>", `  <script type="application/ld+json">${jsonLd}</script>\\n</head>`);
+  html = html.replace("</head>", `  <script type="application/ld+json">${jsonLd}</script>\n</head>`);
   const canonicalTag = `<link rel="canonical" href="${escapeHtml(canonical)}" />`;
   const canonicalPattern = /<link[ \t]{1,16}[^>\r\n]{0,2048}rel="canonical"[^>\r\n]{0,2048}>/i;
   html = canonicalPattern.test(html)
