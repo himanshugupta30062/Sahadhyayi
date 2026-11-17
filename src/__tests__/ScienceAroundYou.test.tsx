@@ -23,7 +23,8 @@ vi.mock("@/lib/science/attempts", () => ({
 
 function makeEvaluation(score = 80) {
   return {
-    questionSetVersion: "everyday-science-v1",
+    difficulty: "beginner",
+    questionSetVersion: "everyday-science-v1-beginner-difficulty-calibration-v1",
     overallScore: score,
     categoryScores: {
       Physics: score,
@@ -91,6 +92,7 @@ describe("Explain Science Around You", () => {
 
     expect(mocks.invoke).toHaveBeenCalledWith("everyday-science-evaluate", {
       body: expect.objectContaining({
+        difficulty: "beginner",
         answers: expect.arrayContaining([
           expect.objectContaining({ questionId: expect.any(String), answer: expect.stringContaining("Moving air") }),
         ]),
@@ -125,6 +127,7 @@ describe("Explain Science Around You", () => {
         question_count: 10,
         category_scores: { Physics: 68 },
         created_at: "2026-11-16T10:00:00.000Z",
+        difficulty: "beginner",
       }])
       .mockResolvedValue([]);
     mocks.saveAttempt.mockResolvedValue(true);
