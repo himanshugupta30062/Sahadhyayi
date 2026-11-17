@@ -339,7 +339,7 @@ if (booksError) {
       ? { name: authorName, ...(authorSlug ? { url: `/authors/${authorSlug}` } : {}) }
       : undefined;
     writeRoute(route, createPage({
-      title: `${title} - Book Details | Sahadhyayi`,
+      title: `${title} - Read Online & Book Details | Sahadhyayi`,
       description,
       route,
       image: book.cover_image_url,
