@@ -53,7 +53,7 @@ function setMeta(html, attribute, key, content) {
   return pattern.test(html) ? html.replace(pattern, tag) : html.replace("</head>", `  ${tag}\n</head>`);
 }
 
-function createPage({ title, description, route, image, type, entityType, entityName, bodyText, publishedAt, modifiedAt, authorName, wordCount }) {
+function createPage({ title, description, route, image, type, entityType, entityName, bodyText, publishedAt, modifiedAt, authorName, wordCount, schemaType, about, breadcrumbs }) {
   const canonical = `${SITE_URL}${route}`;
   let html = template.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
   html = setMeta(html, "name", "description", description);
@@ -88,12 +88,24 @@ function createPage({ title, description, route, image, type, entityType, entity
         : null;
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": "WebPage",
+    "@type": schemaType || "WebPage",
     name: title,
     description,
     url: canonical,
     isPartOf: { "@type": "WebSite", name: "Sahadhyayi", url: SITE_URL },
     ...(mainEntity ? { mainEntity } : {}),
+    ...(Array.isArray(about) && about.length ? { about: about.map((name) => ({ "@type": "Thing", name })) } : {}),
+    ...(Array.isArray(breadcrumbs) && breadcrumbs.length ? {
+      breadcrumb: {
+        "@type": "BreadcrumbList",
+        itemListElement: breadcrumbs.map((item, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: item.name,
+          item: `${SITE_URL}${item.route}`,
+        })),
+      },
+    } : {}),
   };
   const jsonLd = JSON.stringify(structuredData).replace(/</g, "\\u003c");
   html = html.replace("</head>", `  <script type="application/ld+json">${jsonLd}</script>\n</head>`);
@@ -130,7 +142,7 @@ function writeRoute(route, html) {
 const publicPages = [
   { route: "/", title: "Sahadhyayi — Discover Books, Read & Connect with Readers", description: "Discover books, read stories and articles, explore authors, and connect with readers on Sahadhyayi—a welcoming online reading community built to make reading a shared habit." },
   { route: "/library", title: "Online Book Library - Discover Books to Read | Sahadhyayi", description: "Discover books across genres, explore your next read, and build a consistent reading habit with Sahadhyayi's online book library." },
-  { route: "/research-papers", title: "Research Papers & Academic Studies | Sahadhyayi", description: "Discover research papers, academic studies, preprints and technical reports across disciplines." },
+  { route: "/research-papers", title: "Research Papers & Academic Studies | Sahadhyayi", description: "Discover research papers, academic studies, preprints and technical reports across disciplines.", schemaType: "CollectionPage", about: ["Artificial intelligence", "Machine learning", "Climate science", "Psychology", "Medicine", "Physics"], breadcrumbs: [{ name: "Home", route: "/" }, { name: "Research Papers", route: "/research-papers" }] },
   { route: "/articles", title: "Reading Articles, Book Ideas & Literary Insights | Sahadhyayi", description: "Explore thoughtful articles about books, reading habits, literature, and ideas from the Sahadhyayi reading community." },
   { route: "/authors", title: "Discover Authors and Their Books | Sahadhyayi", description: "Explore author profiles, discover their books, and connect with the people behind the stories on Sahadhyayi." },
   { route: "/scientists", title: "Scientists & Their Discoveries | Sahadhyayi", description: "Explore the lives, ideas and discoveries of Indian scientists and remarkable researchers from around the world, with biographies and references." },
