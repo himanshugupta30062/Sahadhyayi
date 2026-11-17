@@ -50,13 +50,15 @@ export const BOOK_SELECT_COLUMNS = BASE_BOOK_SELECT_COLUMNS;
 
 // Sorting rules (displayed to users via SortingInfoTooltip)
 export const SORTING_RULES = [
-  { label: 'Verified PDF + cover + complete metadata', points: 'Top Tier (12,000+)', priority: 'highest' },
-  { label: 'Verified PDF + cover (partial metadata)', points: 'Top Tier (11,000+)', priority: 'highest' },
-  { label: 'Verified PDF without cover', points: 'High Tier (10,000+)', priority: 'high' },
-  { label: 'Verified EPUB / official full text + cover', points: 'High Tier (9,000+)', priority: 'high' },
-  { label: 'Supported online reader + cover', points: 'Medium Tier (8,000+)', priority: 'medium' },
-  { label: 'External book/resource page + cover', points: 'Medium Tier (6,000+)', priority: 'medium' },
-  { label: 'Metadata-only genuine book with cover', points: 'Lower Tier (4,000+)', priority: 'low' },
+  { label: 'Verified PDF + cover + complete metadata', points: 'Top Tier (14,500+)', priority: 'highest' },
+  { label: 'Verified PDF + cover (partial metadata)', points: 'Top Tier (14,000+)', priority: 'highest' },
+  { label: 'Verified EPUB / official full text + cover', points: 'High Tier (13,000+)', priority: 'high' },
+  { label: 'Supported online reader + cover (including Google Books previews)', points: 'High Tier (12,000+)', priority: 'high' },
+  { label: 'Verified PDF without cover', points: 'High Tier (11,500+)', priority: 'high' },
+  { label: 'Verified EPUB / official full text without cover', points: 'Medium Tier (11,000+)', priority: 'medium' },
+  { label: 'Supported online reader without cover', points: 'Medium Tier (10,500+)', priority: 'medium' },
+  { label: 'External book/resource page + cover', points: 'Medium Tier (9,200+)', priority: 'medium' },
+  { label: 'Metadata-only genuine book with cover', points: 'Lower Tier (7,500+)', priority: 'low' },
   { label: 'Academic papers, technical reports & preprints', points: 'Discovery Tier (2,500+)', priority: 'low' },
   { label: 'Metadata-only records without cover photo', points: 'Bottom (1,500+)', priority: 'low' },
   { label: 'Per-page diversity (max 1 / author & title per page)', points: 'Spread across pages', priority: 'info' },
@@ -448,16 +450,22 @@ export function isMetadataOnly(book: any): boolean {
 }
 
 /**
- * Calculates book ranking score according to the book-first hierarchy:
- * 1. Verified PDF + cover + complete metadata (12,000+)
- * 2. Verified PDF + cover + partial metadata (11,000+)
- * 3. Verified PDF without cover (10,000+)
- * 4. Other verified full text (EPUB / official HTML) (9,000+)
- * 5. Supported online reader + cover (8,000+)
- * 6. External resource page + cover (6,000+)
- * 7. Metadata-only genuine books with cover (4,000+)
- * 8. Academic papers, reports & preprints (2,500+)
- * 9. Incomplete records / ghost entries (1,500 or lower)
+ * Calculates book ranking score using a cover-aware, access-aware hierarchy:
+ * 1. Verified direct PDF + valid cover + complete metadata (14,500+)
+ * 2. Verified direct PDF + valid cover + partial metadata (14,000+)
+ * 3. Other verified full text + valid cover (13,000+)
+ * 4. Supported online reader + valid cover (12,000+)
+ * 5. Verified direct PDF without a cover (11,500+)
+ * 6. Other verified full text without a cover (11,000+)
+ * 7. Supported online reader without a cover (10,500+)
+ * 8. External resource page + cover (9,200+)
+ * 9. Metadata-only genuine books with cover (7,500+)
+ * 10. Academic papers, reports & preprints (2,500+)
+ * 11. Incomplete records / ghost entries (1,500 or lower)
+ *
+ * A Google Books preview is an online reader, not a downloadable PDF. Its valid
+ * cover now keeps it ahead of a coverless PDF record in the visual browse catalog,
+ * while a real PDF with a cover remains the highest-priority edition.
  */
 export const getBookCompletenessScore = (book: any): number => {
   if (!book) return 0;
@@ -476,35 +484,35 @@ export const getBookCompletenessScore = (book: any): number => {
     if (withCover) baseScore += 300;
   } else if (isVerifiedPdf(book)) {
     if (withCover && completeMeta) {
-      baseScore = 12000; // Tier 1: Genuine book + valid cover + complete metadata + verified direct PDF
+      baseScore = 14500; // Verified direct PDF + cover + complete bibliographic metadata
     } else if (withCover) {
-      baseScore = 11000;  // Tier 2: Genuine book + valid cover + verified direct PDF (partial metadata)
+      baseScore = 14000; // Verified direct PDF + cover, even when metadata is partial
     } else {
-      baseScore = 10000;  // Tier 3: verified PDF remains above every non-PDF resource
+      baseScore = 11500; // A real PDF without a cover remains valuable, but loses visual priority
     }
   } else if (hasOtherVerifiedFullText(book)) {
     if (withCover && completeMeta) {
-      baseScore = 9000;  // Tier 4: Verified EPUB / official HTML + valid cover + complete metadata
+      baseScore = 13500; // Verified EPUB / official HTML + cover + complete metadata
     } else if (withCover) {
-      baseScore = 8800;  // Tier 4: verified full text with cover: Verified EPUB / official HTML + valid cover
+      baseScore = 13000; // Verified EPUB / official HTML + cover
     } else {
-      baseScore = 8500;  // Verified full text without cover
+      baseScore = 11000; // Verified full text without cover
     }
   } else if (resourceType === 'online_reader') {
     if (withCover && completeMeta) {
-      baseScore = 8000;  // Tier 5: Genuine book + valid cover + complete metadata + supported online reader
+      baseScore = 12500; // Supported preview/reader + cover + complete metadata
     } else if (withCover) {
-      baseScore = 7800;  // Tier 5: Genuine book + valid cover + supported online reader
+      baseScore = 12000; // Supported preview/reader + cover
     } else {
-      baseScore = 7000;  // Online reader without cover
+      baseScore = 10500; // Supported reader without cover
     }
   } else if (resourceType === 'external_book_page') {
     if (withCover && completeMeta) {
-      baseScore = 6000;  // External book page + cover + complete metadata
+      baseScore = 9500; // External book/resource page + cover + complete metadata
     } else if (withCover) {
-      baseScore = 5500;  // External book page + cover
+      baseScore = 9200; // External book/resource page + cover
     } else {
-      baseScore = 4500;
+      baseScore = 8500; // External resource page without cover
     }
   } else {
     // resourceType === 'no_reading_resource'
@@ -512,12 +520,12 @@ export const getBookCompletenessScore = (book: any): number => {
     const desc = (book.description || '').trim();
 
     if (!withCover && (!desc || desc.length < 20) && (!title || title.length < 3)) {
-      baseScore = 0;     // Empty ghost record
+      baseScore = 0; // Empty ghost record
     } else if (withCover) {
-      baseScore = 4000;  // Metadata-only genuine book with cover
-      if (completeMeta) baseScore += 300; // 4,300
+      baseScore = 7500; // Metadata-only genuine book with a valid cover
+      if (completeMeta) baseScore += 300;
     } else {
-      baseScore = 1500;  // Metadata-only book without cover
+      baseScore = 1500; // Metadata-only book without a cover
     }
   }
 

@@ -288,63 +288,94 @@ describe('Library Book Sorting Hierarchy', () => {
 
   // End-to-end score ranking order & cover photo preference
   describe('Ranking hierarchy & cover photo preference', () => {
-    it('ranks verified PDF with complete metadata & cover at the top (Tier 1 > 10,000)', () => {
+    it('ranks verified PDF with complete metadata & cover at the top (Tier 1 > 14,500)', () => {
       const score = getBookCompletenessScore(completeVerifiedPdf);
-      expect(score).toBeGreaterThanOrEqual(12000);
+      expect(score).toBeGreaterThanOrEqual(14500);
     });
 
-    it('ranks verified PDF with cover photo in Tier 2 (8,800-9,999)', () => {
+    it('ranks verified PDF with cover photo above all preview-only editions (14,000+)', () => {
       const scoreWithCover = getBookCompletenessScore(partialVerifiedPdfNoDesc);
-      expect(scoreWithCover).toBeGreaterThanOrEqual(11000);
-      expect(scoreWithCover).toBeLessThan(12000);
+      expect(scoreWithCover).toBeGreaterThanOrEqual(14000);
+      expect(scoreWithCover).toBeLessThan(14500);
     });
 
-    it('ranks verified EPUB / full-text with cover photo in Top Tier (9,600-10,000)', () => {
+    it('ranks verified EPUB / full-text with cover photo below verified PDF editions (13,000+)', () => {
       const scoreEpub = getBookCompletenessScore(verifiedEpubBook);
       const scoreHtml = getBookCompletenessScore(officialHtmlReaderBook);
 
-      expect(scoreEpub).toBeGreaterThanOrEqual(9000);
-      expect(scoreHtml).toBeGreaterThanOrEqual(8800);
+      expect(scoreEpub).toBeGreaterThanOrEqual(13500);
+      expect(scoreHtml).toBeGreaterThanOrEqual(13500);
     });
 
-    it('ranks online-reader books below verified PDFs but above metadata-only records', () => {
+    it('ranks cover-bearing online-reader books above coverless PDFs but below covered PDFs', () => {
       const scorePreview = getBookCompletenessScore(googlePreviewBook);
       const scoreNoCover = getBookCompletenessScore(partialVerifiedPdfNoCover);
       const scoreNasa = getBookCompletenessScore(nasaTechnicalReport);
       const scorePartialPdf = getBookCompletenessScore(partialVerifiedPdfNoDesc);
 
-      expect(scorePreview).toBeGreaterThanOrEqual(8000);
+      expect(scorePreview).toBeGreaterThanOrEqual(12500);
 
-      // Verified PDFs are deliberately higher priority than online readers, even without covers.
+      // A supported preview with a genuine cover outranks a coverless PDF for visual browsing.
       expect(scorePreview).toBeLessThan(scorePartialPdf);
-      expect(scorePreview).toBeLessThan(scoreNoCover);
+      expect(scorePreview).toBeGreaterThan(scoreNoCover);
       expect(scorePreview).toBeGreaterThan(scoreNasa);
     });
 
-    it('ranks genuine books with cover and metadata in High Tier (8,000-8,600), above coverless documents', () => {
+    it('keeps covered preview books ahead of coverless PDFs across catalog pages', () => {
+      const coveredReaders = Array.from({ length: 12 }, (_, index) => ({
+        id: `covered-reader-${index}`,
+        title: `Covered Reader Book ${index}`,
+        author: `Reader Author ${index}`,
+        cover_image_url: `https://example.com/reader-cover-${index}.jpg`,
+        description: `A complete catalog description for covered reader book ${index}.`,
+        language: 'English',
+        pdf_url: `https://books.google.com/books?id=reader-${index}`,
+        created_at: new Date(Date.UTC(2026, 0, 12 - index)).toISOString(),
+      }));
+      const coverlessPdfs = Array.from({ length: 12 }, (_, index) => ({
+        id: `coverless-pdf-${index}`,
+        title: `Coverless PDF Book ${index}`,
+        author: `PDF Author ${index}`,
+        description: `A complete catalog description for coverless PDF book ${index}.`,
+        language: 'English',
+        pdf_url: `https://example.com/books/coverless-${index}.pdf`,
+        created_at: new Date(Date.UTC(2026, 0, 12 - index)).toISOString(),
+      }));
+
+      const sorted = sortBooksByCompleteness([...coverlessPdfs, ...coveredReaders]);
+      const paginated = diversifyBooksPerPage(sorted, 12);
+      const page1 = paginated.slice(0, 12);
+      const page2 = paginated.slice(12, 24);
+
+      expect(page1.map((book) => book.id)).toEqual(coveredReaders.map((book) => book.id));
+      expect(page1.every(hasValidCover)).toBe(true);
+      expect(page2.map((book) => book.id)).toEqual(coverlessPdfs.map((book) => book.id));
+    });
+
+    it('ranks genuine metadata-only books with a cover above document records', () => {
       const scoreMetaWithCover = getBookCompletenessScore(metadataOnlyBook);
       const scoreNoCover = getBookCompletenessScore(partialVerifiedPdfNoCover);
       const scoreNasa = getBookCompletenessScore(nasaTechnicalReport);
 
-      expect(scoreMetaWithCover).toBeGreaterThanOrEqual(4000);
+      expect(scoreMetaWithCover).toBeGreaterThanOrEqual(7500);
       expect(scoreMetaWithCover).toBeLessThan(8500);
 
       expect(scoreMetaWithCover).toBeLessThan(scoreNoCover);
       expect(scoreMetaWithCover).toBeGreaterThan(scoreNasa);
     });
 
-    it('ranks genuine books with verified PDF without cover in Demoted Tier (4,500-6,199)', () => {
+    it('ranks genuine books with verified PDF without cover below covered preview editions', () => {
       const scoreNoCover = getBookCompletenessScore(partialVerifiedPdfNoCover);
       const scoreNasa = getBookCompletenessScore(nasaTechnicalReport);
 
-      expect(scoreNoCover).toBeGreaterThanOrEqual(10000);
-      expect(scoreNoCover).toBeLessThan(11000);
+      expect(scoreNoCover).toBeGreaterThanOrEqual(11500);
+      expect(scoreNoCover).toBeLessThan(12000);
 
       // Genuine book without cover outranks non-book institutional reports
       expect(scoreNoCover).toBeGreaterThan(scoreNasa);
     });
 
-    it('ranks technical reports and preprints in Demoted Tier (3,200-4,499)', () => {
+    it('ranks technical reports and preprints in Discovery Tier (2,500-4,499)', () => {
       const scoreNasa = getBookCompletenessScore(nasaTechnicalReport);
       const scoreGhost = getBookCompletenessScore(ghostRecordBook);
 
@@ -374,14 +405,14 @@ describe('Library Book Sorting Hierarchy', () => {
       // Preserves every book in catalog (Requirement 8)
       expect(sorted).toHaveLength(mixedBooks.length);
       expect(sorted.map(b => b.id)).toEqual([
-        'book-1-complete-pdf',       // Tier 1: complete verified PDF (has cover) (10,000+)
-        'book-3-pdf-no-desc',        // verified PDF with cover (11,000+)
-        'book-2-pdf-no-cover',       // verified PDF without cover (10,000+)
-        'book-4-verified-epub',      // verified EPUB with cover (9,000+)
-        'book-8-google-preview',     // online reader with cover (8,000+)
-        'book-9-metadata-only',      // metadata-only with cover (4,000+)
+        'book-1-complete-pdf',       // Tier 1: complete verified PDF (has cover) (14,500+)
+        'book-3-pdf-no-desc',        // verified PDF with cover (14,000+)
+        'book-4-verified-epub',      // Verified full text with a cover
+        'book-8-google-preview',     // Supported preview with a cover
+        'book-2-pdf-no-cover',       // Verified direct PDF without a cover
+        'book-9-metadata-only',      // metadata-only with cover (7,500+)
         'doc-nasa-report',           // research report (2,500+)
-        'book-10-ghost',             // Tier 8: ghost (0+)
+        'book-10-ghost',             // Bottom tier: ghost (0+)
       ]);
     });
 
@@ -608,7 +639,7 @@ describe('Library Book Sorting Hierarchy', () => {
     // 2. A verified direct-PDF book with a valid cover ranks appropriately
     it('2. ranks a verified direct-PDF book with a valid cover at the top tier', () => {
       const score = getBookCompletenessScore(completeVerifiedPdf);
-      expect(score).toBeGreaterThanOrEqual(12000);
+      expect(score).toBeGreaterThanOrEqual(14500);
       expect(getBookResourceType(completeVerifiedPdf)).toBe('verified_direct_pdf');
     });
 
