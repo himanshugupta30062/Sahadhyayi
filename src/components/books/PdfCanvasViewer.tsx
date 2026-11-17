@@ -57,6 +57,11 @@ export const PdfCanvasViewer: React.FC<PdfCanvasViewerProps> = ({
           const loadingTask = pdfjs.getDocument({
             url: targetUrl,
             withCredentials: false,
+            // Fetch only the pages/chunks the reader needs. This is essential for
+            // large catalog PDFs and avoids downloading the complete file up front.
+            disableStream: true,
+            disableAutoFetch: true,
+            rangeChunkSize: 64 * 1024,
           });
           loadedDoc = await loadingTask.promise;
         } catch (directErr) {
@@ -69,6 +74,10 @@ export const PdfCanvasViewer: React.FC<PdfCanvasViewerProps> = ({
               const proxyTask = pdfjs.getDocument({
                 url: proxiedUrl,
                 withCredentials: false,
+                // The proxy preserves 206 + Content-Range for progressive reading.
+                disableStream: true,
+                disableAutoFetch: true,
+                rangeChunkSize: 64 * 1024,
               });
               loadedDoc = await proxyTask.promise;
             } else {
