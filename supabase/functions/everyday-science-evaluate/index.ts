@@ -63,6 +63,11 @@ function applyBestEffortRateLimit(identifier: string): boolean {
       if (timestamps.every((timestamp) => now - timestamp >= windowMs)) requestTimes.delete(key);
     }
   }
+  // Keep the per-isolate fallback bounded if requests arrive with many distinct IPs.
+  if (requestTimes.size > 2500) {
+    const oldestKey = requestTimes.keys().next().value;
+    if (oldestKey) requestTimes.delete(oldestKey);
+  }
   return true;
 }
 
@@ -88,7 +93,11 @@ serve(async (req: Request) => {
 
   let body: { answers?: unknown };
   try {
-    body = await req.json();
+    const rawBody = await req.text();
+    if (new TextEncoder().encode(rawBody).byteLength > MAX_REQUEST_BYTES) {
+      return response({ error: "The assessment payload is too large." }, 413);
+    }
+    body = JSON.parse(rawBody) as { answers?: unknown };
   } catch {
     return response({ error: "Send a valid JSON assessment payload." }, 400);
   }
