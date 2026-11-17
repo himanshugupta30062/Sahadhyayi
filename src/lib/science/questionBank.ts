@@ -1,32 +1,31 @@
-export type ScienceDomain =
-  | "Physics"
-  | "Technology & engineering"
-  | "Chemistry"
-  | "Earth & space science";
+import {
+  SCIENCE_PROMPTS,
+  SCIENCE_QUESTION_SET_VERSION,
+  type ScienceDomain,
+  type SciencePrompt,
+} from "../../../supabase/functions/_shared/sciencePrompts";
 
-export type ScienceQuestion = {
-  id: string;
-  title: string;
-  domain: ScienceDomain;
-  prompt: string;
+export { SCIENCE_QUESTION_SET_VERSION };
+export type { ScienceDomain };
+
+export type ScienceQuestion = SciencePrompt & {
   context: string;
   scientist: { name: string; contribution: string; href: string } | null;
   book: { title: string; author: string; searchQuery: string };
   youtubeSearch: string;
 };
 
-export const SCIENCE_QUESTION_SET_VERSION = "everyday-science-v1";
+type ScienceLearningDetails = Pick<
+  ScienceQuestion,
+  "context" | "scientist" | "book" | "youtubeSearch"
+>;
 
 /**
- * Prompts and learning links are safe to ship to the browser.
- * Evaluation criteria and reference answers live only in the Edge Function.
+ * Learning links and context are public. Reference answers and evaluation
+ * criteria are kept separately in the Edge Function only.
  */
-export const SCIENCE_QUESTIONS: ScienceQuestion[] = [
-  {
-    id: "fan-cooling",
-    title: "The ceiling fan",
-    domain: "Physics",
-    prompt: "Why does a ceiling fan make us feel cooler even though it usually does not significantly lower the room's air temperature?",
+const SCIENCE_LEARNING_DETAILS: Record<string, ScienceLearningDetails> = {
+  "fan-cooling": {
     context: "Think about moving air, heat leaving your skin and what happens when sweat evaporates.",
     scientist: {
       name: "Michael Faraday",
@@ -36,11 +35,7 @@ export const SCIENCE_QUESTIONS: ScienceQuestion[] = [
     book: { title: "The New Way Things Work", author: "David Macaulay", searchQuery: "The New Way Things Work David Macaulay" },
     youtubeSearch: "how a ceiling fan cools the human body convection evaporation",
   },
-  {
-    id: "air-conditioner",
-    title: "The air conditioner",
-    domain: "Technology & engineering",
-    prompt: "How does an air conditioner move heat out of a room, and why does its outdoor unit release warm air?",
+  "air-conditioner": {
     context: "Describe the job of the refrigerant, indoor coil, compressor and outdoor coil.",
     scientist: {
       name: "Willis Carrier",
@@ -50,11 +45,7 @@ export const SCIENCE_QUESTIONS: ScienceQuestion[] = [
     book: { title: "Refrigeration and Air Conditioning Technology", author: "Bill Whitman, Bill Johnson and John Tomczyk", searchQuery: "Refrigeration and Air Conditioning Technology Whitman Johnson Tomczyk" },
     youtubeSearch: "vapor compression refrigeration cycle how air conditioner works",
   },
-  {
-    id: "bus-braking",
-    title: "A braking bus",
-    domain: "Physics",
-    prompt: "Why do passengers tend to lean or move forward when a moving bus brakes suddenly?",
+  "bus-braking": {
     context: "Think about what your body was doing just before the driver applied the brakes.",
     scientist: {
       name: "Isaac Newton",
@@ -64,11 +55,7 @@ export const SCIENCE_QUESTIONS: ScienceQuestion[] = [
     book: { title: "Conceptual Physics", author: "Paul G. Hewitt", searchQuery: "Conceptual Physics Paul Hewitt" },
     youtubeSearch: "Newton first law inertia passengers moving bus brakes demonstration",
   },
-  {
-    id: "pressure-cooker",
-    title: "The pressure cooker",
-    domain: "Chemistry",
-    prompt: "Why does food generally cook faster in a pressure cooker than in an ordinary open pot of boiling water?",
+  "pressure-cooker": {
     context: "Consider what pressure does to the boiling temperature of water and the temperature of the steam.",
     scientist: {
       name: "Denis Papin",
@@ -78,11 +65,7 @@ export const SCIENCE_QUESTIONS: ScienceQuestion[] = [
     book: { title: "Chemistry: The Central Science", author: "Theodore L. Brown and co-authors", searchQuery: "Chemistry The Central Science Brown" },
     youtubeSearch: "why pressure cooker cooks food faster boiling point explained",
   },
-  {
-    id: "refrigerator",
-    title: "The refrigerator",
-    domain: "Technology & engineering",
-    prompt: "A refrigerator does not create cold from nothing. Explain how it keeps the inside cool and where the removed heat goes.",
+  "refrigerator": {
     context: "Think of it as a heat-moving machine that uses electrical energy.",
     scientist: {
       name: "Jacob Perkins",
@@ -92,11 +75,7 @@ export const SCIENCE_QUESTIONS: ScienceQuestion[] = [
     book: { title: "The New Way Things Work", author: "David Macaulay", searchQuery: "The New Way Things Work David Macaulay" },
     youtubeSearch: "how refrigerator works evaporator condenser compressor explained",
   },
-  {
-    id: "airplane-lift",
-    title: "An airplane wing",
-    domain: "Physics",
-    prompt: "How does an airplane wing generate lift and help an aircraft stay in the air?",
+  "airplane-lift": {
     context: "Think about the wing's shape, its angle to the airflow, pressure differences and the air pushed downward.",
     scientist: {
       name: "The Wright brothers",
@@ -106,11 +85,7 @@ export const SCIENCE_QUESTIONS: ScienceQuestion[] = [
     book: { title: "Aerodynamics for Naval Aviators", author: "H. H. Hurt Jr.", searchQuery: "Aerodynamics for Naval Aviators H H Hurt" },
     youtubeSearch: "NASA how airplane wings generate lift angle of attack downwash",
   },
-  {
-    id: "microwave-oven",
-    title: "The microwave oven",
-    domain: "Technology & engineering",
-    prompt: "How does a microwave oven heat food, and why can ordinary metal objects cause problems inside it?",
+  "microwave-oven": {
     context: "Think about electromagnetic waves, molecules in food and how metal interacts with the waves.",
     scientist: {
       name: "Percy Spencer",
@@ -120,11 +95,7 @@ export const SCIENCE_QUESTIONS: ScienceQuestion[] = [
     book: { title: "The New Way Things Work", author: "David Macaulay", searchQuery: "The New Way Things Work David Macaulay" },
     youtubeSearch: "how microwave oven works dielectric heating metal sparks explained",
   },
-  {
-    id: "cold-glass",
-    title: "Water on a cold glass",
-    domain: "Earth & space science",
-    prompt: "On a humid day, tiny water droplets appear on the outside of a cold glass. Where does that water come from?",
+  "cold-glass": {
     context: "Think about water vapour in the surrounding air and what happens when moist air touches a cold surface.",
     scientist: {
       name: "John Dalton",
@@ -134,11 +105,7 @@ export const SCIENCE_QUESTIONS: ScienceQuestion[] = [
     book: { title: "Meteorology Today", author: "C. Donald Ahrens", searchQuery: "Meteorology Today C Donald Ahrens" },
     youtubeSearch: "dew point condensation water droplets outside cold glass explained",
   },
-  {
-    id: "iron-rusting",
-    title: "Rust on iron",
-    domain: "Chemistry",
-    prompt: "Why does an iron gate or bicycle chain tend to rust faster when it is exposed to damp air?",
+  "iron-rusting": {
     context: "Think about the roles of iron, oxygen and water, and why salt can make corrosion faster.",
     scientist: {
       name: "Humphry Davy",
@@ -148,11 +115,7 @@ export const SCIENCE_QUESTIONS: ScienceQuestion[] = [
     book: { title: "Chemistry: The Central Science", author: "Theodore L. Brown and co-authors", searchQuery: "Chemistry The Central Science Brown" },
     youtubeSearch: "electrochemical rusting of iron oxygen water salt explained",
   },
-  {
-    id: "seasons",
-    title: "The seasons",
-    domain: "Earth & space science",
-    prompt: "Why do Earth experience different seasons, and why are they mainly caused by Earth's axial tilt rather than its changing distance from the Sun?",
+  "seasons": {
     context: "Think about sunlight angle, day length and why the Northern and Southern Hemispheres have opposite seasons.",
     scientist: {
       name: "Johannes Kepler",
@@ -162,7 +125,12 @@ export const SCIENCE_QUESTIONS: ScienceQuestion[] = [
     book: { title: "Astronomy Today", author: "Eric Chaisson and Steve McMillan", searchQuery: "Astronomy Today Chaisson McMillan" },
     youtubeSearch: "NASA seasons explained Earth's axial tilt not distance from Sun",
   },
-];
+};
+
+export const SCIENCE_QUESTIONS: ScienceQuestion[] = SCIENCE_PROMPTS.map((prompt) => ({
+  ...prompt,
+  ...SCIENCE_LEARNING_DETAILS[prompt.id],
+}));
 
 export function shuffleScienceQuestions(
   questions: ScienceQuestion[] = SCIENCE_QUESTIONS,
