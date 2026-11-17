@@ -82,8 +82,35 @@ async function searchCatalogue(admin: any, query: string, page = 1, pageSize = 2
   });
 
   if (error) {
-    console.error("Catalogue search error:", error);
-    return { books: [], total: 0, page, pageSize };
+    // Production may not yet have the optional fuzzy-match RPC migration.
+    // Fall back to the confirmed books_library columns so admins can still
+    // select an existing catalogue entry instead of seeing an empty picker.
+    console.warn("Catalogue match RPC unavailable; using direct catalogue search.");
+    const safeTitle = title.replace(/[%,_]/g, " ").trim();
+    const safeAuthor = author.replace(/[%,_]/g, " ").trim();
+    const [titleResult, authorResult] = await Promise.all([
+      safeTitle
+        ? admin.from("books_library").select("id,title,author,isbn,pdf_url,publication_year,language,cover_image_url").ilike("title", `%${safeTitle}%`).limit(100)
+        : Promise.resolve({ data: [], error: null }),
+      safeAuthor
+        ? admin.from("books_library").select("id,title,author,isbn,pdf_url,publication_year,language,cover_image_url").ilike("author", `%${safeAuthor}%`).limit(100)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+    if (titleResult.error || authorResult.error) {
+      console.error("Direct catalogue search failed:", titleResult.error || authorResult.error);
+      return { books: [], total: 0, page, pageSize };
+    }
+    const byId = new Map<string, Record<string, unknown>>();
+    for (const book of [...(titleResult.data || []), ...(authorResult.data || [])] as Array<Record<string, unknown>>) {
+      if (typeof book.id === "string") byId.set(book.id, {
+        ...book,
+        match_score: 0,
+        match_reasons: ["direct_title_or_author_search"],
+      });
+    }
+    const allFallbackMatches = [...byId.values()].sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
+    const offset = (page - 1) * pageSize;
+    return { books: allFallbackMatches.slice(offset, offset + pageSize), total: allFallbackMatches.length, page, pageSize };
   }
 
   const allMatches = (matches || []) as Array<Record<string, unknown>>;
@@ -99,7 +126,7 @@ async function searchCatalogue(admin: any, query: string, page = 1, pageSize = 2
 async function getCatalogueBookById(admin: any, bookId: string): Promise<Record<string, unknown> | null> {
   const { data, error } = await admin
     .from("books_library")
-    .select("id,title,author,isbn,pdf_url,publication_year,language,cover_image_url,status,catalog_status,is_archived")
+    .select("id,title,author,isbn,pdf_url,publication_year,language,cover_image_url")
     .eq("id", bookId)
     .maybeSingle();
 
@@ -416,7 +443,6 @@ serve(async (req) => {
 
     // Run malware scan
     const scannerToken = Deno.env.get("BOUNCER_API_KEY");
-    let scanBypassed = false;
     let malwareDetails: Record<string, unknown> = {};
 
     if (!scannerToken) {
@@ -431,8 +457,6 @@ serve(async (req) => {
           // Update submission with malware scan failure
           await admin.from("book_pdf_submissions").update({
             malware_scan_status: scanResult.verdict,
-            malware_scan_completed_at: new Date().toISOString(),
-            malware_scan_details: malwareDetails,
           }).eq("id", submissionId);
 
           return json({
@@ -445,8 +469,6 @@ serve(async (req) => {
 
         await admin.from("book_pdf_submissions").update({
           malware_scan_status: "clean",
-          malware_scan_completed_at: new Date().toISOString(),
-          malware_scan_details: malwareDetails,
         }).eq("id", submissionId);
       } catch (error) {
         console.error("Bouncer scan request failed", error instanceof Error ? error.message : "unknown error");
@@ -483,7 +505,6 @@ serve(async (req) => {
       rights_evidence_url: evidenceUrl,
       reviewed_by: authData.user.id,
       reviewed_at: new Date().toISOString(),
-      published_at: new Date().toISOString(),
       catalogue_match_status: submission.catalogue_match_status || (submission.target_book_id === targetBookId ? "admin_selected" : "new_created"),
     }).eq("id", submissionId);
 
@@ -510,7 +531,6 @@ serve(async (req) => {
         rights_basis: rightsBasis,
         evidence_host: evidenceValidation.host,
         created_new_book: createNewBook,
-        scan_bypassed: scanBypassed,
         malware_details: malwareDetails,
       },
     });
@@ -562,11 +582,14 @@ serve(async (req) => {
 
     // Get the new submission's PDF from quarantine
     const { data: newSubmission, error: newSubError } = await admin.from("book_pdf_submissions")
-      .select("id,storage_path,original_filename,file_size_bytes,pdf_sha256,pdf_page_count,submitted_title,submitted_author")
+      .select("id,storage_path,original_filename,file_size_bytes,pdf_sha256,pdf_page_count,submitted_title,submitted_author,status,rights_attested,verification_completed_at")
       .eq("id", newSubmissionId)
       .maybeSingle();
 
     if (newSubError || !newSubmission) return json({ error: "New submission not found." }, 404);
+    if (newSubmission.status !== "needs_review" || !newSubmission.verification_completed_at || !newSubmission.rights_attested) {
+      return json({ error: "Replacement PDFs must complete automated verification and contributor rights attestation before publication." }, 409);
+    }
 
     // Verify the new PDF
     const { data: source, error: downloadError } = await admin.storage.from("book-pdf-quarantine").download(newSubmission.storage_path);
@@ -639,7 +662,6 @@ serve(async (req) => {
       rights_evidence_url: evidenceUrl,
       reviewed_by: authData.user.id,
       reviewed_at: new Date().toISOString(),
-      published_at: new Date().toISOString(),
       catalogue_match_status: "admin_selected",
       status: "approved",
     }).eq("id", newSubmissionId);
