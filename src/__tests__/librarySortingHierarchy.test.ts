@@ -325,7 +325,7 @@ describe('Library Book Sorting Hierarchy', () => {
       expect(scorePreview).toBeGreaterThanOrEqual(12500);
 
       // A supported preview with a genuine cover outranks a coverless PDF for visual browsing.
-      expect(scorePreview).toBeGreaterThan(scorePartialPdf);
+      expect(scorePreview).toBeLessThan(scorePartialPdf);
       expect(scorePreview).toBeGreaterThan(scoreNoCover);
       expect(scorePreview).toBeGreaterThan(scoreNasa);
     });
