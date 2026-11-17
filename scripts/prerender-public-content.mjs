@@ -53,7 +53,7 @@ function setMeta(html, attribute, key, content) {
   return pattern.test(html) ? html.replace(pattern, tag) : html.replace("</head>", `  ${tag}\n</head>`);
 }
 
-function createPage({ title, description, route, image, type, entityType, entityName, bodyText, publishedAt, modifiedAt, authorName, wordCount, schemaType, about, breadcrumbs, relatedBooks, sameAs }) {
+function createPage({ title, description, route, image, type, entityType, entityName, bodyText, publishedAt, modifiedAt, authorName, wordCount, schemaType, about, breadcrumbs, relatedBooks, relatedArticles, sameAs }) {
   const canonical = `${SITE_URL}${route}`;
   let html = template.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
   html = setMeta(html, "name", "description", description);
@@ -130,6 +130,7 @@ function createPage({ title, description, route, image, type, entityType, entity
     <p>${escapeHtml(description)}</p>
     ${safeBodyText ? `<p>${escapeHtml(safeBodyText)}</p>` : ""}
     ${Array.isArray(relatedBooks) && relatedBooks.length ? `<section aria-label="Books by this author"><h2>Books by ${escapeHtml(entityName || "this author")}</h2><ul>${relatedBooks.map((book) => `<li><a href="${escapeHtml(book.route)}">${escapeHtml(book.title)}</a></li>`).join("")}</ul></section>` : ""}
+    ${Array.isArray(relatedArticles) && relatedArticles.length ? `<nav aria-label="Related articles"><h2>More articles by this reader</h2><ul>${relatedArticles.map((article) => `<li><a href="${escapeHtml(article.route)}">${escapeHtml(article.title)}</a></li>`).join("")}</ul></nav>` : ""}
     <p><a href="/library">Explore the library</a> · <a href="/articles">Read articles</a> · <a href="/groups">Find reading groups</a> · <a href="/authors">Discover authors</a></p>
   </main>`;
   html = html.replace(/<div id="root">[^]*?div>/i, `<div id="root">${fallback}</div>`);
@@ -284,6 +285,13 @@ if (articlesError) {
       modifiedAt: article.updated_at || article.published_at || article.created_at,
       authorName,
       wordCount,
+      breadcrumbs: [{ name: "Home", route: "/" }, { name: "Articles", route: "/articles" }, { name: title, route }],
+      relatedArticles: (articles ?? [])
+        .filter((candidate) => candidate.user_id && candidate.user_id === article.user_id && candidate.slug !== article.slug)
+        .filter((candidate) => /^[a-z0-9][a-z0-9-]{0,139}$/i.test(String(candidate.slug ?? "").trim()) && String(candidate.title ?? "").trim())
+        .sort((left, right) => new Date(right.published_at || right.created_at || 0).getTime() - new Date(left.published_at || left.created_at || 0).getTime())
+        .slice(0, 3)
+        .map((candidate) => ({ title: String(candidate.title).trim(), route: `/articles/${encodeURIComponent(String(candidate.slug).trim())}` })),
     }));
     articleCount += 1;
   }
