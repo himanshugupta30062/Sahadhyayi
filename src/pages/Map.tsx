@@ -71,6 +71,9 @@ const MapPage = () => {
   const [readersError, setReadersError] = useState<string | null>(null);
   const [selectedBook, setSelectedBook] = useState<BookOption | null>(null);
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [exploreLocation, setExploreLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [exploreLocationLoading, setExploreLocationLoading] = useState(false);
+  const [exploreLocationError, setExploreLocationError] = useState<string | null>(null);
   const [locationSharingEnabled, setLocationSharingEnabled] = useState(false);
   const [locationConsentChecked, setLocationConsentChecked] = useState(false);
   const [showBitmojiCreator, setShowBitmojiCreator] = useState(false);
@@ -134,10 +137,28 @@ const MapPage = () => {
     ?? null;
 
   const friendsQuery = useFriends();
-  const { data: exploreItems = [] } = useExploreSpots({
+  const { data: exploreItems = [], isLoading: exploreItemsLoading, isFetching: exploreItemsFetching } = useExploreSpots({
     category: selectedCategory,
-    userCoords: currentLocation,
+    userCoords: exploreLocation,
+    radiusKm: 25,
   });
+
+  const handleFindNearbyPlaces = async () => {
+    setExploreLocationLoading(true);
+    setExploreLocationError(null);
+    try {
+      const coords = await getCurrentLocation();
+      setExploreLocation(coords);
+      mapActionsRef.current.explore?.recenter(coords);
+      toast.success('Showing reading places and literary events within 25 km.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Could not determine your location.';
+      setExploreLocationError(message);
+      toast.error(message);
+    } finally {
+      setExploreLocationLoading(false);
+    }
+  };
 
   // Use only the location the signed-in user has already chosen to share.
   // Opening this page must never trigger a new GPS permission prompt.
@@ -757,25 +778,44 @@ const MapPage = () => {
 
             {/* Explore Map Content */}
             <TabsContent value="explore" className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#E5DED2] dark:border-[#29332D] bg-white/80 dark:bg-[#111614]/80 p-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">Discover reading places around you</p>
+                  <p className="text-xs text-muted-foreground">Libraries, bookstores, cafés and geocoded literary events within 25 km.</p>
+                  {exploreLocation && <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1">Nearby search is active. Your location is used only for this search and is not shared with readers.</p>}
+                </div>
+                <Button type="button" size="sm" onClick={handleFindNearbyPlaces} disabled={exploreLocationLoading} className="shrink-0">
+                  <Compass className="w-4 h-4 mr-1.5" />
+                  {exploreLocationLoading ? 'Finding location…' : exploreLocation ? 'Refresh nearby' : 'Find near me'}
+                </Button>
+              </div>
+              {exploreLocationError && <p className="text-xs text-amber-700 dark:text-amber-300" role="status">{exploreLocationError}</p>}
+              {(exploreItemsLoading || exploreItemsFetching) && <p className="text-xs text-muted-foreground" role="status">Finding nearby libraries, bookstores and cafés…</p>}
+              <p className="text-[10px] text-muted-foreground">Nearby public places include OpenStreetMap data; event listings come from Sahadhyayi. OpenStreetMap contributors are credited via the place details.</p>
               <div className="relative overflow-hidden rounded-2xl border border-[#E5DED2] dark:border-[#29332D] shadow-md bg-white dark:bg-[#111614] h-[520px] sm:h-[580px]">
                 <MapplsMap
                   key="explore-map"
                   apiKey={MAPPLS_API_KEY}
                   points={explorePoints}
-                  center={currentLocation}
+                  center={exploreLocation || currentLocation}
                   onMarkerClick={handleMarkerClick}
                   onMapActionsReady={(actions) => {
                     mapActionsRef.current.explore = actions;
+                    if (exploreLocation) actions.recenter(exploreLocation);
                   }}
                   emptyMessage="No public reading spots or events found matching your filter."
                 />
                 <MapFloatingControls
-                  hasUserLocation={Boolean(currentLocation)}
+                  hasUserLocation={Boolean(exploreLocation || currentLocation)}
                   is3D={is3DMap.explore}
                   onToggle3D={() => handleToggle3D('explore')}
                   onZoomIn={() => handleZoomIn('explore')}
                   onZoomOut={() => handleZoomOut('explore')}
-                  onRecenter={() => handleRecenter('explore')}
+                  onRecenter={() => {
+                    const coords = exploreLocation || currentLocation;
+                    if (coords) mapActionsRef.current.explore?.recenter(coords);
+                    else void handleFindNearbyPlaces();
+                  }}
                   onResetView={() => handleResetView('explore')}
                 />
 
