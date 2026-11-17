@@ -879,22 +879,20 @@ export function diversifyBooksPerPage(sortedBooks: any[], pageSize: number = 12)
         continue;
       }
 
-      const score = getScore(book);
+      const accessRank = getReadingAccessRank(book);
 
-      // Quality tier barrier: if high-quality verified full-text books (score >= 7000)
-      // are deferred on this page for author diversity, do not jump down into lower tiers (< 7000)
-      // during Pass 1. Defer remaining lower-tier books to let Pass 3 pick alternate titles
-      // from the high-quality tier first.
-      if (hasDeferredVerified && score < 7000) {
+      // Reading access is the primary tier boundary. Never let a metadata-only
+      // record with a rich cover/description score masquerade as a readable book.
+      if (hasDeferredVerified && accessRank < 3) {
         for (let j = i; j < remaining.length; j++) {
           deferredForNextPages.push(remaining[j]);
         }
         break;
       }
 
-      // Quality tier barrier: if genuine catalog books (score >= 4000) are deferred,
-      // do not jump down into technical reports / non-book documents (< 4000) during Pass 1.
-      if (hasDeferredGenuine && score < 4000) {
+      // Preserve books with any usable reading destination ahead of records
+      // that have no reader/download destination at all.
+      if (hasDeferredGenuine && accessRank < 1) {
         for (let j = i; j < remaining.length; j++) {
           deferredForNextPages.push(remaining[j]);
         }
@@ -909,8 +907,8 @@ export function diversifyBooksPerPage(sortedBooks: any[], pageSize: number = 12)
 
       if (hasAuthorCollision || hasTitleCollision) {
         deferredForNextPages.push(book);
-        if (score >= 7000) hasDeferredVerified = true;
-        if (score >= 4000) hasDeferredGenuine = true;
+        if (accessRank >= 3) hasDeferredVerified = true;
+        if (accessRank >= 1) hasDeferredGenuine = true;
       } else {
         pageBooks.push(book);
         if (aKey) seenAuthors.add(aKey);
@@ -923,13 +921,13 @@ export function diversifyBooksPerPage(sortedBooks: any[], pageSize: number = 12)
       let idx = 0;
       while (pageBooks.length < pageSize && idx < deferredForNextPages.length) {
         const candidate = deferredForNextPages[idx];
-        const score = getScore(candidate);
+        const accessRank = getReadingAccessRank(candidate);
 
-        if (hasDeferredVerified && score < 7000) {
+        if (hasDeferredVerified && accessRank < 3) {
           idx++;
           continue;
         }
-        if (hasDeferredGenuine && score < 4000) {
+        if (hasDeferredGenuine && accessRank < 1) {
           idx++;
           continue;
         }
@@ -960,9 +958,9 @@ export function diversifyBooksPerPage(sortedBooks: any[], pageSize: number = 12)
         let idx = 0;
         while (pageBooks.length < pageSize && idx < deferredForNextPages.length) {
           const candidate = deferredForNextPages[idx];
-          const score = getScore(candidate);
+          const accessRank = getReadingAccessRank(candidate);
 
-          if (score >= 7000) {
+          if (accessRank >= 3) {
             const tKey = getTitleDiversificationKey(candidate.title);
             const hasTitleCollision = Boolean(tKey && seenTitles.has(tKey));
             if (!hasTitleCollision) {
@@ -981,9 +979,9 @@ export function diversifyBooksPerPage(sortedBooks: any[], pageSize: number = 12)
         let idx = 0;
         while (pageBooks.length < pageSize && idx < deferredForNextPages.length) {
           const candidate = deferredForNextPages[idx];
-          const score = getScore(candidate);
+          const accessRank = getReadingAccessRank(candidate);
 
-          if (score >= 4000) {
+          if (accessRank >= 1) {
             const tKey = getTitleDiversificationKey(candidate.title);
             const hasTitleCollision = Boolean(tKey && seenTitles.has(tKey));
             if (!hasTitleCollision) {
