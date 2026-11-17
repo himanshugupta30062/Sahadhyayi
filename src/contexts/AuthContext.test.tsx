@@ -51,7 +51,7 @@ const Probe = () => {
       <span data-testid="user-id">{user?.id ?? "none"}</span>
       <span data-testid="session">{currentSession ? "present" : "none"}</span>
       <button onClick={() => void signIn("reader@example.com", "password")}>Sign in</button>
-      <button onClick={() => void signOut()}>Sign out</button>
+      <button onClick={() => void signOut().catch(() => undefined)}>Sign out</button>
     </div>
   );
 };
