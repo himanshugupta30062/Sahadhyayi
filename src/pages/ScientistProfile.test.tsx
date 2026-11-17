@@ -101,6 +101,9 @@ describe('ScientistProfile', () => {
     expect(screen.getByText('Pioneer of the Raman Effect')).toBeInTheDocument();
     expect(screen.getByText('Early life and research at IACS.')).toBeInTheDocument();
     expect(screen.getByText(/National Science Day in India/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Physics/ })).toHaveAttribute('href', '/research-papers/topic/physics');
+    expect(screen.getByRole('heading', { name: 'Related researchers' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Homi Jehangir Bhabha/ })).toHaveAttribute('href', '/scientists/homi-bhabha');
 
     await waitFor(() => {
       expect(document.head.querySelector('script[data-seo-schema="true"]')).toBeInTheDocument();

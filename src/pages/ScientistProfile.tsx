@@ -9,6 +9,24 @@ import { fetchScientistProfiles } from '@/lib/scientistsRepository';
 
 const isSafeExternalUrl = (value: string | undefined): value is string => Boolean(value && /^https:\/\//i.test(value));
 
+const RESEARCH_TOPIC_LINKS = [
+  { slug: 'artificial-intelligence', label: 'Artificial intelligence', terms: ['artificial intelligence', 'machine intelligence', 'ai'] },
+  { slug: 'machine-learning', label: 'Machine learning', terms: ['machine learning', 'deep learning'] },
+  { slug: 'climate-science', label: 'Climate science', terms: ['climate', 'global warming'] },
+  { slug: 'psychology', label: 'Psychology', terms: ['psychology', 'cognition', 'behaviour', 'behavior'] },
+  { slug: 'medicine', label: 'Medicine', terms: ['medicine', 'medical', 'health', 'biomedical'] },
+  { slug: 'physics', label: 'Physics', terms: ['physics', 'quantum', 'cosmic ray', 'nuclear', 'scattering', 'relativity'] },
+] as const;
+
+const getResearchTopics = (profile: ScientistProfileType) => {
+  const searchableText = [profile.discipline, ...profile.knownFor, ...profile.work.map((item) => item.title)]
+    .join(' ')
+    .toLowerCase();
+  return RESEARCH_TOPIC_LINKS.filter((topic) =>
+    topic.terms.some((term) => searchableText.includes(term)),
+  );
+};
+
 const ScientistProfile = () => {
   const { slug = '' } = useParams<{ slug: string }>();
   const [scientist, setScientist] = useState<ScientistProfileType | undefined>(() => getScientistBySlug(slug));
@@ -94,8 +112,21 @@ const ScientistProfile = () => {
   }
 
   const relatedScientists = scientistCollection
-    .filter((item) => item.region === scientist.region && item.slug !== scientist.slug)
-    .slice(0, 3);
+    .filter((item) => item.slug !== scientist.slug)
+    .map((item) => {
+      const sharedTopics = item.knownFor.filter((term) =>
+        scientist.knownFor.some((knownTerm) => knownTerm.toLowerCase() === term.toLowerCase()),
+      ).length;
+      const sameDiscipline = item.discipline.split(/[·,/]/)[0]?.trim().toLowerCase()
+        === scientist.discipline.split(/[·,/]/)[0]?.trim().toLowerCase();
+      const sameRegion = item.region === scientist.region;
+      return { item, score: (sharedTopics * 4) + (sameDiscipline ? 3 : 0) + (sameRegion ? 1 : 0) };
+    })
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score || a.item.name.localeCompare(b.item.name))
+    .slice(0, 3)
+    .map(({ item }) => item);
+  const researchTopics = getResearchTopics(scientist);
 
   return (
     <>
@@ -225,6 +256,21 @@ const ScientistProfile = () => {
                 <blockquote className="rounded-2xl border-l-4 border-[#B38A42] bg-[#EEE9DE] px-6 py-6 font-serif text-lg leading-8 text-[#39463A] dark:bg-[#172019] dark:text-[#E8DDC7]">{scientist.legacy}</blockquote>
               </section>
 
+              {researchTopics.length > 0 && (
+                <section id="related-research" className="border-t border-[#E5DED2] pt-8 dark:border-[#29332D]">
+                  <div className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#8F681C] dark:text-[#D5B16D]">Continue exploring</div>
+                  <h2 className="font-serif text-2xl font-bold text-[#202820] dark:text-[#F3F0E7]">Research connected to this work</h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-[#687067] dark:text-[#A5ADA6]">Browse scholarly literature in topics connected to {scientist.name}’s discipline and documented contributions.</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {researchTopics.map((topic) => (
+                      <Link key={topic.slug} to={`/research-papers/topic/${topic.slug}`} className="inline-flex items-center gap-2 rounded-full border border-[#D8CDBB] bg-white px-4 py-2 text-sm font-semibold text-[#1C442D] transition hover:border-[#8F681C] hover:bg-[#F4F0E7] dark:border-[#465448] dark:bg-[#111614] dark:text-[#D5B16D] dark:hover:bg-[#172019]">
+                        {topic.label}<ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              )}
+
               <section id="sources" className="border-t border-[#E5DED2] pt-8 dark:border-[#29332D]">
                 <div className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#8F681C] dark:text-[#D5B16D]"><ExternalLink className="h-4 w-4" /> Sources & further reading</div>
                 <div className="space-y-3">
@@ -268,13 +314,13 @@ const ScientistProfile = () => {
 
               {relatedScientists.length > 0 && (
                 <section className="rounded-2xl border border-[#E5DED2] bg-white p-5 dark:border-[#29332D] dark:bg-[#111614]">
-                  <h2 className="font-serif text-lg font-bold text-[#202820] dark:text-[#F3F0E7]">More scientists</h2>
+                  <h2 className="font-serif text-lg font-bold text-[#202820] dark:text-[#F3F0E7]">Related researchers</h2>
                   <div className="mt-3 space-y-3">
                     {relatedScientists.map((item) => (
                       <Link key={item.slug} to={`/scientists/${item.slug}`} className="group flex items-center justify-between gap-3 text-sm">
                         <span className="min-w-0">
                           <span className="block truncate font-semibold text-[#202820] group-hover:text-[#1C442D] dark:text-[#F3F0E7] dark:group-hover:text-[#D5B16D]">{item.name}</span>
-                          <span className="block text-xs text-[#788076] dark:text-[#A5ADA6]">{item.discipline}</span>
+                          <span className="block text-xs text-[#788076] dark:text-[#A5ADA6]">{item.discipline} · Explore profile</span>
                         </span>
                         <ArrowRight className="h-4 w-4 shrink-0 text-[#8F681C] dark:text-[#D5B16D]" />
                       </Link>
