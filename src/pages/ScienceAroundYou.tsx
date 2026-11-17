@@ -4,11 +4,18 @@ import {
   ArrowLeft,
   ArrowRight,
   Atom,
+  Beaker,
   BookOpen,
+  Check,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
   Clock3,
+  Copy,
+  ExternalLink,
+  Filter,
+  FlaskConical,
+  HelpCircle,
   Lightbulb,
   Loader2,
   Microscope,
@@ -23,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client-universal";
+import { toast } from "sonner";
 import {
   listEverydayScienceAttempts,
   saveEverydayScienceAttempt,
@@ -40,6 +48,12 @@ import {
 
 type Phase = "intro" | "test" | "results";
 
+const CHALLENGE_LEVEL_GUIDANCE: Record<ScienceDifficulty, string> = {
+  beginner: "Explain the main idea in everyday language. Identify what is happening and why.",
+  intermediate: "Explain the cause-and-effect sequence. Name the important components or scientific principles and connect them clearly.",
+  advanced: "Analyze the underlying mechanism in depth. Discuss interacting factors, relevant limitations or exceptions, and use a precise scientific explanation rather than only naming the concept.",
+};
+
 const DIMENSION_LABELS: Array<{ key: keyof ScienceQuestionEvaluation["dimensions"]; label: string }> = [
   { key: "accuracy", label: "Scientific accuracy" },
   { key: "conceptualUnderstanding", label: "Conceptual understanding" },
@@ -47,6 +61,21 @@ const DIMENSION_LABELS: Array<{ key: keyof ScienceQuestionEvaluation["dimensions
   { key: "completeness", label: "Completeness" },
   { key: "clarity", label: "Clarity" },
 ];
+
+/** Cross-links from assessment questions to hands-on Science Lab experiments */
+const QUESTION_TO_EXPERIMENT: Record<string, { slug: string; title: string }> = {
+  "fan-cooling": { slug: "balloon-static", title: "Bend Water with Static Electricity (Polarity & Forces)" },
+  "bus-braking": { slug: "parachute", title: "Test a Mini Parachute (Air Resistance & Inertia)" },
+  "pressure-cooker": { slug: "baking-soda-endothermic", title: "Baking Soda & Vinegar: Gas Pressure & Expansion" },
+  "soap-cleaning": { slug: "rainbow-density", title: "Layered Density Tower (Polarity & Immiscibility)" },
+  "water-filter": { slug: "water-filter-model", title: "Build a Model Water Filter (Mechanical Separation)" },
+  "rainbow-formation": { slug: "periscope-reflection", title: "Build a Simple Periscope (Law of Reflection)" },
+  "greenhouse-effect": { slug: "mini-greenhouse", title: "Mini Greenhouse in a Jar (Thermal Radiation Trapping)" },
+  "bridge-resonance": { slug: "sound-resonance-bottle", title: "Standing Waves & Sound Resonance in Bottles" },
+  "induction-cooktop": { slug: "electromagnet", title: "Build an Electromagnet (Electromagnetic Induction)" },
+  "battery-energy": { slug: "cabbage-ph-indicator", title: "Red Cabbage pH Indicator (Ions & Chemical Reactions)" },
+  "moon-phases": { slug: "shadow-clock", title: "Build a Backyard Sun & Shadow Clock (Earth's Rotation)" },
+};
 
 function scoreLabel(score: number): string {
   if (score >= 85) return "Strong understanding";
@@ -70,6 +99,7 @@ function AnswerResultCard({
   index: number;
 }) {
   const [expanded, setExpanded] = useState(index === 0);
+  const relatedExperiment = QUESTION_TO_EXPERIMENT[question.id];
 
   return (
     <Card className="overflow-hidden border-border/80">
@@ -155,6 +185,32 @@ function AnswerResultCard({
             <p className="mt-1.5 text-sm leading-7 text-muted-foreground">{result.correctExplanation}</p>
           </div>
 
+          {/* Hands-on Experiment Companion */}
+          {relatedExperiment && (
+            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <FlaskConical className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="block text-xs font-semibold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+                    Try this in our Science Lab
+                  </span>
+                  <span className="block text-sm font-semibold text-foreground mt-0.5">
+                    {relatedExperiment.title}
+                  </span>
+                  <span className="block text-xs text-muted-foreground mt-0.5 leading-5">
+                    Test this phenomenon directly at home with simple kitchen materials.
+                  </span>
+                </div>
+              </div>
+              <Button asChild size="sm" variant="outline" className="border-emerald-500/30 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/10 shrink-0">
+                <Link to={`/science-lab?experiment=${relatedExperiment.slug}`}>
+                  Try experiment <Beaker className="ml-1.5 h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            </div>
+          )}
+
+          {/* Learning Links */}
           <div className="grid gap-3 sm:grid-cols-3">
             {question.scientist && (
               <a
@@ -209,6 +265,8 @@ export default function ScienceAroundYou() {
   const [evaluation, setEvaluation] = useState<ScienceAssessmentEvaluation | null>(null);
   const [savedToProfile, setSavedToProfile] = useState<boolean | null>(null);
   const [lastAttempt, setLastAttempt] = useState<ScienceAttemptHistory | null>(null);
+  const [showHelper, setShowHelper] = useState(false);
+  const [resultFilter, setResultFilter] = useState<"all" | "strong" | "improve">("all");
 
   useEffect(() => {
     let active = true;
@@ -228,6 +286,12 @@ export default function ScienceAroundYou() {
     [answers, questions],
   );
   const progress = questions.length ? ((currentIndex + 1) / questions.length) * 100 : 0;
+
+  const currentWordCount = useMemo(() => {
+    if (!currentQuestion) return 0;
+    const text = (answers[currentQuestion.id] ?? "").trim();
+    return text ? text.split(/\s+/).length : 0;
+  }, [answers, currentQuestion]);
 
   const startAssessment = () => {
     setQuestions(shuffleScienceQuestions(getScienceQuestionsForDifficulty(difficulty)));
@@ -308,6 +372,34 @@ export default function ScienceAroundYou() {
     return { strongest: sorted[0], weakest: sorted[sorted.length - 1] };
   }, [evaluation]);
 
+  const filteredResults = useMemo(() => {
+    if (!evaluation) return [];
+    if (resultFilter === "strong") return evaluation.results.filter((r) => r.score >= 70);
+    if (resultFilter === "improve") return evaluation.results.filter((r) => r.score < 70);
+    return evaluation.results;
+  }, [evaluation, resultFilter]);
+
+  const copySummaryToClipboard = () => {
+    if (!evaluation) return;
+    const lines = [
+      `Sahadhyayi Everyday Science Assessment Report`,
+      `Difficulty: ${difficulty.toUpperCase()}`,
+      `Score: ${evaluation.overallScore}/100 (${scoreLabel(evaluation.overallScore)})`,
+      `Questions Answered: ${answeredCount}/${questions.length}`,
+      ``,
+      `Topic Scores:`,
+      ...Object.entries(evaluation.categoryScores).map(([k, v]) => `• ${k}: ${v}%`),
+      ``,
+      `Try hands-on experiments at: https://sahadhyayi.com/science-lab`,
+      `Test your everyday science at: https://sahadhyayi.com/science-around-you`,
+    ];
+    void navigator.clipboard.writeText(lines.join("\n")).then(() => {
+      toast.success("Assessment summary copied to clipboard!");
+    }).catch(() => {
+      toast.info("Could not copy automatically. You can copy the scores from the report.");
+    });
+  };
+
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-background text-foreground">
       <SEO
@@ -319,13 +411,18 @@ export default function ScienceAroundYou() {
       <div className="mx-auto max-w-5xl px-4 py-7 sm:px-6 sm:py-10 lg:py-14">
         {phase === "intro" && (
           <>
-            <section className="relative isolate overflow-hidden rounded-[2rem] border border-sky-500/20 bg-gradient-to-br from-sky-500/10 via-background to-cyan-500/10 px-5 py-8 sm:px-9 sm:py-11">
+            <section className="relative isolate overflow-hidden rounded-[2rem] border border-sky-500/20 bg-gradient-to-br from-sky-500/10 via-background to-cyan-500/10 px-5 py-8 sm:px-9 sm:py-11 shadow-sm">
               <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-sky-500/15 blur-3xl" />
               <div className="relative grid gap-8 md:grid-cols-[1.2fr_.8fr] md:items-center">
                 <div>
-                  <Badge variant="secondary" className="mb-4 gap-1.5 px-3 py-1">
-                    <Atom className="h-3.5 w-3.5" /> EVERYDAY SCIENCE
-                  </Badge>
+                  <div className="flex flex-wrap items-center gap-2 mb-4">
+                    <Badge variant="secondary" className="gap-1.5 px-3 py-1">
+                      <Atom className="h-3.5 w-3.5" /> EVERYDAY SCIENCE
+                    </Badge>
+                    <Badge variant="outline" className="border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs">
+                      <FlaskConical className="mr-1 h-3 w-3" /> Hands-on Lab Companion Available
+                    </Badge>
+                  </div>
                   <h1 className="max-w-2xl text-3xl font-bold tracking-tight sm:text-5xl">
                     Explain the science around you.
                   </h1>
@@ -333,6 +430,7 @@ export default function ScienceAroundYou() {
                     Why does a fan cool you? How does an AC move heat? Why does a bus jerk when it brakes?
                     Explain everyday phenomena in your own words and discover how well you understand the world.
                   </p>
+
                   <div className="mt-6 space-y-3">
                     <p className="text-sm font-semibold">Choose your challenge level</p>
                     <div className="grid gap-2 sm:grid-cols-3" role="group" aria-label="Science assessment difficulty">
@@ -354,24 +452,32 @@ export default function ScienceAroundYou() {
                       ))}
                     </div>
                   </div>
+
                   <div className="mt-6 flex flex-wrap gap-3">
                     <Button size="lg" onClick={startAssessment} className="gap-2">
                       Start the science test <ArrowRight className="h-4 w-4" />
                     </Button>
-                    <Button asChild size="lg" variant="outline">
+                    <Button asChild size="lg" variant="outline" className="border-emerald-500/30 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/10">
+                      <Link to="/science-lab">
+                        <FlaskConical className="mr-2 h-4 w-4 text-emerald-600" />
+                        Explore Hands-on Lab
+                      </Link>
+                    </Button>
+                    <Button asChild size="lg" variant="ghost">
                       <Link to="/library">Explore the library</Link>
                     </Button>
                   </div>
                   <p className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-                    <Clock3 className="h-3.5 w-3.5" /> 10 real-world questions · About 10–15 minutes · No multiple-choice guessing
+                    <Clock3 className="h-3.5 w-3.5" /> 10 real-world questions · About 10–15 minutes · Evaluated on scientific understanding, not multiple choice
                   </p>
                 </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    { emoji: "🌀", label: "Machines", note: "Fans, ACs and engines" },
-                    { emoji: "🚌", label: "Transport", note: "Motion and forces" },
-                    { emoji: "🌦️", label: "Nature", note: "Weather and Earth" },
-                    { emoji: "⚡", label: "Technology", note: "How things work" },
+                    { emoji: "🌀", label: "Machines", note: "Fans, ACs and induction cooktops" },
+                    { emoji: "🚌", label: "Transport", note: "Motion, braking and inertia" },
+                    { emoji: "🌦️", label: "Nature", note: "Weather, shadows and greenhouse" },
+                    { emoji: "⚡", label: "Technology", note: "Filters, batteries and optics" },
                   ].map((item) => (
                     <div key={item.label} className="rounded-2xl border border-border/70 bg-background/80 p-4 shadow-sm backdrop-blur">
                       <span className="text-3xl" aria-hidden="true">{item.emoji}</span>
@@ -401,7 +507,7 @@ export default function ScienceAroundYou() {
               </Card>
             )}
 
-            <section className="mt-8 grid gap-4 md:grid-cols-3">
+            <section className="mt-8 grid gap-4 md:grid-cols-4">
               <Card>
                 <CardHeader>
                   <Microscope className="h-5 w-5 text-primary" />
@@ -412,15 +518,22 @@ export default function ScienceAroundYou() {
               <Card>
                 <CardHeader>
                   <Sparkles className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-base">Get thoughtful feedback</CardTitle>
+                  <CardTitle className="text-base">Thoughtful AI feedback</CardTitle>
                   <CardDescription>Gemini evaluates accuracy, concepts, reasoning, completeness and clarity.</CardDescription>
+                </CardHeader>
+              </Card>
+              <Card className="border-emerald-500/20">
+                <CardHeader>
+                  <FlaskConical className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  <CardTitle className="text-base">Hands-on Experiments</CardTitle>
+                  <CardDescription>Put theory into practice with 20+ safe at-home experiments in our Science Lab.</CardDescription>
                 </CardHeader>
               </Card>
               <Card>
                 <CardHeader>
                   <BookOpen className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-base">Keep learning</CardTitle>
-                  <CardDescription>Each result connects you to a clear explanation, related scientists, books and videos.</CardDescription>
+                  <CardTitle className="text-base">Deepen with books</CardTitle>
+                  <CardDescription>Each result connects you to related scientists, verified books and video searches.</CardDescription>
                 </CardHeader>
               </Card>
             </section>
@@ -452,7 +565,14 @@ export default function ScienceAroundYou() {
               <Button asChild variant="ghost" size="sm" className="-ml-2">
                 <Link to="/activity"><ArrowLeft className="mr-2 h-4 w-4" /> Exit assessment</Link>
               </Button>
-              <Badge variant="outline">Everyday Science · {difficulty[0].toUpperCase() + difficulty.slice(1)}</Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline">Everyday Science · {difficulty[0].toUpperCase() + difficulty.slice(1)}</Badge>
+                <Button asChild variant="ghost" size="sm" className="text-xs h-7 gap-1">
+                  <Link to="/science-lab" target="_blank">
+                    <FlaskConical className="h-3 w-3 text-emerald-600" /> Lab
+                  </Link>
+                </Button>
+              </div>
             </div>
 
             <div className="mb-5 space-y-2">
@@ -472,12 +592,36 @@ export default function ScienceAroundYou() {
                 </div>
                 <CardTitle className="text-xl leading-snug sm:text-2xl">{currentQuestion.title}</CardTitle>
                 <CardDescription className="pt-1 text-sm leading-6">{currentQuestion.prompt}</CardDescription>
+                <div className="mt-2.5 rounded-lg border border-sky-500/20 bg-sky-500/10 p-2.5 text-xs leading-5 text-sky-950 dark:text-sky-200">
+                  <span className="font-semibold uppercase tracking-wider text-sky-700 dark:text-sky-300">Level expectation: </span>
+                  {CHALLENGE_LEVEL_GUIDANCE[difficulty]}
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="rounded-xl bg-muted/50 p-3.5">
                   <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Think about</p>
                   <p className="mt-1.5 text-sm leading-6">{currentQuestion.context}</p>
                 </div>
+
+                {/* Explanation structure guidance helper */}
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setShowHelper((prev) => !prev)}
+                    className="flex items-center gap-1.5 text-xs font-medium text-sky-700 dark:text-sky-300 hover:underline"
+                  >
+                    <HelpCircle className="h-3.5 w-3.5" />
+                    {showHelper ? "Hide explanation structure tip" : "Tip: How to structure a high-scoring scientific answer"}
+                  </button>
+                  {showHelper && (
+                    <div className="mt-2 rounded-xl border border-sky-500/20 bg-sky-500/5 p-3 text-xs leading-5 text-muted-foreground space-y-1">
+                      <p><strong className="text-foreground">1. State what happens:</strong> What is the observable phenomenon?</p>
+                      <p><strong className="text-foreground">2. Identify the mechanism:</strong> What physical force, energy transformation, or chemical process is at work?</p>
+                      <p><strong className="text-foreground">3. Connect cause and effect:</strong> Explain why that mechanism causes the observed result.</p>
+                    </div>
+                  )}
+                </div>
+
                 <label htmlFor="science-answer" className="block text-sm font-semibold">Your explanation</label>
                 <textarea
                   id="science-answer"
@@ -489,7 +633,7 @@ export default function ScienceAroundYou() {
                   className="w-full resize-y rounded-xl border border-input bg-background px-4 py-3 text-sm leading-7 text-foreground shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring"
                 />
                 <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
-                  <span>Your answer is evaluated for scientific meaning, not textbook wording.</span>
+                  <span>{currentWordCount} words (aim for ~35–150 words for a thorough answer)</span>
                   <span className="shrink-0 tabular-nums">{(answers[currentQuestion.id] ?? "").length}/2000</span>
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-4">
@@ -535,7 +679,7 @@ export default function ScienceAroundYou() {
                     className={
                       "flex h-9 w-9 items-center justify-center rounded-lg border text-xs font-semibold transition-colors " +
                       (index === currentIndex
-                        ? "border-primary bg-primary text-primary-foreground"
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
                         : answered
                           ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
                           : "border-border bg-background text-muted-foreground hover:bg-muted")
@@ -558,7 +702,14 @@ export default function ScienceAroundYou() {
                 <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Your everyday science report</h1>
                 <p className="mt-1 text-sm text-muted-foreground">A {difficulty} level learning snapshot of how you explained the world around you.</p>
               </div>
-              <Button variant="outline" onClick={startAssessment}><RotateCcw className="mr-2 h-4 w-4" /> Try again</Button>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={copySummaryToClipboard}>
+                  <Copy className="mr-1.5 h-3.5 w-3.5" /> Copy report
+                </Button>
+                <Button variant="outline" size="sm" onClick={startAssessment}>
+                  <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Try again
+                </Button>
+              </div>
             </div>
 
             <div className="grid gap-4 lg:grid-cols-[.8fr_1.2fr]">
@@ -615,22 +766,82 @@ export default function ScienceAroundYou() {
               </Card>
             </div>
 
-            <div className="mt-7 flex items-center gap-2">
-              <Lightbulb className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-bold">Learn from each answer</h2>
+            {/* Cross-Link Banner: Apply Knowledge in Science Lab */}
+            <div className="mt-8 rounded-3xl border border-emerald-500/25 bg-gradient-to-r from-emerald-500/10 via-background to-teal-500/10 p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <Badge className="border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300">
+                  <FlaskConical className="mr-1 h-3 w-3" /> Hands-on Science Lab
+                </Badge>
+                <h3 className="text-lg font-bold">Put these theories into practice</h3>
+                <p className="text-xs text-muted-foreground max-w-xl leading-5">
+                  Try 20+ safe experiments with density towers, chromatography, electric balloons, paper bridges and mini greenhouses in our hands-on Science Lab.
+                </p>
+              </div>
+              <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white shrink-0">
+                <Link to="/science-lab">
+                  Explore Science Lab Experiments <Beaker className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
             </div>
-            <p className="mb-4 mt-1 text-sm text-muted-foreground">Open a question to see what you understood, what you missed and where to explore the topic further.</p>
-            <div className="space-y-3">
-              {evaluation.results.map((result, index) => {
+
+            {/* Answer Feedback Section with Result Filter */}
+            <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl font-bold">Learn from each answer</h2>
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Open a question to see what you understood, what you missed and where to explore further.
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5 self-start sm:self-auto">
+                <span className="text-xs text-muted-foreground mr-1">Filter:</span>
+                <Button
+                  size="sm"
+                  variant={resultFilter === "all" ? "default" : "outline"}
+                  className="h-7 text-xs"
+                  onClick={() => setResultFilter("all")}
+                >
+                  All ({evaluation.results.length})
+                </Button>
+                <Button
+                  size="sm"
+                  variant={resultFilter === "strong" ? "default" : "outline"}
+                  className="h-7 text-xs"
+                  onClick={() => setResultFilter("strong")}
+                >
+                  Strong (≥70%)
+                </Button>
+                <Button
+                  size="sm"
+                  variant={resultFilter === "improve" ? "default" : "outline"}
+                  className="h-7 text-xs"
+                  onClick={() => setResultFilter("improve")}
+                >
+                  Review (&lt;70%)
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-3 mt-4">
+              {filteredResults.map((result) => {
+                const questionIndex = evaluation.results.findIndex((r) => r.questionId === result.questionId);
                 const question = getScienceQuestionsForDifficulty(evaluation.difficulty).find((item) => item.id === result.questionId);
-                return question ? <AnswerResultCard key={result.questionId} question={question} result={result} index={index} /> : null;
+                return question ? (
+                  <AnswerResultCard key={result.questionId} question={question} result={result} index={questionIndex} />
+                ) : null;
               })}
             </div>
 
-            <div className="mt-7 flex flex-wrap gap-3">
+            {/* Next Steps Buttons */}
+            <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-border/70 pt-6">
               <Button onClick={startAssessment}><RotateCcw className="mr-2 h-4 w-4" /> Take another assessment</Button>
+              <Button asChild variant="outline">
+                <Link to="/science-lab"><FlaskConical className="mr-2 h-4 w-4 text-emerald-600" /> Try hands-on experiments</Link>
+              </Button>
               <Button asChild variant="outline"><Link to="/library">Explore related books</Link></Button>
-              <Button asChild variant="ghost"><Link to="/brain">Visit IQ Test</Link></Button>
+              <Button asChild variant="ghost"><Link to="/scientists">Meet famous scientists</Link></Button>
             </div>
           </section>
         )}
