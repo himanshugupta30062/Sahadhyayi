@@ -865,7 +865,7 @@ const mapBook = (book: any): Book => ({
   title: book.title,
   author: book.author || 'Unknown Author',
   genre: normalizeBookGenre(book.genre, book.title),
-  cover_image_url: book.cover_image_url,
+  cover_image_url: normalizeCoverUrl(book.cover_image_url) || undefined,
   description: book.description,
   publication_year: book.publication_year,
   language: book.language || 'English',
@@ -1035,7 +1035,8 @@ export const useLibraryBooks = (
       }
 
       const visible = filterPublicBooks(data || []);
-      return sortBooksByCompleteness(visible.map(mapBook));
+      const mapped = visible.map(mapBook);
+      return sortBooksByCompleteness(requireCover ? mapped.filter((book) => hasValidCover(book)) : mapped);
     },
     retry: 2,
     ...CACHE_OPTIONS,
