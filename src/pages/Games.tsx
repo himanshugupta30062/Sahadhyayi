@@ -13,8 +13,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import GameModeSelector, { DailyChallenges, type GameMode } from '@/components/games/GameModeSelector';
-import AchievementShowcase from '@/components/games/AchievementShowcase';
-import StreakBonus from '@/components/games/StreakBonus';
+const AchievementShowcase = lazy(() => import('@/components/games/AchievementShowcase'));
+const StreakBonus = lazy(() => import('@/components/games/StreakBonus'));
 import { 
   Gamepad2, 
   Trophy, 
