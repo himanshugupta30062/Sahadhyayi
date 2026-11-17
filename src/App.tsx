@@ -134,6 +134,7 @@ const AdminOverview = lazy(() => import('./pages/AdminOverview'));
 const AdminLibraryQuality = lazy(() => import('./pages/AdminLibraryQuality'));
 const AdminBookSeoReview = lazy(() => import('./pages/AdminBookSeoReview'));
 const AdminBookPdfManager = lazy(() => import('./pages/AdminBookPdfManager'));
+const AdminMyHerupaImporter = lazy(() => import('./pages/AdminMyHerupaImporter'));
 const AdminBookPdfReviews = lazy(() => import('./pages/AdminBookPdfReviews'));
 const AdminLibraryArchive = lazy(() => import('./pages/AdminLibraryArchive'));
 const AdminFeedback = lazy(() => import('./pages/AdminFeedback'));
@@ -768,6 +769,16 @@ const App = memo(() => {
                             <AdminRoute>
                               <Suspense fallback={<LoadingFallback message="Loading book PDF manager..." />}>
                                 <AdminBookPdfManager />
+                              </Suspense>
+                            </AdminRoute>
+                          }
+                        />
+                        <Route
+                          path="/admin/myherupa-import"
+                          element={
+                            <AdminRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading myHerupa importer..." />}>
+                                <AdminMyHerupaImporter />
                               </Suspense>
                             </AdminRoute>
                           }
