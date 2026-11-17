@@ -21,6 +21,7 @@ export type ScienceQuestionEvaluation = {
 };
 
 export type ScienceAssessmentEvaluation = {
+  difficulty: "beginner" | "intermediate" | "advanced";
   questionSetVersion: string;
   overallScore: number;
   categoryScores: Record<string, number>;
@@ -29,6 +30,7 @@ export type ScienceAssessmentEvaluation = {
 
 export type ScienceAttemptHistory = {
   id: string;
+  difficulty: "beginner" | "intermediate" | "advanced";
   overall_score: number;
   question_count: number;
   category_scores: Record<string, number>;
@@ -51,6 +53,7 @@ export async function saveEverydayScienceAttempt(
     answers: answers as unknown as Json,
     evaluation: evaluation as unknown as Json,
     question_set_version: evaluation.questionSetVersion,
+    difficulty: evaluation.difficulty,
   });
 
   if (error) throw error;
@@ -64,7 +67,7 @@ export async function listEverydayScienceAttempts(limit = 5): Promise<ScienceAtt
 
   const { data, error } = await supabase
     .from("everyday_science_attempts")
-    .select("id,overall_score,question_count,category_scores,created_at")
+    .select("id,overall_score,question_count,category_scores,created_at,difficulty")
     .eq("user_id", authData.user.id)
     .order("created_at", { ascending: false })
     .limit(Math.min(Math.max(Math.floor(limit), 1), 20));
