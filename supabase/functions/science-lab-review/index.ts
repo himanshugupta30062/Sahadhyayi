@@ -58,6 +58,18 @@ Deno.serve(async (req: Request) => {
   const { data: authData, error: authError } = await client.auth.getUser();
   if (authError || !authData.user) return reply({ error: "Your sign-in session is invalid. Please sign in again." }, 401);
 
+  const { data: rateAllowed, error: rateError } = await client.rpc("check_rate_limit", {
+    p_identifier: authData.user.id,
+    p_endpoint: "science-lab-review",
+    p_max_requests: 6,
+    p_window_minutes: 30,
+  });
+  if (rateError || typeof rateAllowed !== "boolean") {
+    console.error("Science Lab rate-limit check is unavailable.");
+    return reply({ error: "The experiment reviewer is temporarily unavailable. Please try again later." }, 503);
+  }
+  if (!rateAllowed) return reply({ error: "You've reached the experiment review limit. Please try again in 30 minutes." }, 429);
+
   const { data: attempt, error: attemptError } = await client
     .from("science_experiment_attempts")
     .select("id,user_id,observations,what_learned,worked,experiment:science_experiments(title,summary,science_explanation,steps,safety_notes)")
