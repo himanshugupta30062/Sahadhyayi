@@ -113,7 +113,7 @@ const TermsOfService: React.FC = () => {
               Terms of Service
             </h1>
             <p className="text-sm text-[#636B65] dark:text-[#A5ADA6]">
-              Last updated: November 16, 2026
+              Last updated: November 17, 2026
             </p>
           </div>
 
@@ -158,10 +158,19 @@ const TermsOfService: React.FC = () => {
             </CardContent>
           </Card>
 
+          <nav aria-label="Terms of Service contents" className="p-4 sm:p-5 rounded-2xl border border-[#E8E2D9] dark:border-[#222B25] bg-white dark:bg-[#141A17] space-y-3">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#1C442D] dark:text-[#D5B16D]">On this page</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+              {["Acceptance of Terms","Description of Service","User Accounts","Acceptable Use","Content and Intellectual Property","Privacy","Termination","Disclaimers","Limitation of Liability","Changes to Terms","Contact Information"].map((title, index) => (
+                <a key={title} href={`#terms-section-${index + 1}`} className="text-[#636B65] dark:text-[#A5ADA6] hover:underline">{index + 1}. {title}</a>
+              ))}
+            </div>
+          </nav>
+
           {/* Main Legal Sections Container */}
           <div className="bg-white dark:bg-[#141A17] rounded-3xl border border-[#E8E2D9] dark:border-[#222B25] p-6 sm:p-10 shadow-sm space-y-10 text-sm sm:text-base leading-relaxed text-[#353D37] dark:text-[#D6DDD7]">
             {/* 1. Acceptance of Terms */}
-            <section className="space-y-4">
+            <section id="terms-section-1" className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] pb-2 border-b border-[#F0ECE4] dark:border-[#222B25]">
                 1. Acceptance of Terms
               </h2>
@@ -174,7 +183,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             {/* 2. Description of Service */}
-            <section className="space-y-4">
+            <section id="terms-section-2" className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] pb-2 border-b border-[#F0ECE4] dark:border-[#222B25]">
                 2. Description of Service
               </h2>
@@ -194,7 +203,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             {/* 3. User Accounts */}
-            <section className="space-y-4">
+            <section id="terms-section-3" className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] pb-2 border-b border-[#F0ECE4] dark:border-[#222B25]">
                 3. User Accounts
               </h2>
@@ -205,13 +214,13 @@ const TermsOfService: React.FC = () => {
                 <li>Provide accurate, truthful, and up-to-date registration details.</li>
                 <li>Maintain the confidentiality of your login credentials and passwords.</li>
                 <li>Promptly notify our support desk at <a href={`mailto:${SAHADHYAYI_EMAIL}`} className="text-[#1C442D] dark:text-[#D5B16D] underline">{SAHADHYAYI_EMAIL}</a> if you detect any unauthorized access.</li>
-                <li>Accept full responsibility for all content, messages, and actions conducted under your registered account.</li>
+                <li>Take reasonable steps to protect your credentials and promptly report suspected unauthorised access. You are responsible for activity under your account to the extent caused by your actions, omissions or failure to safeguard access; report activity you did not authorise so we can investigate.</li>
                 <li>Not operate automated bot accounts, impersonate other individuals, or transfer your account to another party without our prior written consent.</li>
               </ul>
             </section>
 
             {/* 4. Acceptable Use */}
-            <section className="space-y-4">
+            <section id="terms-section-4" className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] pb-2 border-b border-[#F0ECE4] dark:border-[#222B25]">
                 4. Acceptable Use
               </h2>
@@ -229,7 +238,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             {/* 5. Content and Intellectual Property */}
-            <section className="space-y-4">
+            <section id="terms-section-5" className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] pb-2 border-b border-[#F0ECE4] dark:border-[#222B25]">
                 5. Content and Intellectual Property
               </h2>
@@ -237,13 +246,13 @@ const TermsOfService: React.FC = () => {
                 <div>
                   <h3 className="text-base font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-1">User-Generated Content</h3>
                   <p>
-                    You retain ownership of any original book reviews, margin notes, research articles, and discussions that you author on Sahadhyayi. By posting content publicly on our platform, you grant Sahadhyayi a non-exclusive, worldwide, royalty-free license to display, index, format, and distribute that content to other users on the platform in connection with the Service.
+                    You retain ownership of any original book reviews, margin notes, research articles, and discussions that you author on Sahadhyayi. By submitting content, you grant Sahadhyayi a non-exclusive, worldwide, royalty-free licence to host, store, reproduce, adapt for technical formatting, display and distribute that content only as reasonably necessary to operate, secure, promote and improve the Service and to make content available according to your chosen visibility settings. This licence ends when the content is deleted or your account is closed, except to the extent copies remain in backups, are retained for legal or safety reasons, or have been shared or relied upon by other users. We will not claim ownership of your original content.
                   </p>
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-[#1C201D] dark:text-[#F3F0E7] mb-1">Platform Content & Trademarks</h3>
                   <p>
-                    The Sahadhyayi name, logos, custom typography, application codebase, and design system are the exclusive intellectual property of Sahadhyayi and its founders. You may not copy, reverse-engineer, or commercially exploit any software or brand assets without prior written agreement.
+                    The Sahadhyayi name, logos and brand assets are owned by or licensed to the platform. The application code, design elements and other platform materials may be protected by intellectual-property laws and third-party licences. Nothing in these Terms transfers ownership to you. You may not copy, reverse-engineer or commercially exploit protected platform materials except where the law or an applicable open-source licence permits.
                   </p>
                 </div>
                 <div>
@@ -256,7 +265,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             {/* 6. Privacy */}
-            <section className="space-y-4">
+            <section id="terms-section-6" className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] pb-2 border-b border-[#F0ECE4] dark:border-[#222B25]">
                 6. Privacy
               </h2>
@@ -270,41 +279,41 @@ const TermsOfService: React.FC = () => {
             </section>
 
             {/* 7. Termination */}
-            <section className="space-y-4">
+            <section id="terms-section-7" className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] pb-2 border-b border-[#F0ECE4] dark:border-[#222B25]">
                 7. Termination
               </h2>
               <p>
-                We reserve the right to suspend or terminate your account and revoke platform access immediately, with or without notice, if you breach any material provision of these Terms of Service or engage in malicious or harmful conduct. You may terminate your account at any time via your profile settings or by contacting our support desk.
+                We may remove content, restrict features, suspend or terminate an account where reasonably necessary for a breach of these Terms, safety, security, legal compliance or protection of users. Where practicable, we will provide notice and an opportunity to respond; urgent risks, legal requirements or attempts to evade enforcement may require immediate action. You may stop using the Service and request account deletion through available account controls or by contacting support. Any appeal process is described in our Community Guidelines.
               </p>
             </section>
 
             {/* 8. Disclaimers */}
-            <section className="space-y-4">
+            <section id="terms-section-8" className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] pb-2 border-b border-[#F0ECE4] dark:border-[#222B25]">
                 8. Disclaimers
               </h2>
               <p>
-                The Service is provided on an <strong>"AS IS"</strong> and <strong>"AS AVAILABLE"</strong> basis without warranties of any kind, whether express or implied. Sahadhyayi makes no guarantees that:
+                The Service is provided on an <strong>"AS IS"</strong> and <strong>"AS AVAILABLE"</strong> basis to the extent permitted by law. We work to keep it useful and secure, but some features may change, be unavailable or contain errors. Nothing in this section removes consumer rights or other protections that cannot be excluded by law. In particular:
               </p>
               <ul className="list-disc list-inside space-y-1.5 pl-1 text-xs sm:text-sm">
                 <li>The platform will operate completely uninterrupted, bug-free, or continuously accessible at all times.</li>
-                <li>AI Companion summaries, character trees, or philosophical analyses are infallible or free from generative variance. AI insights are provided strictly as educational aids and do not constitute professional or historical legal advice.</li>
+                <li>AI-generated summaries, recommendations, research explanations or other outputs may be incomplete, inaccurate or out of date. Treat them as informational aids, verify important claims against reliable primary sources, and do not rely on them as medical, legal, financial or other professional advice.</li>
               </ul>
             </section>
 
             {/* 9. Limitation of Liability */}
-            <section className="space-y-4">
+            <section id="terms-section-9" className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] pb-2 border-b border-[#F0ECE4] dark:border-[#222B25]">
                 9. Limitation of Liability
               </h2>
               <p>
-                To the maximum extent permitted by applicable law in India, Sahadhyayi, its creators, directors, and affiliates shall not be liable for any indirect, incidental, punitive, or consequential damages resulting from your use of or inability to use the platform, including any data loss, service interruptions, or third-party interactions.
+                To the extent permitted by applicable law, Sahadhyayi will not be liable for indirect or consequential loss arising from use of the Service. Nothing in these Terms excludes or limits liability that cannot lawfully be excluded or limited, including liability arising from fraud, wilful misconduct, or any mandatory consumer or statutory right. You remain responsible for maintaining appropriate copies of content that matters to you; we use reasonable operational safeguards but cannot guarantee uninterrupted availability or zero data loss.
               </p>
             </section>
 
             {/* 10. Changes to Terms */}
-            <section className="space-y-4">
+            <section id="terms-section-10" className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] pb-2 border-b border-[#F0ECE4] dark:border-[#222B25]">
                 10. Changes to Terms
               </h2>
@@ -314,7 +323,7 @@ const TermsOfService: React.FC = () => {
             </section>
 
             {/* 11. Contact Information */}
-            <section className="space-y-4">
+            <section id="terms-section-11" className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] pb-2 border-b border-[#F0ECE4] dark:border-[#222B25]">
                 11. Contact Information
               </h2>
@@ -326,7 +335,7 @@ const TermsOfService: React.FC = () => {
                 <p><strong>Legal Inquiries:</strong> <a href={`mailto:${SAHADHYAYI_EMAIL}`} className="text-[#1C442D] dark:text-[#D5B16D] underline">{SAHADHYAYI_EMAIL}</a></p>
                 <p><strong>Phone Helpline:</strong> {SAHADHYAYI_PHONE}</p>
                 <p><strong>Governing Jurisdiction:</strong> New Delhi, India</p>
-                <p><strong>Dispute Resolution:</strong> Subject to the exclusive jurisdiction of the competent courts in New Delhi, India.</p>
+                <p><strong>Dispute Resolution:</strong> Subject to applicable law and mandatory consumer protections, disputes may be brought before courts of competent jurisdiction in New Delhi, India. Nothing here prevents a consumer from exercising a non-waivable right to approach another forum available under applicable law.</p>
               </div>
             </section>
           </div>
