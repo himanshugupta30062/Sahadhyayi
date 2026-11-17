@@ -124,3 +124,30 @@
   .book-details-metadata > * { transition: none; }
   .book-details-metadata > *:hover { transform: none; }
 }
+
+/* Mobile quick action: stays reachable without covering page content. */
+.book-details-mobile-action-bar { display: none; }
+@media (max-width: 767px) {
+  .book-details-container { padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px)); }
+  .book-details-mobile-action-bar {
+    position: fixed;
+    z-index: 40;
+    inset-inline: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .75rem 1rem calc(.75rem + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid hsl(var(--border) / .9);
+    background: hsl(var(--background) / .94);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 -12px 35px -28px hsl(var(--foreground) / .45);
+  }
+  .book-details-mobile-action-copy { display: flex; flex-direction: column; min-width: 0; gap: .12rem; }
+  .book-details-mobile-action-title { color: hsl(var(--foreground)); font-size: .82rem; font-weight: 650; line-height: 1.2; }
+  .book-details-mobile-action-subtitle { color: hsl(var(--muted-foreground)); font-size: .7rem; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 48vw; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .book-details-mobile-action-bar { scroll-behavior: auto; }
+}
