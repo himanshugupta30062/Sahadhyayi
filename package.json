@@ -5,17 +5,17 @@
   "homepage": "https://www.sahadhyayi.com",
   "type": "module",
   "scripts": {
-    "predev": "node scripts/optimize-book-expert-artwork.mjs && node scripts/prepare-performance-assets.mjs",
+    "predev": "node scripts/optimize-book-expert-artwork.mjs && node scripts/prepare-performance-assets.mjs && npm run prepare:blog-posts",
     "dev": "vite",
-    "predev:vite": "node scripts/optimize-book-expert-artwork.mjs && node scripts/prepare-performance-assets.mjs",
+    "predev:vite": "node scripts/optimize-book-expert-artwork.mjs && node scripts/prepare-performance-assets.mjs && npm run prepare:blog-posts",
     "dev:vite": "vite",
-    "prebuild": "node scripts/prepare-performance-assets.mjs",
+    "prebuild": "node scripts/prepare-performance-assets.mjs && npm run prepare:blog-posts",
     "build": "node scripts/generateSitemap.js && node scripts/optimize-book-expert-artwork.mjs && vite build && node scripts/prerender-public-content.mjs && npm run build:server:utils && npm run check:cloudflare-routing",
     "build:server:utils": "node scripts/build-server-utils.mjs",
     "check:cloudflare-routing": "node scripts/check-cloudflare-routing-config.mjs",
     "deploy:cloudflare": "npx --yes wrangler@4.156.0 deploy",
     "size:initial": "node scripts/check-initial-js-size.mjs",
-    "prebuild:dev": "node scripts/prepare-performance-assets.mjs && node scripts/optimize-book-expert-artwork.mjs",
+    "prebuild:dev": "node scripts/prepare-performance-assets.mjs && node scripts/optimize-book-expert-artwork.mjs && npm run prepare:blog-posts",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "test": "vitest run",
@@ -30,7 +30,8 @@
     "generate:sbom": "npm sbom --sbom-format=cyclonedx --sbom-type=application --output-file=sbom.json",
     "verify:licenses": "node scripts/verifyLicenses.js",
     "size": "size-limit",
-    "test:coverage": "vitest run --coverage.enabled=true"
+    "test:coverage": "vitest run --coverage.enabled=true",
+    "prepare:blog-posts": "node scripts/export-blog-posts.mjs"
   },
   "size-limit": [
     {
