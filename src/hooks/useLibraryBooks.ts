@@ -728,6 +728,11 @@ export const getBookOverallQualityScore = (book: any): number => {
  * Deterministic library book comparator function.
  */
 export const compareLibraryBooks = (a: any, b: any): number => {
+  const overallA = getBookOverallQualityScore(a);
+  const overallB = getBookOverallQualityScore(b);
+  if (overallA !== overallB) return overallB - overallA;
+
+  // Preserve the established resource/cover hierarchy as a secondary signal.
   const scoreA = getBookCompletenessScore(a);
   const scoreB = getBookCompletenessScore(b);
   if (scoreA !== scoreB) {
