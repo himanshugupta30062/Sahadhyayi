@@ -198,6 +198,15 @@ describe('SEO build-script coverage', () => {
     expect(scientist).toContain('"@type":"Person"');
     expect(scientist).toContain('"jobTitle":"Physicist"');
     expect(scientist).toContain('"knowsAbout":["Raman effect","Light scattering","Optics"]');
+    expect(scientist).toContain('"birthPlace":{"@type":"Place","name":"Tiruchirappalli, Tamil Nadu, India"}');
+    expect(scientist).toContain('"subjectOf":[{"@type":"CreativeWork","name":"A New Type of Secondary Radiation (1928)"');
+    expect(scientist).toContain('<meta property="og:image" content="https://commons.wikimedia.org/wiki/Special:FilePath/Sir_CV_Raman.JPG" />');
+    const ramanujan = mocks.writes.find((entry) => entry.path.endsWith('/scientists/srinivasa-ramanujan/index.html'))?.content || '';
+    expect(ramanujan).toContain('"name":"Highly Composite Numbers (1915)"');
+    expect(ramanujan).toContain('"@type":"CreativeWork"');
+    const marieCurie = mocks.writes.find((entry) => entry.path.endsWith('/scientists/marie-curie/index.html'))?.content || '';
+    expect(marieCurie).toContain('"birthPlace":{"@type":"Place","name":"Warsaw, Poland"}');
+    expect(marieCurie).toContain('"name":"Marie Curie — Nobel Prize facts"');
 
     expect(aiResearch).toContain('<title>Artificial intelligence Research Papers &amp; Studies | Sahadhyayi</title>');
     expect(aiResearch).toContain('<link rel="canonical" href="https://sahadhyayi.com/research-papers/topic/artificial-intelligence" />');
