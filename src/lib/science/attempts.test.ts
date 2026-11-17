@@ -30,14 +30,15 @@ describe("everyday science attempt persistence", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getUser.mockResolvedValue({ data: { user: null }, error: null });
-    mocks.from.mockReturnValue({ insert: mocks.insert });
-    mocks.insert.mockResolvedValue({ error: null });
     const chain = {
+      insert: mocks.insert,
       select: mocks.select,
       eq: mocks.eq,
       order: mocks.order,
       limit: mocks.limit,
     };
+    mocks.from.mockReturnValue(chain);
+    mocks.insert.mockResolvedValue({ error: null });
     mocks.select.mockReturnValue(chain);
     mocks.eq.mockReturnValue(chain);
     mocks.order.mockReturnValue(chain);
