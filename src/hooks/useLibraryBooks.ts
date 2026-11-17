@@ -883,6 +883,13 @@ const mapBook = (book: any): Book => ({
   isbn: book.isbn,
   pages: book.pages,
   author_bio: book.author_bio,
+  cover_quality_score: book.cover_quality_score,
+  pdf_quality_score: book.pdf_quality_score,
+  metadata_match_score: book.metadata_match_score,
+  asset_quality_score: book.asset_quality_score,
+  asset_quality_status: book.asset_quality_status,
+  asset_quality_evidence: book.asset_quality_evidence,
+  asset_quality_checked_at: book.asset_quality_checked_at,
   status: book.status,
   catalog_status: book.catalog_status,
 });
