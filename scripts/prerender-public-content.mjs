@@ -274,13 +274,13 @@ for (const person of lifeStoryProfiles) {
 }
 
 const scientistProfiles = [
-  { slug: "amal-kumar-raychaudhuri", name: "Amal Kumar Raychaudhuri", description: "Explore the life and work of Indian physicist Amal Kumar Raychaudhuri, whose equation became a key result in general relativity and cosmology." },
-  { slug: "c-v-raman", name: "C. V. Raman", description: "Learn about C. V. Raman, the Indian physicist whose discovery of the Raman Effect earned the 1930 Nobel Prize in Physics." },
-  { slug: "satyendra-nath-bose", name: "Satyendra Nath Bose", description: "Discover the life and quantum physics contributions of Satyendra Nath Bose, whose work led to Bose–Einstein statistics." },
-  { slug: "srinivasa-ramanujan", name: "Srinivasa Ramanujan", description: "Explore the life, notebooks and mathematical contributions of Srinivasa Ramanujan, one of India's most influential mathematicians." },
-  { slug: "marie-curie", name: "Marie Curie", description: "Explore Marie Curie's pioneering research on radioactivity and the discoveries of polonium and radium." },
-  { slug: "albert-einstein", name: "Albert Einstein", description: "Learn about Albert Einstein's life and contributions to relativity, quantum theory and modern physics." },
-  { slug: "katherine-johnson", name: "Katherine Johnson", description: "Discover NASA mathematician Katherine Johnson's calculations for Mercury, Apollo and early human spaceflight." }
+  { slug: "amal-kumar-raychaudhuri", name: "Amal Kumar Raychaudhuri", description: "Explore the life and work of Indian physicist Amal Kumar Raychaudhuri, whose equation became a key result in general relativity and cosmology.", jobTitle: "Theoretical physicist", knowsAbout: ["Raychaudhuri equation", "General relativity", "Relativistic cosmology"] },
+  { slug: "c-v-raman", name: "C. V. Raman", description: "Learn about C. V. Raman, the Indian physicist whose discovery of the Raman Effect earned the 1930 Nobel Prize in Physics.", jobTitle: "Physicist", knowsAbout: ["Raman effect", "Light scattering", "Optics"] },
+  { slug: "satyendra-nath-bose", name: "Satyendra Nath Bose", description: "Discover the life and quantum physics contributions of Satyendra Nath Bose, whose work led to Bose–Einstein statistics.", jobTitle: "Physicist", knowsAbout: ["Bose–Einstein statistics", "Quantum mechanics", "Bosons"] },
+  { slug: "srinivasa-ramanujan", name: "Srinivasa Ramanujan", description: "Explore the life, notebooks and mathematical contributions of Srinivasa Ramanujan, one of India's most influential mathematicians.", jobTitle: "Mathematician", knowsAbout: ["Number theory", "Infinite series", "Partitions", "Mock theta functions"] },
+  { slug: "marie-curie", name: "Marie Curie", description: "Explore Marie Curie's pioneering research on radioactivity and the discoveries of polonium and radium.", jobTitle: "Physicist and chemist", knowsAbout: ["Radioactivity", "Polonium", "Radium"] },
+  { slug: "albert-einstein", name: "Albert Einstein", description: "Learn about Albert Einstein's life and contributions to relativity, quantum theory and modern physics.", jobTitle: "Theoretical physicist", knowsAbout: ["Special relativity", "General relativity", "Photoelectric effect", "Brownian motion"] },
+  { slug: "katherine-johnson", name: "Katherine Johnson", description: "Discover NASA mathematician Katherine Johnson's calculations for Mercury, Apollo and early human spaceflight.", jobTitle: "Mathematician", knowsAbout: ["Orbital mechanics", "Mercury programme", "Apollo programme", "Spaceflight trajectory calculations"] }
 ];
 
 for (const scientist of scientistProfiles) {
@@ -292,6 +292,7 @@ for (const scientist of scientistProfiles) {
     type: "profile",
     entityType: "Person",
     entityName: scientist.name,
+    personDetails: { jobTitle: scientist.jobTitle, knowsAbout: scientist.knowsAbout },
   }));
 }
 
