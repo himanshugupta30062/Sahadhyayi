@@ -193,3 +193,33 @@
   .book-details-page .book-review-item { padding: .8rem; }
   .book-details-page .book-review-card select { max-width: 100%; }
 }
+
+/* Related reading: compact, consistent cover cards that adapt to either theme. */
+.book-details-page .book-related-reads {
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  border: 1px solid hsl(var(--border) / .8);
+  border-radius: 1.35rem;
+  background: hsl(var(--card) / .62);
+}
+.book-details-page .book-related-read {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  color: hsl(var(--foreground));
+  text-decoration: none;
+}
+.book-details-page .book-related-read-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+@media (max-width: 640px) {
+  .book-details-page .book-related-reads { padding: 1rem; border-radius: 1rem; }
+  .book-details-page .book-related-read { padding: .45rem; }
+  .book-details-page .book-related-read-cover { margin-bottom: .55rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .book-details-page .book-related-read { transition: none; }
+  .book-details-page .book-related-read:hover { transform: none; }
+  .book-details-page .book-related-read img { transition: none; }
+}
