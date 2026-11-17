@@ -67,11 +67,8 @@ BEGIN
       updated_at = now()
   WHERE id = v_user_id;
 
-  UPDATE public.user_locations
-  SET is_active = false,
-      latitude = NULL,
-      longitude = NULL,
-      last_updated = now()
+  -- Coordinates are NOT NULL in this legacy table, so remove the row entirely.
+  DELETE FROM public.user_locations
   WHERE user_id = v_user_id;
 
   DELETE FROM public.user_books_location
@@ -97,11 +94,7 @@ FOR EACH ROW
 EXECUTE FUNCTION public.clear_location_data_after_consent_withdrawal();
 
 -- One-time cleanup for legacy rows that remain active without recorded consent.
-UPDATE public.user_locations AS ul
-SET is_active = false,
-    latitude = NULL,
-    longitude = NULL,
-    last_updated = now()
+DELETE FROM public.user_locations AS ul
 WHERE ul.is_active IS TRUE
   AND NOT internal_security.has_location_consent(ul.user_id);
 
