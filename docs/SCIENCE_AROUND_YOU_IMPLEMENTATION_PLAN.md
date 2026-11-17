@@ -38,6 +38,7 @@ It measures demonstrated explanations of everyday science. It is not an IQ test,
 
 - Evaluate scientific meaning, not keyword overlap or textbook phrasing.
 - Score dimensions independently and calculate the weighted score in trusted server code.
+- Use explicit score anchors and benchmark archetypes; never reward answer length or keyword density. A concise correct answer must retain high accuracy, conceptual-understanding and reasoning scores.
 - Treat user answer text as untrusted data and explicitly ignore instructions embedded in answers.
 - Validate exact question IDs, unique submissions, payload size, answer length, model JSON shape, finite score values, and score boundaries.
 - Keep API secrets and answer keys out of the browser bundle.
@@ -57,7 +58,8 @@ It measures demonstrated explanations of everyday science. It is not an IQ test,
 ### Phase 2 — Quality and personalisation
 - The first three distinct ten-question banks are implemented; next, have subject-matter reviewers validate scientific accuracy and difficulty calibration across all 30 questions.
 - Add reviewed biology, environment, and additional technology topics in a versioned bank expansion.
-- Calibrate score anchors with benchmark answers (excellent, partial, incorrect, concise-but-correct) and evaluate consistency across repeated runs.
+- Add server-only score anchors and benchmark archetype targets for excellent, partially correct, major-misconception, irrelevant, and concise-but-correct answers. Keep the calibration version in saved attempt metadata.
+- Validate the Gemini evaluator against a reviewed per-question benchmark set across all 30 questions, then run repeated evaluations to measure score variance before treating the score as reliable.
 - Retrieve actually available Sahadhyayi books by title/subject and prefer verified editions with accessible reading links.
 - Add age-appropriate wording and accessibility/language options without changing what the score measures.
 - Build progress charts showing improvement by domain across attempts.
