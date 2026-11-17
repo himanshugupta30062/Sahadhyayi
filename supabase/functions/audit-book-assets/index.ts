@@ -27,15 +27,26 @@ function safeUrl(raw: unknown): URL | null {
 }
 
 async function readBounded(url: URL, range: string): Promise<{ response: Response; bytes: Uint8Array }> {
-  const response = await fetch(url, {
-    method: "GET",
-    headers: { Range: range },
-    redirect: "manual",
-    signal: AbortSignal.timeout(9000),
-  });
-  if (response.status >= 300 && response.status < 400) {
-    throw new Error("Redirect not followed; re-audit canonical URL");
+  // Follow only a small number of redirects, validating every destination against
+  // the same HTTPS host allowlist to prevent redirect-based SSRF.
+  let current = url;
+  let response: Response | null = null;
+  for (let hop = 0; hop <= 5; hop++) {
+    response = await fetch(current, {
+      method: "GET",
+      headers: { Range: range },
+      redirect: "manual",
+      signal: AbortSignal.timeout(9000),
+    });
+    if (![301, 302, 303, 307, 308].includes(response.status)) break;
+    const location = response.headers.get("location");
+    await response.body?.cancel();
+    if (!location || hop === 5) throw new Error("Asset redirect limit exceeded or missing destination");
+    const destination = safeUrl(new URL(location, current).toString());
+    if (!destination) throw new Error("Asset redirected to a non-allowlisted host");
+    current = destination;
   }
+  if (!response) throw new Error("Asset request did not return a response");
   const declared = Number(response.headers.get("content-length") || 0);
   if (declared > MAX_BYTES) throw new Error("Asset exceeds verification size limit");
   const reader = response.body?.getReader();
@@ -156,14 +167,19 @@ Deno.serve(async (req) => {
   if (!serviceKey) return Response.json({ error: "Server configuration incomplete" }, { status: 500, headers: cors });
   const userClient = createClient(url, anon, { global: { headers: { Authorization: auth } } });
   const { data: { user }, error: userError } = await userClient.auth.getUser(token);
-  if (userError || !user || user.app_metadata?.role !== "admin") {
+  if (userError || !user) {
+    return Response.json({ error: "Authentication required" }, { status: 401, headers: cors });
+  }
+  const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const { data: adminRole, error: roleError } = await admin.from("user_roles")
+    .select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle();
+  if (roleError || !adminRole) {
     return Response.json({ error: "Admin access required" }, { status: 403, headers: cors });
   }
 
   let body: { limit?: number; book_ids?: string[] } = {};
   try { body = await req.json(); } catch { /* empty body is valid */ }
   const limit = Math.max(1, Math.min(MAX_BATCH, Number(body.limit) || 10));
-  const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
   let query = admin.from("books_library")
     .select("id,title,author,cover_image_url,pdf_url")
     .order("created_at", { ascending: true }).limit(limit);
