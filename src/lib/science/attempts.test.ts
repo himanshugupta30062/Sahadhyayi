@@ -20,7 +20,8 @@ vi.mock("@/integrations/supabase/client-universal", () => ({
 import { listEverydayScienceAttempts, saveEverydayScienceAttempt } from "./attempts";
 
 const evaluation = {
-  questionSetVersion: "everyday-science-v1",
+  difficulty: "beginner" as const,
+  questionSetVersion: "everyday-science-v1-beginner-difficulty-calibration-v1",
   overallScore: 75,
   categoryScores: { Physics: 75 },
   results: [],
@@ -66,7 +67,8 @@ describe("everyday science attempt persistence", () => {
       user_id: "user-123",
       overall_score: 75,
       question_count: 1,
-      question_set_version: "everyday-science-v1",
+      question_set_version: "everyday-science-v1-beginner-difficulty-calibration-v1",
+      difficulty: "beginner",
     }));
   });
 
@@ -85,12 +87,13 @@ describe("everyday science attempt persistence", () => {
         question_count: 10,
         category_scores: { Physics: 75 },
         created_at: "2026-11-17T00:00:00.000Z",
+        difficulty: "beginner",
       }],
       error: null,
     });
     const result = await listEverydayScienceAttempts(100);
     expect(mocks.from).toHaveBeenCalledWith("everyday_science_attempts");
-    expect(mocks.select).toHaveBeenCalledWith("id,overall_score,question_count,category_scores,created_at");
+    expect(mocks.select).toHaveBeenCalledWith("id,overall_score,question_count,category_scores,created_at,difficulty");
     expect(mocks.eq).toHaveBeenCalledWith("user_id", "user-123");
     expect(mocks.order).toHaveBeenCalledWith("created_at", { ascending: false });
     expect(mocks.limit).toHaveBeenCalledWith(20);
