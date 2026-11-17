@@ -3965,6 +3965,45 @@ export type Database = {
         }
         Relationships: []
       }
+      brain_assessment_attempts: {
+        Row: {
+          id: string
+          user_id: string
+          mode: string
+          difficulty: string | null
+          question_count: number
+          correct_count: number
+          duration_seconds: number
+          domain_scores: Json
+          question_set_version: string
+          completed_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          mode?: string
+          difficulty?: string | null
+          question_count: number
+          correct_count: number
+          duration_seconds?: number
+          domain_scores?: Json
+          question_set_version?: string
+          completed_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          mode?: string
+          difficulty?: string | null
+          question_count?: number
+          correct_count?: number
+          duration_seconds?: number
+          domain_scores?: Json
+          question_set_version?: string
+          completed_at?: string
+        }
+        Relationships: []
+      }
     Views: {
       profiles_public: {
         Row: {

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   generateMatrixPuzzle,
   matrixCellKey,
@@ -66,6 +66,25 @@ describe("generateMatrixPuzzle", () => {
       expect(answer.layers[0].shape).not.toBe(puzzle.cells[7]!.layers[0].shape);
       expect(answer.layers[1].shape).toBe(puzzle.cells[6]!.layers[1].shape);
       expect(answer.layers[1].scale).toBeGreaterThan(puzzle.cells[7]!.layers[1].scale);
+    }
+  });
+  it("combines shape distribution with alternating fill in the new rule family", () => {
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.99);
+    try {
+      const puzzle = generateMatrixPuzzle("hard");
+      expect(puzzle.rule).toBe("fill-alternation");
+      const answer = puzzle.options[puzzle.answerIndex];
+      const visibleShapes = [puzzle.cells[6]!, puzzle.cells[7]!, puzzle.cells[2]!, puzzle.cells[5]!]
+        .map((cell) => cell.layers[0].shape);
+      expect(visibleShapes).not.toContain(answer.layers[0].shape);
+      expect(answer.layers).toHaveLength(1);
+      expect(answer.layers[0].filled).toBe(true);
+      expect(puzzle.cells[6]!.layers[0].filled).toBe(true);
+      expect(puzzle.cells[7]!.layers[0].filled).toBe(false);
+      expect(puzzle.cells[2]!.layers[0].filled).toBe(true);
+      expect(puzzle.cells[5]!.layers[0].filled).toBe(false);
+    } finally {
+      randomSpy.mockRestore();
     }
   });
 });

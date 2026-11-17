@@ -1,4 +1,4 @@
-/**
+/** 
  * Brain Lab matrix puzzle generator.
  *
  * Adapted from the rule-based approach in:
@@ -12,7 +12,7 @@
 
 export type MatrixShape = "circle" | "square" | "triangle" | "diamond";
 export type MatrixDifficulty = "easy" | "medium" | "hard";
-export type MatrixRule = "distribution" | "combination" | "nested-growth";
+export type MatrixRule = "distribution" | "combination" | "nested-growth" | "fill-alternation";
 
 export type MatrixLayer = {
   shape: MatrixShape;
@@ -175,11 +175,41 @@ function generateNestedGrowth(difficulty: MatrixDifficulty): MatrixPuzzle {
   );
 }
 
+/**
+ * Combines a Latin-style shape distribution with a checkerboard fill rule.
+ * The two visual properties must be solved independently.
+ */
+function generateFillAlternation(difficulty: MatrixDifficulty): MatrixPuzzle {
+  const shapes = uniqueShapes();
+  const grid: MatrixCell[][] = [];
+
+  for (let row = 0; row < 3; row += 1) {
+    const rowCells: MatrixCell[] = [];
+    for (let column = 0; column < 3; column += 1) {
+      rowCells.push({
+        layers: [{
+          shape: shapes[(row + column) % 3],
+          scale: 0.88,
+          filled: (row + column) % 2 === 0,
+        }],
+      });
+    }
+    grid.push(rowCells);
+  }
+
+  return makePuzzle(
+    "fill-alternation",
+    difficulty,
+    grid,
+    "Solve two rules separately: each row and column uses each shape once, while filled and outline shapes alternate like a checkerboard. The missing bottom-right tile is filled.",
+  );
+}
+
 export function generateMatrixPuzzle(difficulty: MatrixDifficulty = "easy"): MatrixPuzzle {
   const availableRules: MatrixRule[] =
     difficulty === "easy"
       ? ["distribution", "combination"]
-      : ["distribution", "combination", "nested-growth"];
+      : ["distribution", "combination", "nested-growth", "fill-alternation"];
   const rule = availableRules[Math.floor(Math.random() * availableRules.length)];
 
   switch (rule) {
@@ -187,6 +217,8 @@ export function generateMatrixPuzzle(difficulty: MatrixDifficulty = "easy"): Mat
       return generateCombination(difficulty);
     case "nested-growth":
       return generateNestedGrowth(difficulty);
+    case "fill-alternation":
+      return generateFillAlternation(difficulty);
     default:
       return generateDistribution(difficulty);
   }
