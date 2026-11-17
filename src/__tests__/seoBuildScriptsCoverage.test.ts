@@ -143,7 +143,7 @@ describe('SEO build-script coverage', () => {
     expect(book).not.toContain('<script>alert(1)</script>');
     expect(book).toContain('A &amp; B story');
     expect(book).toContain('"@type":"Book"');
-    expect(book).toContain('"name":"A &lt;script&gt;alert(1)&lt;/script&gt; Book"');
+    expect(book).toContain('"name":"A \\u003cscript\\u003ealert(1)\\u003c/script\\u003e Book"');
     expect(author).toContain('"@type":"Person"');
     expect(author).toContain('"name":"Munshi Premchand"');
     expect(author).toContain('<title>Munshi Premchand - Author Profile | Sahadhyayi</title>');
