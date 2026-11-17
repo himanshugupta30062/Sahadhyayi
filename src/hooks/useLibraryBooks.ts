@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
 import { getCoverQualityScore } from '@/utils/getCoverQualityScore';
+import { getVerifiedAssetRankingBonus } from '@/utils/catalog/assetQualityScoring';
 import {
   BASE_BOOK_SELECT_COLUMNS,
   detectBookSchemaCapabilities,
@@ -39,6 +40,13 @@ export interface Book {
   licenseEvidence?: LicenseEvidence;
   qualityScore?: number;
   qualityReasons?: string[];
+  cover_quality_score?: number | null;
+  pdf_quality_score?: number | null;
+  metadata_match_score?: number | null;
+  asset_quality_score?: number | null;
+  asset_quality_status?: 'pending' | 'verified' | 'needs_review' | 'failed';
+  asset_quality_evidence?: Record<string, unknown>;
+  asset_quality_checked_at?: string | null;
   whyThisEdition?: string;
   isPreferredEdition?: boolean;
   alternativeEditionsCount?: number;
@@ -589,7 +597,7 @@ export const getBookCompletenessScore = (book: any): number => {
     subScore += Math.min(40, Math.round(book.qualityScore * 0.4));
   }
 
-  return baseScore + subScore;
+  return baseScore + subScore + getVerifiedAssetRankingBonus(book);
 };
 
 /**
@@ -891,6 +899,13 @@ const mapBook = (book: any): Book => ({
   isbn: book.isbn,
   pages: book.pages,
   author_bio: book.author_bio,
+  cover_quality_score: book.cover_quality_score,
+  pdf_quality_score: book.pdf_quality_score,
+  metadata_match_score: book.metadata_match_score,
+  asset_quality_score: book.asset_quality_score,
+  asset_quality_status: book.asset_quality_status,
+  asset_quality_evidence: book.asset_quality_evidence,
+  asset_quality_checked_at: book.asset_quality_checked_at,
   status: book.status,
   catalog_status: book.catalog_status,
 });
