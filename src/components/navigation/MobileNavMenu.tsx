@@ -11,7 +11,7 @@ import SignInLink from '@/components/SignInLink';
 import { useAuth } from "@/contexts/authHelpers";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { LogOut, BookOpen, Users, Gamepad2, Radio, FileText, PenTool, Home, BookMarked } from "lucide-react";
+import { LogOut, BookOpen, Users, Gamepad2, Radio, FileText, PenTool, Home, BookMarked, Microscope } from "lucide-react";
 
 interface MobileNavMenuProps {
   isOpen: boolean;
@@ -29,6 +29,7 @@ const MobileNavMenu = ({ isOpen, onClose }: MobileNavMenuProps) => {
     { path: "/articles", label: "Articles", icon: FileText },
     { path: "/blog", label: "Publish", icon: PenTool },
     { path: "/games", label: "Games", icon: Gamepad2 },
+    { path: "/science-around-you", label: "Explain Science Around You", icon: Microscope },
     { path: "/authors", label: "Authors", icon: Users },
     { path: "/social", label: "Social Media", icon: Radio },
   ];
