@@ -47,6 +47,23 @@ const QUESTIONS: Question[] = [
   { id: "s8", domain: "Spatial reasoning", prompt: "On a standard 8×8 chessboard, how many squares are there in total when every size is counted?", options: ["64", "128", "204", "256"], answer: 2, explanation: "There are 64 + 49 + 36 + 25 + 16 + 9 + 4 + 1 = 204 squares." },
   { id: "s9", domain: "Spatial reasoning", prompt: "A cube is painted on every face and cut into 64 equal cubes (4×4×4). How many small cubes have no paint?", options: ["4", "8", "16", "27"], answer: 1, explanation: "The unpainted interior is (4−2)³ = 8 cubes." },
   { id: "s10", domain: "Spatial reasoning", prompt: "A compass needle points east. The map is rotated 90° clockwise while the needle stays fixed in the room. Relative to the rotated map, which direction does the needle point?", options: ["North", "South", "East", "West"], answer: 0, explanation: "After the map rotates clockwise, its north direction points east in the room; the fixed east-pointing needle therefore aligns with map north." },
+
+  { id: "m7", domain: "Visual patterns", prompt: "Which symbol completes the alternating pattern? ▲, ▲, ○, ▲, ▲, ○, ▲, ▲, …", options: ["▲", "○", "□", "◇"], answer: 1, explanation: "The repeating group is two triangles followed by one circle." },
+  { id: "m8", domain: "Visual patterns", prompt: "A shape turns 90° clockwise at each step. If it points left now, which way will it point after two steps?", options: ["Up", "Right", "Down", "Left"], answer: 1, explanation: "Left → up → right after two clockwise quarter-turns." },
+  { id: "m9", domain: "Visual patterns", prompt: "Complete the sequence: 1 line, 2 lines, 3 lines, 4 lines, …", options: ["2 lines", "3 lines", "4 lines", "5 lines"], answer: 3, explanation: "The number of lines increases by one at each step." },
+  { id: "m10", domain: "Visual patterns", prompt: "Which item is the odd one out?", options: ["↑↓", "←→", "↗↙", "↑→"], answer: 3, explanation: "The first three pairs point in exactly opposite directions; the last pair does not." },
+  { id: "n7", domain: "Number patterns", prompt: "What comes next? 7, 10, 16, 25, 37, …", options: ["49", "50", "52", "54"], answer: 2, explanation: "The differences are +3, +6, +9, +12; next is +15, giving 52." },
+  { id: "n8", domain: "Number patterns", prompt: "Find the missing number: 2, 5, 11, 23, 47, …", options: ["93", "94", "95", "96"], answer: 2, explanation: "Each term is doubled and then 1 is added." },
+  { id: "n9", domain: "Number patterns", prompt: "What is the next prime number after 29?", options: ["30", "31", "33", "35"], answer: 1, explanation: "31 is prime; 30, 33 and 35 have non-trivial factors." },
+  { id: "n10", domain: "Number patterns", prompt: "Complete the sequence: 100, 96, 88, 76, 60, …", options: ["44", "42", "40", "38"], answer: 2, explanation: "Subtract 4, 8, 12, 16; next subtract 20 to get 40." },
+  { id: "l6", domain: "Logic", prompt: "Some poets are teachers. All teachers are readers. Which conclusion must follow?", options: ["All poets are readers", "Some poets are readers", "No poets are readers", "All readers are poets"], answer: 1, explanation: "The poets who are teachers must also be readers, so some poets are readers." },
+  { id: "l7", domain: "Logic", prompt: "Three boxes are labelled Apples, Oranges and Mixed. Every label is wrong. You may take one fruit from one box. Which box should you sample to identify all boxes?", options: ["Apples", "Oranges", "Mixed", "Any box"], answer: 2, explanation: "The box labelled Mixed cannot be mixed. Its single fruit reveals its true contents, allowing the other two to be deduced." },
+  { id: "l8", domain: "Logic", prompt: "If the alarm is set, the light flashes. The light is not flashing. What follows?", options: ["The alarm is set", "The alarm is not set", "The light is broken", "Nothing follows"], answer: 1, explanation: "By modus tollens, if setting the alarm guarantees a flashing light and no light flashes, the alarm is not set." },
+  { id: "l9", domain: "Logic", prompt: "Ravi is either in the library or the lab, but not both. He is not in the library. Where is he?", options: ["At home", "In the lab", "In both places", "Cannot be determined"], answer: 1, explanation: "The two locations are mutually exclusive and exhaustive; if he is not in the library, he is in the lab." },
+  { id: "v6", domain: "Verbal reasoning", prompt: "Thermometer is to temperature as barometer is to …", options: ["Wind", "Pressure", "Rainfall", "Humidity"], answer: 1, explanation: "A thermometer measures temperature; a barometer measures atmospheric pressure." },
+  { id: "v7", domain: "Verbal reasoning", prompt: "Choose the closest meaning of 'meticulous'.", options: ["Careless", "Thorough", "Hasty", "Ordinary"], answer: 1, explanation: "Meticulous means showing great attention to detail; thorough is the closest option." },
+  { id: "v8", domain: "Verbal reasoning", prompt: "Chapter is to book as scene is to …", options: ["Actor", "Stage", "Play", "Audience"], answer: 2, explanation: "A chapter is a section of a book; a scene is a section of a play." },
+  { id: "v9", domain: "Verbal reasoning", prompt: "Which pair has the same relationship as 'generous : selfish'?", options: ["Ancient : old", "Expand : contract", "Quiet : silent", "Rapid : quick"], answer: 1, explanation: "Generous and selfish are opposites, as are expand and contract." },
 ];
 
 
@@ -56,7 +73,7 @@ type AttemptHistoryEntry = { date: string; score: number; total: number; mode: s
 const DIFFICULTY_BY_ID: Record<string, Difficulty> = {
   m1: "Easy", m2: "Easy", m4: "Easy", n2: "Easy", l2: "Easy", v1: "Easy", v2: "Easy",
   m3: "Medium", n1: "Medium", n4: "Medium", n6: "Medium", l1: "Medium", l4: "Medium", v3: "Medium", v4: "Medium",
-  n3: "Hard", n5: "Hard", l3: "Hard", l5: "Hard", v5: "Hard", m5: "Hard", m6: "Hard", s1: "Easy", s2: "Easy", s3: "Easy", s4: "Medium", s5: "Medium", s6: "Medium", s7: "Medium", s8: "Hard", s9: "Hard", s10: "Hard",
+  n3: "Hard", n5: "Hard", l3: "Hard", l5: "Hard", v5: "Hard", m5: "Hard", m6: "Hard", m7: "Easy", m8: "Medium", m9: "Easy", m10: "Hard", n7: "Medium", n8: "Hard", n9: "Easy", n10: "Hard", l6: "Medium", l7: "Hard", l8: "Medium", l9: "Easy", v6: "Medium", v7: "Hard", v8: "Easy", v9: "Medium", s1: "Easy", s2: "Easy", s3: "Easy", s4: "Medium", s5: "Medium", s6: "Medium", s7: "Medium", s8: "Hard", s9: "Hard", s10: "Hard",
 };
 
 const TEST_SECONDS = 20 * 60;
