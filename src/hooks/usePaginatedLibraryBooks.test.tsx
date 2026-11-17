@@ -26,7 +26,6 @@ const mocks = vi.hoisted(() => ({
     accessStatus: 'public_domain', licenseEvidence: 'public_domain',
   })),
   compare: vi.fn((a: any, b: any) => a.title.localeCompare(b.title)),
-  diversify: vi.fn((books: any[]) => books),
 }));
 
 vi.mock('@tanstack/react-query', () => ({
@@ -57,9 +56,7 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
 }));
 
 vi.mock('@/hooks/useLibraryBooks', () => ({
-  getBookCompletenessScore: () => 1,
   compareLibraryBooks: (a: any, b: any) => mocks.compare(a, b),
-  diversifyBooksPerPage: (...args: any[]) => (mocks.diversify as any)(...args),
 }));
 
 vi.mock('@/utils/catalog/deduplicationEngine', () => ({
@@ -98,7 +95,7 @@ describe('usePaginatedLibraryBooks', () => {
     mocks.queryOptions = null;
     mocks.books = Array.from({ length: 15 }, (_, i) => viewBook(i + 1));
     mocks.queryResponses = [];
-    for (const fn of [mocks.refetch, mocks.from, mocks.select, mocks.order, mocks.range, mocks.or, mocks.eq, mocks.detectCaps, mocks.selectColumns, mocks.applyFilter, mocks.filterBooks, mocks.mapEdition, mocks.compare, mocks.diversify]) fn.mockClear();
+    for (const fn of [mocks.refetch, mocks.from, mocks.select, mocks.order, mocks.range, mocks.or, mocks.eq, mocks.detectCaps, mocks.selectColumns, mocks.applyFilter, mocks.filterBooks, mocks.mapEdition, mocks.compare]) fn.mockClear();
     mocks.detectCaps.mockResolvedValue({ hasStatus: true, hasCatalogStatus: true, checked: true });
     mocks.selectColumns.mockReturnValue('public columns');
     mocks.applyFilter.mockImplementation((query: any) => query);
@@ -110,7 +107,6 @@ describe('usePaginatedLibraryBooks', () => {
       accessStatus: 'public_domain', licenseEvidence: 'public_domain',
     }));
     mocks.compare.mockImplementation((a: any, b: any) => a.title.localeCompare(b.title));
-    mocks.diversify.mockImplementation((books: any[]) => books);
   });
 
   afterEach(() => { cleanup(); vi.restoreAllMocks(); });
@@ -129,6 +125,22 @@ describe('usePaginatedLibraryBooks', () => {
     expect(result.current.pageSize).toBe(5);
     expect(result.current.data?.books).toHaveLength(5);
     expect(mocks.refetch).not.toHaveBeenCalled();
+  });
+
+  it('keeps the globally ranked order intact on page 3 instead of reordering for author diversity', () => {
+    mocks.books = Array.from({ length: 36 }, (_, i) => ({
+      ...viewBook(i + 1),
+      author: i < 24 ? 'Repeated Author' : 'Author ' + (i + 1),
+    }));
+    mocks.compare.mockImplementation((a: any, b: any) => a.title.localeCompare(b.title));
+
+    const { result } = renderHook(() => usePaginatedLibraryBooks());
+    act(() => result.current.goToPage(3));
+
+    expect(result.current.data?.books.map((book: any) => book.title)).toEqual(
+      Array.from({ length: 12 }, (_, i) => 'Book ' + String(i + 25).padStart(3, '0'))
+    );
+    expect(result.current.data?.currentPage).toBe(3);
   });
 
   it('runs filtered catalog fetches in batches and sanitizes search input', async () => {
