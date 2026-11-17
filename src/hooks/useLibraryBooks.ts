@@ -900,6 +900,7 @@ async function fetchAllBooks(): Promise<Book[]> {
       .select(columns);
 
     query = applyPublicBookFilter(query, caps);
+    query = query.order('created_at', { ascending: false }).order('id', { ascending: true });
 
     const { data, error } = await query.range(offset, offset + BATCH - 1);
 
