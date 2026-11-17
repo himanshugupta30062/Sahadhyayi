@@ -25,7 +25,16 @@ type Experiment = {
   image_url: string | null;
 };
 
-type ScienceAiFeedback = {\n  summary: string;\n  science_connection: string;\n  what_went_well: string[];\n  possible_reasons: string[];\n  next_steps: string[];\n  safety_reminder: string;\n};\n\ntype ExperimentAttempt = {
+type ScienceAiFeedback = {
+  summary: string;
+  science_connection: string;
+  what_went_well: string[];
+  possible_reasons: string[];
+  next_steps: string[];
+  safety_reminder: string;
+};
+
+type ExperimentAttempt = {
   id: string;
   experiment_id: string;
   observations: string;
@@ -126,7 +135,10 @@ export default function ScienceLab() {
   const [category, setCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);\n  const [mediaFiles, setMediaFiles] = useState<File[]>([]);\n  const [aiFeedback, setAiFeedback] = useState<ScienceAiFeedback | null>(null);\n  const [aiReviewing, setAiReviewing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [mediaFiles, setMediaFiles] = useState<File[]>([]);
+  const [aiFeedback, setAiFeedback] = useState<ScienceAiFeedback | null>(null);
+  const [aiReviewing, setAiReviewing] = useState(false);
   const [observations, setObservations] = useState("");
   const [whatLearned, setWhatLearned] = useState("");
   const [worked, setWorked] = useState("yes");
@@ -181,10 +193,38 @@ export default function ScienceLab() {
       window.location.assign("/signin?redirect=" + encodeURIComponent("/science-lab"));
       return;
     }
-    setAiFeedback(null);\n    setMediaFiles([]);\n    setShowLog(true);
+    setAiFeedback(null);
+    setMediaFiles([]);
+    setShowLog(true);
   };
 
-  const handleMediaSelection = (files: FileList | null) => {\n    if (!files) return;\n    const selectedFiles = Array.from(files);\n    if (selectedFiles.length > 3) { toast.error("Choose up to 3 photos or videos."); return; }\n    const allowed = new Set(["image/jpeg", "image/png", "image/webp", "video/mp4", "video/webm"]);\n    if (selectedFiles.some((file) => !allowed.has(file.type))) { toast.error("Use JPG, PNG, WebP, MP4 or WebM files only."); return; }\n    if (selectedFiles.some((file) => file.size > (file.type.startsWith("video/") ? 25 : 10) * 1024 * 1024)) { toast.error("Each photo must be 10 MB or less and each video 25 MB or less."); return; }\n    if (selectedFiles.reduce((total, file) => total + file.size, 0) > 30 * 1024 * 1024) { toast.error("The total upload limit is 30 MB."); return; }\n    setMediaFiles(selectedFiles);\n  };\n\n  const submitAttempt = async () => {
+  const handleMediaSelection = (files: FileList | null) => {
+    if (!files) return;
+    const selectedFiles = Array.from(files);
+    if (selectedFiles.length > 3) { toast.error("Choose up to 3 photos or videos."); return; }
+    const allowed = new Set(["image/jpeg", "image/png", "image/webp", "video/mp4", "video/webm"]);
+    if (selectedFiles.some((file) => !allowed.has(file.type))) { toast.error("Use JPG, PNG, WebP, MP4 or WebM files only."); return; }
+    if (selectedFiles.some((file) => file.size > (file.type.startsWith("video/") ? 25 : 10) * 1024 * 1024)) { toast.error("Each photo must be 10 MB or less and each video 25 MB or less."); return; }
+    if (selectedFiles.reduce((total, file) => total + file.size, 0) > 30 * 1024 * 1024) { toast.error("The total upload limit is 30 MB."); return; }
+    setMediaFiles(selectedFiles);
+  };
+
+  const handleMediaSelection = (files: FileList | null) => {
+    if (!files) return;
+    const selectedFiles = Array.from(files);
+    const allowed = new Set(["image/jpeg", "image/png", "image/webp", "video/mp4", "video/webm"]);
+    if (selectedFiles.length > 3) { toast.error("Choose up to 3 photos or videos."); return; }
+    if (selectedFiles.some((file) => !allowed.has(file.type))) { toast.error("Use JPG, PNG, WebP, MP4 or WebM files only."); return; }
+    if (selectedFiles.some((file) => file.size > (file.type.startsWith("video/") ? 25 : 10) * 1024 * 1024)) {
+      toast.error("Each photo must be 10 MB or less and each video 25 MB or less."); return;
+    }
+    if (selectedFiles.reduce((total, file) => total + file.size, 0) > 30 * 1024 * 1024) {
+      toast.error("The total upload limit is 30 MB."); return;
+    }
+    setMediaFiles(selectedFiles);
+  };
+
+  const submitAttempt = async () => {
     if (!selected || observations.trim().length < 10) {
       toast.error("Please add at least a short observation (10 characters).");
       return;
@@ -196,22 +236,79 @@ export default function ScienceLab() {
       toast.error("Your session has expired. Please sign in again.");
       return;
     }
-    const { data: savedAttempt, error } = await supabase.from("science_experiment_attempts" as any).insert({
-      experiment_id: selected.id,
-      user_id: authData.user.id,
-      observations: observations.trim(),
-      what_learned: whatLearned.trim() || null,
-      worked: worked === "yes" ? true : worked === "no" ? false : null,
-      share_public: sharePublic,
-      status: "completed",
+
+    const { data: savedAttempt, error } = await supabase.from("science_experiment_attempts" as any)
+      .insert({
+        experiment_id: selected.id,
+        user_id: authData.user.id,
+        observations: observations.trim(),
+        what_learned: whatLearned.trim() || null,
+        worked: worked === "yes" ? true : worked === "no" ? false : null,
+        share_public: sharePublic,
+        status: "completed",
+      })
+      .select("id")
+      .single();
+
+    if (error || !savedAttempt?.id) {
+      setSaving(false);
+      toast.error("Your experiment could not be saved. Please try again.");
+      return;
+    }
+
+    const attemptId = savedAttempt.id as string;
+    const uploadedPaths: string[] = [];
+    let uploadFailed = false;
+
+    for (const file of mediaFiles) {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-").slice(-90) || "experiment-media";
+      const path = `${authData.user.id}/${attemptId}/${crypto.randomUUID()}-${safeName}`;
+      const { error: uploadError } = await supabase.storage.from("science-experiment-media")
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (uploadError) { uploadFailed = true; break; }
+
+      const { error: metadataError } = await supabase.from("science_experiment_media" as any).insert({
+        attempt_id: attemptId,
+        user_id: authData.user.id,
+        storage_path: path,
+        media_type: file.type.startsWith("video/") ? "video" : "image",
+        mime_type: file.type,
+        size_bytes: file.size,
+        caption: null,
+      });
+      if (metadataError) {
+        await supabase.storage.from("science-experiment-media").remove([path]);
+        uploadFailed = true;
+        break;
+      }
+      uploadedPaths.push(path);
+    }
+
+    if (uploadFailed) {
+      await supabase.from("science_experiment_media" as any).delete().eq("attempt_id", attemptId);
+      if (uploadedPaths.length) await supabase.storage.from("science-experiment-media").remove(uploadedPaths);
+      toast.warning("Your experiment notes were saved, but the media could not be uploaded. You can submit the media with a new journal entry.");
+    }
+
+    setAiReviewing(true);
+    const firstImageIndex = mediaFiles.findIndex((file) => file.type.startsWith("image/"));
+    const imagePath = firstImageIndex >= 0 ? uploadedPaths[firstImageIndex] ?? null : null;
+    const { data: aiResult, error: aiError } = await supabase.functions.invoke("science-lab-review", {
+      body: { attemptId, imagePath },
     });
+    setAiReviewing(false);
     setSaving(false);
-    if (error) { toast.error("Your experiment could not be saved. Please try again."); return; }
+
+    if (!aiError && aiResult?.feedback) {
+      setAiFeedback(aiResult.feedback as ScienceAiFeedback);
+    } else {
+      toast.warning("Your experiment was saved. AI feedback is temporarily unavailable.");
+    }
     toast.success(sharePublic ? "Experiment saved and shared with the community!" : "Experiment saved to your journal.");
     setShowLog(false);
     setObservations("");
     setWhatLearned("");
-    setSelected(null);
+    setMediaFiles([]);
     await loadData();
   };
 
@@ -310,7 +407,20 @@ export default function ScienceLab() {
         </div>
       )}
 
-      {aiFeedback && (\n        <div className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/60 p-3" role="dialog" aria-modal="true" aria-labelledby="science-ai-feedback-title">\n          <div className="w-full max-w-2xl rounded-2xl border border-border bg-background p-5 shadow-2xl sm:p-7">\n            <div className="mb-4 flex items-center justify-between gap-3"><div><Badge className="mb-2"><Sparkles className="mr-1 h-3 w-3" /> Gemini Science Guide</Badge><h2 id="science-ai-feedback-title" className="text-2xl font-bold">Your experiment review</h2></div><Button size="icon" variant="ghost" aria-label="Close AI feedback" onClick={() => setAiFeedback(null)}><X className="h-4 w-4" /></Button></div>\n            <p className="text-sm leading-6 text-muted-foreground">{aiFeedback.summary}</p>\n            <div className="mt-4 rounded-xl bg-emerald-500/5 p-4"><h3 className="mb-1 font-semibold">The science behind it</h3><p className="text-sm leading-6">{aiFeedback.science_connection}</p></div>\n            {[{title:"What you did well",items:aiFeedback.what_went_well},{title:"What might explain your result",items:aiFeedback.possible_reasons},{title:"Try this next",items:aiFeedback.next_steps}].map((section) => <div key={section.title} className="mt-4"><h3 className="mb-2 font-semibold">{section.title}</h3><ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">{section.items.map((item) => <li key={item}>{item}</li>)}</ul></div>)}\n            <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3"><p className="text-sm"><strong>Safety reminder:</strong> {aiFeedback.safety_reminder}</p></div>\n            <Button className="mt-5 w-full" onClick={() => setAiFeedback(null)}>Continue exploring</Button>\n          </div>\n        </div>\n      )}\n\n      {showRequest && (
+      {aiFeedback && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/60 p-3" role="dialog" aria-modal="true" aria-labelledby="science-ai-feedback-title">
+          <div className="w-full max-w-2xl rounded-2xl border border-border bg-background p-5 shadow-2xl sm:p-7">
+            <div className="mb-4 flex items-center justify-between gap-3"><div><Badge className="mb-2"><Sparkles className="mr-1 h-3 w-3" /> Gemini Science Guide</Badge><h2 id="science-ai-feedback-title" className="text-2xl font-bold">Your experiment review</h2></div><Button size="icon" variant="ghost" aria-label="Close AI feedback" onClick={() => setAiFeedback(null)}><X className="h-4 w-4" /></Button></div>
+            <p className="text-sm leading-6 text-muted-foreground">{aiFeedback.summary}</p>
+            <div className="mt-4 rounded-xl bg-emerald-500/5 p-4"><h3 className="mb-1 font-semibold">The science behind it</h3><p className="text-sm leading-6">{aiFeedback.science_connection}</p></div>
+            {[{title:"What you did well",items:aiFeedback.what_went_well},{title:"What might explain your result",items:aiFeedback.possible_reasons},{title:"Try this next",items:aiFeedback.next_steps}].map((section) => <div key={section.title} className="mt-4"><h3 className="mb-2 font-semibold">{section.title}</h3><ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">{section.items.map((item) => <li key={item}>{item}</li>)}</ul></div>)}
+            <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3"><p className="text-sm"><strong>Safety reminder:</strong> {aiFeedback.safety_reminder}</p></div>
+            <Button className="mt-5 w-full" onClick={() => setAiFeedback(null)}>Continue exploring</Button>
+          </div>
+        </div>
+      )}
+
+      {showRequest && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-3" role="dialog" aria-modal="true" aria-labelledby="request-experiment-title">
           <div className="w-full max-w-lg rounded-2xl border border-border bg-background p-5 shadow-2xl sm:p-6">
             <div className="mb-4 flex items-center justify-between"><h2 id="request-experiment-title" className="text-xl font-bold">Request an experiment</h2><Button size="icon" variant="ghost" aria-label="Close request form" onClick={() => setShowRequest(false)}><X className="h-4 w-4" /></Button></div>
