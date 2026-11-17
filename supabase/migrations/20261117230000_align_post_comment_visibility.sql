@@ -3,6 +3,7 @@
 -- to friends who did not follow the author, and hid comments on public posts
 -- from readers who were not friends.
 DROP POLICY IF EXISTS "Users can view comments on friends posts" ON public.post_comments;
+DROP POLICY IF EXISTS "Readers can view comments allowed by parent post audience" ON public.post_comments;
 
 CREATE POLICY "Readers can view comments allowed by parent post audience"
 ON public.post_comments
