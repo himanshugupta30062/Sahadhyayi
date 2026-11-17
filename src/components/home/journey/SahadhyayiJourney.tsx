@@ -37,14 +37,20 @@ export const SahadhyayiJourney: React.FC = () => {
 
   // Keep motion and auto-tour behavior aligned with the visitor's accessibility preference.
   useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(mediaQuery.matches);
     const handleMotionPreference = (event: MediaQueryListEvent) => {
       setPrefersReducedMotion(event.matches);
       if (event.matches) setIsAutoPlaying(false);
     };
-    mediaQuery.addEventListener('change', handleMotionPreference);
-    return () => mediaQuery.removeEventListener('change', handleMotionPreference);
+    // Support older Safari versions that expose addListener instead of addEventListener.
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleMotionPreference);
+      return () => mediaQuery.removeEventListener('change', handleMotionPreference);
+    }
+    mediaQuery.addListener(handleMotionPreference);
+    return () => mediaQuery.removeListener(handleMotionPreference);
   }, []);
 
   // Load saved progress from localStorage on mount
