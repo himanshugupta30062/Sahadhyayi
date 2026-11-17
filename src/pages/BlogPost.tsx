@@ -27,23 +27,21 @@ const BlogPost = () => {
   const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
-    let active = true;
+    const controller = new AbortController();
 
-    fetch('/data/blog-post-details.json')
+    fetch('/data/blog-post-details.json', { signal: controller.signal })
       .then((response) => {
         if (!response.ok) throw new Error('Unable to load blog articles');
         return response.json() as Promise<BlogPostMap>;
       })
-      .then((data) => {
-        if (active) setPosts(data);
-      })
-      .catch(() => {
-        if (active) setLoadError(true);
+      .then(setPosts)
+      .catch((error: unknown) => {
+        if (error instanceof Error && error.name !== 'AbortError') {
+          setLoadError(true);
+        }
       });
 
-    return () => {
-      active = false;
-    };
+    return () => controller.abort();
   }, []);
 
   const post = slug ? posts?.[slug] : undefined;
