@@ -5,11 +5,8 @@ import SEO from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  generateMatrixPuzzle,
-  type MatrixCell,
-  type MatrixDifficulty,
-} from "@/lib/brain/matrixGenerator";
+import { generateMatrixPuzzle, type MatrixDifficulty } from "@/lib/brain/matrixGenerator";
+import MatrixTile from "@/components/brain/MatrixTile";
 
 const DIFFICULTY_LABELS: Record<MatrixDifficulty, string> = {
   easy: "Easy",
