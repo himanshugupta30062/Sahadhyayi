@@ -136,6 +136,40 @@ function calculateMatchConfidence(matches: Array<Record<string, unknown>>): numb
   return Math.min(score / 4.0, 1.0);
 }
 
+/**
+ * Parse Gemini's JSON response defensively. Some model responses wrap JSON in
+ * markdown fences or add a short preamble despite responseMimeType=json.
+ */
+function parseVerificationReport(rawText: string): Record<string, unknown> {
+  const cleaned = rawText
+    .replace(/^\\uFEFF/, "")
+    .trim()
+    .replace(/^\x60{3}(?:json)?\s*/i, "")
+    .replace(/\s*\x60{3}\s*$/, "")
+    .trim();
+
+  const candidates = [cleaned];
+  const firstBrace = cleaned.indexOf("{");
+  const lastBrace = cleaned.lastIndexOf("}");
+  if (firstBrace >= 0 && lastBrace > firstBrace) {
+    const extracted = cleaned.slice(firstBrace, lastBrace + 1);
+    if (extracted !== cleaned) candidates.push(extracted);
+  }
+
+  for (const candidate of candidates) {
+    try {
+      const parsed: unknown = JSON.parse(candidate);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        return parsed as Record<string, unknown>;
+      }
+    } catch {
+      // Try the bounded JSON object extraction before failing.
+    }
+  }
+
+  throw new Error("Gemini returned an invalid verification report. Please retry verification; the PDF remains private.");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed." }, 405);
@@ -291,14 +325,23 @@ serve(async (req) => {
     });
     if (!analysisResponse.ok) throw new Error(`Gemini analysis failed (${analysisResponse.status}).`);
     const analysisPayload = await analysisResponse.json();
-    const rawText = analysisPayload?.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text || "").join("").trim();
-    if (!rawText) throw new Error("Gemini returned an empty verification report.");
-    let report: Record<string, unknown>;
-    try {
-      report = JSON.parse(rawText);
-    } catch {
-      throw new Error("Gemini returned a malformed verification report.");
+    const candidate = analysisPayload?.candidates?.[0];
+    const finishReason = candidate?.finishReason;
+    if (analysisPayload?.promptFeedback?.blockReason) {
+      throw new Error("Gemini blocked the PDF content during verification. Please retry or request manual review.");
     }
+    if (finishReason === "MAX_TOKENS") {
+      throw new Error("Gemini's verification report was truncated. Please retry verification.");
+    }
+    if (!candidate?.content?.parts?.length) {
+      const providerMessage = analysisPayload?.error?.message;
+      throw new Error(typeof providerMessage === "string"
+        ? `Gemini verification failed: ${providerMessage.slice(0, 240)}`
+        : "Gemini returned an empty verification report.");
+    }
+    const rawText = candidate.content.parts.map((part: { text?: string }) => part.text || "").join("").trim();
+    if (!rawText) throw new Error("Gemini returned an empty verification report.");
+    const report = parseVerificationReport(rawText);
 
     const confidence = typeof report.confidence === "number" && Number.isFinite(report.confidence)
       ? Math.max(0, Math.min(1, report.confidence)) : null;
