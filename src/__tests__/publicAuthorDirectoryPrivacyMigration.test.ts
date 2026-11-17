@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const migration = readFileSync(
-  fileURLToPath(new URL('../../supabase/migrations/20261117200000_public_author_directory_authentic_only.sql', import.meta.url)),
+  resolve(process.cwd(), 'supabase/migrations/20261117200000_public_author_directory_authentic_only.sql'),
   'utf8',
 );
 
