@@ -4004,6 +4004,42 @@ export type Database = {
         }
         Relationships: []
       }
+      everyday_science_attempts: {
+        Row: {
+          id: string
+          user_id: string
+          question_count: number
+          overall_score: number
+          category_scores: Json
+          answers: Json
+          evaluation: Json
+          question_set_version: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          question_count?: number
+          overall_score: number
+          category_scores?: Json
+          answers?: Json
+          evaluation?: Json
+          question_set_version?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          question_count?: number
+          overall_score?: number
+          category_scores?: Json
+          answers?: Json
+          evaluation?: Json
+          question_set_version?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
     Views: {
       profiles_public: {
         Row: {
