@@ -53,7 +53,7 @@ function setMeta(html, attribute, key, content) {
   return pattern.test(html) ? html.replace(pattern, tag) : html.replace("</head>", `  ${tag}\n</head>`);
 }
 
-function createPage({ title, description, route, image, type, entityType, entityName, bodyText, publishedAt, modifiedAt, authorName, wordCount, schemaType, about, breadcrumbs, relatedBooks, relatedArticles, sameAs, personDetails, itemList, bookAuthor, bookIsbn, bookGenre, bookLanguage, bookPages, bookPublicationYear, relatedBooksTitle }) {
+function createPage({ title, description, route, image, type, entityType, entityName, bodyText, publishedAt, modifiedAt, authorName, wordCount, schemaType, about, breadcrumbs, relatedBooks, relatedArticles, sameAs, personDetails, itemList, bookAuthor, bookAuthorBio, bookIsbn, bookGenre, bookLanguage, bookPages, bookPublicationYear, relatedBooksTitle }) {
   const canonical = `${SITE_URL}${route}`;
   let html = template.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
   html = setMeta(html, "name", "description", description);
@@ -152,6 +152,7 @@ function createPage({ title, description, route, image, type, entityType, entity
     <p>${escapeHtml(description)}</p>
     ${safeBodyText ? `<p>${escapeHtml(safeBodyText)}</p>` : ""}
     ${bookAuthor?.url ? `<p>By <a href="${escapeHtml(bookAuthor.url)}">${escapeHtml(bookAuthor.name)}</a></p>` : bookAuthor?.name ? `<p>By ${escapeHtml(bookAuthor.name)}</p>` : ""}
+    ${entityType === "Book" && bookAuthorBio ? `<section aria-label="About the author"><h2>About the author</h2><p>${escapeHtml(plainText(bookAuthorBio, 700))}</p></section>` : ""}
     ${entityType === "Book" ? "<section aria-label=\"Book details\"><h2>About this book</h2><dl>" + (bookGenre ? "<dt>Genre</dt><dd>" + escapeHtml(bookGenre) + "</dd>" : "") + (bookPublicationYear ? "<dt>Publication year</dt><dd>" + escapeHtml(bookPublicationYear) + "</dd>" : "") + (bookLanguage ? "<dt>Language</dt><dd>" + escapeHtml(bookLanguage) + "</dd>" : "") + (bookIsbn ? "<dt>ISBN</dt><dd>" + escapeHtml(bookIsbn) + "</dd>" : "") + (bookPages ? "<dt>Pages</dt><dd>" + escapeHtml(bookPages) + "</dd>" : "") + "</dl></section>" : ""}
     ${Array.isArray(relatedBooks) && relatedBooks.length ? `<section aria-label="Related books"><h2>${escapeHtml(relatedBooksTitle || `Books by ${entityName || "this author"}`)}</h2><ul>${relatedBooks.map((book) => `<li><a href="${escapeHtml(book.route)}">${escapeHtml(book.title)}</a></li>`).join("")}</ul></section>` : ""}
     ${Array.isArray(relatedArticles) && relatedArticles.length ? `<nav aria-label="Related articles"><h2>More articles by this reader</h2><ul>${relatedArticles.map((article) => `<li><a href="${escapeHtml(article.route)}">${escapeHtml(article.title)}</a></li>`).join("")}</ul></nav>` : ""}
@@ -561,7 +562,7 @@ if (booksError) {
   console.warn(`[prerender] Could not fetch public books: ${booksError.message}`);
 } else {
   const { data: bookAuthors, error: bookAuthorsError } = await fetchPaginatedRows(
-    supabase.from("authors").select("id,name"),
+    supabase.from("authors").select("id,name,bio"),
     "book authors",
     5000,
     (label, maxRows) => console.warn(`[prerender] Reached the ${maxRows}-row ${label} safety cap; additional records were not prerendered.`),
@@ -576,8 +577,17 @@ if (booksError) {
     const route = `/book/${encodeURIComponent(id)}`;
     const authorRecord = (book.author_id && authorById.get(book.author_id)) || authorByName.get(String(book.author ?? "").trim().toLowerCase());
     const authorName = String(authorRecord?.name || book.author || "").trim();
-    const description = plainText(book.description, 260) ||
-      `Explore ${title}${authorName ? ` by ${authorName}` : ""} on Sahadhyayi. Check its book details, language, genre, and available reading options.`;
+    const sourceDescription = plainText(book.description, 1200);
+    const isUsefulBookDescription = sourceDescription.length >= 45 &&
+      !/^(?:no description(?: available)?|description unavailable|coming soon|n\/?a|unknown|test book)$/i.test(sourceDescription) &&
+      sourceDescription.toLowerCase() !== title.toLowerCase();
+    const description = isUsefulBookDescription
+      ? plainText(sourceDescription, 260)
+      : ["Explore", title, authorName ? "by " + authorName : "", "on Sahadhyayi.",
+          book.genre ? "Genre: " + plainText(book.genre, 80) + "." : "",
+          book.language ? "Language: " + plainText(book.language, 60) + "." : "",
+          book.publication_year ? "Publication year: " + String(book.publication_year) + "." : "",
+          "View verified book details and available reading options."].filter(Boolean).join(" ");
     const authorSlug = authorRecord?.name ? slugify(authorRecord.name) : "";
     const bookAuthor = authorName
       ? { name: authorName, ...(authorSlug ? { url: `/authors/${authorSlug}` } : {}) }
@@ -610,6 +620,7 @@ if (booksError) {
       entityName: title,
       bodyText: book.description,
       bookAuthor,
+      bookAuthorBio: authorRecord?.bio,
       bookIsbn: book.isbn,
       bookGenre: book.genre,
       bookLanguage: book.language,
