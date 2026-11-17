@@ -50,7 +50,7 @@ export const AdminLibraryQuality: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [activeTab, setActiveTab] = useState<'audit' | 'history' | 'vault'>('audit');
+  const [activeTab, setActiveTab] = useState<'audit' | 'assets' | 'history' | 'vault'>('audit');
   const [filter, setFilter] = useState<'all' | 'high_confidence' | 'needs_review'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [vaultSearchQuery, setVaultSearchQuery] = useState('');
@@ -86,6 +86,54 @@ export const AdminLibraryQuality: React.FC = () => {
     enabled: !!user && isAdmin === true,
     queryFn: () => generateLibraryDuplicateAudit(),
     staleTime: 5 * 60 * 1000,
+  });
+
+  // Asset verification queue and persistent scorecards.
+  const { data: assetBooks = [], isLoading: assetsLoading, refetch: refetchAssets } = useQuery({
+    queryKey: ['book-asset-quality-queue'],
+    enabled: !!user && isAdmin === true && activeTab === 'assets',
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('books_library' as any)
+        .select('id,title,author,cover_image_url,pdf_url,cover_quality_score,pdf_quality_score,metadata_match_score,asset_quality_score,asset_quality_status,asset_quality_evidence,asset_quality_checked_at')
+        .order('asset_quality_checked_at', { ascending: true, nullsFirst: true })
+        .limit(100);
+      if (error) throw error;
+      return data || [];
+    },
+    staleTime: 15_000,
+  });
+
+  const { data: assetCounts } = useQuery({
+    queryKey: ['book-asset-quality-counts'],
+    enabled: !!user && isAdmin === true && activeTab === 'assets',
+    queryFn: async () => {
+      const [total, pending, reviewed, failed] = await Promise.all([
+        supabase.from('books_library' as any).select('id', { count: 'exact', head: true }),
+        supabase.from('books_library' as any).select('id', { count: 'exact', head: true }).eq('asset_quality_status', 'pending'),
+        supabase.from('books_library' as any).select('id', { count: 'exact', head: true }).eq('asset_quality_status', 'needs_review'),
+        supabase.from('books_library' as any).select('id', { count: 'exact', head: true }).eq('asset_quality_status', 'failed'),
+      ]);
+      const error = total.error || pending.error || reviewed.error || failed.error;
+      if (error) throw error;
+      return { total: total.count || 0, pending: pending.count || 0, reviewed: reviewed.count || 0, failed: failed.count || 0 };
+    },
+    staleTime: 15_000,
+  });
+
+  const runAssetBatch = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('audit-book-assets', { body: { limit: 10 } });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data as { processed: number; results: Array<{ title: string; status: string; overall: number; error?: string }> };
+    },
+    onSuccess: (data) => {
+      toast({ title: 'Asset batch completed', description: `Inspected ${data.processed} books. Results require review before being considered verified.` });
+      void refetchAssets();
+      void queryClient.invalidateQueries({ queryKey: ['book-asset-quality-counts'] });
+    },
+    onError: (error: Error) => toast({ title: 'Asset audit failed', description: error.message, variant: 'destructive' }),
   });
 
   // 3. Fetch Audit Logs for History/Undo Tab
@@ -333,6 +381,12 @@ export const AdminLibraryQuality: React.FC = () => {
                 }`}
               >
                 Review Queue
+              </button>
+              <button
+                onClick={() => setActiveTab('assets')}
+                className={`px-3 py-1.5 rounded-lg transition-colors ${activeTab === 'assets' ? 'bg-white shadow-xs text-slate-900 font-semibold' : 'text-slate-600 hover:text-slate-900'}`}
+              >
+                Asset Health
               </button>
               <button
                 onClick={() => setActiveTab('history')}
@@ -718,6 +772,84 @@ export const AdminLibraryQuality: React.FC = () => {
         )}
 
         {/* Audit Logs / Undo History Tab */}
+        {activeTab === 'assets' && (
+          <section className="space-y-5">
+            <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">Book Asset Health</h2>
+                <p className="mt-1 text-sm text-slate-500">Inspect covers and PDFs in small batches. Structural checks are provisional; identity and visual review are still required.</p>
+              </div>
+              <Button onClick={() => runAssetBatch.mutate()} disabled={runAssetBatch.isPending} className="gap-2">
+                <RefreshCw className={`h-4 w-4 ${runAssetBatch.isPending ? 'animate-spin' : ''}`} />
+                {runAssetBatch.isPending ? 'Inspecting…' : 'Inspect next 10 books'}
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              {[
+                ['Total books', assetCounts?.total ?? '—'],
+                ['Pending', assetCounts?.pending ?? '—'],
+                ['Needs review', assetCounts?.reviewed ?? '—'],
+                ['Failed', assetCounts?.failed ?? '—'],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-xl border border-slate-200 bg-white p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
+                  <p className="mt-1 text-2xl font-bold text-slate-900">{value}</p>
+                </div>
+              ))}
+            </div>
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+              <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+                <div>
+                  <h3 className="font-semibold text-slate-900">Latest inspection queue</h3>
+                  <p className="text-xs text-slate-500">Showing up to 100 least-recently checked books</p>
+                </div>
+                <Button size="sm" variant="outline" onClick={() => refetchAssets()} disabled={assetsLoading}>Refresh</Button>
+              </div>
+              {assetsLoading ? (
+                <div className="space-y-3 p-5"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /></div>
+              ) : assetBooks.length === 0 ? (
+                <div className="p-10 text-center text-sm text-slate-500">No books found in the inspection queue.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[760px] text-left text-sm">
+                    <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                      <tr><th className="px-4 py-3">Book</th><th className="px-4 py-3">Cover</th><th className="px-4 py-3">PDF</th><th className="px-4 py-3">Overall</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Evidence</th></tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {assetBooks.map((book: any) => {
+                        const evidence = book.asset_quality_evidence || {};
+                        const warnings = [...(evidence.cover?.warnings || []), ...(evidence.pdf?.warnings || [])];
+                        return (
+                          <tr key={book.id} className="align-top">
+                            <td className="max-w-[260px] px-4 py-3">
+                              <p className="font-medium text-slate-900">{book.title || 'Untitled'}</p>
+                              <p className="truncate text-xs text-slate-500">{book.author || 'Unknown author'}</p>
+                            </td>
+                            <td className="px-4 py-3 tabular-nums">{book.cover_quality_score ?? '—'}/100</td>
+                            <td className="px-4 py-3 tabular-nums">{book.pdf_quality_score ?? '—'}/100</td>
+                            <td className="px-4 py-3 font-semibold tabular-nums">{book.asset_quality_score ?? '—'}/100</td>
+                            <td className="px-4 py-3"><Badge variant={book.asset_quality_status === 'verified' ? 'default' : book.asset_quality_status === 'failed' ? 'destructive' : 'secondary'}>{book.asset_quality_status || 'pending'}</Badge></td>
+                            <td className="max-w-[280px] px-4 py-3 text-xs text-slate-500">{warnings.length ? warnings.slice(0, 2).join(' · ') : book.asset_quality_checked_at ? 'Structural checks recorded; manual identity review pending' : 'Not inspected yet'}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+            {runAssetBatch.data?.results?.length ? (
+              <div className="rounded-xl border border-slate-200 bg-white p-4">
+                <h3 className="mb-2 text-sm font-semibold">Last batch</h3>
+                <ul className="space-y-1 text-xs text-slate-600">
+                  {runAssetBatch.data.results.map((item, index) => <li key={index}>{item.title}: {item.overall}/100 · {item.status}{item.error ? ` · ${item.error}` : ''}</li>)}
+                </ul>
+              </div>
+            ) : null}
+            <p className="text-xs text-amber-700">A score is not proof that a book is correct. The current worker does not perform OCR/vision matching or full PDF rendering, and deliberately leaves inspected books in “needs review”.</p>
+          </section>
+        )}
+
         {activeTab === 'history' && (
           <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-4">
             <div className="flex items-center justify-between">
