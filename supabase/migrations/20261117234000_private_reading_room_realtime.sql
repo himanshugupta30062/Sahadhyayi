@@ -42,3 +42,12 @@ USING (
   private IS TRUE
   AND realtime.topic() LIKE 'reading-rooms-realtime:%'
 );
+
+CREATE POLICY "Authenticated readers can publish reading room list realtime"
+ON realtime.messages
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  private IS TRUE
+  AND realtime.topic() LIKE 'reading-rooms-realtime:%'
+);
