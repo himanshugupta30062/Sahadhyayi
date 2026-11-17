@@ -147,23 +147,39 @@ export const AdminLibraryQuality: React.FC = () => {
   });
 
   const handleRunAssetAudit = async () => {
+    const batchesPerRun = 5;
+    const batchSize = 20;
     setAssetAuditRunning(true);
+    let totalProcessed = 0;
+    let totalFailed = 0;
     try {
-      const { data, error } = await supabase.functions.invoke('audit-book-assets', {
-        body: { limit: 20 },
-      });
-      if (error) throw error;
-      const results = Array.isArray(data?.results) ? data.results : [];
-      setAssetAuditResults((previous) => [...results, ...previous].slice(0, 40));
-      setAssetAuditProcessed((previous) => previous + Number(data?.processed || results.length));
+      for (let batch = 0; batch < batchesPerRun; batch += 1) {
+        const { data, error } = await supabase.functions.invoke('audit-book-assets', {
+          body: { limit: batchSize },
+        });
+        if (error) throw error;
+
+        const results = Array.isArray(data?.results) ? data.results : [];
+        const processed = Number(data?.processed ?? results.length);
+        totalProcessed += processed;
+        totalFailed += results.filter((result: { error?: string }) => Boolean(result.error)).length;
+        setAssetAuditResults((previous) => [...results, ...previous].slice(0, 40));
+        setAssetAuditProcessed((previous) => previous + processed);
+
+        // The server returns fewer than 20 when the pending review queue is empty.
+        if (processed < batchSize) break;
+      }
+
       toast({
-        title: 'Asset audit batch completed',
-        description: `${Number(data?.processed || results.length)} books inspected. Structural checks are saved for admin review; no book was auto-approved.`,
+        title: 'Asset audit run completed',
+        description: `${totalProcessed} books inspected across batches of 20. ${totalFailed} database updates failed. All structural results remain in review; no book was auto-approved.`,
+        variant: totalFailed > 0 ? 'destructive' : 'default',
       });
+      void queryClient.invalidateQueries({ queryKey: ['library-duplicate-audit'] });
     } catch (error) {
       toast({
-        title: 'Asset audit failed',
-        description: error instanceof Error ? error.message : 'Could not run the book asset audit.',
+        title: 'Asset audit stopped',
+        description: `${totalProcessed} books were inspected before the error. ${error instanceof Error ? error.message : 'Could not continue the book asset audit.'}`,
         variant: 'destructive',
       });
     } finally {
@@ -420,12 +436,12 @@ export const AdminLibraryQuality: React.FC = () => {
                     Book cover & PDF verification
                   </h2>
                   <p className="text-sm text-slate-500 mt-1">
-                    Inspect real image responses, dimensions, PDF signatures and structural markers in batches of 20.
+                    Inspect up to 100 books per run, processed safely in five sequential batches of 20. Structural checks never auto-approve a book.
                   </p>
                 </div>
                 <Button onClick={handleRunAssetAudit} disabled={assetAuditRunning}>
                   <RefreshCw className={`w-4 h-4 mr-2 ${assetAuditRunning ? 'animate-spin' : ''}`} />
-                  {assetAuditRunning ? 'Checking assets…' : 'Audit next 20 books'}
+                  {assetAuditRunning ? 'Checking up to 100 books…' : 'Audit next 100 books'}
                 </Button>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
