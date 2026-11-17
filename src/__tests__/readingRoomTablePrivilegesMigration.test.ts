@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const migration = readFileSync(
-  fileURLToPath(new URL('../../supabase/migrations/20261117233000_harden_reading_room_table_privileges.sql', import.meta.url)),
+  resolve(process.cwd(), 'supabase/migrations/20261117233000_harden_reading_room_table_privileges.sql'),
   'utf8',
 );
 
