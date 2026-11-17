@@ -175,7 +175,17 @@ serve(async (req: Request) => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
   try {
-    const model = Deno.env.get("EVERYDAY_SCIENCE_GEMINI_MODEL") || "gemini-2.5-flash";
+    const model = Deno.env.get("EVERYDAY_SCIENCE_GEMINI_MODEL")
+      || Deno.env.get("BOOK_EXPERT_MODEL")
+      || "gemini-3.8-flash";
+    const generationConfig: Record<string, unknown> = {
+      temperature: 0.15,
+      maxOutputTokens: 6000,
+      responseMimeType: "application/json",
+    };
+    if (model.includes("2.5") || model.includes("think") || model.startsWith("gemini-3")) {
+      generationConfig.thinkingConfig = { thinkingBudget: 0 };
+    }
     const geminiResponse = await fetch(
       "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent",
       {
@@ -184,11 +194,7 @@ serve(async (req: Request) => {
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: systemInstruction }] },
           contents: [{ role: "user", parts: [{ text: JSON.stringify({ assessment: assessmentForModel }) }] }],
-          generationConfig: {
-            temperature: 0.15,
-            maxOutputTokens: 6000,
-            responseMimeType: "application/json",
-          },
+          generationConfig,
         }),
         signal: controller.signal,
       },
