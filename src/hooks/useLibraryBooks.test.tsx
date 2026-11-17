@@ -495,7 +495,10 @@ describe('useLibraryBooks React Query Hooks', () => {
     const rangeMock = vi.fn()
       .mockResolvedValueOnce({ data: firstPage, error: null })
       .mockResolvedValueOnce({ data: secondPage, error: null });
-    const queryMock = { range: rangeMock };
+    const queryMock = {
+      order: vi.fn().mockReturnThis(),
+      range: rangeMock,
+    };
 
     (supabase.from as any).mockReturnValue({
       select: vi.fn().mockReturnValue(queryMock),
@@ -520,6 +523,7 @@ describe('useLibraryBooks React Query Hooks', () => {
     const initialQuery: any = {
       or: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
       then: (resolve: any, reject?: any) =>
         Promise.resolve({ data: null, error: { message: 'column mismatch' } }).then(resolve, reject),
     };
