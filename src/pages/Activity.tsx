@@ -36,7 +36,7 @@ import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 import SignInLink from '@/components/SignInLink';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
-type ActivityCategory = 'all' | 'events' | 'challenges' | 'games' | 'brain' | 'meetups';
+type ActivityCategory = 'all' | 'events' | 'challenges' | 'games' | 'brain' | 'iq-test' | 'meetups';
 
 export default function Activity() {
   const { user } = useAuth();

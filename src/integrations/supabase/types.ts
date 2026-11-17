@@ -10,46 +10,10 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3"
+    PostgrestVersion: "14.18"
   }
   public: {
     Tables: {
-      saved_quotes: {
-        Row: { id: string; user_id: string; client_id: string; quote_text: string; source: string | null; note: string | null; book_id: string | null; page: number | null; location: string | null; created_at: string; updated_at: string }
-        Insert: { id?: string; user_id: string; client_id: string; quote_text: string; source?: string | null; note?: string | null; book_id?: string | null; page?: number | null; location?: string | null; created_at?: string; updated_at?: string }
-        Update: { id?: string; user_id?: string; client_id?: string; quote_text?: string; source?: string | null; note?: string | null; book_id?: string | null; page?: number | null; location?: string | null; created_at?: string; updated_at?: string }
-        Relationships: [{ foreignKeyName: "saved_quotes_book_id_fkey"; columns: ["book_id"]; isOneToOne: false; referencedRelation: "books_library"; referencedColumns: ["id"] }]
-      }
-      research_paper_bookmarks: {
-        Row: { id: string; user_id: string; openalex_id: string; paper: Json; created_at: string }
-        Insert: { id?: string; user_id: string; openalex_id: string; paper?: Json; created_at?: string }
-        Update: { id?: string; user_id?: string; openalex_id?: string; paper?: Json; created_at?: string }
-        Relationships: []
-      }
-      social_post_bookmarks: {
-        Row: { id: string; user_id: string; post_id: string; saved_at: string }
-        Insert: { id?: string; user_id: string; post_id: string; saved_at?: string }
-        Update: { id?: string; user_id?: string; post_id?: string; saved_at?: string }
-        Relationships: [{ foreignKeyName: "social_post_bookmarks_post_id_fkey"; columns: ["post_id"]; isOneToOne: false; referencedRelation: "posts"; referencedColumns: ["id"] }]
-      }
-      scientists: {
-        Row: { created_at: string; discipline: string; id: string; lifespan: string; name: string; profile_data: Json; region: string; slug: string; sort_order: number; status: string; summary: string; updated_at: string }
-        Insert: { created_at?: string; discipline: string; id?: string; lifespan: string; name: string; profile_data?: Json; region: string; slug: string; sort_order?: number; status?: string; summary: string; updated_at?: string }
-        Update: { created_at?: string; discipline?: string; id?: string; lifespan?: string; name?: string; profile_data?: Json; region?: string; slug?: string; sort_order?: number; status?: string; summary?: string; updated_at?: string }
-        Relationships: []
-      }
-      scientist_publications: {
-        Row: { access: string; authors: string; created_at: string; doi: string | null; id: string; note: string; scientist_id: string; sort_order: number; title: string; updated_at: string; url: string; venue: string; year: string }
-        Insert: { access: string; authors: string; created_at?: string; doi?: string | null; id?: string; note?: string; scientist_id: string; sort_order?: number; title: string; updated_at?: string; url: string; venue: string; year: string }
-        Update: { access?: string; authors?: string; created_at?: string; doi?: string | null; id?: string; note?: string; scientist_id?: string; sort_order?: number; title?: string; updated_at?: string; url?: string; venue?: string; year?: string }
-        Relationships: [{ foreignKeyName: "scientist_publications_scientist_id_fkey"; columns: ["scientist_id"]; isOneToOne: false; referencedRelation: "scientists"; referencedColumns: ["id"] }]
-      }
-      scientist_archives: {
-        Row: { created_at: string; id: string; institution: string; material: string; note: string; scientist_id: string; sort_order: number; title: string; updated_at: string; url: string }
-        Insert: { created_at?: string; id?: string; institution: string; material: string; note?: string; scientist_id: string; sort_order?: number; title: string; updated_at?: string; url: string }
-        Update: { created_at?: string; id?: string; institution?: string; material?: string; note?: string; scientist_id?: string; sort_order?: number; title?: string; updated_at?: string; url?: string }
-        Relationships: [{ foreignKeyName: "scientist_archives_scientist_id_fkey"; columns: ["scientist_id"]; isOneToOne: false; referencedRelation: "scientists"; referencedColumns: ["id"] }]
-      }
       article_author_followers: {
         Row: {
           author_user_id: string
@@ -217,6 +181,33 @@ export type Database = {
           updated_at?: string
           user_id?: string
           views_count?: number
+        }
+        Relationships: []
+      }
+      auth_audit_events: {
+        Row: {
+          auth_method: string
+          created_at: string
+          error_code: string | null
+          event_type: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          auth_method?: string
+          created_at?: string
+          error_code?: string | null
+          event_type: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          auth_method?: string
+          created_at?: string
+          error_code?: string | null
+          event_type?: string
+          id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -492,15 +483,27 @@ export type Database = {
       }
       authors: {
         Row: {
+          alternate_names: string[]
           bio: string | null
+          birth_date: string | null
           books_count: number | null
           created_at: string | null
+          death_date: string | null
+          enriched_at: string | null
+          enrichment_error: string | null
+          enrichment_status: string
+          external_source: string | null
+          external_source_url: string | null
           followers_count: number | null
           genres: string[] | null
           id: string
+          image_attribution: string | null
+          image_license: string | null
+          image_source_url: string | null
           is_authentic: boolean
           location: string | null
           name: string
+          openlibrary_author_id: string | null
           profile_image_url: string | null
           rating: number | null
           social_links: Json | null
@@ -509,17 +512,31 @@ export type Database = {
           verification_type: string | null
           verified: boolean
           website_url: string | null
+          wikidata_id: string | null
+          wikipedia_url: string | null
         }
         Insert: {
+          alternate_names?: string[]
           bio?: string | null
+          birth_date?: string | null
           books_count?: number | null
           created_at?: string | null
+          death_date?: string | null
+          enriched_at?: string | null
+          enrichment_error?: string | null
+          enrichment_status?: string
+          external_source?: string | null
+          external_source_url?: string | null
           followers_count?: number | null
           genres?: string[] | null
           id?: string
+          image_attribution?: string | null
+          image_license?: string | null
+          image_source_url?: string | null
           is_authentic?: boolean
           location?: string | null
           name: string
+          openlibrary_author_id?: string | null
           profile_image_url?: string | null
           rating?: number | null
           social_links?: Json | null
@@ -528,17 +545,31 @@ export type Database = {
           verification_type?: string | null
           verified?: boolean
           website_url?: string | null
+          wikidata_id?: string | null
+          wikipedia_url?: string | null
         }
         Update: {
+          alternate_names?: string[]
           bio?: string | null
+          birth_date?: string | null
           books_count?: number | null
           created_at?: string | null
+          death_date?: string | null
+          enriched_at?: string | null
+          enrichment_error?: string | null
+          enrichment_status?: string
+          external_source?: string | null
+          external_source_url?: string | null
           followers_count?: number | null
           genres?: string[] | null
           id?: string
+          image_attribution?: string | null
+          image_license?: string | null
+          image_source_url?: string | null
           is_authentic?: boolean
           location?: string | null
           name?: string
+          openlibrary_author_id?: string | null
           profile_image_url?: string | null
           rating?: number | null
           social_links?: Json | null
@@ -547,6 +578,8 @@ export type Database = {
           verification_type?: string | null
           verified?: boolean
           website_url?: string | null
+          wikidata_id?: string | null
+          wikipedia_url?: string | null
         }
         Relationships: []
       }
@@ -578,6 +611,7 @@ export type Database = {
           created_at: string
           duration_seconds: number
           id: string
+          library_book_id: string | null
           transcript: string | null
           updated_at: string
         }
@@ -587,6 +621,7 @@ export type Database = {
           created_at?: string
           duration_seconds?: number
           id?: string
+          library_book_id?: string | null
           transcript?: string | null
           updated_at?: string
         }
@@ -596,6 +631,7 @@ export type Database = {
           created_at?: string
           duration_seconds?: number
           id?: string
+          library_book_id?: string | null
           transcript?: string | null
           updated_at?: string
         }
@@ -605,6 +641,13 @@ export type Database = {
             columns: ["book_id"]
             isOneToOne: true
             referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_audio_summaries_library_book_id_fkey"
+            columns: ["library_book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
             referencedColumns: ["id"]
           },
         ]
@@ -632,6 +675,50 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      book_experience_tags: {
+        Row: {
+          book_id: string
+          content_warnings: string[]
+          created_at: string
+          custom_warning: string | null
+          id: string
+          moods: string[]
+          pacing: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          content_warnings?: string[]
+          created_at?: string
+          custom_warning?: string | null
+          id?: string
+          moods?: string[]
+          pacing?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          content_warnings?: string[]
+          created_at?: string
+          custom_warning?: string | null
+          id?: string
+          moods?: string[]
+          pacing?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_experience_tags_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       book_expert_chunks: {
         Row: {
@@ -816,6 +903,211 @@ export type Database = {
         }
         Relationships: []
       }
+      book_pdf_admin_audit: {
+        Row: {
+          book_id: string
+          created_at: string
+          file_name: string
+          file_size_bytes: number
+          id: string
+          pdf_url: string
+          previous_pdf_url: string | null
+          rights_basis: string
+          rights_notes: string
+          source_url: string
+          uploaded_by: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          file_name: string
+          file_size_bytes: number
+          id?: string
+          pdf_url: string
+          previous_pdf_url?: string | null
+          rights_basis: string
+          rights_notes: string
+          source_url: string
+          uploaded_by: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          file_name?: string
+          file_size_bytes?: number
+          id?: string
+          pdf_url?: string
+          previous_pdf_url?: string | null
+          rights_basis?: string
+          rights_notes?: string
+          source_url?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_pdf_admin_audit_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      book_pdf_review_audit: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json
+          id: string
+          reason: string | null
+          reviewer_id: string | null
+          submission_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json
+          id?: string
+          reason?: string | null
+          reviewer_id?: string | null
+          submission_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          reason?: string | null
+          reviewer_id?: string | null
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_pdf_review_audit_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "book_pdf_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      book_pdf_submissions: {
+        Row: {
+          author_publication_id: string | null
+          catalogue_match_status: string | null
+          created_at: string
+          detected_metadata: Json
+          file_size_bytes: number | null
+          id: string
+          malware_scan_status: string
+          match_confidence: number | null
+          original_filename: string
+          pdf_page_count: number | null
+          pdf_sha256: string | null
+          published_book_id: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          rights_attested: boolean
+          rights_basis: string | null
+          rights_evidence_url: string | null
+          rights_statement: string | null
+          sha256: string | null
+          status: string
+          storage_path: string
+          submission_source: string
+          submitted_author: string | null
+          submitted_title: string | null
+          target_book_id: string | null
+          updated_at: string
+          user_id: string
+          validation_findings: Json
+          verification_completed_at: string | null
+          verification_model: string | null
+        }
+        Insert: {
+          author_publication_id?: string | null
+          catalogue_match_status?: string | null
+          created_at?: string
+          detected_metadata?: Json
+          file_size_bytes?: number | null
+          id?: string
+          malware_scan_status?: string
+          match_confidence?: number | null
+          original_filename: string
+          pdf_page_count?: number | null
+          pdf_sha256?: string | null
+          published_book_id?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          rights_attested?: boolean
+          rights_basis?: string | null
+          rights_evidence_url?: string | null
+          rights_statement?: string | null
+          sha256?: string | null
+          status?: string
+          storage_path: string
+          submission_source?: string
+          submitted_author?: string | null
+          submitted_title?: string | null
+          target_book_id?: string | null
+          updated_at?: string
+          user_id: string
+          validation_findings?: Json
+          verification_completed_at?: string | null
+          verification_model?: string | null
+        }
+        Update: {
+          author_publication_id?: string | null
+          catalogue_match_status?: string | null
+          created_at?: string
+          detected_metadata?: Json
+          file_size_bytes?: number | null
+          id?: string
+          malware_scan_status?: string
+          match_confidence?: number | null
+          original_filename?: string
+          pdf_page_count?: number | null
+          pdf_sha256?: string | null
+          published_book_id?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          rights_attested?: boolean
+          rights_basis?: string | null
+          rights_evidence_url?: string | null
+          rights_statement?: string | null
+          sha256?: string | null
+          status?: string
+          storage_path?: string
+          submission_source?: string
+          submitted_author?: string | null
+          submitted_title?: string | null
+          target_book_id?: string | null
+          updated_at?: string
+          user_id?: string
+          validation_findings?: Json
+          verification_completed_at?: string | null
+          verification_model?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_pdf_submissions_published_book_id_fkey"
+            columns: ["published_book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_pdf_submissions_target_book_id_fkey"
+            columns: ["target_book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       book_quiz_questions: {
         Row: {
           book_id: string | null
@@ -911,6 +1203,44 @@ export type Database = {
         }
         Relationships: []
       }
+      book_reviews: {
+        Row: {
+          book_id: string
+          contains_spoilers: boolean
+          created_at: string
+          id: string
+          review_text: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          contains_spoilers?: boolean
+          created_at?: string
+          id?: string
+          review_text: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          contains_spoilers?: boolean
+          created_at?: string
+          id?: string
+          review_text?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_reviews_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       book_summaries: {
         Row: {
           book_id: string | null
@@ -987,51 +1317,93 @@ export type Database = {
       }
       books_library: {
         Row: {
+          asset_quality_checked_at: string | null
+          asset_quality_evidence: Json
+          asset_quality_score: number | null
+          asset_quality_status: string
+          asset_quality_version: number
           author: string | null
           author_bio: string | null
           author_id: string | null
           cover_image_url: string | null
+          cover_quality_score: number | null
           created_at: string | null
           description: string | null
           genre: string | null
           id: string
           isbn: string | null
           language: string | null
+          metadata_match_score: number | null
           pages: number | null
+          pdf_quality_score: number | null
           pdf_url: string | null
           publication_year: number | null
+          publisher_id: string | null
+          reader_link_checked_at: string | null
+          reader_link_content_type: string | null
+          reader_link_http_status: number | null
+          reader_link_note: string | null
+          reader_link_status: string
           title: string
         }
         Insert: {
+          asset_quality_checked_at?: string | null
+          asset_quality_evidence?: Json
+          asset_quality_score?: number | null
+          asset_quality_status?: string
+          asset_quality_version?: number
           author?: string | null
           author_bio?: string | null
           author_id?: string | null
           cover_image_url?: string | null
+          cover_quality_score?: number | null
           created_at?: string | null
           description?: string | null
           genre?: string | null
           id?: string
           isbn?: string | null
           language?: string | null
+          metadata_match_score?: number | null
           pages?: number | null
+          pdf_quality_score?: number | null
           pdf_url?: string | null
           publication_year?: number | null
+          publisher_id?: string | null
+          reader_link_checked_at?: string | null
+          reader_link_content_type?: string | null
+          reader_link_http_status?: number | null
+          reader_link_note?: string | null
+          reader_link_status?: string
           title: string
         }
         Update: {
+          asset_quality_checked_at?: string | null
+          asset_quality_evidence?: Json
+          asset_quality_score?: number | null
+          asset_quality_status?: string
+          asset_quality_version?: number
           author?: string | null
           author_bio?: string | null
           author_id?: string | null
           cover_image_url?: string | null
+          cover_quality_score?: number | null
           created_at?: string | null
           description?: string | null
           genre?: string | null
           id?: string
           isbn?: string | null
           language?: string | null
+          metadata_match_score?: number | null
           pages?: number | null
+          pdf_quality_score?: number | null
           pdf_url?: string | null
           publication_year?: number | null
+          publisher_id?: string | null
+          reader_link_checked_at?: string | null
+          reader_link_content_type?: string | null
+          reader_link_http_status?: number | null
+          reader_link_note?: string | null
+          reader_link_status?: string
           title?: string
         }
         Relationships: [
@@ -1042,7 +1414,249 @@ export type Database = {
             referencedRelation: "authors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "books_library_publisher_id_fkey"
+            columns: ["publisher_id"]
+            isOneToOne: false
+            referencedRelation: "publishers"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      buddy_read_discussions: {
+        Row: {
+          author_id: string
+          body: string
+          buddy_read_id: string
+          created_at: string
+          id: string
+          spoiler_page: number | null
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          buddy_read_id: string
+          created_at?: string
+          id?: string
+          spoiler_page?: number | null
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          buddy_read_id?: string
+          created_at?: string
+          id?: string
+          spoiler_page?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buddy_read_discussions_buddy_read_id_fkey"
+            columns: ["buddy_read_id"]
+            isOneToOne: false
+            referencedRelation: "buddy_reads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      buddy_read_invites: {
+        Row: {
+          buddy_read_id: string
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          max_uses: number | null
+          revoked_at: string | null
+          token: string
+          uses: number
+        }
+        Insert: {
+          buddy_read_id: string
+          created_at?: string
+          created_by: string
+          expires_at?: string
+          id?: string
+          max_uses?: number | null
+          revoked_at?: string | null
+          token?: string
+          uses?: number
+        }
+        Update: {
+          buddy_read_id?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          max_uses?: number | null
+          revoked_at?: string | null
+          token?: string
+          uses?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buddy_read_invites_buddy_read_id_fkey"
+            columns: ["buddy_read_id"]
+            isOneToOne: false
+            referencedRelation: "buddy_reads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      buddy_read_members: {
+        Row: {
+          buddy_read_id: string
+          id: string
+          joined_at: string
+          progress_page: number
+          progress_percent: number
+          role: string
+          user_id: string
+        }
+        Insert: {
+          buddy_read_id: string
+          id?: string
+          joined_at?: string
+          progress_page?: number
+          progress_percent?: number
+          role?: string
+          user_id: string
+        }
+        Update: {
+          buddy_read_id?: string
+          id?: string
+          joined_at?: string
+          progress_page?: number
+          progress_percent?: number
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buddy_read_members_buddy_read_id_fkey"
+            columns: ["buddy_read_id"]
+            isOneToOne: false
+            referencedRelation: "buddy_reads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      buddy_read_milestone_completions: {
+        Row: {
+          completed_at: string
+          milestone_id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          milestone_id: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          milestone_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buddy_read_milestone_completions_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "buddy_read_milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      buddy_read_milestones: {
+        Row: {
+          buddy_read_id: string
+          created_at: string
+          id: string
+          position: number
+          target_date: string | null
+          target_page: number | null
+          title: string
+        }
+        Insert: {
+          buddy_read_id: string
+          created_at?: string
+          id?: string
+          position?: number
+          target_date?: string | null
+          target_page?: number | null
+          title: string
+        }
+        Update: {
+          buddy_read_id?: string
+          created_at?: string
+          id?: string
+          position?: number
+          target_date?: string | null
+          target_page?: number | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buddy_read_milestones_buddy_read_id_fkey"
+            columns: ["buddy_read_id"]
+            isOneToOne: false
+            referencedRelation: "buddy_reads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      buddy_reads: {
+        Row: {
+          book_author: string | null
+          book_id: string | null
+          book_title: string
+          cover_url: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          starts_at: string | null
+          status: string
+          target_date: string | null
+          title: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          book_author?: string | null
+          book_id?: string | null
+          book_title: string
+          cover_url?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          starts_at?: string | null
+          status?: string
+          target_date?: string | null
+          title: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          book_author?: string | null
+          book_id?: string | null
+          book_title?: string
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          starts_at?: string | null
+          status?: string
+          target_date?: string | null
+          title?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: []
       }
       chat_participants: {
         Row: {
@@ -1186,6 +1800,7 @@ export type Database = {
       }
       content_feedback: {
         Row: {
+          book_id: string | null
           comment: string | null
           content_id: string | null
           created_at: string
@@ -1194,6 +1809,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          book_id?: string | null
           comment?: string | null
           content_id?: string | null
           created_at?: string
@@ -1202,6 +1818,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          book_id?: string | null
           comment?: string | null
           content_id?: string | null
           created_at?: string
@@ -1242,6 +1859,107 @@ export type Database = {
           vote_type?: string
         }
         Relationships: []
+      }
+      creator_publications: {
+        Row: {
+          book_id: string | null
+          created_at: string
+          created_by: string | null
+          creator_id: string
+          excerpt: string | null
+          id: string
+          publication_type: string
+          published_at: string | null
+          source_url: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          book_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          creator_id: string
+          excerpt?: string | null
+          id?: string
+          publication_type: string
+          published_at?: string | null
+          source_url: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          book_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          creator_id?: string
+          excerpt?: string | null
+          id?: string
+          publication_type?: string
+          published_at?: string | null
+          source_url?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_publications_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_publications_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "literary_creators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_social_links: {
+        Row: {
+          created_at: string
+          creator_id: string
+          handle: string | null
+          id: string
+          label: string | null
+          platform: string
+          sort_order: number
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          handle?: string | null
+          id?: string
+          label?: string | null
+          platform: string
+          sort_order?: number
+          url: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          handle?: string | null
+          id?: string
+          label?: string | null
+          platform?: string
+          sort_order?: number
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_social_links_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "literary_creators"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       detailed_reading_progress: {
         Row: {
@@ -1288,7 +2006,7 @@ export type Database = {
             foreignKeyName: "detailed_reading_progress_book_id_fkey"
             columns: ["book_id"]
             isOneToOne: false
-            referencedRelation: "books"
+            referencedRelation: "books_library"
             referencedColumns: ["id"]
           },
         ]
@@ -1329,6 +2047,42 @@ export type Database = {
           platform_friend_id?: string
           platform_friend_name?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      feedback: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          message: string | null
+          name: string | null
+          rating: number | null
+          responded: boolean
+          subject: string | null
+          type: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          message?: string | null
+          name?: string | null
+          rating?: number | null
+          responded?: boolean
+          subject?: string | null
+          type?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          message?: string | null
+          name?: string | null
+          rating?: number | null
+          responded?: boolean
+          subject?: string | null
+          type?: string | null
         }
         Relationships: []
       }
@@ -1373,6 +2127,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "friend_requests_addressee_id_fkey"
+            columns: ["addressee_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "friend_requests_requester_id_fkey"
             columns: ["requester_id"]
             isOneToOne: false
@@ -1384,6 +2145,13 @@ export type Database = {
             columns: ["requester_id"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "friend_requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1423,6 +2191,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "friends_user1_id_fkey"
+            columns: ["user1_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "friends_user2_id_fkey"
             columns: ["user2_id"]
             isOneToOne: false
@@ -1434,6 +2209,13 @@ export type Database = {
             columns: ["user2_id"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "friends_user2_id_fkey"
+            columns: ["user2_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1620,6 +2402,7 @@ export type Database = {
           id: string
           joined_at: string | null
           role: string | null
+          status: string
           user_id: string | null
         }
         Insert: {
@@ -1627,6 +2410,7 @@ export type Database = {
           id?: string
           joined_at?: string | null
           role?: string | null
+          status?: string
           user_id?: string | null
         }
         Update: {
@@ -1634,6 +2418,7 @@ export type Database = {
           id?: string
           joined_at?: string | null
           role?: string | null
+          status?: string
           user_id?: string | null
         }
         Relationships: [
@@ -1658,38 +2443,66 @@ export type Database = {
             referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "group_chat_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       group_chats: {
         Row: {
+          archived_at: string | null
+          category: string | null
           created_at: string | null
           created_by: string | null
           description: string | null
           id: string
           image_url: string | null
           is_encrypted: boolean | null
+          join_policy: string
+          language_code: string | null
           name: string
+          rules: string | null
+          slug: string | null
           updated_at: string | null
+          visibility: string
         }
         Insert: {
+          archived_at?: string | null
+          category?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
           id?: string
           image_url?: string | null
           is_encrypted?: boolean | null
+          join_policy?: string
+          language_code?: string | null
           name: string
+          rules?: string | null
+          slug?: string | null
           updated_at?: string | null
+          visibility?: string
         }
         Update: {
+          archived_at?: string | null
+          category?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
           id?: string
           image_url?: string | null
           is_encrypted?: boolean | null
+          join_policy?: string
+          language_code?: string | null
           name?: string
+          rules?: string | null
+          slug?: string | null
           updated_at?: string | null
+          visibility?: string
         }
         Relationships: [
           {
@@ -1704,6 +2517,180 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_chats_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_event_participants: {
+        Row: {
+          created_at: string
+          event_id: string
+          response: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          response?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          response?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_event_participants_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "group_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_event_reminder_deliveries: {
+        Row: {
+          delivered_at: string
+          event_id: string
+          reminder_kind: string
+          user_id: string
+        }
+        Insert: {
+          delivered_at?: string
+          event_id: string
+          reminder_kind: string
+          user_id: string
+        }
+        Update: {
+          delivered_at?: string
+          event_id?: string
+          reminder_kind?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_event_reminder_deliveries_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "group_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_events: {
+        Row: {
+          capacity: number | null
+          created_at: string
+          description: string | null
+          ends_at: string
+          event_type: string
+          group_id: string
+          id: string
+          location: string | null
+          organizer_id: string
+          reading_session_id: string | null
+          starts_at: string
+          status: string
+          timezone: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number | null
+          created_at?: string
+          description?: string | null
+          ends_at: string
+          event_type: string
+          group_id: string
+          id?: string
+          location?: string | null
+          organizer_id: string
+          reading_session_id?: string | null
+          starts_at: string
+          status?: string
+          timezone?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number | null
+          created_at?: string
+          description?: string | null
+          ends_at?: string
+          event_type?: string
+          group_id?: string
+          id?: string
+          location?: string | null
+          organizer_id?: string
+          reading_session_id?: string | null
+          starts_at?: string
+          status?: string
+          timezone?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_events_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "group_chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_invitations: {
+        Row: {
+          created_at: string
+          expires_at: string
+          group_id: string
+          id: string
+          inviter_id: string
+          max_uses: number | null
+          revoked_at: string | null
+          token_hash: string
+          uses_count: number
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          group_id: string
+          id?: string
+          inviter_id: string
+          max_uses?: number | null
+          revoked_at?: string | null
+          token_hash: string
+          uses_count?: number
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          group_id?: string
+          id?: string
+          inviter_id?: string
+          max_uses?: number | null
+          revoked_at?: string | null
+          token_hash?: string
+          uses_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_invitations_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "group_chats"
             referencedColumns: ["id"]
           },
         ]
@@ -1790,6 +2777,13 @@ export type Database = {
             referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "group_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       groups: {
@@ -1815,6 +2809,197 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      literary_creators: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          claimed_by: string | null
+          created_at: string
+          created_by: string | null
+          creator_roles: string[]
+          featured: boolean
+          genres: string[]
+          id: string
+          languages: string[]
+          name: string
+          slug: string
+          status: string
+          updated_at: string
+          verified: boolean
+          website_url: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          claimed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          creator_roles?: string[]
+          featured?: boolean
+          genres?: string[]
+          id?: string
+          languages?: string[]
+          name: string
+          slug: string
+          status?: string
+          updated_at?: string
+          verified?: boolean
+          website_url?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          claimed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          creator_roles?: string[]
+          featured?: boolean
+          genres?: string[]
+          id?: string
+          languages?: string[]
+          name?: string
+          slug?: string
+          status?: string
+          updated_at?: string
+          verified?: boolean
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      literary_event_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      literary_events: {
+        Row: {
+          category_id: string
+          city: string | null
+          country: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_at: string | null
+          featured: boolean
+          id: string
+          image_url: string | null
+          is_online: boolean
+          last_verified_at: string | null
+          latitude: number | null
+          longitude: number | null
+          official_source_url: string
+          organizer_name: string | null
+          price_type: string
+          registration_url: string | null
+          slug: string
+          start_at: string
+          state: string | null
+          status: string
+          timezone: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+          venue: string | null
+          verification_status: string
+        }
+        Insert: {
+          category_id: string
+          city?: string | null
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_at?: string | null
+          featured?: boolean
+          id?: string
+          image_url?: string | null
+          is_online?: boolean
+          last_verified_at?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          official_source_url: string
+          organizer_name?: string | null
+          price_type?: string
+          registration_url?: string | null
+          slug: string
+          start_at: string
+          state?: string | null
+          status?: string
+          timezone?: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          venue?: string | null
+          verification_status?: string
+        }
+        Update: {
+          category_id?: string
+          city?: string | null
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_at?: string | null
+          featured?: boolean
+          id?: string
+          image_url?: string | null
+          is_online?: boolean
+          last_verified_at?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          official_source_url?: string
+          organizer_name?: string | null
+          price_type?: string
+          registration_url?: string | null
+          slug?: string
+          start_at?: string
+          state?: string | null
+          status?: string
+          timezone?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          venue?: string | null
+          verification_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "literary_events_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "literary_event_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       location_sharing_consent: {
         Row: {
@@ -2043,8 +3228,81 @@ export type Database = {
           },
         ]
       }
+      news_articles: {
+        Row: {
+          author_name: string | null
+          category: string
+          content: string
+          cover_image_url: string | null
+          created_at: string
+          created_by: string
+          id: string
+          image_credit: string | null
+          image_source_url: string | null
+          is_featured: boolean
+          published_at: string | null
+          related_author_names: string[]
+          related_book_ids: string[]
+          related_paper_ids: string[]
+          slug: string
+          source_name: string | null
+          source_url: string | null
+          status: string
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_name?: string | null
+          category: string
+          content: string
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          image_credit?: string | null
+          image_source_url?: string | null
+          is_featured?: boolean
+          published_at?: string | null
+          related_author_names?: string[]
+          related_book_ids?: string[]
+          related_paper_ids?: string[]
+          slug: string
+          source_name?: string | null
+          source_url?: string | null
+          status?: string
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_name?: string | null
+          category?: string
+          content?: string
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          image_credit?: string | null
+          image_source_url?: string | null
+          is_featured?: boolean
+          published_at?: string | null
+          related_author_names?: string[]
+          related_book_ids?: string[]
+          related_paper_ids?: string[]
+          slug?: string
+          source_name?: string | null
+          source_url?: string | null
+          status?: string
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
+          actor_id: string | null
           author_id: string | null
           created_at: string
           id: string
@@ -2056,6 +3314,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          actor_id?: string | null
           author_id?: string | null
           created_at?: string
           id?: string
@@ -2067,6 +3326,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          actor_id?: string | null
           author_id?: string | null
           created_at?: string
           id?: string
@@ -2079,10 +3339,207 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "notifications_author_id_fkey"
             columns: ["author_id"]
             isOneToOne: false
             referencedRelation: "authors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      owner_test_analytics: {
+        Row: {
+          country_code: string | null
+          created_at: string
+          device_type: string | null
+          event_id: string | null
+          event_name: string | null
+          event_type: string
+          id: number
+          ip_address: string
+          metadata: Json
+          page_path: string | null
+          referrer: string | null
+          session_id: string | null
+          user_agent: string | null
+          user_id: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          country_code?: string | null
+          created_at?: string
+          device_type?: string | null
+          event_id?: string | null
+          event_name?: string | null
+          event_type?: string
+          id?: never
+          ip_address: string
+          metadata?: Json
+          page_path?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          country_code?: string | null
+          created_at?: string
+          device_type?: string | null
+          event_id?: string | null
+          event_name?: string | null
+          event_type?: string
+          id?: never
+          ip_address?: string
+          metadata?: Json
+          page_path?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: []
+      }
+      owner_test_ip_allowlist: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled: boolean
+          ip_address: unknown
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          ip_address: unknown
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          ip_address?: unknown
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      people_collections: {
+        Row: {
+          accent: string
+          created_at: string | null
+          description: string
+          eyebrow: string
+          id: string
+          intro: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          accent: string
+          created_at?: string | null
+          description: string
+          eyebrow: string
+          id: string
+          intro: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          accent?: string
+          created_at?: string | null
+          description?: string
+          eyebrow?: string
+          id?: string
+          intro?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      people_profiles: {
+        Row: {
+          collection_id: string
+          created_at: string | null
+          display_order: number
+          id: string
+          lifespan: string
+          milestones: Json
+          name: string
+          origin: string
+          published: boolean
+          role: string
+          slug: string
+          sources: Json
+          story: Json
+          summary: string
+          themes: Json
+          updated_at: string | null
+        }
+        Insert: {
+          collection_id: string
+          created_at?: string | null
+          display_order?: number
+          id?: string
+          lifespan?: string
+          milestones?: Json
+          name: string
+          origin?: string
+          published?: boolean
+          role?: string
+          slug: string
+          sources?: Json
+          story?: Json
+          summary?: string
+          themes?: Json
+          updated_at?: string | null
+        }
+        Update: {
+          collection_id?: string
+          created_at?: string | null
+          display_order?: number
+          id?: string
+          lifespan?: string
+          milestones?: Json
+          name?: string
+          origin?: string
+          published?: boolean
+          role?: string
+          slug?: string
+          sources?: Json
+          story?: Json
+          summary?: string
+          themes?: Json
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "people_profiles_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "people_collections"
             referencedColumns: ["id"]
           },
         ]
@@ -2209,6 +3666,13 @@ export type Database = {
             referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "post_comments_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       post_likes: {
@@ -2252,6 +3716,13 @@ export type Database = {
             referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "post_likes_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       posts: {
@@ -2265,13 +3736,7 @@ export type Database = {
           feeling_label: string | null
           id: string
           image_url: string | null
-          image_alt: string | null
           likes_count: number
-          post_kind: string
-          quote_author: string | null
-          quote_context: string | null
-          quote_source: string | null
-          quote_text: string | null
           repost_of_id: string | null
           reposts_count: number
           updated_at: string
@@ -2287,13 +3752,7 @@ export type Database = {
           feeling_label?: string | null
           id?: string
           image_url?: string | null
-          image_alt?: string | null
           likes_count?: number
-          post_kind?: string
-          quote_author?: string | null
-          quote_context?: string | null
-          quote_source?: string | null
-          quote_text?: string | null
           repost_of_id?: string | null
           reposts_count?: number
           updated_at?: string
@@ -2309,13 +3768,7 @@ export type Database = {
           feeling_label?: string | null
           id?: string
           image_url?: string | null
-          image_alt?: string | null
           likes_count?: number
-          post_kind?: string
-          quote_author?: string | null
-          quote_context?: string | null
-          quote_source?: string | null
-          quote_text?: string | null
           repost_of_id?: string | null
           reposts_count?: number
           updated_at?: string
@@ -2348,6 +3801,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -2402,6 +3862,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "private_messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "private_messages_sender_id_fkey"
             columns: ["sender_id"]
             isOneToOne: false
@@ -2415,19 +3882,32 @@ export type Database = {
             referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "private_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       profiles: {
         Row: {
           bio: string | null
           created_at: string
+          dob: string | null
           full_name: string | null
+          gender: string | null
           id: string
           last_seen: string | null
+          life_tags: string[]
+          location: string | null
           location_lat: number | null
           location_lng: number | null
           location_sharing: boolean | null
+          name: string | null
           profile_photo_url: string | null
+          social_links: Json
           stories_read_count: number | null
           stories_written_count: number | null
           tags_used: Json | null
@@ -2438,13 +3918,19 @@ export type Database = {
         Insert: {
           bio?: string | null
           created_at?: string
+          dob?: string | null
           full_name?: string | null
+          gender?: string | null
           id: string
           last_seen?: string | null
+          life_tags?: string[]
+          location?: string | null
           location_lat?: number | null
           location_lng?: number | null
           location_sharing?: boolean | null
+          name?: string | null
           profile_photo_url?: string | null
+          social_links?: Json
           stories_read_count?: number | null
           stories_written_count?: number | null
           tags_used?: Json | null
@@ -2455,19 +3941,127 @@ export type Database = {
         Update: {
           bio?: string | null
           created_at?: string
+          dob?: string | null
           full_name?: string | null
+          gender?: string | null
           id?: string
           last_seen?: string | null
+          life_tags?: string[]
+          location?: string | null
           location_lat?: number | null
           location_lng?: number | null
           location_sharing?: boolean | null
+          name?: string | null
           profile_photo_url?: string | null
+          social_links?: Json
           stories_read_count?: number | null
           stories_written_count?: number | null
           tags_used?: Json | null
           updated_at?: string | null
           username?: string | null
           writing_frequency?: string | null
+        }
+        Relationships: []
+      }
+      publishers: {
+        Row: {
+          alternate_names: string[] | null
+          bio: string | null
+          birth_date: string | null
+          books_count: number | null
+          created_at: string | null
+          death_date: string | null
+          enriched_at: string | null
+          enrichment_error: string | null
+          enrichment_status: string | null
+          external_source: string | null
+          external_source_url: string | null
+          followers_count: number | null
+          genres: string[] | null
+          id: string
+          image_attribution: string | null
+          image_license: string | null
+          image_source_url: string | null
+          is_authentic: boolean | null
+          location: string | null
+          name: string
+          openlibrary_author_id: string | null
+          profile_image_url: string | null
+          rating: number | null
+          social_links: Json | null
+          upcoming_events: number | null
+          updated_at: string | null
+          verification_type: string | null
+          verified: boolean | null
+          website_url: string | null
+          wikidata_id: string | null
+          wikipedia_url: string | null
+        }
+        Insert: {
+          alternate_names?: string[] | null
+          bio?: string | null
+          birth_date?: string | null
+          books_count?: number | null
+          created_at?: string | null
+          death_date?: string | null
+          enriched_at?: string | null
+          enrichment_error?: string | null
+          enrichment_status?: string | null
+          external_source?: string | null
+          external_source_url?: string | null
+          followers_count?: number | null
+          genres?: string[] | null
+          id?: string
+          image_attribution?: string | null
+          image_license?: string | null
+          image_source_url?: string | null
+          is_authentic?: boolean | null
+          location?: string | null
+          name: string
+          openlibrary_author_id?: string | null
+          profile_image_url?: string | null
+          rating?: number | null
+          social_links?: Json | null
+          upcoming_events?: number | null
+          updated_at?: string | null
+          verification_type?: string | null
+          verified?: boolean | null
+          website_url?: string | null
+          wikidata_id?: string | null
+          wikipedia_url?: string | null
+        }
+        Update: {
+          alternate_names?: string[] | null
+          bio?: string | null
+          birth_date?: string | null
+          books_count?: number | null
+          created_at?: string | null
+          death_date?: string | null
+          enriched_at?: string | null
+          enrichment_error?: string | null
+          enrichment_status?: string | null
+          external_source?: string | null
+          external_source_url?: string | null
+          followers_count?: number | null
+          genres?: string[] | null
+          id?: string
+          image_attribution?: string | null
+          image_license?: string | null
+          image_source_url?: string | null
+          is_authentic?: boolean | null
+          location?: string | null
+          name?: string
+          openlibrary_author_id?: string | null
+          profile_image_url?: string | null
+          rating?: number | null
+          social_links?: Json | null
+          upcoming_events?: number | null
+          updated_at?: string | null
+          verification_type?: string | null
+          verified?: boolean | null
+          website_url?: string | null
+          wikidata_id?: string | null
+          wikipedia_url?: string | null
         }
         Relationships: []
       }
@@ -2528,42 +4122,6 @@ export type Database = {
           name?: string
           updated_at?: string
           user_id?: string | null
-        }
-        Relationships: []
-      }
-      reading_dna: {
-        Row: {
-          generated_at: string
-          genres: Json
-          moods: Json
-          pace: string | null
-          signature_color: string | null
-          summary: string | null
-          themes: Json
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          generated_at?: string
-          genres?: Json
-          moods?: Json
-          pace?: string | null
-          signature_color?: string | null
-          summary?: string | null
-          themes?: Json
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          generated_at?: string
-          genres?: Json
-          moods?: Json
-          pace?: string | null
-          signature_color?: string | null
-          summary?: string | null
-          themes?: Json
-          updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
@@ -2633,46 +4191,133 @@ export type Database = {
         }
         Relationships: []
       }
-      reading_activity_days: {
+      reading_dna: {
         Row: {
-          activity_date: string
-          book_id: string | null
-          created_at: string
-          first_activity_at: string
-          last_activity_at: string
-          source: string
-          timezone: string
+          generated_at: string
+          genres: Json
+          moods: Json
+          pace: string | null
+          signature_color: string | null
+          summary: string | null
+          themes: Json
+          updated_at: string
           user_id: string
         }
         Insert: {
-          activity_date: string
-          book_id?: string | null
-          created_at?: string
-          first_activity_at?: string
-          last_activity_at?: string
-          source?: string
-          timezone?: string
+          generated_at?: string
+          genres?: Json
+          moods?: Json
+          pace?: string | null
+          signature_color?: string | null
+          summary?: string | null
+          themes?: Json
+          updated_at?: string
           user_id: string
         }
         Update: {
-          activity_date?: string
-          book_id?: string | null
+          generated_at?: string
+          genres?: Json
+          moods?: Json
+          pace?: string | null
+          signature_color?: string | null
+          summary?: string | null
+          themes?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reading_group_digest_deliveries: {
+        Row: {
+          created_at: string
+          digest_date: string
+          notification_id: string | null
+          user_id: string
+        }
+        Insert: {
           created_at?: string
-          first_activity_at?: string
-          last_activity_at?: string
-          source?: string
-          timezone?: string
+          digest_date: string
+          notification_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          digest_date?: string
+          notification_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reading_group_notification_mutes: {
+        Row: {
+          created_at: string
+          group_id: string
+          muted_until: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          muted_until?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          muted_until?: string | null
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "reading_activity_days_book_id_fkey"
-            columns: ["book_id"]
+            foreignKeyName: "reading_group_notification_mutes_group_id_fkey"
+            columns: ["group_id"]
             isOneToOne: false
-            referencedRelation: "books_library"
+            referencedRelation: "group_chats"
             referencedColumns: ["id"]
           },
         ]
+      }
+      reading_group_notification_preferences: {
+        Row: {
+          digest_enabled: boolean
+          discussion_activity: boolean
+          enabled: boolean
+          event_reminders: boolean
+          membership_activity: boolean
+          quiet_hours_enabled: boolean
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          timezone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          digest_enabled?: boolean
+          discussion_activity?: boolean
+          enabled?: boolean
+          event_reminders?: boolean
+          membership_activity?: boolean
+          quiet_hours_enabled?: boolean
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          timezone?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          digest_enabled?: boolean
+          discussion_activity?: boolean
+          enabled?: boolean
+          event_reminders?: boolean
+          membership_activity?: boolean
+          quiet_hours_enabled?: boolean
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          timezone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       reading_progress: {
         Row: {
@@ -2747,6 +4392,53 @@ export type Database = {
           },
         ]
       }
+      reading_room_members: {
+        Row: {
+          joined_at: string
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          joined_at?: string
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          joined_at?: string
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_room_members_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "reading_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_room_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_room_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reading_room_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reading_room_messages: {
         Row: {
           body: string
@@ -2811,6 +4503,66 @@ export type Database = {
           },
         ]
       }
+      reading_spots: {
+        Row: {
+          address: string
+          amenities: Json | null
+          category: string
+          city: string
+          country: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_verified: boolean
+          latitude: number
+          longitude: number
+          name: string
+          slug: string
+          state: string | null
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          address: string
+          amenities?: Json | null
+          category: string
+          city: string
+          country?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_verified?: boolean
+          latitude: number
+          longitude: number
+          name: string
+          slug: string
+          state?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          address?: string
+          amenities?: Json | null
+          category?: string
+          city?: string
+          country?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_verified?: boolean
+          latitude?: number
+          longitude?: number
+          name?: string
+          slug?: string
+          state?: string | null
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       reading_summaries: {
         Row: {
           book_id: string | null
@@ -2848,6 +4600,379 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      research_paper_bookmarks: {
+        Row: {
+          created_at: string
+          id: string
+          openalex_id: string
+          paper: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          openalex_id: string
+          paper?: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          openalex_id?: string
+          paper?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
+      research_paper_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number
+          name: string
+          openalex_types: string[]
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          name: string
+          openalex_types?: string[]
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          name?: string
+          openalex_types?: string[]
+          slug?: string
+        }
+        Relationships: []
+      }
+      research_paper_submissions: {
+        Row: {
+          abstract: string | null
+          authors: string
+          catalogue_work_id: string | null
+          created_at: string
+          doi: string | null
+          file_path: string | null
+          id: string
+          moderator_id: string | null
+          moderator_note: string | null
+          paper_type: string
+          publication_year: number | null
+          reviewed_at: string | null
+          source_url: string | null
+          status: string
+          submission_kind: string
+          submitter_id: string
+          title: string
+        }
+        Insert: {
+          abstract?: string | null
+          authors: string
+          catalogue_work_id?: string | null
+          created_at?: string
+          doi?: string | null
+          file_path?: string | null
+          id?: string
+          moderator_id?: string | null
+          moderator_note?: string | null
+          paper_type?: string
+          publication_year?: number | null
+          reviewed_at?: string | null
+          source_url?: string | null
+          status?: string
+          submission_kind: string
+          submitter_id: string
+          title: string
+        }
+        Update: {
+          abstract?: string | null
+          authors?: string
+          catalogue_work_id?: string | null
+          created_at?: string
+          doi?: string | null
+          file_path?: string | null
+          id?: string
+          moderator_id?: string | null
+          moderator_note?: string | null
+          paper_type?: string
+          publication_year?: number | null
+          reviewed_at?: string | null
+          source_url?: string | null
+          status?: string
+          submission_kind?: string
+          submitter_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "research_paper_submissions_category_fk"
+            columns: ["paper_type"]
+            isOneToOne: false
+            referencedRelation: "research_paper_categories"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
+      role_permissions: {
+        Row: {
+          enabled: boolean
+          permission: string
+          role: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          enabled?: boolean
+          permission: string
+          role: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          enabled?: boolean
+          permission?: string
+          role?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      saved_map_places: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          spot_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          spot_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          spot_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_map_places_spot_id_fkey"
+            columns: ["spot_id"]
+            isOneToOne: false
+            referencedRelation: "reading_spots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_quotes: {
+        Row: {
+          book_id: string | null
+          client_id: string
+          created_at: string
+          id: string
+          location: string | null
+          note: string | null
+          page: number | null
+          quote_text: string
+          source: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book_id?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          location?: string | null
+          note?: string | null
+          page?: number | null
+          quote_text: string
+          source?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book_id?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          location?: string | null
+          note?: string | null
+          page?: number | null
+          quote_text?: string
+          source?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_quotes_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scientist_archives: {
+        Row: {
+          created_at: string
+          id: string
+          institution: string
+          material: string
+          note: string
+          scientist_id: string
+          sort_order: number
+          title: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          institution: string
+          material: string
+          note?: string
+          scientist_id: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          institution?: string
+          material?: string
+          note?: string
+          scientist_id?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scientist_archives_scientist_id_fkey"
+            columns: ["scientist_id"]
+            isOneToOne: false
+            referencedRelation: "scientists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scientist_publications: {
+        Row: {
+          access: string
+          authors: string
+          created_at: string
+          doi: string | null
+          id: string
+          note: string
+          scientist_id: string
+          sort_order: number
+          title: string
+          updated_at: string
+          url: string
+          venue: string
+          year: string
+        }
+        Insert: {
+          access: string
+          authors: string
+          created_at?: string
+          doi?: string | null
+          id?: string
+          note?: string
+          scientist_id: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+          url: string
+          venue: string
+          year: string
+        }
+        Update: {
+          access?: string
+          authors?: string
+          created_at?: string
+          doi?: string | null
+          id?: string
+          note?: string
+          scientist_id?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          url?: string
+          venue?: string
+          year?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scientist_publications_scientist_id_fkey"
+            columns: ["scientist_id"]
+            isOneToOne: false
+            referencedRelation: "scientists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scientists: {
+        Row: {
+          created_at: string
+          discipline: string
+          id: string
+          lifespan: string
+          name: string
+          profile_data: Json
+          region: string
+          slug: string
+          sort_order: number
+          status: string
+          summary: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discipline: string
+          id?: string
+          lifespan: string
+          name: string
+          profile_data?: Json
+          region: string
+          slug: string
+          sort_order?: number
+          status?: string
+          summary: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discipline?: string
+          id?: string
+          lifespan?: string
+          name?: string
+          profile_data?: Json
+          region?: string
+          slug?: string
+          sort_order?: number
+          status?: string
+          summary?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       security_audit_log: {
         Row: {
@@ -2984,13 +5109,6 @@ export type Database = {
             referencedRelation: "spoiler_threads"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "spoiler_thread_comments_thread_id_fkey"
-            columns: ["thread_id"]
-            isOneToOne: false
-            referencedRelation: "spoiler_threads_safe"
-            referencedColumns: ["id"]
-          },
         ]
       }
       spoiler_threads: {
@@ -3037,35 +5155,323 @@ export type Database = {
       stories: {
         Row: {
           audio_url: string | null
+          author_name: string | null
+          bookmarks_count: number
+          completion_status: string
           content: string | null
+          cover_image_url: string | null
           created_at: string
           description: string | null
+          follows_count: number
           format: string | null
+          genre: string
           id: string
+          likes_count: number
+          parts_count: number
+          published_at: string | null
+          reading_time_minutes: number
+          reads_count: number
+          status: string
+          story_type: string
+          tags: string[]
           title: string
+          updated_at: string
           user_id: string | null
+          views_count: number
         }
         Insert: {
           audio_url?: string | null
+          author_name?: string | null
+          bookmarks_count?: number
+          completion_status?: string
           content?: string | null
+          cover_image_url?: string | null
           created_at?: string
           description?: string | null
+          follows_count?: number
           format?: string | null
+          genre?: string
           id?: string
+          likes_count?: number
+          parts_count?: number
+          published_at?: string | null
+          reading_time_minutes?: number
+          reads_count?: number
+          status?: string
+          story_type?: string
+          tags?: string[]
           title: string
+          updated_at?: string
           user_id?: string | null
+          views_count?: number
         }
         Update: {
           audio_url?: string | null
+          author_name?: string | null
+          bookmarks_count?: number
+          completion_status?: string
           content?: string | null
+          cover_image_url?: string | null
           created_at?: string
           description?: string | null
+          follows_count?: number
           format?: string | null
+          genre?: string
           id?: string
+          likes_count?: number
+          parts_count?: number
+          published_at?: string | null
+          reading_time_minutes?: number
+          reads_count?: number
+          status?: string
+          story_type?: string
+          tags?: string[]
           title?: string
+          updated_at?: string
           user_id?: string | null
+          views_count?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "stories_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stories_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stories_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_bookmarks: {
+        Row: {
+          created_at: string
+          id: string
+          story_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          story_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          story_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_bookmarks_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          part_id: string | null
+          story_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          part_id?: string | null
+          story_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          part_id?: string | null
+          story_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_comments_part_id_fkey"
+            columns: ["part_id"]
+            isOneToOne: false
+            referencedRelation: "story_parts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "story_comments_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_follows: {
+        Row: {
+          created_at: string
+          id: string
+          story_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          story_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          story_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_follows_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_likes: {
+        Row: {
+          created_at: string
+          id: string
+          story_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          story_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          story_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_likes_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_parts: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          part_number: number
+          published_at: string | null
+          status: string
+          story_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          part_number: number
+          published_at?: string | null
+          status?: string
+          story_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          part_number?: number
+          published_at?: string | null
+          status?: string
+          story_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_parts_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_reading_progress: {
+        Row: {
+          id: string
+          last_read_part_id: string | null
+          last_read_part_number: number
+          progress_percentage: number
+          story_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          last_read_part_id?: string | null
+          last_read_part_number?: number
+          progress_percentage?: number
+          story_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          last_read_part_id?: string | null
+          last_read_part_number?: number
+          progress_percentage?: number
+          story_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_reading_progress_last_read_part_id_fkey"
+            columns: ["last_read_part_id"]
+            isOneToOne: false
+            referencedRelation: "story_parts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "story_reading_progress_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_avatars: {
         Row: {
@@ -3099,6 +5505,8 @@ export type Database = {
           added_at: string
           book_id: string | null
           id: string
+          last_opened_at: string | null
+          progress: number
           status: string | null
           user_id: string | null
         }
@@ -3106,6 +5514,8 @@ export type Database = {
           added_at?: string
           book_id?: string | null
           id?: string
+          last_opened_at?: string | null
+          progress?: number
           status?: string | null
           user_id?: string | null
         }
@@ -3113,6 +5523,8 @@ export type Database = {
           added_at?: string
           book_id?: string | null
           id?: string
+          last_opened_at?: string | null
+          progress?: number
           status?: string | null
           user_id?: string | null
         }
@@ -3156,35 +5568,12 @@ export type Database = {
         }
         Relationships: []
       }
-      reader_discovery_locations: {
-        Row: {
-          consented_at: string
-          latitude: number
-          longitude: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          consented_at?: string
-          latitude: number
-          longitude: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          consented_at?: string
-          latitude?: number
-          longitude?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       user_bookshelf: {
         Row: {
           added_at: string | null
           book_id: string
           id: string
+          is_favorite: boolean
           location_sharing: boolean | null
           notes: string | null
           rating: number | null
@@ -3195,6 +5584,7 @@ export type Database = {
           added_at?: string | null
           book_id: string
           id?: string
+          is_favorite?: boolean
           location_sharing?: boolean | null
           notes?: string | null
           rating?: number | null
@@ -3205,6 +5595,7 @@ export type Database = {
           added_at?: string | null
           book_id?: string
           id?: string
+          is_favorite?: boolean
           location_sharing?: boolean | null
           notes?: string | null
           rating?: number | null
@@ -3259,34 +5650,23 @@ export type Database = {
           },
         ]
       }
-      user_reading_badges: {
+      user_follows: {
         Row: {
-          badge_id: string
-          earned_at: string
-          id: string
-          user_id: string
+          created_at: string
+          follower_id: string
+          following_id: string
         }
         Insert: {
-          badge_id: string
-          earned_at?: string
-          id?: string
-          user_id: string
+          created_at?: string
+          follower_id: string
+          following_id: string
         }
         Update: {
-          badge_id?: string
-          earned_at?: string
-          id?: string
-          user_id?: string
+          created_at?: string
+          follower_id?: string
+          following_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_reading_badges_badge_id_fkey"
-            columns: ["badge_id"]
-            isOneToOne: false
-            referencedRelation: "reading_badges"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_game_badges: {
         Row: {
@@ -3643,6 +6023,35 @@ export type Database = {
         }
         Relationships: []
       }
+      user_reading_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_reading_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "reading_badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -3768,6 +6177,75 @@ export type Database = {
           utm_medium?: string | null
           utm_source?: string | null
           visited_at?: string
+          visitor_id?: string | null
+        }
+        Relationships: []
+      }
+      website_engagement_events: {
+        Row: {
+          created_at: string
+          engaged_seconds: number
+          event_id: string
+          id: number
+          page_path: string
+          session_id: string
+          visitor_id: string
+        }
+        Insert: {
+          created_at?: string
+          engaged_seconds: number
+          event_id: string
+          id?: number
+          page_path?: string
+          session_id: string
+          visitor_id: string
+        }
+        Update: {
+          created_at?: string
+          engaged_seconds?: number
+          event_id?: string
+          id?: number
+          page_path?: string
+          session_id?: string
+          visitor_id?: string
+        }
+        Relationships: []
+      }
+      website_visit_events: {
+        Row: {
+          country_code: string | null
+          created_at: string
+          device_type: string | null
+          event_name: string | null
+          event_type: string
+          id: string
+          page_path: string
+          referrer: string | null
+          session_id: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          country_code?: string | null
+          created_at?: string
+          device_type?: string | null
+          event_name?: string | null
+          event_type?: string
+          id?: string
+          page_path?: string
+          referrer?: string | null
+          session_id?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          country_code?: string | null
+          created_at?: string
+          device_type?: string | null
+          event_name?: string | null
+          event_type?: string
+          id?: string
+          page_path?: string
+          referrer?: string | null
+          session_id?: string | null
           visitor_id?: string | null
         }
         Relationships: []
@@ -3935,113 +6413,6 @@ export type Database = {
         Relationships: []
       }
     }
-      book_reviews: {
-        Row: {
-          book_id: string
-          contains_spoilers: boolean
-          created_at: string
-          id: string
-          review_text: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          book_id: string
-          contains_spoilers?: boolean
-          created_at?: string
-          id?: string
-          review_text: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          book_id?: string
-          contains_spoilers?: boolean
-          created_at?: string
-          id?: string
-          review_text?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      brain_assessment_attempts: {
-        Row: {
-          id: string
-          user_id: string
-          mode: string
-          difficulty: string | null
-          question_count: number
-          correct_count: number
-          duration_seconds: number
-          domain_scores: Json
-          question_set_version: string
-          completed_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          mode?: string
-          difficulty?: string | null
-          question_count: number
-          correct_count: number
-          duration_seconds?: number
-          domain_scores?: Json
-          question_set_version?: string
-          completed_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          mode?: string
-          difficulty?: string | null
-          question_count?: number
-          correct_count?: number
-          duration_seconds?: number
-          domain_scores?: Json
-          question_set_version?: string
-          completed_at?: string
-        }
-        Relationships: []
-      }
-      everyday_science_attempts: {
-        Row: {
-          id: string
-          user_id: string
-          question_count: number
-          overall_score: number
-          category_scores: Json
-          answers: Json
-          evaluation: Json
-          question_set_version: string
-          difficulty: "beginner" | "intermediate" | "advanced"
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          question_count?: number
-          overall_score: number
-          category_scores?: Json
-          answers?: Json
-          evaluation?: Json
-          question_set_version?: string
-          difficulty?: "beginner" | "intermediate" | "advanced"
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          question_count?: number
-          overall_score?: number
-          category_scores?: Json
-          answers?: Json
-          evaluation?: Json
-          question_set_version?: string
-          created_at?: string
-        }
-        Relationships: []
-      }
     Views: {
       profiles_public: {
         Row: {
@@ -4067,6 +6438,42 @@ export type Database = {
           id?: string | null
           profile_photo_url?: string | null
           username?: string | null
+        }
+        Relationships: []
+      }
+      public_profiles: {
+        Row: {
+          bio: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string | null
+          profile_photo_url: string | null
+          stories_read_count: number | null
+          stories_written_count: number | null
+          username: string | null
+          writing_frequency: string | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          profile_photo_url?: string | null
+          stories_read_count?: number | null
+          stories_written_count?: number | null
+          username?: string | null
+          writing_frequency?: string | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          profile_photo_url?: string | null
+          stories_read_count?: number | null
+          stories_written_count?: number | null
+          username?: string | null
+          writing_frequency?: string | null
         }
         Relationships: []
       }
@@ -4112,151 +6519,39 @@ export type Database = {
           updated_at: string | null
           user_id: string | null
         }
-        Insert: {
-          body?: never
-          book_id?: string | null
-          created_at?: string | null
-          id?: string | null
-          is_unlocked?: never
-          min_chapter?: number | null
-          title?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          body?: never
-          book_id?: string | null
-          created_at?: string | null
-          id?: string | null
-          is_unlocked?: never
-          min_chapter?: number | null
-          title?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "spoiler_threads_book_id_fkey"
-            columns: ["book_id"]
-            isOneToOne: false
-            referencedRelation: "books_library"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {
-      list_reading_group_books: {
-        Args: { p_group_id: string }
+      accept_buddy_read_invite: {
+        Args: { invite_token: string }
+        Returns: string
+      }
+      admin_list_role_permissions: {
+        Args: never
         Returns: {
-          id: string
-          group_id: string
-          book_id: string
-          status: string
-          target_date: string | null
-          started_at: string | null
-          completed_at: string | null
-          created_at: string
-          title: string
-          author: string | null
-          cover_image_url: string | null
-          pages: number | null
-          my_current_page: number
-          my_is_shared: boolean
-          shared_reader_count: number
-          average_progress: number | null
-        }[]
-      }
-      add_reading_group_book: {
-        Args: { p_group_id: string; p_book_id: string; p_target_date?: string | null }
-        Returns: string
-      }
-      set_reading_group_book_status: {
-        Args: { p_group_reading_book_id: string; p_status: string }
-        Returns: string
-      }
-      remove_reading_group_book: {
-        Args: { p_group_reading_book_id: string }
-        Returns: undefined
-      }
-      save_reading_group_progress: {
-        Args: { p_group_reading_book_id: string; p_current_page: number; p_is_shared: boolean }
-        Returns: string
-      }
-      list_group_reading_discussions: {
-        Args: { p_group_id: string; p_limit?: number }
-        Returns: {
-          id: string
-          group_id: string
-          group_reading_book_id: string
-          book_id: string
-          book_title: string
-          chapter_number: number
-          spoiler_chapter: number
-          topic_type: string
-          title: string
-          body: string | null
-          is_unlocked: boolean
-          created_by: string
-          author_name: string
-          author_photo_url: string | null
-          created_at: string
+          enabled: boolean
+          permission: string
+          role: string
           updated_at: string
-          reply_count: number
         }[]
       }
-      create_group_reading_discussion: {
-        Args: {
-          p_group_id: string
-          p_group_reading_book_id: string
-          p_chapter_number: number
-          p_spoiler_chapter: number
-          p_topic_type: string
-          p_title: string
-          p_body: string
-        }
-        Returns: string
-      }
-      list_group_reading_discussion_comments: {
-        Args: { p_discussion_id: string; p_limit?: number }
+      admin_list_user_roles: {
+        Args: never
         Returns: {
-          id: string
-          discussion_id: string
-          user_id: string
-          body: string | null
-          spoiler_chapter: number
-          is_unlocked: boolean
-          author_name: string
-          author_photo_url: string | null
           created_at: string
+          email: string
+          role: string
+          user_id: string
         }[]
       }
-      create_group_reading_discussion_comment: {
-        Args: { p_discussion_id: string; p_body: string; p_spoiler_chapter?: number }
-        Returns: string
+      admin_set_role_permission: {
+        Args: { p_enabled: boolean; p_permission: string; p_role: string }
+        Returns: Json
       }
-      delete_group_reading_discussion: {
-        Args: { p_discussion_id: string }
-        Returns: undefined
-      }
-      delete_group_reading_discussion_comment: {
-        Args: { p_comment_id: string }
-        Returns: undefined
-      }
-      get_profiles_for_social_context: {
-        Args: { profile_ids: string[] }
-        Returns: {
-          id: string
-          username: string | null
-          full_name: string | null
-          bio: string | null
-          profile_photo_url: string | null
-          avatar_img_url: string | null
-          location_lat: number | null
-          location_lng: number | null
-          location_sharing: boolean | null
-          last_seen: string | null
-        }[]
+      admin_set_user_role: {
+        Args: { p_email: string; p_grant: boolean; p_role: string }
+        Returns: Json
       }
       are_friends: {
         Args: { user1_id: string; user2_id: string }
@@ -4270,6 +6565,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      cancel_reading_group_event: {
+        Args: { p_event_id: string }
+        Returns: undefined
+      }
       check_rate_limit: {
         Args: {
           p_endpoint: string
@@ -4281,6 +6580,93 @@ export type Database = {
       }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       cleanup_unused_books: { Args: never; Returns: number }
+      create_reading_group: {
+        Args: {
+          p_category?: string
+          p_description?: string
+          p_join_policy?: string
+          p_language_code?: string
+          p_name: string
+          p_rules?: string
+          p_visibility?: string
+        }
+        Returns: {
+          archived_at: string | null
+          category: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          is_encrypted: boolean | null
+          join_policy: string
+          language_code: string | null
+          name: string
+          rules: string | null
+          slug: string | null
+          updated_at: string | null
+          visibility: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "group_chats"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_reading_group_event: {
+        Args: {
+          p_capacity?: number
+          p_description: string
+          p_ends_at: string
+          p_event_type: string
+          p_group_id: string
+          p_location?: string
+          p_starts_at: string
+          p_timezone?: string
+          p_title: string
+        }
+        Returns: string
+      }
+      create_reading_group_invitation: {
+        Args: {
+          p_expires_at: string
+          p_group_id: string
+          p_max_uses?: number
+          p_token: string
+        }
+        Returns: string
+      }
+      create_reading_room: {
+        Args: { p_book_id: string; p_name: string }
+        Returns: {
+          book_id: string
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "reading_rooms"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      disable_my_location_sharing: { Args: never; Returns: undefined }
+      dispatch_reading_group_daily_digest: { Args: never; Returns: number }
+      dispatch_reading_group_event_reminders: { Args: never; Returns: number }
+      get_admin_auth_activity: {
+        Args: { p_limit?: number }
+        Returns: {
+          auth_method: string
+          created_at: string
+          error_code: string
+          event_type: string
+          id: string
+          user_id: string
+        }[]
+      }
       get_admin_recent_actions: {
         Args: { p_limit?: number; p_timeframe?: string }
         Returns: {
@@ -4316,6 +6702,10 @@ export type Database = {
           visited_at: string
           visitor_id: string
         }[]
+      }
+      get_admin_website_analytics: {
+        Args: { p_timeframe?: string }
+        Returns: Json
       }
       get_article_author_follower_count: {
         Args: { p_author_user_id: string }
@@ -4370,6 +6760,15 @@ export type Database = {
           website_url: string
         }[]
       }
+      get_book_feedback_vote_summary: {
+        Args: { p_content_ids: string[] }
+        Returns: {
+          content_id: string
+          viewer_voted: boolean
+          vote_count: number
+          vote_type: string
+        }[]
+      }
       get_community_pulse_action_stats: {
         Args: { p_timeframe?: string }
         Returns: Json
@@ -4400,14 +6799,41 @@ export type Database = {
           vote_type: string
         }[]
       }
+      get_dual_table_website_analytics: {
+        Args: { p_timeframe?: string }
+        Returns: Json
+      }
+      get_explore_map_items: {
+        Args: {
+          p_category?: string
+          p_lat?: number
+          p_lng?: number
+          p_radius_km?: number
+        }
+        Returns: {
+          address: string
+          category: string
+          city: string
+          description: string
+          distance_km: number
+          extra_meta: Json
+          id: string
+          image_url: string
+          item_type: string
+          latitude: number
+          longitude: number
+          slug: string
+          title: string
+        }[]
+      }
       get_friend_locations: {
         Args: never
         Returns: {
+          avatar_img_url: string
           full_name: string
           id: string
           location_lat: number
           location_lng: number
-          avatar_img_url: string | null
         }[]
       }
       get_friend_profile_info: {
@@ -4451,28 +6877,19 @@ export type Database = {
           total_book_locations: number
         }[]
       }
+      get_my_avatar: { Args: never; Returns: Json }
+      get_my_profile: { Args: never; Returns: Json }
       get_nearby_book_readers: {
         Args: { book_uuid: string; radius_km?: number }
         Returns: {
-          approximate_latitude: number | null
-          approximate_longitude: number | null
-          avatar_img_url: string | null
+          approximate_latitude: number
+          approximate_longitude: number
+          avatar_img_url: string
           distance_km: number
           is_friend: boolean
           reader_id: string
           reader_name: string
           reading_since: string
-        }[]
-      }
-      get_nearby_reader_matches: {
-        Args: { book_uuid: string; radius_km?: number }
-        Returns: {
-          distance_band: string
-          is_friend: boolean
-          profile_photo_url: string | null
-          reader_id: string
-          reader_name: string
-          username: string | null
         }[]
       }
       get_nearby_readers: {
@@ -4492,6 +6909,21 @@ export type Database = {
           like_count: number
         }[]
       }
+      get_profiles_for_social_context: {
+        Args: { profile_ids: string[] }
+        Returns: {
+          avatar_img_url: string
+          bio: string
+          full_name: string
+          id: string
+          last_seen: string
+          location_lat: number
+          location_lng: number
+          location_sharing: boolean
+          profile_photo_url: string
+          username: string
+        }[]
+      }
       get_public_community_pulse: { Args: never; Returns: Json }
       get_public_group_member_counts: {
         Args: never
@@ -4508,6 +6940,19 @@ export type Database = {
           id: string
           profile_photo_url: string
           username: string
+        }[]
+      }
+      get_reading_rooms: {
+        Args: never
+        Returns: {
+          book_author: string
+          book_id: string
+          book_title: string
+          cover_image_url: string
+          created_at: string
+          id: string
+          is_member: boolean
+          name: string
         }[]
       }
       get_sequel_vote_counts: {
@@ -4543,8 +6988,13 @@ export type Database = {
           visits_today: number
         }[]
       }
+      get_website_engagement_stats: {
+        Args: { p_timeframe?: string }
+        Returns: Json
+      }
       get_website_visit_count: { Args: never; Returns: number }
       has_location_consent: { Args: { user_uuid: string }; Returns: boolean }
+      has_permission: { Args: { p_permission: string }; Returns: boolean }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       increment_article_views: {
         Args: { _article_id: string }
@@ -4567,6 +7017,8 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      is_reading_room_member: { Args: { p_room_id: string }; Returns: boolean }
+      leave_reading_group: { Args: { p_group_id: string }; Returns: undefined }
       link_books_to_authors: { Args: never; Returns: number }
       match_book_expert_chunks: {
         Args: {
@@ -4591,6 +7043,10 @@ export type Database = {
           title: string
         }[]
       }
+      moderate_reading_group_member: {
+        Args: { p_action: string; p_group_id: string; p_user_id: string }
+        Returns: string
+      }
       normalize_name: { Args: { name: string }; Returns: string }
       notify_author_followers: {
         Args: {
@@ -4601,29 +7057,26 @@ export type Database = {
         }
         Returns: undefined
       }
-      get_my_profile: {
-        Args: never
-        Returns: Json
-      }
-      get_my_avatar: {
-        Args: never
-        Returns: Json
-      }
-      save_my_avatar: {
-        Args: { p_avatar_json: Json; p_avatar_img_url: string }
-        Returns: Json
-      }
-      save_my_location: {
-        Args: { p_lat: number; p_lng: number }
-        Returns: Json
-      }
-      disable_my_location_sharing: {
-        Args: never
-        Returns: undefined
+      reading_group_notifications_muted: {
+        Args: { p_group: string; p_user: string }
+        Returns: boolean
       }
       record_location_consent: {
         Args: { ip_addr?: unknown; user_agent_string?: string }
         Returns: undefined
+      }
+      record_pageview: {
+        Args: {
+          p_country_code?: string
+          p_device_type?: string
+          p_event_name?: string
+          p_event_type?: string
+          p_page_path?: string
+          p_referrer?: string
+          p_session_id?: string
+          p_visitor_id?: string
+        }
+        Returns: string
       }
       record_website_visit:
         | {
@@ -4643,15 +7096,44 @@ export type Database = {
             }
             Returns: undefined
           }
+      redeem_reading_group_invitation: {
+        Args: { p_token: string }
+        Returns: string
+      }
       refresh_book_ratings_agg: {
         Args: { target_book: string }
         Returns: undefined
+      }
+      request_or_join_reading_group: {
+        Args: { p_group_id: string }
+        Returns: string
+      }
+      respond_to_reading_group_event: {
+        Args: { p_event_id: string; p_response: string }
+        Returns: string
+      }
+      save_my_avatar: {
+        Args: { p_avatar_img_url: string; p_avatar_json: Json }
+        Returns: Json
+      }
+      save_my_location: {
+        Args: { p_lat: number; p_lng: number }
+        Returns: Json
+      }
+      set_reading_group_member_role: {
+        Args: { p_group_id: string; p_role: string; p_user_id: string }
+        Returns: string
       }
       share_book_location: {
         Args: { book_uuid: string; lat: number; lng: number }
         Returns: string
       }
+      transfer_reading_group_ownership: {
+        Args: { p_group_id: string; p_new_owner_id: string }
+        Returns: undefined
+      }
       update_author_book_counts: { Args: never; Returns: undefined }
+      update_my_profile: { Args: { p_profile: Json }; Returns: Json }
       user_chapter_progress: {
         Args: { _book: string; _user: string }
         Returns: number

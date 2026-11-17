@@ -31,8 +31,6 @@ export interface Book {
   preview_url?: string;
   isBrokenLink?: boolean;
   isGooglePreview?: boolean;
-  qualityScore?: number;
-  qualityReasons?: string[];
   reader_link_status?: string;
   reader_link_http_status?: number;
   reader_link_content_type?: string;

@@ -6,12 +6,12 @@
 
 It measures demonstrated explanations of everyday science. It is not an IQ test, a certified examination, or a validated measure of intelligence.
 
-## MVP being implemented in this branch
+## Current assessment implementation
 
 1. A dedicated `/science-around-you` experience and separate navigation entry.
-2. Ten open-ended questions about fans, air conditioners, bus braking, pressure cookers, refrigerators, airplane lift, microwaves, condensation, rust, and seasons.
-3. One question at a time, free-text answers, progress, question navigation, answer-length limits, and skipped-question handling.
-4. Gemini evaluation through a Supabase Edge Function. The browser sends answers and question IDs only; canonical answers and key concepts remain in the server-only shared question bank.
+2. Three separate ten-question open-ended banks (30 unique questions total): Beginner covers everyday phenomena such as fans, braking and seasons; Intermediate covers rainbows, solar panels, buoyancy, batteries and other applied topics; Advanced covers heat pumps, shock waves, catalysis, greenhouse physics, resonance and other deeper mechanisms.
+3. One question at a time, free-text answers, progress, question navigation, answer-length limits, and skipped-question handling. The selected difficulty determines the exact ten-question pack; mixed-level question IDs are rejected by the evaluator.
+4. Gemini evaluation through a Supabase Edge Function. The browser sends difficulty, answers and question IDs only; canonical answers and key concepts for all 30 questions remain in the server-only shared question bank.
 5. A weighted score per answer:
    - Scientific accuracy: 35%
    - Conceptual understanding: 25%
@@ -20,7 +20,7 @@ It measures demonstrated explanations of everyday science. It is not an IQ test,
    - Clarity: 5%
 6. A report with an overall Everyday Science Understanding Score, category averages, strengths, improvement tips, misconception correction, and a concise scientific explanation for each question.
 7. Learning links: related scientists/inventors, book discovery via Google Books search, YouTube topic searches, and Sahadhyayi Library entry point.
-8. Private signed-in attempt history in a new `everyday_science_attempts` table with owner-scoped RLS. Guest users can take the assessment but do not get cloud history.
+8. Private signed-in attempt history in a new `everyday_science_attempts` table with owner-scoped RLS. Each attempt stores difficulty and a question-set/calibration version so scores from different packs are not silently compared. Guest users can take the assessment but do not get cloud history.
 9. Unit tests for the question bank and scoring functions.
 
 ## Architecture
@@ -29,7 +29,8 @@ It measures demonstrated explanations of everyday science. It is not an IQ test,
 - Question metadata: `src/lib/science/questionBank.ts` (no reference answers).
 - Scoring utilities: `src/lib/science/scoring.ts`.
 - Attempt persistence: `src/lib/science/attempts.ts`.
-- Canonical answers and key concepts: `supabase/functions/_shared/scienceQuestionBank.ts`.
+- Public question IDs, prompts, domains and difficulty: `supabase/functions/_shared/sciencePrompts.ts` (30 questions; no reference answers).
+- Canonical answers and key concepts: `supabase/functions/_shared/scienceQuestionBank.ts` (server-only rubric for every question).
 - Gemini endpoint: `supabase/functions/everyday-science-evaluate/index.ts`, using the existing server-side `GEMINI_API_KEY` secret.
 - Persistence: `public.everyday_science_attempts`, separate from all IQ tables.
 
@@ -46,7 +47,7 @@ It measures demonstrated explanations of everyday science. It is not an IQ test,
 
 ## Rollout plan
 
-### Phase 1 — MVP (this branch)
+### Phase 1 — MVP
 - Implement the independent page and navigation.
 - Add the server-only reference bank and Gemini evaluator.
 - Add the separate attempt table, generated types, and persistence helper.
@@ -54,8 +55,9 @@ It measures demonstrated explanations of everyday science. It is not an IQ test,
 - Review deployment configuration before enabling the feature in production.
 
 ### Phase 2 — Quality and personalisation
-- Expand the bank with reviewed questions in physics, biology, chemistry, engineering, environment, and technology.
-- Add Beginner, Intermediate, and Advanced packs with calibrated expected concepts.
+- The first three distinct ten-question banks are implemented; next, have subject-matter reviewers validate scientific accuracy and difficulty calibration across all 30 questions.
+- Add reviewed biology, environment, and additional technology topics in a versioned bank expansion.
+- Calibrate score anchors with benchmark answers (excellent, partial, incorrect, concise-but-correct) and evaluate consistency across repeated runs.
 - Retrieve actually available Sahadhyayi books by title/subject and prefer verified editions with accessible reading links.
 - Add age-appropriate wording and accessibility/language options without changing what the score measures.
 - Build progress charts showing improvement by domain across attempts.

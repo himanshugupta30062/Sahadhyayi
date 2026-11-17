@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import ScienceAroundYou from "@/pages/ScienceAroundYou";
-import { SCIENCE_QUESTIONS } from "@/lib/science/questionBank";
+import { getScienceQuestionsForDifficulty } from "@/lib/science/questionBank";
 
 const mocks = vi.hoisted(() => ({
   invoke: vi.fn(),
@@ -21,10 +21,10 @@ vi.mock("@/lib/science/attempts", () => ({
   saveEverydayScienceAttempt: mocks.saveAttempt,
 }));
 
-function makeEvaluation(score = 80) {
+function makeEvaluation(score = 80, difficulty: "beginner" | "intermediate" | "advanced" = "beginner") {
   return {
-    difficulty: "beginner",
-    questionSetVersion: "everyday-science-v1-beginner-difficulty-calibration-v1",
+    difficulty,
+    questionSetVersion: `everyday-science-v2-${difficulty}-difficulty-calibration-v1`,
     overallScore: score,
     categoryScores: {
       Physics: score,
@@ -32,7 +32,7 @@ function makeEvaluation(score = 80) {
       "Technology & engineering": 75,
       "Earth & space science": 90,
     },
-    results: SCIENCE_QUESTIONS.map((question) => ({
+    results: getScienceQuestionsForDifficulty(difficulty).map((question) => ({
       questionId: question.id,
       domain: question.domain,
       score,
@@ -120,8 +120,7 @@ describe("Explain Science Around You", () => {
   });
 
   it("sends the selected advanced level and shows its deeper prompt", async () => {
-    const advancedEvaluation = makeEvaluation();
-    advancedEvaluation.difficulty = "advanced";
+    const advancedEvaluation = makeEvaluation(80, "advanced");
     mocks.invoke.mockResolvedValue({ data: advancedEvaluation, error: null });
     renderPage();
     fireEvent.click(screen.getByRole("button", { name: /Advanced.*Deeper mechanisms/i }));

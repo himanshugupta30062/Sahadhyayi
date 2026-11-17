@@ -21,7 +21,7 @@ import { listEverydayScienceAttempts, saveEverydayScienceAttempt } from "./attem
 
 const evaluation = {
   difficulty: "beginner" as const,
-  questionSetVersion: "everyday-science-v1-beginner-difficulty-calibration-v1",
+  questionSetVersion: "everyday-science-v2-beginner-difficulty-calibration-v1",
   overallScore: 75,
   categoryScores: { Physics: 75 },
   results: [],

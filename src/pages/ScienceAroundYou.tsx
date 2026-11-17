@@ -31,6 +31,7 @@ import {
   type ScienceQuestionEvaluation,
 } from "@/lib/science/attempts";
 import {
+  SCIENCE_QUESTIONS,
   getScienceQuestionsForDifficulty,
   shuffleScienceQuestions,
   type ScienceQuestion,
@@ -621,7 +622,7 @@ export default function ScienceAroundYou() {
             <p className="mb-4 mt-1 text-sm text-muted-foreground">Open a question to see what you understood, what you missed and where to explore the topic further.</p>
             <div className="space-y-3">
               {evaluation.results.map((result, index) => {
-                const question = SCIENCE_QUESTIONS.find((item) => item.id === result.questionId);
+                const question = getScienceQuestionsForDifficulty(evaluation.difficulty).find((item) => item.id === result.questionId);
                 return question ? <AnswerResultCard key={result.questionId} question={question} result={result} index={index} /> : null;
               })}
             </div>

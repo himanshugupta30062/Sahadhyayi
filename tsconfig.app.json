@@ -4,7 +4,7 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "lib": [
-      "ES2020",
+      "ES2022",
       "DOM",
       "DOM.Iterable"
     ],
@@ -21,6 +21,11 @@
         "./src/*"
       ]
     },
+    "types": [
+      "vite/client",
+      "node",
+      "vitest/globals"
+    ],
     "skipLibCheck": true,
     "strict": false,
     "target": "ES2020",

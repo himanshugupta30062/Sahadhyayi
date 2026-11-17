@@ -413,6 +413,7 @@ describe('useLibraryBooks React Query Hooks', () => {
       select: vi.fn().mockReturnValue({
         neq: vi.fn().mockReturnThis(),
         not: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
         range: vi.fn().mockResolvedValue({ data: mockData, error: null }),
       }),
     });
@@ -541,14 +542,13 @@ describe('useLibraryBooks React Query Hooks', () => {
       or: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
-      then: (resolve: any, reject?: any) =>
-        Promise.resolve({ data: null, error: { message: 'column mismatch' } }).then(resolve, reject),
+      range: vi.fn().mockResolvedValue({ data: null, error: { message: 'column mismatch' } }),
     };
     const fallbackQuery: any = {
       or: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
-      then: (resolve: any, reject?: any) =>
-        Promise.resolve({ data: fallbackBooks, error: null }).then(resolve, reject),
+      order: vi.fn().mockReturnThis(),
+      range: vi.fn().mockResolvedValue({ data: fallbackBooks, error: null }),
     };
     const selectMock = vi.fn()
       .mockReturnValueOnce(initialQuery)

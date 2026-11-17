@@ -68,6 +68,7 @@ describe('useReadingJournal', () => {
 
     const { result } = renderHook(() => useReadingJournal());
 
+    // Entries sort by page ascending, then newest timestamp first within a page.
     expect(result.current.entries.map(entry => entry.id)).toEqual(['quote-quote', 'hl-highlight', 'note-private']);
     expect(result.current.entries[2]).toMatchObject({ type: 'reflection', bookTitle: 'Book One', page: 3, note: 'My thought' });
     expect(result.current.entries[1]).toMatchObject({ type: 'highlight', location: 'Chapter 1', color: 'yellow' });
@@ -115,6 +116,7 @@ describe('useReadingJournal', () => {
 
     expect(result.current.bookSummaries).toEqual([
       expect.objectContaining({ bookId: 'book-1', bookTitle: 'Book One', currentPage: 40, totalPages: 120, progressPercent: 33 }),
+      // A one-page fallback total is not enough information to claim 100% completion.
       expect.objectContaining({ bookId: 'book-2', bookTitle: 'Untitled Book', currentPage: 5, totalPages: 1, progressPercent: 0 }),
     ]);
     expect(mocks.loadLocal).toHaveBeenCalledWith('book-1', 'reader-1');
@@ -126,13 +128,20 @@ describe('useReadingJournal', () => {
       { id: 'n2', user_id: 'reader-1', visibility: 'private', book_id: 'book-1', page: 8, quote: 'Passage 2', created_at: '2026-01-02' },
     ];
     mocks.highlights = [{ id: 'h1', book_id: 'book-1', page: 9, text: 'Highlight', created_at: '2026-01-03' }];
-    mocks.quotes = [{ id: 'q1', bookId: 'book-1', page: 7, text: 'Quote' }];
+    mocks.quotes = [{ id: 'q1', bookId: 'book-1', text: 'Quote' }];
     const { result } = renderHook(() => useReadingJournal());
 
     expect(result.current.bookSummaries).toEqual([
       expect.objectContaining({
-        bookId: 'book-1', bookTitle: 'Book Notes', currentPage: 7, totalPages: 1,
-        reflectionCount: 2, highlightCount: 1, quoteCount: 1, totalEntriesCount: 4,
+        bookId: 'book-1',
+        // The page-1 quote is the first sorted entry and seeds a journal-only summary.
+        bookTitle: 'Book Notes',
+        currentPage: 1,
+        totalPages: 1,
+        reflectionCount: 2,
+        highlightCount: 1,
+        quoteCount: 1,
+        totalEntriesCount: 4,
       }),
     ]);
   });
