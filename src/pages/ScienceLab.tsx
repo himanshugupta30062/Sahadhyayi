@@ -236,7 +236,7 @@ export default function ScienceLab() {
 
   return (
     <main className="min-h-screen bg-background">
-      <SEO title="Science Lab | Sahadhyayi" description="Try safe, hands-on science experiments, record what you observe and learn with the Sahadhyayi community." canonicalUrl="https://www.sahadhyayi.com/science-lab" />
+      <SEO title="Science Lab | Sahadhyayi" description="Try safe, hands-on science experiments, record what you observe and learn with the Sahadhyayi community." canonical="https://www.sahadhyayi.com/science-lab" />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="relative mb-8 overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-emerald-500/10 via-background to-cyan-500/10 p-6 sm:p-10">
           <div className="pointer-events-none absolute -right-12 -top-16 h-64 w-64 rounded-full border-[28px] border-emerald-500/5" />
