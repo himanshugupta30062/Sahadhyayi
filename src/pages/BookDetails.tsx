@@ -31,6 +31,7 @@ import { BookEditionPicker } from '@/components/books/BookEditionPicker';
 import BookReviews from '@/components/books/BookReviews';
 import BookExperienceTags from '@/components/books/BookExperienceTags';
 import BookLiteraryVoices from '@/components/books/BookLiteraryVoices';
+import BookRelatedReads from '@/components/books/BookRelatedReads';
 const BookAIReader = React.lazy(() => import('@/components/books/BookAIReader'));
 const AIReadingToolkit = React.lazy(() => import('@/components/books/AIReadingToolkit'));
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -490,6 +491,7 @@ const BookDetails = () => {
 
           {/* Series Navigation (if book is part of a series) */}
           <BookSeriesSection book={book} className="mb-8" />
+          <BookRelatedReads book={book} />
 
           <Separator className="my-8" />
 
