@@ -87,4 +87,21 @@ export default function BrainIQTest() {
   const current = questions[index];
   const assessmentScore = useMemo(() => scoreBrainAssessment(questions, answers), [questions, answers]);
   const score = assessmentScore.correct;
+  const activityDays = useMemo(() => new Set(attemptHistory.filter((attempt) => Number.isFinite(new Date(attempt.date).getTime())).map((attempt) => localDayKey(new Date(attempt.date)))), [attemptHistory]);
+  const activityCalendar = useMemo(() => Array.from({ length: 28 }, (_, offset) => {
+    const day = new Date();
+    day.setHours(12, 0, 0, 0);
+    day.setDate(day.getDate() - (27 - offset));
+    const key = localDayKey(day);
+    return { key, label: day.toLocaleDateString(undefined, { weekday: "short" }), dayNumber: day.getDate(), isToday: offset === 27, completed: activityDays.has(key) };
+  }), [activityDays]);
+  const activeDaysInWindow = activityCalendar.filter((day) => day.completed).length;
+  const currentStreak = useMemo(() => {
+    const cursor = new Date();
+    cursor.setHours(12, 0, 0, 0);
+    if (!activityDays.has(localDayKey(cursor))) cursor.setDate(cursor.getDate() - 1);
+    let streak = 0;
+    while (activityDays.has(localDayKey(cursor))) { streak += 1; cursor.setDate(cursor.getDate() - 1); }
+    return streak;
+  }, [activityDays]);
   const domainScores = assessmentScore.byDomain;
