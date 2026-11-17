@@ -82,8 +82,35 @@ async function searchCatalogue(admin: any, query: string, page = 1, pageSize = 2
   });
 
   if (error) {
-    console.error("Catalogue search error:", error);
-    return { books: [], total: 0, page, pageSize };
+    // Production may not yet have the optional fuzzy-match RPC migration.
+    // Fall back to the confirmed books_library columns so admins can still
+    // select an existing catalogue entry instead of seeing an empty picker.
+    console.warn("Catalogue match RPC unavailable; using direct catalogue search.");
+    const safeTitle = title.replace(/[%,_]/g, " ").trim();
+    const safeAuthor = author.replace(/[%,_]/g, " ").trim();
+    const [titleResult, authorResult] = await Promise.all([
+      safeTitle
+        ? admin.from("books_library").select("id,title,author,isbn,pdf_url,publication_year,language,cover_image_url").ilike("title", `%${safeTitle}%`).limit(100)
+        : Promise.resolve({ data: [], error: null }),
+      safeAuthor
+        ? admin.from("books_library").select("id,title,author,isbn,pdf_url,publication_year,language,cover_image_url").ilike("author", `%${safeAuthor}%`).limit(100)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+    if (titleResult.error || authorResult.error) {
+      console.error("Direct catalogue search failed:", titleResult.error || authorResult.error);
+      return { books: [], total: 0, page, pageSize };
+    }
+    const byId = new Map<string, Record<string, unknown>>();
+    for (const book of [...(titleResult.data || []), ...(authorResult.data || [])] as Array<Record<string, unknown>>) {
+      if (typeof book.id === "string") byId.set(book.id, {
+        ...book,
+        match_score: 0,
+        match_reasons: ["direct_title_or_author_search"],
+      });
+    }
+    const allFallbackMatches = [...byId.values()].sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
+    const offset = (page - 1) * pageSize;
+    return { books: allFallbackMatches.slice(offset, offset + pageSize), total: allFallbackMatches.length, page, pageSize };
   }
 
   const allMatches = (matches || []) as Array<Record<string, unknown>>;
