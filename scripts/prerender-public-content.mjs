@@ -94,6 +94,11 @@ function createPage({ title, description, route, image, type, entityType, entity
           ...(personDetails?.jobTitle ? { jobTitle: personDetails.jobTitle } : {}),
           ...(personDetails?.birthPlace ? { birthPlace: { "@type": "Place", name: personDetails.birthPlace } } : {}),
           ...(Array.isArray(personDetails?.knowsAbout) && personDetails.knowsAbout.length ? { knowsAbout: personDetails.knowsAbout } : {}),
+          ...(Array.isArray(personDetails?.subjectOf) && personDetails.subjectOf.length ? {
+            subjectOf: personDetails.subjectOf
+              .filter((entry) => entry && typeof entry.name === "string" && typeof entry.url === "string" && /^https:\/\//i.test(entry.url))
+              .map((entry) => ({ "@type": "CreativeWork", name: entry.name, url: entry.url })),
+          } : {}),
         }
       : entityType === "Article"
         ? {
@@ -274,13 +279,170 @@ for (const person of lifeStoryProfiles) {
 }
 
 const scientistProfiles = [
-  { slug: "amal-kumar-raychaudhuri", name: "Amal Kumar Raychaudhuri", description: "Explore the life and work of Indian physicist Amal Kumar Raychaudhuri, whose equation became a key result in general relativity and cosmology.", jobTitle: "Theoretical physicist", knowsAbout: ["Raychaudhuri equation", "General relativity", "Relativistic cosmology"] },
-  { slug: "c-v-raman", name: "C. V. Raman", description: "Learn about C. V. Raman, the Indian physicist whose discovery of the Raman Effect earned the 1930 Nobel Prize in Physics.", jobTitle: "Physicist", knowsAbout: ["Raman effect", "Light scattering", "Optics"] },
-  { slug: "satyendra-nath-bose", name: "Satyendra Nath Bose", description: "Discover the life and quantum physics contributions of Satyendra Nath Bose, whose work led to Bose–Einstein statistics.", jobTitle: "Physicist", knowsAbout: ["Bose–Einstein statistics", "Quantum mechanics", "Bosons"] },
-  { slug: "srinivasa-ramanujan", name: "Srinivasa Ramanujan", description: "Explore the life, notebooks and mathematical contributions of Srinivasa Ramanujan, one of India's most influential mathematicians.", jobTitle: "Mathematician", knowsAbout: ["Number theory", "Infinite series", "Partitions", "Mock theta functions"] },
-  { slug: "marie-curie", name: "Marie Curie", description: "Explore Marie Curie's pioneering research on radioactivity and the discoveries of polonium and radium.", jobTitle: "Physicist and chemist", knowsAbout: ["Radioactivity", "Polonium", "Radium"] },
-  { slug: "albert-einstein", name: "Albert Einstein", description: "Learn about Albert Einstein's life and contributions to relativity, quantum theory and modern physics.", jobTitle: "Theoretical physicist", knowsAbout: ["Special relativity", "General relativity", "Photoelectric effect", "Brownian motion"] },
-  { slug: "katherine-johnson", name: "Katherine Johnson", description: "Discover NASA mathematician Katherine Johnson's calculations for Mercury, Apollo and early human spaceflight.", jobTitle: "Mathematician", knowsAbout: ["Orbital mechanics", "Mercury programme", "Apollo programme", "Spaceflight trajectory calculations"] }
+  {
+    "slug": "amal-kumar-raychaudhuri",
+    "name": "Amal Kumar Raychaudhuri",
+    "description": "Explore the life and work of Indian physicist Amal Kumar Raychaudhuri, whose equation became a key result in general relativity and cosmology.",
+    "jobTitle": "Theoretical physicist",
+    "birthPlace": "Barisal, Bengal Presidency (now in Bangladesh)",
+    "knowsAbout": [
+      "Raychaudhuri equation",
+      "General relativity",
+      "Relativistic cosmology"
+    ],
+    "references": [
+      {
+        "name": "Relativistic Cosmology. I (1955)",
+        "url": "https://journals.aps.org/pr/abstract/10.1103/PhysRev.98.1123"
+      },
+      {
+        "name": "Indian National Science Academy biography",
+        "url": "https://insaindia.res.in/07062023_no.php?id=N87-0976"
+      },
+      {
+        "name": "India Science profile",
+        "url": "https://indiascience.dst.gov.in/videos/amal-kumar-raychaudhuri-e-1"
+      }
+    ]
+  },
+  {
+    "slug": "c-v-raman",
+    "name": "C. V. Raman",
+    "description": "Learn about C. V. Raman, the Indian physicist whose discovery of the Raman Effect earned the 1930 Nobel Prize in Physics.",
+    "jobTitle": "Physicist",
+    "birthPlace": "Tiruchirappalli, Tamil Nadu, India",
+    "knowsAbout": [
+      "Raman effect",
+      "Light scattering",
+      "Optics"
+    ],
+    "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Sir_CV_Raman.JPG",
+    "references": [
+      {
+        "name": "A New Type of Secondary Radiation (1928)",
+        "url": "https://www.nature.com/articles/121501c0"
+      },
+      {
+        "name": "Nobel Prize biography",
+        "url": "https://www.nobelprize.org/prizes/physics/1930/raman/biographical/"
+      },
+      {
+        "name": "American Chemical Society landmark",
+        "url": "https://www.acs.org/education/whatischemistry/landmarks/ramaneffect.html"
+      }
+    ]
+  },
+  {
+    "slug": "satyendra-nath-bose",
+    "name": "Satyendra Nath Bose",
+    "description": "Discover the life and quantum physics contributions of Satyendra Nath Bose, whose work led to Bose–Einstein statistics.",
+    "jobTitle": "Physicist",
+    "birthPlace": "Calcutta (now Kolkata), India",
+    "knowsAbout": [
+      "Bose–Einstein statistics",
+      "Quantum mechanics",
+      "Bosons"
+    ],
+    "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Satyendra-nath-bose.jpg",
+    "references": [
+      {
+        "name": "Plancks Gesetz und Lichtquantenhypothese (1924)",
+        "url": "https://doi.org/10.1007/BF01327326"
+      },
+      {
+        "name": "BoseStat@100 · S. N. Bose National Centre for Basic Sciences",
+        "url": "https://www.bose.res.in/sevents/bosestat100/index.jsp"
+      }
+    ]
+  },
+  {
+    "slug": "srinivasa-ramanujan",
+    "name": "Srinivasa Ramanujan",
+    "description": "Explore the life, notebooks and mathematical contributions of Srinivasa Ramanujan, one of India's most influential mathematicians.",
+    "jobTitle": "Mathematician",
+    "birthPlace": "Erode, Tamil Nadu, India",
+    "knowsAbout": [
+      "Number theory",
+      "Infinite series",
+      "Partitions",
+      "Mock theta functions"
+    ],
+    "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Srinivasa_Ramanujan-_Add._MS_a947.jpg",
+    "references": [
+      {
+        "name": "Highly Composite Numbers (1915)",
+        "url": "https://ramanujan.sirinudi.org/Volumes/published/ram15.pdf"
+      },
+      {
+        "name": "MacTutor · University of St Andrews",
+        "url": "https://mathshistory.st-andrews.ac.uk/Biographies/Ramanujan/"
+      },
+      {
+        "name": "Explore Trinity · University of Cambridge",
+        "url": "https://explore.trin.cam.ac.uk/assets/ramanujan/"
+      }
+    ]
+  },
+  {
+    "slug": "marie-curie",
+    "name": "Marie Curie",
+    "description": "Explore Marie Curie's pioneering research on radioactivity and the discoveries of polonium and radium.",
+    "jobTitle": "Physicist and chemist",
+    "birthPlace": "Warsaw, Poland",
+    "knowsAbout": [
+      "Radioactivity",
+      "Polonium",
+      "Radium"
+    ],
+    "references": [
+      {
+        "name": "Marie Curie — Nobel Prize facts",
+        "url": "https://www.nobelprize.org/prizes/physics/1903/marie-curie/facts/"
+      }
+    ]
+  },
+  {
+    "slug": "albert-einstein",
+    "name": "Albert Einstein",
+    "description": "Learn about Albert Einstein's life and contributions to relativity, quantum theory and modern physics.",
+    "jobTitle": "Theoretical physicist",
+    "birthPlace": "Ulm, German Empire (now Germany)",
+    "knowsAbout": [
+      "Special relativity",
+      "General relativity",
+      "Photoelectric effect",
+      "Brownian motion"
+    ],
+    "references": [
+      {
+        "name": "Albert Einstein — Nobel Prize facts",
+        "url": "https://www.nobelprize.org/prizes/physics/1921/einstein/facts/"
+      }
+    ]
+  },
+  {
+    "slug": "katherine-johnson",
+    "name": "Katherine Johnson",
+    "description": "Discover NASA mathematician Katherine Johnson's calculations for Mercury, Apollo and early human spaceflight.",
+    "jobTitle": "Mathematician",
+    "birthPlace": "White Sulphur Springs, West Virginia, United States",
+    "knowsAbout": [
+      "Orbital mechanics",
+      "Mercury programme",
+      "Apollo programme",
+      "Spaceflight trajectory calculations"
+    ],
+    "references": [
+      {
+        "name": "Katherine Johnson · NASA Science",
+        "url": "https://science.nasa.gov/people/katherine-johnson/"
+      },
+      {
+        "name": "Katherine Johnson biography · NASA",
+        "url": "https://www.nasa.gov/centers-and-facilities/langley/katherine-johnson-biography/"
+      }
+    ]
+  }
 ];
 
 for (const scientist of scientistProfiles) {
@@ -292,7 +454,13 @@ for (const scientist of scientistProfiles) {
     type: "profile",
     entityType: "Person",
     entityName: scientist.name,
-    personDetails: { jobTitle: scientist.jobTitle, knowsAbout: scientist.knowsAbout },
+    image: scientist.image,
+    personDetails: {
+      jobTitle: scientist.jobTitle,
+      birthPlace: scientist.birthPlace,
+      knowsAbout: scientist.knowsAbout,
+      subjectOf: scientist.references.map((reference) => ({ name: reference.name, url: reference.url })),
+    },
   }));
 }
 
