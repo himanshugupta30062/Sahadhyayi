@@ -107,3 +107,5 @@ verify_jwt = true
 
 [functions.auth-audit]
 verify_jwt = false
+[functions.everyday-science-evaluate]
+verify_jwt = true
