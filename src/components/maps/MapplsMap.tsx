@@ -940,6 +940,7 @@ export function MapplsMap({
       <div
         id={containerId}
         ref={mapElement}
+        role="application"
         tabIndex={0}
         onKeyDown={(e) => {
           if (!mapActions) return;
