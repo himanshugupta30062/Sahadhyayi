@@ -191,29 +191,40 @@ function ContributeBookPdfDialogContent() {
       try {
         setBusyStage('uploading');
 
-        const { error: insertError } = await supabase.from('book_pdf_submissions' as any).insert({
-          id,
-          user_id: user.id,
-          submission_source: 'user_upload',
-          original_filename: file.name.slice(0, 255),
-          storage_path: path,
-          file_size_bytes: file.size,
-          submitted_title: title.trim() || null,
-          submitted_author: author.trim() || null,
-          rights_attested: true,
-          rights_statement: 'Contributor attests they are authorized to submit this file for review.',
-          status: 'uploaded',
-          target_book_id: selectedBook?.id || null,
-        });
-        if (insertError) throw insertError;
-        submissionCreated = true;
+        // Create the submission row once. Retrying the whole operation used to
+        // re-insert the same UUID after a transient Storage failure, so every
+        // retry failed with a duplicate-key error before it could upload again.
+        if (!submissionCreated) {
+          const { error: insertError } = await supabase.from('book_pdf_submissions' as any).insert({
+            id,
+            user_id: user.id,
+            submission_source: 'user_upload',
+            original_filename: file.name.slice(0, 255),
+            storage_path: path,
+            file_size_bytes: file.size,
+            submitted_title: title.trim() || null,
+            submitted_author: author.trim() || null,
+            rights_attested: true,
+            rights_statement: 'Contributor attests they are authorized to submit this file for review.',
+            status: 'uploaded',
+            target_book_id: selectedBook?.id || null,
+          });
+          if (insertError) throw insertError;
+          submissionCreated = true;
+        }
 
         const { error: uploadError } = await supabase.storage.from(BUCKET).upload(path, file, {
           contentType: 'application/pdf',
           cacheControl: '0',
           upsert: false,
         });
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          // A network timeout can happen after Storage has committed the object.
+          // Confirm the object before retrying so we don't mistake a successful
+          // upload for a failure just because the response was lost.
+          const { data: existingObject } = await supabase.storage.from(BUCKET).download(path);
+          if (!existingObject || existingObject.size !== file.size) throw uploadError;
+        }
 
         setBusyStage('verifying');
         // Kick off AI verification after the private upload succeeds. Failure to
@@ -224,9 +235,14 @@ function ContributeBookPdfDialogContent() {
         });
         if (verificationError) {
           console.warn('PDF was uploaded privately but automatic verification did not start.', verificationError);
+          toast({
+            title: 'PDF uploaded — verification pending',
+            description: 'Your file is safely stored in private quarantine, but automated checks could not start. It remains in your submissions for the review team.',
+            variant: 'default',
+          });
+        } else {
+          toast({ title: 'PDF submitted privately', description: 'Your file is quarantined for verification. It is not publicly downloadable.' });
         }
-
-        toast({ title: 'PDF submitted privately', description: 'Your file is quarantined for verification. It is not publicly downloadable.' });
         setFile(null);
         setTitle('');
         setAuthor('');
