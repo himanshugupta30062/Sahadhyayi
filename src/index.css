@@ -973,3 +973,26 @@ html:not(.dark) [class~="from-amber-50"] {
 html:not(.dark) [class~="to-orange-50"] {
   --tw-gradient-to: var(--editorial-bg-alt) var(--tw-gradient-to-position);
 }
+
+
+/* Lightweight authentication entrance animations (no runtime animation library). */
+@keyframes auth-page-enter {
+  from { opacity: 0; transform: translate3d(0, 20px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes auth-icon-enter {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes auth-feedback-enter {
+  from { opacity: 0; transform: translate3d(-10px, 0, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.auth-page-enter { animation: auth-page-enter 500ms ease-out both; }
+.auth-icon-enter { animation: auth-icon-enter 400ms ease-out 200ms both; }
+.auth-feedback-enter { animation: auth-feedback-enter 220ms ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .auth-page-enter,
+  .auth-icon-enter,
+  .auth-feedback-enter { animation: none !important; }
+}
