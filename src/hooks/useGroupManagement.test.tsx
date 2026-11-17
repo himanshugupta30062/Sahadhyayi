@@ -142,6 +142,7 @@ describe('useGroupManagement', () => {
   });
 
   it('counts active members for private and encrypted groups only for signed-in readers', async () => {
+    mocks.countResult = { data: [{ group_id: 'public-1', member_count: 4 }], error: null };
     mocks.groupListResult = {
       data: [
         { id: 'public-1', name: 'Public Circle', visibility: 'public', is_encrypted: false },
