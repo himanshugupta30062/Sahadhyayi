@@ -125,7 +125,7 @@ export const HomeReadingPeopleSection: React.FC = () => {
           </div>
         </div>
 
-        <div className="people-reveal-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="people-reveal people-reveal-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {/* Pillar 1: Reader Map */}
           <Link
             to="/map"
@@ -154,7 +154,7 @@ export const HomeReadingPeopleSection: React.FC = () => {
           {/* Pillar 2: Reader Map by Book */}
           <Link
             to="/reader-map"
-            className="group flex flex-col justify-between rounded-3xl bg-white dark:bg-[#131715] border border-[#E5E0D8] hover:border-[#8F681C]/60 dark:border-[#242E28] dark:hover:border-[#D5B16D]/50 p-6 sm:p-7 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl"
+            className="people-card-reveal group flex flex-col justify-between rounded-3xl bg-white dark:bg-[#131715] border border-[#E5E0D8] hover:border-[#8F681C]/60 dark:border-[#242E28] dark:hover:border-[#D5B16D]/50 p-6 sm:p-7 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl"
           >
             <div>
               <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60 flex items-center justify-center mb-5 transition-transform group-hover:scale-105 shadow-2xs">
@@ -179,7 +179,7 @@ export const HomeReadingPeopleSection: React.FC = () => {
           {/* Pillar 3: Reading DNA */}
           <Link
             to="/social?tab=dna"
-            className="group flex flex-col justify-between rounded-3xl bg-white dark:bg-[#131715] border border-[#E5E0D8] hover:border-[#8F681C]/60 dark:border-[#242E28] dark:hover:border-[#D5B16D]/50 p-6 sm:p-7 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl"
+            className="people-card-reveal group flex flex-col justify-between rounded-3xl bg-white dark:bg-[#131715] border border-[#E5E0D8] hover:border-[#8F681C]/60 dark:border-[#242E28] dark:hover:border-[#D5B16D]/50 p-6 sm:p-7 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl"
           >
             <div>
               <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800/60 flex items-center justify-center mb-5 transition-transform group-hover:scale-105 shadow-2xs">
@@ -204,7 +204,7 @@ export const HomeReadingPeopleSection: React.FC = () => {
           {/* Pillar 4: Reading Rooms & Sprints */}
           <Link
             to="/social?tab=rooms"
-            className="group flex flex-col justify-between rounded-3xl bg-white dark:bg-[#131715] border border-[#E5E0D8] hover:border-[#8F681C]/60 dark:border-[#242E28] dark:hover:border-[#D5B16D]/50 p-6 sm:p-7 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl"
+            className="people-card-reveal group flex flex-col justify-between rounded-3xl bg-white dark:bg-[#131715] border border-[#E5E0D8] hover:border-[#8F681C]/60 dark:border-[#242E28] dark:hover:border-[#D5B16D]/50 p-6 sm:p-7 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl"
           >
             <div>
               <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60 flex items-center justify-center mb-5 transition-transform group-hover:scale-105 shadow-2xs">
