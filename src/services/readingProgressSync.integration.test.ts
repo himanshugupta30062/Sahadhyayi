@@ -105,18 +105,22 @@ describe('syncReadingProgressToSupabase', () => {
     expect(mocks.calls.some(call => call.table === 'user_bookshelf' && call.method === 'update')).toBe(true);
   });
 
-  it('propagates progress and existing-shelf update errors but ignores activity failures', async () => {
+  it('propagates progress persistence errors', async () => {
     mocks.progressWrite.error = new Error('progress write failed');
-    await expect(syncReadingProgressToSupabase('reader-1', input)).rejects.toThrow('progress write failed');
 
-    mocks.progressWrite.error = null;
+    await expect(syncReadingProgressToSupabase('reader-1', input)).rejects.toThrow('progress write failed');
+  });
+
+  it('propagates errors when updating an existing shelf row', async () => {
     mocks.shelfRead.data = { id: 9, status: 'reading' };
     mocks.shelfWrite.error = new Error('shelf update failed');
-    await expect(syncReadingProgressToSupabase('reader-1', input)).rejects.toThrow('shelf update failed');
 
-    mocks.shelfWrite.error = null;
-    mocks.shelfRead.data = null;
+    await expect(syncReadingProgressToSupabase('reader-1', input)).rejects.toThrow('shelf update failed');
+  });
+
+  it('does not fail a successful sync when activity recording is unavailable', async () => {
     mocks.recordActivity.mockRejectedValue(new Error('activity unavailable'));
+
     await expect(syncReadingProgressToSupabase('reader-1', input)).resolves.toMatchObject({ bookId: 'book-1' });
   });
 });
