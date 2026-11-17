@@ -135,11 +135,17 @@ export const NAVIGATION_SECTIONS: NavigationSection[] = [
     items: [
       { name: "Activity Hub", href: "/activity" },
       { name: "IQ Test", href: "/brain" },
-      { name: "Explain Science Around You", href: "/science-around-you" },
       { name: "Events & Festivals", href: "/events" },
       { name: "Reading Challenges", href: "/activity?tab=challenges" },
       { name: "Book Games", href: "/games" },
       { name: "Reader Meetups", href: "/activity?tab=meetups" },
+    ],
+  },
+  {
+    name: "Learn",
+    href: "/science-around-you",
+    items: [
+      { name: "Explain Science Around You", href: "/science-around-you" },
     ],
   },
 ];
@@ -151,6 +157,7 @@ export const PUBLIC_NAVIGATION_SECTIONS: NavigationSection[] = [
   NAVIGATION_SECTIONS[2],
   NAVIGATION_SECTIONS[3],
   NAVIGATION_SECTIONS[4],
+  NAVIGATION_SECTIONS[5],
 ];
 
 const SOCIAL_ITEM_ICONS: Record<string, LucideIcon> = {
@@ -244,8 +251,7 @@ function pathMatches(pathname: string, href: string) {
       pathname === path ||
       pathname.startsWith("/events") ||
       pathname.startsWith("/games") ||
-      pathname.startsWith("/brain") ||
-      pathname.startsWith("/science-around-you")
+      pathname.startsWith("/brain")
     );
   }
   return pathname === path || pathname.startsWith(path + "/");
@@ -274,7 +280,7 @@ function isNavigationItemActive(pathname: string, search: string, href: string) 
   return true;
 }
 
-const NAVIGATION_ORDER = ["Library", "Social", "Read & Write", "Authors", "Activity"];
+const NAVIGATION_ORDER = ["Library", "Social", "Read & Write", "Authors", "Activity", "Learn"];
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -786,7 +792,6 @@ const Navigation = () => {
                           { title: "Events & Festivals", description: "Literary sessions and festivals", names: ["Events & Festivals"] },
                           { title: "Challenges & Games", description: "Milestones and book trivia", names: ["Reading Challenges", "Book Games"] },
                           { title: "IQ Test & Reasoning", description: "IQ-style practice and visual puzzles", names: ["IQ Test"] },
-                          { title: "Everyday Science", description: "Explain the science behind real-world things", names: ["Explain Science Around You"] },
                         ];
                         const validGroups = groups
                           .map((group) => ({
