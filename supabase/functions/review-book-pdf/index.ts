@@ -378,6 +378,15 @@ serve(async (req) => {
     const evidenceUrl = typeof body.evidenceUrl === "string" ? body.evidenceUrl.trim() : "";
     const createNewBook = Boolean(body.createNewBook);
 
+    // Creating a catalogue row before malware scanning/public upload can leave
+    // orphan records when verification or storage fails. Until publication is
+    // transactional, only publish against an existing catalogue entry.
+    if (createNewBook) {
+      return json({
+        error: "Publishing a new catalogue entry is temporarily unavailable. Select an existing catalogue book; new-book publication will return after transactional rollback is implemented.",
+      }, 503);
+    }
+
     if (typeof rightsBasis !== "string" || !RIGHTS.has(rightsBasis)) return json({ error: "Select a valid distribution-rights basis." }, 400);
 
     const evidenceValidation = validateEvidenceUrl(evidenceUrl);
