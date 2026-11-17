@@ -125,7 +125,7 @@ export function filterPublicBooks<T>(books: T[]): T[] {
  * Baseline columns guaranteed to exist in books_library across all schema versions.
  */
 export const BASE_BOOK_SELECT_COLUMNS =
-  'id,title,author,genre,cover_image_url,description,publication_year,language,pdf_url,created_at,isbn,pages,author_bio';
+  'id,title,author,genre,cover_image_url,description,publication_year,language,pdf_url,created_at,isbn,pages,author_bio,reader_link_status,reader_link_http_status,reader_link_content_type';
 
 export interface BookSchemaCapabilities {
   hasStatus: boolean;
