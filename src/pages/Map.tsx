@@ -137,9 +137,13 @@ const MapPage = () => {
     ?? null;
 
   const friendsQuery = useFriends();
+  // Reuse an already-consented shared location when available; otherwise use
+  // the one-time Explore location obtained from the explicit "Find near me" action.
+  // This keeps Explore discovery independent from enabling social location sharing.
+  const exploreSearchLocation = exploreLocation ?? (locationSharingEnabled ? currentLocation : null);
   const { data: exploreItems = [], isLoading: exploreItemsLoading, isFetching: exploreItemsFetching } = useExploreSpots({
     category: selectedCategory,
-    userCoords: exploreLocation,
+    userCoords: exploreSearchLocation,
     radiusKm: 25,
   });
 
@@ -413,15 +417,15 @@ const MapPage = () => {
 
   const explorePoints = useMemo<MapplsPoint[]>(() => {
     const points: MapplsPoint[] = [];
-    if (locationSharingEnabled && currentLocation) {
+    if (exploreSearchLocation) {
       points.push({
         id: 'self',
-        lat: currentLocation.lat,
-        lng: currentLocation.lng,
-        title: 'You (Your location)',
-        description: 'Your shared location',
+        lat: exploreSearchLocation.lat,
+        lng: exploreSearchLocation.lng,
+        title: 'Your search location',
+        description: 'Used only to find nearby places; not shared with readers',
         avatarUrl: selfAvatarUrl,
-        avatarSeed: user?.id ?? 'self',
+        avatarSeed: user?.id ?? 'explore-location',
         markerType: 'avatar',
       });
     }
@@ -451,7 +455,7 @@ const MapPage = () => {
     });
 
     return points;
-  }, [exploreItems, locationSharingEnabled, currentLocation, selfAvatarUrl, searchQuery]);
+  }, [exploreItems, exploreSearchLocation, selfAvatarUrl, user?.id, searchQuery]);
 
   const handleMarkerClick = (point: MapplsPoint) => {
     if (point.id === 'self') {
@@ -802,22 +806,22 @@ const MapPage = () => {
                   key="explore-map"
                   apiKey={MAPPLS_API_KEY}
                   points={explorePoints}
-                  center={exploreLocation || currentLocation}
+                  center={exploreSearchLocation}
                   onMarkerClick={handleMarkerClick}
                   onMapActionsReady={(actions) => {
                     mapActionsRef.current.explore = actions;
-                    if (exploreLocation) actions.recenter(exploreLocation);
+                    if (exploreSearchLocation) actions.recenter(exploreSearchLocation);
                   }}
                   emptyMessage="No public reading spots or events found matching your filter."
                 />
                 <MapFloatingControls
-                  hasUserLocation={Boolean(exploreLocation || currentLocation)}
+                  hasUserLocation={Boolean(exploreSearchLocation)}
                   is3D={is3DMap.explore}
                   onToggle3D={() => handleToggle3D('explore')}
                   onZoomIn={() => handleZoomIn('explore')}
                   onZoomOut={() => handleZoomOut('explore')}
                   onRecenter={() => {
-                    const coords = exploreLocation || currentLocation;
+                    const coords = exploreSearchLocation;
                     if (coords) mapActionsRef.current.explore?.recenter(coords);
                     else void handleFindNearbyPlaces();
                   }}
