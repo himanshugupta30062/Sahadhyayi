@@ -555,11 +555,14 @@ serve(async (req) => {
 
     // Get the new submission's PDF from quarantine
     const { data: newSubmission, error: newSubError } = await admin.from("book_pdf_submissions")
-      .select("id,storage_path,original_filename,file_size_bytes,pdf_sha256,pdf_page_count,submitted_title,submitted_author")
+      .select("id,storage_path,original_filename,file_size_bytes,pdf_sha256,pdf_page_count,submitted_title,submitted_author,status,rights_attested,verification_completed_at")
       .eq("id", newSubmissionId)
       .maybeSingle();
 
     if (newSubError || !newSubmission) return json({ error: "New submission not found." }, 404);
+    if (newSubmission.status !== "needs_review" || !newSubmission.verification_completed_at || !newSubmission.rights_attested) {
+      return json({ error: "Replacement PDFs must complete automated verification and contributor rights attestation before publication." }, 409);
+    }
 
     // Verify the new PDF
     const { data: source, error: downloadError } = await admin.storage.from("book-pdf-quarantine").download(newSubmission.storage_path);
@@ -632,7 +635,6 @@ serve(async (req) => {
       rights_evidence_url: evidenceUrl,
       reviewed_by: authData.user.id,
       reviewed_at: new Date().toISOString(),
-      published_at: new Date().toISOString(),
       catalogue_match_status: "admin_selected",
       status: "approved",
     }).eq("id", newSubmissionId);
