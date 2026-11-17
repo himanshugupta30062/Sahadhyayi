@@ -77,6 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [queryClient]);
 
   const signIn = async (email: string, password: string, captchaToken?: string) => {
+    let auditHandled = false;
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -88,6 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const code = typeof (error as { code?: unknown }).code === "string"
           ? (error as { code: string }).code
           : "auth_error";
+        auditHandled = true;
         deferAuthAudit("sign_in_attempted", "password");
         deferAuthAudit("sign_in_failed", "password", { errorCode: code });
         throw error;
@@ -102,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       // Network/transport exceptions do not necessarily arrive as AuthError.
       // Record them after the failed auth operation, without masking the error.
-      if (!(error && typeof error === "object" && "status" in error)) {
+      if (!auditHandled) {
         deferAuthAudit("sign_in_attempted", "password");
         deferAuthAudit("sign_in_failed", "password", { errorCode: "network_or_transport_error" });
       }
