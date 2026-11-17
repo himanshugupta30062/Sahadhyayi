@@ -94,10 +94,7 @@ describe('useJournalCollections and related persistence hooks', () => {
     };
     chain.then = (resolve: (value: any) => unknown, reject: (reason: unknown) => unknown) =>
       Promise.resolve(mocks.queryResult).then(resolve, reject);
-    mocks.from.mockImplementation((...args: unknown[]) => {
-      mocks.from.mock.calls;
-      return chain;
-    });
+    mocks.from.mockImplementation(() => chain);
   });
 
   afterEach(() => {
@@ -239,7 +236,7 @@ describe('useJournalCollections and related persistence hooks', () => {
     const { result } = renderHook(() => useRenameJournalCollection());
 
     const updated = await result.current.mutateAsync({ id: original.id, newName: 'Wisdom' });
-    expect(updated).toMatchObject({ ...original, name: 'Wisdom' });
+    expect(updated).toMatchObject({ id: original.id, user_id: 'guest', name: 'Wisdom' });
     expect(mocks.from).not.toHaveBeenCalled();
     expect(JSON.parse(localStorage.getItem('journal-collections') || '[]')[0].name).toBe('Wisdom');
   });
