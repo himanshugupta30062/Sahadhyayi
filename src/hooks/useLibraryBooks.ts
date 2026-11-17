@@ -59,10 +59,11 @@ export const SORTING_RULES = [
   { label: 'Supported online reader + cover (including Google Books previews)', points: 'High Tier (12,000+)', priority: 'high' },
   { label: 'Metadata-only genuine book with cover', points: 'High Tier (11,000+)', priority: 'high' },
   { label: 'Verified PDF without cover', points: 'Medium Tier (10,000+)', priority: 'medium' },
-  { label: 'Verified EPUB / official full text without cover', points: 'Medium Tier (11,000+)', priority: 'medium' },
-  { label: 'Supported online reader without cover', points: 'Medium Tier (10,500+)', priority: 'medium' },
+  { label: 'Verified EPUB / official full text without cover', points: 'Medium Tier (9,500+)', priority: 'medium' },
+  { label: 'Supported online reader without cover', points: 'Medium Tier (9,000+)', priority: 'medium' },
   { label: 'External book/resource page + cover', points: 'High Tier (11,500+)', priority: 'high' },
   { label: 'Academic papers, technical reports & preprints', points: 'Discovery Tier (2,500+)', priority: 'low' },
+  { label: 'External book/resource page without cover', points: 'Medium Tier (8,500+)', priority: 'medium' },
   { label: 'Metadata-only records without cover photo', points: 'Bottom (1,500+)', priority: 'low' },
   { label: 'Per-page diversity (max 1 / author & title per page)', points: 'Spread across pages', priority: 'info' },
   { label: 'Tie-breaker', points: 'newest first, then title, then ID', priority: 'info' },
@@ -523,9 +524,9 @@ export const getBookCompletenessScore = (book: any): number => {
     }
   } else if (resourceType === 'external_book_page') {
     if (withCover && completeMeta) {
-      baseScore = 9500; // External book/resource page + cover + complete metadata
+      baseScore = 11500; // External book/resource page + cover + complete metadata
     } else if (withCover) {
-      baseScore = 9200; // External book/resource page + cover
+      baseScore = 11000; // External book/resource page + cover
     } else {
       baseScore = 8500; // External resource page without cover
     }
