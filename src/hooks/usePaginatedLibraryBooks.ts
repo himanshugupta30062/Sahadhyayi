@@ -3,9 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import type { Book } from './useLibraryBooks';
 import {
-  getBookCompletenessScore,
   compareLibraryBooks,
-  diversifyBooksPerPage,
   isNonBookDocument,
 } from './useLibraryBooks';
 import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
@@ -331,16 +329,14 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
     const allBooks = allBooksQuery.data;
     if (!allBooks) return undefined;
 
-    // Apply per-page diversity adjustment so each page contains unique authors & titles
-    const shouldDiversify = !selectedAuthor || selectedAuthor === 'All';
-    const booksToPaginate = shouldDiversify
-      ? diversifyBooksPerPage(allBooks, pageSize)
-      : allBooks;
-
-    const totalCount = booksToPaginate.length;
+    // Preserve the comparator's global quality/access order across every page.
+    // Author diversification previously pulled lower-ranked records forward and
+    // made page 3 differ from the actual catalog ranking. Diversity must never
+    // reorder the ranked catalog; use the sorted sequence for stable pagination.
+    const totalCount = allBooks.length;
     const totalPages = Math.ceil(totalCount / pageSize);
     const startIndex = (page - 1) * pageSize;
-    const books = booksToPaginate.slice(startIndex, startIndex + pageSize);
+    const books = allBooks.slice(startIndex, startIndex + pageSize);
 
     return {
       books,
