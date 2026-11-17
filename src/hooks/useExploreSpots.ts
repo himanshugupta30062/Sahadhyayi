@@ -118,6 +118,7 @@ export function useExploreSpots({ category = 'all', userCoords, radiusKm = 25 }:
     queryKey: ['explore-map-items', category, userCoords?.lat, userCoords?.lng, radiusKm],
     queryFn: async ({ signal }): Promise<ExploreMapItem[]> => {
       const itemsById = new Map<string, ExploreMapItem>();
+      let rpcSucceeded = false;
 
       // Curated and admin-verified Sahadhyayi locations remain the trusted baseline.
       try {
@@ -128,6 +129,7 @@ export function useExploreSpots({ category = 'all', userCoords, radiusKm = 25 }:
           p_category: category,
         });
         if (!error && Array.isArray(data)) {
+          rpcSucceeded = true;
           (data as ExploreMapItem[]).forEach((item) => itemsById.set(item.id, item));
         }
       } catch (err) {
@@ -135,7 +137,7 @@ export function useExploreSpots({ category = 'all', userCoords, radiusKm = 25 }:
       }
 
       // Direct-table fallback also runs when the RPC returns an empty array.
-      if (itemsById.size === 0 || category !== 'events') {
+      if (!rpcSucceeded || itemsById.size === 0) {
         if (category !== 'events') {
           let spotsQuery = supabase.from('reading_spots').select('*').eq('is_verified', true);
           if (category !== 'all' && category !== 'places') {
