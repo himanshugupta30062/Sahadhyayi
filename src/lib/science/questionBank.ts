@@ -131,6 +131,10 @@ const SCIENCE_LEARNING_DETAILS: Record<string, ScienceLearningDetails> = {
 export const SCIENCE_QUESTIONS: ScienceQuestion[] = SCIENCE_PROMPTS.map((prompt) => ({
   ...prompt,
   ...SCIENCE_LEARNING_DETAILS[prompt.id],
+  context: SCIENCE_LEARNING_DETAILS[prompt.id]?.context ?? "Think about the underlying scientific principles, the components involved and how they interact.",
+  scientist: SCIENCE_LEARNING_DETAILS[prompt.id]?.scientist ?? null,
+  book: SCIENCE_LEARNING_DETAILS[prompt.id]?.book ?? { title: "Explore this science topic", author: "Sahadhyayi reading suggestions", searchQuery: prompt.title + " science" },
+  youtubeSearch: SCIENCE_LEARNING_DETAILS[prompt.id]?.youtubeSearch ?? prompt.title + " science explained",
 }));
 
 export function shuffleScienceQuestions(
@@ -152,13 +156,5 @@ export function shuffleScienceQuestions(
  * each attempt so future question-bank changes remain comparable.
  */
 export function getScienceQuestionsForDifficulty(difficulty: ScienceDifficulty): ScienceQuestion[] {
-  const challengeByDifficulty: Record<ScienceDifficulty, string> = {
-    beginner: "Explain the main idea in everyday language. Identify what is happening and why.",
-    intermediate: "Explain the cause-and-effect sequence. Name the important components or scientific principles and connect them clearly.",
-    advanced: "Analyze the underlying mechanism in depth. Discuss interacting factors, relevant limitations or exceptions, and use a precise scientific explanation rather than only naming the concept.",
-  };
-  return SCIENCE_QUESTIONS.map((question) => ({
-    ...question,
-    prompt: question.prompt + "\n\nChallenge level: " + challengeByDifficulty[difficulty],
-  }));
+  return SCIENCE_QUESTIONS.filter((question) => question.difficulty === difficulty);
 }
