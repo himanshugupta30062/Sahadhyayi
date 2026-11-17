@@ -142,6 +142,10 @@ describe('SEO build-script coverage', () => {
     expect(book).toContain('<link rel="canonical" href="https://sahadhyayi.com/book/book-1" />');
     expect(book).not.toContain('<script>alert(1)</script>');
     expect(book).toContain('A &amp; B story');
+    expect(book).toContain('"@type":"Book"');
+    expect(book).toContain('"name":"A \\u003cscript\\u003ealert(1)\\u003c/script\\u003e Book"');
+    expect(author).toContain('"@type":"Person"');
+    expect(author).toContain('"name":"Munshi Premchand"');
     expect(author).toContain('<title>Munshi Premchand - Author Profile | Sahadhyayi</title>');
     expect(author).toContain('Writer &amp; storyteller');
     expect(mocks.writes.some((entry) => entry.path.includes('unsafe'))).toBe(false);
