@@ -136,7 +136,7 @@ const PrivacyPolicy: React.FC = () => {
               Privacy Policy
             </h1>
             <p className="text-sm text-[#636B65] dark:text-[#A5ADA6]">
-              Last updated: September 2026 · Revised & Harmonized: November 2026
+              Last updated: November 17, 2026
             </p>
           </div>
 
@@ -164,7 +164,7 @@ const PrivacyPolicy: React.FC = () => {
                     Bilateral Location Consent
                   </div>
                   <p className="text-[#636B65] dark:text-[#A5ADA6]">
-                    Social Map location is 100% voluntary. We never track your background location, and Ghost Mode provides instant invisibility.
+                    Location sharing is an optional feature that you control through the settings available in the product. When enabled, the feature may process location information to provide reader discovery. Turning sharing off is intended to stop further sharing through the feature; allow for service propagation and avoid relying on it as an emergency safety control.
                   </p>
                 </div>
 
@@ -269,14 +269,14 @@ const PrivacyPolicy: React.FC = () => {
               <div className="p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 space-y-2">
                 <div className="flex items-center gap-2 font-bold text-sm text-emerald-900 dark:text-emerald-300">
                   <Compass className="h-4 w-4" />
-                  <span>Strict Bilateral Location Protection</span>
+                  <span>Location Sharing & Visibility</span>
                 </div>
                 <p className="text-xs sm:text-sm text-emerald-950 dark:text-emerald-200">
                   The Sahadhyayi Social Map allows readers to discover nearby book lovers, historic libraries, bookstores, and literary events.
                 </p>
                 <ul className="list-disc list-inside space-y-1.5 text-xs text-emerald-950/90 dark:text-emerald-200/90 pt-1">
-                  <li><strong>Zero Automatic Tracking:</strong> We never query your device location without explicit, voluntary user opt-in.</li>
-                  <li><strong>Approximate Coordinates:</strong> For mutual friends and fellow readers, we calculate approximate distances. Exact raw latitude and longitude are never exposed in client payloads or public endpoints.</li>
+                  <li><strong>Permission-based access:</strong> Device location is requested only when a feature needs it and the browser or device grants the relevant permission. You can manage device permissions independently of account settings.</li>
+                  <li><strong>Location display:</strong> When you choose to share location, the feature may process device or saved location information to support reader discovery. Map presentation is intended to avoid unnecessary disclosure of precise location. Visibility depends on the feature settings and access controls in effect; do not enable location sharing if you are uncomfortable with this processing.</li>
                   <li><strong>Ghost Mode:</strong> You can toggle Ghost Mode on at any time to instantly vanish from the map while maintaining full access to public spots and events.</li>
                 </ul>
               </div>
@@ -292,7 +292,7 @@ const PrivacyPolicy: React.FC = () => {
               </p>
               <ul className="list-disc list-inside space-y-2 pl-1 text-xs sm:text-sm">
                 <li>Community sequel tallies and polling results are retrieved exclusively through aggregated, counts-only remote procedure calls (RPCs).</li>
-                <li>Individual voting rows, comments, and private ratings are never exposed to public viewers or other community members.</li>
+                <li>Access to individual votes, comments and private ratings is controlled by the relevant feature permissions and database access rules; we do not intend to make private activity publicly visible.</li>
               </ul>
             </section>
 
@@ -320,7 +320,7 @@ const PrivacyPolicy: React.FC = () => {
                 We implement industry-standard defense-in-depth security measures:
               </p>
               <ul className="list-disc list-inside space-y-1.5 pl-1 text-xs sm:text-sm">
-                <li><strong>Encryption:</strong> All web traffic is encrypted in transit via TLS 1.3. Stored database records are encrypted at rest with AES-256.</li>
+                <li><strong>Transmission and storage safeguards:</strong> We use transport encryption and security controls provided by our hosting and infrastructure services. Specific protocols, encryption algorithms, coverage and retention can vary by provider and service; we do not represent that every item is protected by one particular cipher or configuration.</li>
                 <li><strong>Row-Level Security (RLS):</strong> Database-level policies ensure that users can only access their own private data and authorized public collections.</li>
                 <li><strong>Zero Password Exposure:</strong> Authentication credentials and passwords are encrypted using secure cryptographic hashing; plain-text passwords are never visible to our administrators.</li>
               </ul>
@@ -342,7 +342,7 @@ const PrivacyPolicy: React.FC = () => {
                   <strong>Right to Correction:</strong> Update outdated biographical details, reading preferences, or email credentials.
                 </div>
                 <div className="p-3 rounded-xl border border-[#E8E2D9] dark:border-[#222B25] bg-[#FAF7F2] dark:bg-[#0B0D0C]">
-                  <strong>Right to Erasure:</strong> Delete your profile, personal library, and marginalia permanently from our systems.
+                  <strong>Erasure:</strong> Request deletion of personal data, subject to applicable legal obligations, legitimate retention needs, dispute preservation and backup-cycle limitations.
                 </div>
                 <div className="p-3 rounded-xl border border-[#E8E2D9] dark:border-[#222B25] bg-[#FAF7F2] dark:bg-[#0B0D0C]">
                   <strong>Right to Grievance Redressal:</strong> Submit grievances directly to our appointed Grievance Officer for prompt resolution.
@@ -361,13 +361,13 @@ const PrivacyPolicy: React.FC = () => {
                 </p>
                 <ul className="list-disc list-inside space-y-2 pl-1">
                   <li>
-                    <strong>Explicit Consent for AI Training:</strong> Chat conversations and search queries are processed solely to fulfill your requests in real time. We do <em>not</em> store or use your chatbot interactions for AI model fine-tuning unless you have provided explicit, informed consent.
+                    <strong>Explicit Consent for AI Training:</strong> Chat conversations and search queries are processed solely to fulfill your requests in real time. We do not intentionally use your conversations to train Sahadhyayi-specific models without an appropriate legal basis and, where required, your consent. Prompts may be transmitted to the AI service provider selected for the feature to generate a response; that provider's processing is also subject to its terms and privacy practices.
                   </li>
                   <li>
-                    <strong>Opt-Out & Right to Withdraw:</strong> You maintain the unconditional right to withdraw consent at any time. When opted out, no prompts, completions, or book interaction logs are written to training repositories.
+                    <strong>Opt-Out & Right to Withdraw:</strong> You maintain the unconditional right to withdraw consent at any time. Where a training consent control is offered, you may withdraw it prospectively through the stated channel. Withdrawal does not necessarily undo processing already lawfully completed or affect records retained for security, legal or operational purposes.
                   </li>
                   <li>
-                    <strong>Purpose Limitation & Data Minimization:</strong> Any consented training samples are anonymized, stripped of direct identifiers, and utilized strictly for improving literary recommendations and contextual book assistance.
+                    <strong>Purpose Limitation & Data Minimization:</strong> If any optional improvement or evaluation programme uses submitted content, its scope, retention and safeguards will be explained at the point of collection. We do not promise that de-identification eliminates every possibility of re-identification.
                   </li>
                   <li>
                     <strong>Right to Erasure & Grievance Redressal:</strong> In accordance with the DPDP Act 2023, you may request the deletion of any stored conversation logs or training records by contacting our Grievance Officer at <a href={`mailto:${SAHADHYAYI_EMAIL}`} className="text-[#1C442D] dark:text-[#D5B16D] font-semibold underline">{SAHADHYAYI_EMAIL}</a>.
@@ -382,7 +382,7 @@ const PrivacyPolicy: React.FC = () => {
                 10. Cookies and Tracking
               </h2>
               <p>
-                We use strictly necessary cookies for session authentication, functional storage for reading preferences (font size, reading theme), and anonymous telemetry to maintain platform reliability. For an itemized breakdown of cookies and browser management instructions, please review our comprehensive{" "}
+                We may use cookies and similar technologies for authentication, preferences, security, service reliability and feature functionality. The technologies actually used depend on your browser, enabled features and current configuration. See our Cookie Policy for the representative inventory and browser controls. For an itemized breakdown of cookies and browser management instructions, please review our comprehensive{" "}
                 <a href="/cookie-policy" className="text-[#1C442D] dark:text-[#D5B16D] font-semibold underline">
                   Cookie Policy
                 </a>.
@@ -395,7 +395,7 @@ const PrivacyPolicy: React.FC = () => {
                 11. Data Retention & Account Deletion
               </h2>
               <p>
-                We retain your account data for as long as your profile remains active. If you choose to delete your account, your personal profile, private bookmarks, notes, and avatars are permanently erased from our production databases within 30 days, subject only to necessary legal backup retention.
+                We retain personal data only for as long as reasonably necessary for the purposes described in this policy, to provide the service, meet legal obligations, resolve disputes and protect the platform. Following an account-deletion request, we aim to remove or de-identify eligible production data within a reasonable operational period; residual copies may remain in protected backups until overwritten under the applicable backup cycle, and records may be retained where lawfully required.
               </p>
             </section>
 
@@ -405,7 +405,7 @@ const PrivacyPolicy: React.FC = () => {
                 12. Changes to This Policy
               </h2>
               <p>
-                We may periodically update this Privacy Policy to reflect platform evolution or legal enhancements. Whenever material changes occur, we will notify you through an in-app announcement banner or email dispatch. Continued usage of Sahadhyayi after policy updates constitutes acknowledgement of the revised terms.
+                We may periodically update this Privacy Policy to reflect platform evolution or legal enhancements. We will publish the revised policy and update its date. Where a change requires notice or consent under applicable law, we will provide it through an appropriate channel. Continued use does not replace any consent or notice that the law requires.
               </p>
             </section>
 
