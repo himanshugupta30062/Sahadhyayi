@@ -51,7 +51,9 @@ export const useReadingRooms = (bookId?: string, options: ReadingRoomsOptions = 
   useEffect(() => {
     if (!enabled) return;
     const channel = supabase
-      .channel(uniqueChannelName('reading-rooms-realtime'))
+      .channel(uniqueChannelName('reading-rooms-realtime'), {
+        config: { private: true },
+      })
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'reading_rooms' },
@@ -168,9 +170,11 @@ export const useReadingRoomLive = (
   // Subscribe to channel
   useEffect(() => {
     if (!roomId || !user) return;
-    const channelKey = bookId ? `room:${bookId}` : `room:${roomId}`;
+    // Use the room's immutable database ID so Realtime authorization can
+    // bind this topic to exactly one existing reading_rooms row.
+    const channelKey = `reading-room:${roomId}`;
     const channel = supabase.channel(channelKey, {
-      config: { presence: { key: user.id } },
+      config: { private: true, presence: { key: user.id } },
     });
     channelRef.current = channel;
 
