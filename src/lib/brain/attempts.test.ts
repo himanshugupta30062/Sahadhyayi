@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { scoreBrainAssessment } from "./scoring";
 import { toBrainAttemptHistory, type BrainAssessmentAttemptRow } from "./attempts";
 
 const row: BrainAssessmentAttemptRow = {
@@ -32,7 +33,6 @@ describe("toBrainAttemptHistory", () => {
   });
 });
 
-import { scoreBrainAssessment } from "./scoring";
 
 describe("scoreBrainAssessment", () => {
   it("scores correct, incorrect, skipped and out-of-range answers safely", () => {
