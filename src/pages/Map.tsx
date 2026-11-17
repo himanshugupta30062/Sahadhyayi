@@ -534,6 +534,11 @@ const MapPage = () => {
         description: item?.description,
         amenities: item?.extra_meta?.amenities,
         websiteUrl: item?.extra_meta?.website_url,
+        openingHours: item?.extra_meta?.opening_hours,
+        phone: item?.extra_meta?.phone,
+        source: item?.extra_meta?.source,
+        sourceUrl: item?.extra_meta?.osm_url,
+        isSaveable: item?.extra_meta?.source !== 'OpenStreetMap',
       });
     }
   };
