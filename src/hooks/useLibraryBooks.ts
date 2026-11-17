@@ -62,6 +62,7 @@ export const BOOK_SELECT_COLUMNS = BASE_BOOK_SELECT_COLUMNS;
 // Sorting rules (displayed to users via SortingInfoTooltip)
 export const SORTING_RULES = [
   { label: 'Verified PDF + cover + complete metadata', points: 'Top Tier (14,500+)', priority: 'highest' },
+  { label: 'Direct PDF URL + cover (pending link audit)', points: 'Top Tier (14,200+)', priority: 'high' },
   { label: 'Verified PDF + cover (partial metadata)', points: 'Top Tier (14,000+)', priority: 'highest' },
   { label: 'Verified EPUB / official full text + cover', points: 'High Tier (13,000+)', priority: 'high' },
   { label: 'Supported online reader + cover (including Google Books previews)', points: 'High Tier (12,000+)', priority: 'high' },
@@ -272,9 +273,34 @@ export function hasOtherVerifiedFullText(book: any): boolean {
  */
 export type BookResourceType =
   | 'verified_direct_pdf'
+  | 'unverified_direct_pdf'
   | 'online_reader'
   | 'external_book_page'
   | 'no_reading_resource';
+
+/**
+ * Detects a direct PDF candidate that has not yet completed the server-side link
+ * audit. It is deliberately NOT treated as verified: known broken/restricted
+ * statuses, preview providers and malformed URLs are excluded.
+ */
+export function hasUnverifiedDirectPdf(book: any): boolean {
+  if (!book || book.isBrokenLink === true || book.accessStatus === 'access_unverified' || book.accessStatus === 'preview_only') {
+    return false;
+  }
+
+  const raw = String(book.pdf_url || book.pdfUrl || '').trim();
+  if (!raw || raw === '#' || raw.startsWith('javascript:') || /broken|404|invalid/i.test(raw)) return false;
+  if (/books\.google\./i.test(raw) || !/^https?:\/\//i.test(raw) && !raw.startsWith('/')) return false;
+
+  const status = String(book.reader_link_status ?? book.readerLinkStatus ?? '').trim().toLowerCase();
+  if (['broken', 'restricted', 'no_source', 'failed'].includes(status)) return false;
+  if (status === 'working') return false; // Working-but-wrong-MIME is not a candidate PDF.
+
+  const contentType = String(book.reader_link_content_type ?? book.readerLinkContentType ?? '').toLowerCase();
+  const directPdfPath = /\.pdf(?:$|[?#])/i.test(raw);
+  const storagePdf = /\/storage\/v1\/object\/(?:public|sign)\/.*\.pdf(?:$|[?#])/i.test(raw);
+  return directPdfPath || storagePdf || contentType.includes('application/pdf');
+}
 
 /**
  * Checks if a book has a supported online reader interface (e.g. Google Books preview, Internet Archive reader).
@@ -416,6 +442,10 @@ export function getBookResourceType(book: any): BookResourceType {
     return 'verified_direct_pdf';
   }
 
+  if (hasUnverifiedDirectPdf(book)) {
+    return 'unverified_direct_pdf';
+  }
+
   if (isOnlineReader(book)) {
     return 'online_reader';
   }
@@ -476,8 +506,9 @@ export function isMetadataOnly(book: any): boolean {
  * Calculates book ranking score using a cover-aware, access-aware hierarchy:
  * 1. Verified direct PDF + valid cover + complete metadata (14,500+)
  * 2. Verified direct PDF + valid cover + partial metadata (14,000+)
- * 3. Other verified full text + valid cover (13,000+)
- * 4. Supported online reader + valid cover (12,000+)
+ * 3. Unverified direct PDF candidate + valid cover (14,000+; explicitly not verified)
+ * 4. Other verified full text + valid cover (13,000+)
+ * 5. Supported online reader + valid cover (12,000+)
  * 5. External resource page + cover (11,500+)
  * 6. Metadata-only genuine books with cover (11,000+)
  * 7. Verified direct PDF without a cover (10,000+)
@@ -513,6 +544,18 @@ export const getBookCompletenessScore = (book: any): number => {
       baseScore = 14000; // Verified direct PDF + cover, even when metadata is partial
     } else {
       baseScore = 10000; // A real PDF remains valuable, but any genuine cover-bearing book ranks ahead
+    }
+  } else if (resourceType === 'unverified_direct_pdf') {
+    // A direct .pdf URL with no completed audit is a strong candidate, not a
+    // verified asset. Keep it just below a confirmed working PDF but above
+    // reader previews and generic external pages. This prevents older records
+    // such as Godan from being buried solely because their audit is still pending.
+    if (withCover && completeMeta) {
+      baseScore = 14200;
+    } else if (withCover) {
+      baseScore = 14000;
+    } else {
+      baseScore = 9800;
     }
   } else if (hasOtherVerifiedFullText(book)) {
     if (withCover && completeMeta) {
