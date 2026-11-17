@@ -32,7 +32,6 @@ import {
 } from "@/lib/science/attempts";
 import {
   SCIENCE_QUESTIONS,
-  SCIENCE_QUESTION_SET_VERSION,
   shuffleScienceQuestions,
   type ScienceQuestion,
 } from "@/lib/science/questionBank";
@@ -168,12 +167,17 @@ function AnswerResultCard({
                 <span className="mt-1 block text-xs leading-5 text-muted-foreground">{question.scientist.contribution}</span>
               </a>
             )}
-            <Link to="/library" className="rounded-xl border border-border/70 p-3 transition-colors hover:bg-muted/50">
+            <a
+              href={"https://books.google.com/books?q=" + encodeURIComponent(question.book.searchQuery)}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-xl border border-border/70 p-3 transition-colors hover:bg-muted/50"
+            >
               <BookOpen className="h-4 w-4 text-primary" />
-              <span className="mt-2 block text-xs font-semibold">Explore in Sahadhyayi Library</span>
+              <span className="mt-2 block text-xs font-semibold">Related reading</span>
               <span className="mt-1 block text-sm font-medium">{question.book.title}</span>
-              <span className="mt-1 block text-xs text-muted-foreground">by {question.book.author}</span>
-            </Link>
+              <span className="mt-1 block text-xs text-muted-foreground">by {question.book.author} · Find book details</span>
+            </a>
             <a
               href={resourceSearchUrl(question.youtubeSearch)}
               target="_blank"
@@ -253,12 +257,21 @@ export default function ScienceAroundYou() {
         { body: { answers: submission } },
       );
       if (error) throw error;
+      const expectedIds = new Set(questions.map((question) => question.id));
+      const resultIds = new Set(Array.isArray(data?.results) ? data.results.map((item) => item?.questionId) : []);
       if (
         !data ||
         !Array.isArray(data.results) ||
         data.results.length !== questions.length ||
+        resultIds.size !== questions.length ||
+        [...expectedIds].some((id) => !resultIds.has(id)) ||
         typeof data.overallScore !== "number" ||
-        !Number.isFinite(data.overallScore)
+        !Number.isFinite(data.overallScore) ||
+        data.overallScore < 0 ||
+        data.overallScore > 100 ||
+        !data.categoryScores ||
+        typeof data.categoryScores !== "object" ||
+        Object.values(data.categoryScores).some((score) => typeof score !== "number" || !Number.isFinite(score) || score < 0 || score > 100)
       ) {
         throw new Error("The evaluator returned an incomplete result. Please try again.");
       }
@@ -543,7 +556,7 @@ export default function ScienceAroundYou() {
                   )}
                   {savedToProfile === false && (
                     <p className="mt-3 text-xs text-muted-foreground">
-                      Sign in to save your results and track progress across attempts. <Link to="/signin" className="font-semibold text-primary underline underline-offset-4">Sign in</Link>
+                      This result could not be saved to your profile. Sign in to enable personal history, then try another assessment to track your progress. <Link to="/signin" className="font-semibold text-primary underline underline-offset-4">Sign in</Link>
                     </p>
                   )}
                 </CardContent>
