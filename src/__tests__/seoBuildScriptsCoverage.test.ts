@@ -148,7 +148,7 @@ describe('SEO build-script coverage', () => {
     const book = mocks.writes.find((entry) => entry.path.endsWith('/book/book-1/index.html'))?.content || '';
     const author = mocks.writes.find((entry) => entry.path.endsWith('/authors/munshi-premchand/index.html'))?.content || '';
     const article = mocks.writes.find((entry) => entry.path.endsWith('/articles/useful-reading-guide/index.html'))?.content || '';
-    expect(book).toContain('<title>A &lt;script&gt;alert(1)&lt;/script&gt; Book - Book Details | Sahadhyayi</title>');
+    expect(book).toContain('<title>A &lt;script&gt;alert(1)&lt;/script&gt; Book - Read Online &amp; Book Details | Sahadhyayi</title>');
     expect(book).toContain('<meta property="og:image" content="https://images.example/cover.jpg" />');
     expect(book).toContain('<link rel="canonical" href="https://sahadhyayi.com/book/book-1" />');
     expect(book).not.toContain('<script>alert(1)</script>');
