@@ -18,10 +18,11 @@ const mocks = vi.hoisted(() => ({
   update: vi.fn(),
   delete: vi.fn(),
   eq: vi.fn(),
+  in: vi.fn(),
   single: vi.fn(),
   maybeSingle: vi.fn(),
   resultByTable: {} as Record<string, any>,
-  groupListResult: { data: [{ id: 'g1', name: 'Readers' }], error: null } as any,
+  groupListResult: { data: [{ id: 'g1', name: 'Readers', visibility: 'public', is_encrypted: false }], error: null } as any,
   countResult: { data: [{ group_id: 'g1', member_count: 4 }], error: null } as any,
   rpc: vi.fn(),
 }));
@@ -45,6 +46,7 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
         update: (...args: unknown[]) => { mocks.update(table, ...args); return query; },
         delete: (...args: unknown[]) => { mocks.delete(table, ...args); return query; },
         eq: (...args: unknown[]) => { mocks.eq(table, ...args); return query; },
+        in: (...args: unknown[]) => { mocks.in(table, ...args); return query; },
         single: () => Promise.resolve(mocks.single()),
         maybeSingle: () => Promise.resolve(mocks.maybeSingle()),
         then: (resolve: (value: any) => unknown, reject: (reason: unknown) => unknown) =>
@@ -90,10 +92,11 @@ describe('useGroupManagement', () => {
     mocks.update.mockReset();
     mocks.delete.mockReset();
     mocks.eq.mockReset();
+    mocks.in.mockReset();
     mocks.single.mockReset().mockReturnValue({ data: { id: 'member-1' }, error: null });
     mocks.maybeSingle.mockReset().mockReturnValue({ data: { name: 'Ordinary Group' }, error: null });
     mocks.resultByTable = {};
-    mocks.groupListResult = { data: [{ id: 'g1', name: 'Readers' }], error: null };
+    mocks.groupListResult = { data: [{ id: 'g1', name: 'Readers', visibility: 'public', is_encrypted: false }], error: null };
     mocks.countResult = { data: [{ group_id: 'g1', member_count: 4 }], error: null };
     mocks.rpc.mockReset().mockResolvedValue(mocks.countResult);
   });
@@ -103,20 +106,81 @@ describe('useGroupManagement', () => {
     vi.restoreAllMocks();
   });
 
-  it('loads authenticated groups and enables realtime invalidation', async () => {
+  it('loads authenticated public groups using aggregate member counts', async () => {
     renderHook(() => useGroups());
     expect(mocks.queryOptions.queryKey).toEqual(['all-groups', 'reader-1']);
-    await expect(mocks.queryOptions.queryFn()).resolves.toEqual(mocks.groupListResult.data);
-    expect(mocks.select).toHaveBeenCalled();
+
+    await expect(mocks.queryOptions.queryFn()).resolves.toEqual([
+      {
+        ...mocks.groupListResult.data[0],
+        member_count: 4,
+        group_members: [{ count: 4 }],
+      },
+    ]);
+
+    expect(mocks.select).toHaveBeenCalledWith('group_chats', '*');
     expect(mocks.order).toHaveBeenCalledWith('group_chats', 'created_at', { ascending: false });
+    expect(mocks.rpc).toHaveBeenCalledWith('get_public_group_member_counts');
+    expect(mocks.from).not.toHaveBeenCalledWith('group_chat_members');
   });
 
-  it('allows anonymous readers to browse public groups without membership mutations', async () => {
+  it('allows anonymous readers to browse public groups without selecting membership rows', async () => {
     mocks.user = null;
     renderHook(() => useGroups());
     expect(mocks.queryOptions.enabled).toBe(true);
-    await expect(mocks.queryOptions.queryFn()).resolves.toEqual(mocks.groupListResult.data);
-    expect(mocks.rpc).not.toHaveBeenCalled();
+
+    await expect(mocks.queryOptions.queryFn()).resolves.toEqual([
+      {
+        ...mocks.groupListResult.data[0],
+        member_count: 4,
+        group_members: [{ count: 4 }],
+      },
+    ]);
+
+    expect(mocks.rpc).toHaveBeenCalledWith('get_public_group_member_counts');
+    expect(mocks.from).not.toHaveBeenCalledWith('group_chat_members');
+  });
+
+  it('counts active members for private and encrypted groups only for signed-in readers', async () => {
+    mocks.groupListResult = {
+      data: [
+        { id: 'public-1', name: 'Public Circle', visibility: 'public', is_encrypted: false },
+        { id: 'private-1', name: 'Private Circle', visibility: 'private', is_encrypted: false },
+        { id: 'encrypted-1', name: 'Encrypted Circle', visibility: 'public', is_encrypted: true },
+      ],
+      error: null,
+    };
+    mocks.resultByTable.group_chat_members = {
+      data: [{ group_id: 'private-1' }, { group_id: 'private-1' }, { group_id: 'encrypted-1' }],
+      error: null,
+    };
+    renderHook(() => useGroups());
+
+    const groups = await mocks.queryOptions.queryFn();
+
+    expect(groups.map((group: any) => [group.id, group.member_count])).toEqual([
+      ['public-1', 4],
+      ['private-1', 2],
+      ['encrypted-1', 1],
+    ]);
+    expect(mocks.in).toHaveBeenCalledWith('group_chat_members', 'group_id', ['private-1', 'encrypted-1']);
+    expect(mocks.eq).toHaveBeenCalledWith('group_chat_members', 'status', 'active');
+  });
+
+  it('keeps the public directory visible when optional member counts fail', async () => {
+    mocks.rpc.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'Count service unavailable' },
+    });
+    renderHook(() => useGroups());
+
+    await expect(mocks.queryOptions.queryFn()).resolves.toEqual([
+      {
+        ...mocks.groupListResult.data[0],
+        member_count: 0,
+        group_members: [{ count: 0 }],
+      },
+    ]);
   });
 
   it('creates a trimmed private group through the atomic lifecycle RPC', async () => {
