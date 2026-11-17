@@ -45,6 +45,7 @@ const sections = [
       { title: "Activity", url: "/activity", icon: Sparkles },
       { title: "Short Stories", url: "/social?tab=stories", icon: BookOpen },
       { title: "Research Papers", url: "/research-papers", icon: Microscope },
+      { title: "Explain Science Around You", url: "/science-around-you", icon: Microscope },
       { title: "Articles", url: "/articles", icon: FileText },
     ],
   },
