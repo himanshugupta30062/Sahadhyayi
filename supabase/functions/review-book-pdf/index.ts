@@ -286,7 +286,7 @@ serve(async (req) => {
 
   // For all other actions, fetch submission with lock
   const { data: submission, error: readError } = await admin.from("book_pdf_submissions")
-    .select("id,user_id,storage_path,original_filename,file_size_bytes,submitted_title,submitted_author,status,rights_attested,detected_metadata,validation_findings,published_book_id,author_publication_id,pdf_sha256,pdf_page_count,catalogue_match_status,target_book_id")
+    .select("id,user_id,storage_path,original_filename,file_size_bytes,submitted_title,submitted_author,status,rights_attested,verification_completed_at,malware_scan_status,detected_metadata,validation_findings,published_book_id,author_publication_id,pdf_sha256,pdf_page_count,catalogue_match_status,target_book_id")
     .eq("id", submissionId).maybeSingle();
   if (readError || !submission) return json({ error: "Submission was not found." }, 404);
 
@@ -301,6 +301,7 @@ serve(async (req) => {
 
   if (action === "approve" || action === "reject" || action === "request_changes") {
     if (action === "approve" && !submission.rights_attested) return json({ error: "A contributor rights attestation is required." }, 409);
+    if (action === "approve" && (submission.status !== "needs_review" || !submission.verification_completed_at)) return json({ error: "This PDF cannot be approved until automated verification has completed successfully and the submission is in the review queue." }, 409);
     const status = action === "approve" ? "approved" : action === "reject" ? "rejected" : "needs_review";
 
     // Use optimistic locking to prevent race conditions - only update if status hasn't changed
@@ -342,6 +343,7 @@ serve(async (req) => {
     }
 
     if (submission.status !== "approved") return json({ error: "Approve the submission before publishing it." }, 409);
+    if (!submission.verification_completed_at) return json({ error: "Publishing is blocked because PDF verification has not completed successfully." }, 409);
     if (!submission.rights_attested) return json({ error: "A contributor rights attestation is required." }, 409);
 
     let targetBookId = typeof body.targetBookId === "string" ? body.targetBookId : "";
@@ -370,8 +372,6 @@ serve(async (req) => {
         genre: newGenre,
         description: newDescription,
         language: newLanguage,
-        status: "active",
-        catalog_status: "active",
       }).select("id, title").single();
 
       if (createError || !createdBook) {
@@ -382,12 +382,12 @@ serve(async (req) => {
     } else {
       if (typeof targetBookId !== "string" || !UUID.test(targetBookId)) return json({ error: "Select a valid existing library book." }, 400);
 
+      // Select only columns confirmed in the production books_library schema.
       const { data: book, error: bookError } = await admin.from("books_library")
-        .select("id,title,description,pdf_url,status,catalog_status,is_archived")
+        .select("id,title,description,pdf_url")
         .eq("id", targetBookId)
         .maybeSingle();
       if (bookError || !book) return json({ error: "Selected library book was not found." }, 404);
-      if (book.is_archived) return json({ error: "Cannot publish to an archived book." }, 400);
       if (book.pdf_url) return json({ error: "This book already has a PDF. Use the replace_pdf action instead." }, 409);
 
       if (body.updateBookTitleWithAlias && submission.submitted_title && !book.title.toLowerCase().includes(submission.submitted_title.toLowerCase())) {
@@ -420,9 +420,7 @@ serve(async (req) => {
     let malwareDetails: Record<string, unknown> = {};
 
     if (!scannerToken) {
-      console.warn("BOUNCER_API_KEY is not configured. Publishing with admin authorization only.");
-      scanBypassed = true;
-      malwareDetails = { bypassed: true, reason: "BOUNCER_API_KEY not configured" };
+      return json({ error: "Malware scanning is not configured. The PDF remains private and cannot be published until scanning is available." }, 503);
     } else {
       try {
         const apiBase = "https://api.usebouncer.dev";
@@ -466,13 +464,11 @@ serve(async (req) => {
     const pdfUrl = admin.storage.from("book-pdfs").getPublicUrl(publicPath).data.publicUrl;
 
     // Transactional update: link PDF to book with all PDF metadata
+    // Keep publication aligned with the deployed books_library schema. The PDF
+    // metadata columns are not present in production; the verified source data
+    // remains recorded on book_pdf_submissions.
     const { error: updateBookError } = await admin.from("books_library").update({
       pdf_url: pdfUrl,
-      pdf_sha256: submission.pdf_sha256,
-      pdf_file_size: submission.file_size_bytes,
-      pdf_page_count: submission.pdf_page_count,
-      pdf_verification_status: "verified",
-      pdf_last_validated: new Date().toISOString(),
     }).eq("id", targetBookId);
 
     if (updateBookError) {
@@ -590,6 +586,7 @@ serve(async (req) => {
 
     // Run malware scan on new PDF
     const scannerToken = Deno.env.get("BOUNCER_API_KEY");
+    if (!scannerToken) return json({ error: "Malware scanning is not configured. The replacement PDF was not published." }, 503);
     if (scannerToken) {
       try {
         const scanResult = await runMalwareScan(source, scannerToken, "https://api.usebouncer.dev");
