@@ -1,0 +1,4 @@
+-- Reconciliation marker for the production migration applied directly on 2026-11-17.
+-- The migration body lives in 20261115180000_snap_map_reading_spots_and_explore.sql.
+-- Production records this migration under remote version 20261117115026, so this
+-- no-op file keeps Supabase migration history resolvable without replaying DDL.
