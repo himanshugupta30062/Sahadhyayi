@@ -803,9 +803,10 @@ export function MapplsMap({
           // through a custom toString() fallback causes some SDK builds to use
           // their stock question-mark icon instead of the supplied avatar.
           html: createMarkerHtml(point),
-          width: 58,
-          height: 68,
-          offset: [0, -12],
+          // Compact the HTML marker on phones to prevent avatar overflow.
+          width: window.matchMedia('(max-width: 640px)').matches ? 48 : 58,
+          height: window.matchMedia('(max-width: 640px)').matches ? 58 : 68,
+          offset: [0, window.matchMedia('(max-width: 640px)').matches ? -8 : -12],
           popupHtml,
         });
         try {
@@ -910,6 +911,21 @@ export function MapplsMap({
         .sahadhyayi-reader-map-marker img {
           border-radius: 50% !important;
           object-fit: cover !important;
+          max-width: 100% !important;
+          max-height: 100% !important;
+        }
+        @media (max-width: 640px) {
+          .sahadhyayi-reader-map-marker {
+            width: 48px !important;
+            height: 58px !important;
+            max-width: 48px !important;
+            max-height: 58px !important;
+          }
+          .sahadhyayi-reader-map-marker > div:first-child {
+            width: 44px !important;
+            height: 44px !important;
+            flex-basis: 44px !important;
+          }
         }
         /* Suppress Mappls SDK duplicate default controls so our floating controls are clean and responsive */
         .maplibregl-ctrl-top-right,

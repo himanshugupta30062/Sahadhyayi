@@ -16,6 +16,9 @@ export const createCustomMarker = (config: MarkerConfig, isReadersMap: boolean =
   if (!window.google) return null;
 
   const { position, title, isCurrentUser, avatarUrl, userName, distance, bookTitle, isFriend } = config;
+  const isMobileViewport = typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches;
+  const currentUserAvatarSize = isMobileViewport ? 44 : 60;
+  const friendAvatarSize = isMobileViewport ? 40 : 50;
 
   // Create marker based on type
   let markerIcon;
@@ -36,8 +39,8 @@ export const createCustomMarker = (config: MarkerConfig, isReadersMap: boolean =
       // Bitmoji/avatar for current user in friends map
       markerIcon = avatarUrl ? {
         url: avatarUrl,
-        scaledSize: new window.google.maps.Size(60, 60),
-        anchor: new window.google.maps.Point(30, 30),
+        scaledSize: new window.google.maps.Size(currentUserAvatarSize, currentUserAvatarSize),
+        anchor: new window.google.maps.Point(currentUserAvatarSize / 2, currentUserAvatarSize / 2),
         origin: new window.google.maps.Point(0, 0),
       } : {
         path: window.google.maps.SymbolPath.CIRCLE,
@@ -54,8 +57,8 @@ export const createCustomMarker = (config: MarkerConfig, isReadersMap: boolean =
     if (avatarUrl) {
       markerIcon = {
         url: avatarUrl,
-        scaledSize: new window.google.maps.Size(50, 50),
-        anchor: new window.google.maps.Point(25, 25),
+        scaledSize: new window.google.maps.Size(friendAvatarSize, friendAvatarSize),
+        anchor: new window.google.maps.Point(friendAvatarSize / 2, friendAvatarSize / 2),
         origin: new window.google.maps.Point(0, 0),
       };
     } else {
