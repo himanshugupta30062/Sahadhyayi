@@ -61,20 +61,17 @@ export const BOOK_SELECT_COLUMNS = BASE_BOOK_SELECT_COLUMNS;
 
 // Sorting rules (displayed to users via SortingInfoTooltip)
 export const SORTING_RULES = [
-  { label: 'Verified PDF + cover + complete metadata', points: 'Top Tier (14,500+)', priority: 'highest' },
-  { label: 'Verified PDF + cover (partial metadata)', points: 'Top Tier (14,000+)', priority: 'highest' },
-  { label: 'Verified EPUB / official full text + cover', points: 'High Tier (13,000+)', priority: 'high' },
-  { label: 'Supported online reader + cover (including Google Books previews)', points: 'High Tier (12,000+)', priority: 'high' },
-  { label: 'Metadata-only genuine book with cover', points: 'High Tier (11,000+)', priority: 'high' },
-  { label: 'Verified PDF without cover', points: 'Medium Tier (10,000+)', priority: 'medium' },
-  { label: 'Verified EPUB / official full text without cover', points: 'Medium Tier (9,500+)', priority: 'medium' },
-  { label: 'Supported online reader without cover', points: 'Medium Tier (9,000+)', priority: 'medium' },
-  { label: 'External book/resource page + cover', points: 'High Tier (11,500+)', priority: 'high' },
-  { label: 'Academic papers, technical reports & preprints', points: 'Discovery Tier (2,500+)', priority: 'low' },
-  { label: 'External book/resource page without cover', points: 'Medium Tier (8,500+)', priority: 'medium' },
-  { label: 'Metadata-only records without cover photo', points: 'Bottom (1,500+)', priority: 'low' },
-  { label: 'Per-page diversity (max 1 / author & title per page)', points: 'Spread across pages', priority: 'info' },
-  { label: 'Tie-breaker', points: 'newest first, then title, then ID', priority: 'info' },
+  { label: 'Overall book correctness (identity, metadata, assets and access)', points: '0–100 points', priority: 'highest' },
+  { label: 'Verified reading file with matching title/author and valid PDF evidence', points: 'Up to 25 points', priority: 'highest' },
+  { label: 'Bibliographic identity (title, author, language, year, ISBN, pages)', points: 'Up to 20 points', priority: 'high' },
+  { label: 'Cover presence and verified cover quality', points: 'Up to 15 points', priority: 'high' },
+  { label: 'Description, genre, author and edition metadata', points: 'Up to 15 points', priority: 'high' },
+  { label: 'Metadata match, PDF quality and asset verification evidence', points: 'Up to 25 points', priority: 'highest' },
+  { label: 'Pending direct PDF link audit', points: 'Partial access credit only', priority: 'medium' },
+  { label: 'Failed asset checks, weak metadata matches or broken access', points: 'Explicit score penalties', priority: 'highest' },
+  { label: 'Legacy resource/cover tier', points: 'Secondary tie-breaker', priority: 'medium' },
+  { label: 'Per-page diversity', points: 'Avoid repeated authors and titles', priority: 'info' },
+  { label: 'Final tie-breaker', points: 'newest first, then title, then ID', priority: 'info' },
 ];
 
 /**
@@ -272,9 +269,34 @@ export function hasOtherVerifiedFullText(book: any): boolean {
  */
 export type BookResourceType =
   | 'verified_direct_pdf'
+  | 'unverified_direct_pdf'
   | 'online_reader'
   | 'external_book_page'
   | 'no_reading_resource';
+
+/**
+ * Detects a direct PDF candidate that has not yet completed the server-side link
+ * audit. It is deliberately NOT treated as verified: known broken/restricted
+ * statuses, preview providers and malformed URLs are excluded.
+ */
+export function hasUnverifiedDirectPdf(book: any): boolean {
+  if (!book || book.isBrokenLink === true || book.accessStatus === 'access_unverified' || book.accessStatus === 'preview_only') {
+    return false;
+  }
+
+  const raw = String(book.pdf_url || book.pdfUrl || '').trim();
+  if (!raw || raw === '#' || raw.startsWith('javascript:') || /broken|404|invalid/i.test(raw)) return false;
+  if (/books\.google\./i.test(raw) || !/^https?:\/\//i.test(raw) && !raw.startsWith('/')) return false;
+
+  const status = String(book.reader_link_status ?? book.readerLinkStatus ?? '').trim().toLowerCase();
+  if (['broken', 'restricted', 'no_source', 'failed'].includes(status)) return false;
+  if (status === 'working') return false; // Working-but-wrong-MIME is not a candidate PDF.
+
+  const contentType = String(book.reader_link_content_type ?? book.readerLinkContentType ?? '').toLowerCase();
+  const directPdfPath = /\.pdf(?:$|[?#])/i.test(raw);
+  const storagePdf = /\/storage\/v1\/object\/(?:public|sign)\/.*\.pdf(?:$|[?#])/i.test(raw);
+  return directPdfPath || storagePdf || contentType.includes('application/pdf');
+}
 
 /**
  * Checks if a book has a supported online reader interface (e.g. Google Books preview, Internet Archive reader).
@@ -416,6 +438,10 @@ export function getBookResourceType(book: any): BookResourceType {
     return 'verified_direct_pdf';
   }
 
+  if (hasUnverifiedDirectPdf(book)) {
+    return 'unverified_direct_pdf';
+  }
+
   if (isOnlineReader(book)) {
     return 'online_reader';
   }
@@ -476,8 +502,9 @@ export function isMetadataOnly(book: any): boolean {
  * Calculates book ranking score using a cover-aware, access-aware hierarchy:
  * 1. Verified direct PDF + valid cover + complete metadata (14,500+)
  * 2. Verified direct PDF + valid cover + partial metadata (14,000+)
- * 3. Other verified full text + valid cover (13,000+)
- * 4. Supported online reader + valid cover (12,000+)
+ * 3. Unverified direct PDF candidate + valid cover (14,000+; explicitly not verified)
+ * 4. Other verified full text + valid cover (13,000+)
+ * 5. Supported online reader + valid cover (12,000+)
  * 5. External resource page + cover (11,500+)
  * 6. Metadata-only genuine books with cover (11,000+)
  * 7. Verified direct PDF without a cover (10,000+)
@@ -513,6 +540,18 @@ export const getBookCompletenessScore = (book: any): number => {
       baseScore = 14000; // Verified direct PDF + cover, even when metadata is partial
     } else {
       baseScore = 10000; // A real PDF remains valuable, but any genuine cover-bearing book ranks ahead
+    }
+  } else if (resourceType === 'unverified_direct_pdf') {
+    // A direct .pdf URL with no completed audit is a strong candidate, not a
+    // verified asset. Keep it just below a confirmed working PDF but above
+    // reader previews and generic external pages. This prevents older records
+    // such as Godan from being buried solely because their audit is still pending.
+    if (withCover && completeMeta) {
+      baseScore = 14500;
+    } else if (withCover) {
+      baseScore = 14000;
+    } else {
+      baseScore = 9800;
     }
   } else if (hasOtherVerifiedFullText(book)) {
     if (withCover && completeMeta) {
@@ -601,9 +640,95 @@ export const getBookCompletenessScore = (book: any): number => {
 };
 
 /**
+ * Overall catalog correctness score (0–100).
+ *
+ * Unlike the legacy resource-tier score, this evaluates the whole record:
+ * bibliographic identity, cover evidence, reading availability, file-quality
+ * evidence, metadata matching and verifier status. Missing measurements are
+ * treated conservatively; URL shape alone is never treated as proof of quality.
+ */
+export const getBookOverallQualityScore = (book: any): number => {
+  if (!book) return 0;
+
+  let score = 0;
+
+  // Bibliographic identity and completeness: 20 points.
+  const title = String(book.title || '').trim();
+  const author = String(book.author || '').trim();
+  const language = String(book.language || '').trim();
+  const year = Number(book.publication_year || book.publicationYear);
+  const isbn = String(book.isbn || '').replace(/[^0-9X]/gi, '');
+  const pages = Number(book.pages || 0);
+  if (title.length >= 2 && !/^(untitled|test|sample|n\/a|null)$/i.test(title)) score += 6;
+  if (author && !/^(unknown|unknown author|anonymous)$/i.test(author)) score += 5;
+  if (language) score += 3;
+  if (Number.isInteger(year) && year > 1400 && year <= new Date().getFullYear()) score += 2;
+  if (isbn.length === 10 || isbn.length === 13) score += 2;
+  if (Number.isFinite(pages) && pages > 10) score += 2;
+
+  // Cover: 15 points. A URL earns only basic presence credit; verified image
+  // quality evidence determines the remaining points.
+  if (hasValidCover(book)) {
+    score += 8;
+    const coverQuality = Number(book.cover_quality_score);
+    score += Number.isFinite(coverQuality)
+      ? Math.round(Math.max(0, Math.min(100, coverQuality)) * 0.07)
+      : 3;
+  }
+
+  // Reading access: 25 points. Pending direct-PDF candidates receive partial
+  // credit, not verified-PDF credit.
+  const resource = getBookResourceType(book);
+  if (isVerifiedPdf(book)) score += 25;
+  else if (hasOtherVerifiedFullText(book)) score += 22;
+  else if (resource === 'online_reader') score += 16;
+  else if (resource === 'unverified_direct_pdf') score += 9;
+  else if (resource === 'external_book_page') score += 8;
+
+  // Description and subject metadata: 15 points.
+  const description = String(book.description || '').trim();
+  if (description.length >= 200) score += 7;
+  else if (description.length >= 80) score += 5;
+  else if (description.length >= 20) score += 3;
+  if (String(book.genre || '').trim()) score += 3;
+  if (String(book.author_bio || '').trim().length >= 30) score += 2;
+  if (String(book.publisher || '').trim()) score += 1;
+  if (String(book.edition || '').trim()) score += 1;
+  if (String(book.original_title || book.originalTitle || '').trim()) score += 1;
+
+  // Cross-asset and bibliographic verification evidence: 25 points.
+  const metadataMatch = book.metadata_match_score == null ? Number.NaN : Number(book.metadata_match_score);
+  const pdfQuality = book.pdf_quality_score == null ? Number.NaN : Number(book.pdf_quality_score);
+  const assetQuality = book.asset_quality_score == null ? Number.NaN : Number(book.asset_quality_score);
+  if (Number.isFinite(metadataMatch)) score += Math.round(Math.max(0, Math.min(100, metadataMatch)) * 0.10);
+  else score += 3; // neutral partial credit until a comparison is available
+  if (Number.isFinite(pdfQuality)) score += Math.round(Math.max(0, Math.min(100, pdfQuality)) * 0.10);
+  else if (isVerifiedPdf(book)) score += 5;
+  if (book.asset_quality_status === 'verified' && Number.isFinite(assetQuality)) {
+    score += Math.round(Math.max(0, Math.min(100, assetQuality)) * 0.05);
+  } else if (book.asset_quality_status === 'pending' || !book.asset_quality_status) {
+    score += 2;
+  }
+
+  // Explicit negative evidence must outweigh superficial completeness.
+  if (book.asset_quality_status === 'failed') score -= 25;
+  else if (book.asset_quality_status === 'needs_review') score -= 10;
+  if (Number.isFinite(metadataMatch) && metadataMatch < 40) score -= 15;
+  if (Number.isFinite(pdfQuality) && pdfQuality < 40 && resource !== 'no_reading_resource') score -= 15;
+  if (book.isBrokenLink === true || book.accessStatus === 'access_unverified') score -= 25;
+
+  return Math.max(0, Math.min(100, Math.round(score)));
+};
+
+/**
  * Deterministic library book comparator function.
  */
 export const compareLibraryBooks = (a: any, b: any): number => {
+  const overallA = getBookOverallQualityScore(a);
+  const overallB = getBookOverallQualityScore(b);
+  if (overallA !== overallB) return overallB - overallA;
+
+  // Preserve the established resource/cover hierarchy as a secondary signal.
   const scoreA = getBookCompletenessScore(a);
   const scoreB = getBookCompletenessScore(b);
   if (scoreA !== scoreB) {

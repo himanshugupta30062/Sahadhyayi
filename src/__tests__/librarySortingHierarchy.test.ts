@@ -153,6 +153,47 @@ describe('Library Book Sorting Hierarchy', () => {
     created_at: '2026-01-15T00:00:00Z',
   };
 
+  describe('Direct PDF candidate ranking regression', () => {
+    const godan = {
+      id: 'godan-production-regression',
+      title: 'Godan',
+      author: 'Munshi Premchand',
+      cover_image_url: 'https://example.com/godan-cover.webp',
+      pdf_url: 'https://example.com/godan_by_premchand.pdf',
+      reader_link_status: 'unchecked',
+      description: 'A major Hindi novel depicting the social and economic struggles of Indian farmers through Hori and his family.',
+      language: 'Hindi',
+      genre: 'Hindi Fiction',
+      publication_year: 1936,
+      created_at: '2025-06-30T21:28:16Z',
+    };
+    const readerOnly = {
+      id: 'reader-only',
+      title: 'A Reader Preview',
+      author: 'A. Author',
+      cover_image_url: 'https://example.com/reader-cover.jpg',
+      pdf_url: 'https://books.google.com/books?id=preview123',
+      description: 'A useful book preview with bibliographic information and a synopsis.',
+      language: 'English',
+      created_at: '2026-01-01T00:00:00Z',
+    };
+
+    it('ranks an unchecked direct PDF with a cover above preview-only reader links', () => {
+      expect(getBookCompletenessScore(godan)).toBeGreaterThan(getBookCompletenessScore(readerOnly));
+      expect(compareLibraryBooks(godan, readerOnly)).toBeLessThan(0);
+    });
+
+    it('keeps pending direct-PDF candidates in the same top browse tier without calling them verified', () => {
+      const checked = {
+        ...godan,
+        reader_link_status: 'working',
+        reader_link_http_status: 200,
+        reader_link_content_type: 'application/pdf',
+      };
+      expect(getBookCompletenessScore(checked)).toBeGreaterThanOrEqual(getBookCompletenessScore(godan));
+    });
+  });
+
   describe('Cover-first page ranking regression', () => {
     it('ranks a genuine metadata-only book with a cover above a coverless PDF', () => {
       expect(getBookCompletenessScore(metadataOnlyBook)).toBeGreaterThan(
