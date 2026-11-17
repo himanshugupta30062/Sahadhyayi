@@ -33,6 +33,9 @@ type Decision = {
   evidence_url: string | null;
   evidence_note: string | null;
   reviewed_at: string;
+  applied_at: string | null;
+  applied_changes: Record<string, string> | null;
+  applied_by: string | null;
 };
 
 const validUrl = (value: string) => {
@@ -63,6 +66,7 @@ export default function AdminBookSeoReview() {
   const [evidence, setEvidence] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [applyingId, setApplyingId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"pending" | "all">("pending");
 
   const queueKey = queue?.generatedAt ?? "";
@@ -72,7 +76,7 @@ export default function AdminBookSeoReview() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("book_seo_review_decisions" as any)
-        .select("id,book_id,audit_generated_at,decision,evidence_url,evidence_note,reviewed_at")
+        .select("id,book_id,audit_generated_at,decision,evidence_url,evidence_note,reviewed_at,applied_at,applied_changes,applied_by")
         .eq("audit_generated_at", queueKey)
         .limit(5000);
       if (error) throw error;
@@ -138,6 +142,31 @@ export default function AdminBookSeoReview() {
     }
   };
 
+  const applyApprovedFormatting = async (decision: Decision) => {
+    if (decision.decision !== "approved" || !decision.evidence_url || decision.applied_at) return;
+    if (!window.confirm("Apply only the approved leading/trailing whitespace corrections to this book? Factual metadata will not be changed.")) return;
+    setApplyingId(decision.book_id);
+    try {
+      const { data, error } = await supabase.rpc("admin_apply_book_seo_review_decision" as any, {
+        p_decision_id: decision.id,
+      } as any);
+      if (error) throw error;
+      await queryClient.invalidateQueries({ queryKey: ["admin-book-seo-decisions", decision.audit_generated_at] });
+      toast({
+        title: "Approved formatting applied",
+        description: `${Object.keys((data as { applied_changes?: Record<string, string> })?.applied_changes ?? {}).length} whitespace correction(s) applied. The action is recorded in the review audit.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Could not apply corrections",
+        description: error instanceof Error ? error.message : "The database rejected this operation.",
+        variant: "destructive",
+      });
+    } finally {
+      setApplyingId(null);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <SEO title="Book SEO Review | Admin" description="Review book metadata quality findings and record evidence-backed decisions." noIndex />
@@ -182,7 +211,7 @@ export default function AdminBookSeoReview() {
               <article key={item.bookId} className="space-y-4 rounded-2xl border bg-card p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2"><Badge variant="outline">Grade {item.grade ?? "—"}</Badge><Badge variant="secondary">Score {item.score ?? "—"}/100</Badge>{existing && <Badge className="bg-emerald-600">Reviewed</Badge>}</div>
+                    <div className="flex flex-wrap items-center gap-2"><Badge variant="outline">Grade {item.grade ?? "—"}</Badge><Badge variant="secondary">Score {item.score ?? "—"}/100</Badge>{existing && <Badge className="bg-emerald-600">Reviewed</Badge>}{existing?.applied_at && <Badge variant="outline">Applied</Badge>}</div>
                     <h2 className="mt-2 text-lg font-semibold">{item.title}</h2>
                     <p className="text-xs text-muted-foreground">Book ID: {item.bookId}</p>
                     {item.route && <a className="mt-1 inline-flex items-center gap-1 text-sm text-primary underline" href={item.route} target="_blank" rel="noreferrer">Open book page <ExternalLink className="h-3 w-3" /></a>}
@@ -199,7 +228,14 @@ export default function AdminBookSeoReview() {
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-xs text-muted-foreground">{existing ? `Last reviewed ${new Date(existing.reviewed_at).toLocaleString()}` : "Not yet reviewed"}</p>
-                  <Button onClick={() => void saveDecision(item)} disabled={savingId === item.bookId}>{savingId === item.bookId ? "Saving…" : <><CheckCircle2 className="mr-2 h-4 w-4" /> Save review</>}</Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button onClick={() => void saveDecision(item)} disabled={savingId === item.bookId || Boolean(existing?.applied_at)}>{savingId === item.bookId ? "Saving…" : <><CheckCircle2 className="mr-2 h-4 w-4" /> Save review</>}</Button>
+                    {existing?.decision === "approved" && !existing.applied_at && (item.suggestedChanges?.length ?? 0) > 0 && (
+                      <Button variant="outline" onClick={() => void applyApprovedFormatting(existing)} disabled={applyingId === item.bookId}>
+                        {applyingId === item.bookId ? "Applying…" : "Apply approved formatting"}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </article>
             );
