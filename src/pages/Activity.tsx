@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   CalendarDays,
   BrainCircuit,
@@ -40,7 +40,6 @@ type ActivityCategory = 'all' | 'clubs-events' | 'challenges' | 'games' | 'brain
 
 export default function Activity() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTab = searchParams.get('tab');
   // Normalize old links into the consolidated Activity destinations.
