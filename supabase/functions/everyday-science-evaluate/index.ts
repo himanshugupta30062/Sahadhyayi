@@ -289,7 +289,7 @@ serve(async (req: Request) => {
 
     return response({
       difficulty,
-      questionSetVersion: SCIENCE_QUESTION_SET_VERSION + \"-\" + difficulty + \"-\" + SCIENCE_DIFFICULTY_VERSION,
+      questionSetVersion: SCIENCE_QUESTION_SET_VERSION + "-" + difficulty + "-" + SCIENCE_DIFFICULTY_VERSION,
       overallScore,
       categoryScores,
       results,
