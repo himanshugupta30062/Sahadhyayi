@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { Beaker, BookOpen, CheckCircle2, Clock3, FlaskConical, Lightbulb, Loader2, Search, Send, ShieldCheck, Sparkles, Users, X } from "lucide-react";
 import SEO from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +25,7 @@ type Experiment = {
   image_url: string | null;
 };
 
-type ExperimentAttempt = {
+type ScienceAiFeedback = {\n  summary: string;\n  science_connection: string;\n  what_went_well: string[];\n  possible_reasons: string[];\n  next_steps: string[];\n  safety_reminder: string;\n};\n\ntype ExperimentAttempt = {
   id: string;
   experiment_id: string;
   observations: string;
@@ -127,7 +126,7 @@ export default function ScienceLab() {
   const [category, setCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState(false);\n  const [mediaFiles, setMediaFiles] = useState<File[]>([]);\n  const [aiFeedback, setAiFeedback] = useState<ScienceAiFeedback | null>(null);\n  const [aiReviewing, setAiReviewing] = useState(false);
   const [observations, setObservations] = useState("");
   const [whatLearned, setWhatLearned] = useState("");
   const [worked, setWorked] = useState("yes");
@@ -182,10 +181,10 @@ export default function ScienceLab() {
       window.location.assign("/signin?redirect=" + encodeURIComponent("/science-lab"));
       return;
     }
-    setShowLog(true);
+    setAiFeedback(null);\n    setMediaFiles([]);\n    setShowLog(true);
   };
 
-  const submitAttempt = async () => {
+  const handleMediaSelection = (files: FileList | null) => {\n    if (!files) return;\n    const selectedFiles = Array.from(files);\n    if (selectedFiles.length > 3) { toast.error("Choose up to 3 photos or videos."); return; }\n    const allowed = new Set(["image/jpeg", "image/png", "image/webp", "video/mp4", "video/webm"]);\n    if (selectedFiles.some((file) => !allowed.has(file.type))) { toast.error("Use JPG, PNG, WebP, MP4 or WebM files only."); return; }\n    if (selectedFiles.some((file) => file.size > (file.type.startsWith("video/") ? 25 : 10) * 1024 * 1024)) { toast.error("Each photo must be 10 MB or less and each video 25 MB or less."); return; }\n    if (selectedFiles.reduce((total, file) => total + file.size, 0) > 30 * 1024 * 1024) { toast.error("The total upload limit is 30 MB."); return; }\n    setMediaFiles(selectedFiles);\n  };\n\n  const submitAttempt = async () => {
     if (!selected || observations.trim().length < 10) {
       toast.error("Please add at least a short observation (10 characters).");
       return;
@@ -197,7 +196,7 @@ export default function ScienceLab() {
       toast.error("Your session has expired. Please sign in again.");
       return;
     }
-    const { error } = await supabase.from("science_experiment_attempts" as any).insert({
+    const { data: savedAttempt, error } = await supabase.from("science_experiment_attempts" as any).insert({
       experiment_id: selected.id,
       user_id: authData.user.id,
       observations: observations.trim(),
@@ -305,13 +304,13 @@ export default function ScienceLab() {
               <div><h3 className="mb-3 font-semibold">Step-by-step instructions</h3><ol className="space-y-3">{selected.steps.map((step, index) => <li key={step} className="flex gap-3 text-sm leading-6"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">{index + 1}</span><span className="pt-0.5">{step}</span></li>)}</ol></div>
               <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4"><h3 className="mb-2 flex items-center gap-2 font-semibold"><Lightbulb className="h-4 w-4 text-emerald-600" /> What's the science?</h3><p className="text-sm leading-6 text-muted-foreground">{selected.science_explanation}</p></div>
               <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4"><h3 className="mb-2 flex items-center gap-2 font-semibold"><ShieldCheck className="h-4 w-4 text-amber-600" /> Safety first</h3><ul className="list-disc space-y-1 pl-5 text-sm leading-6 text-muted-foreground">{selected.safety_notes.map((note) => <li key={note}>{note}</li>)}</ul></div>
-              {!showLog ? <Button className="w-full" onClick={() => void startLogging()}><Beaker className="mr-2 h-4 w-4" /> I've tried this — record my results</Button> : <div className="space-y-4 rounded-xl border border-border p-4"><h3 className="font-semibold">Record your experiment</h3><div><label className="mb-2 block text-sm font-medium" htmlFor="science-observations">What did you observe? *</label><Textarea id="science-observations" value={observations} onChange={(event) => setObservations(event.target.value.slice(0, 3000))} placeholder="Describe what happened. Include anything unexpected..." rows={4} maxLength={3000} /><p className="mt-1 text-right text-xs text-muted-foreground">{observations.length}/3000</p></div><div><label className="mb-2 block text-sm font-medium" htmlFor="science-learning">What did you learn? (optional)</label><Textarea id="science-learning" value={whatLearned} onChange={(event) => setWhatLearned(event.target.value.slice(0, 1500))} placeholder="What did this experiment help you understand?" rows={3} maxLength={1500} /></div><div><span className="mb-2 block text-sm font-medium">Did it work as expected?</span><div className="flex flex-wrap gap-2">{[{value:"yes",label:"Yes"},{value:"no",label:"No / different result"},{value:"unsure",label:"Not sure"}].map((option) => <Button key={option.value} size="sm" type="button" variant={worked === option.value ? "default" : "outline"} onClick={() => setWorked(option.value)}>{option.label}</Button>)}</div></div><label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={sharePublic} onChange={(event) => setSharePublic(event.target.checked)} className="mt-1" /><span>Share my observations with the community. If unchecked, save privately in my journal.</span></label><Button className="w-full" disabled={saving} onClick={() => void submitAttempt()}>{saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}Save experiment results</Button></div>}
+              {!showLog ? <Button className="w-full" onClick={() => void startLogging()}><Beaker className="mr-2 h-4 w-4" /> I've tried this — record my results</Button> : <div className="space-y-4 rounded-xl border border-border p-4"><h3 className="font-semibold">Record your experiment</h3><div><label className="mb-2 block text-sm font-medium" htmlFor="science-observations">What did you observe? *</label><Textarea id="science-observations" value={observations} onChange={(event) => setObservations(event.target.value.slice(0, 3000))} placeholder="Describe what happened. Include anything unexpected..." rows={4} maxLength={3000} /><p className="mt-1 text-right text-xs text-muted-foreground">{observations.length}/3000</p></div><div><label className="mb-2 block text-sm font-medium" htmlFor="science-learning">What did you learn? (optional)</label><Textarea id="science-learning" value={whatLearned} onChange={(event) => setWhatLearned(event.target.value.slice(0, 1500))} placeholder="What did this experiment help you understand?" rows={3} maxLength={1500} /></div><div><span className="mb-2 block text-sm font-medium">Did it work as expected?</span><div className="flex flex-wrap gap-2">{[{value:"yes",label:"Yes"},{value:"no",label:"No / different result"},{value:"unsure",label:"Not sure"}].map((option) => <Button key={option.value} size="sm" type="button" variant={worked === option.value ? "default" : "outline"} onClick={() => setWorked(option.value)}>{option.label}</Button>)}</div></div><label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={sharePublic} onChange={(event) => setSharePublic(event.target.checked)} className="mt-1" /><span>Share my observations with the community. If unchecked, save privately in my journal.</span></label><div><label htmlFor="science-media" className="mb-2 block text-sm font-medium">Add photos or a short video (optional)</label><Input id="science-media" type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" multiple onChange={(event) => handleMediaSelection(event.target.files)} className="h-auto py-2" /><p className="mt-1 text-xs text-muted-foreground">Up to 3 files · photos up to 10 MB each · videos up to 25 MB each · 30 MB total. Your uploads stay private unless you share the experiment.</p>{mediaFiles.length > 0 && <ul className="mt-2 space-y-1 text-xs text-muted-foreground">{mediaFiles.map((file) => <li key={file.name} className="flex items-center justify-between gap-2"><span className="truncate">{file.name}</span><span>{(file.size / 1024 / 1024).toFixed(1)} MB</span></li>)}</ul>}</div><Button className="w-full" disabled={saving || aiReviewing} onClick={() => void submitAttempt()}>{saving || aiReviewing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}{aiReviewing ? "AI is reviewing your experiment..." : "Save results & get AI feedback"}</Button></div>}
             </div>
           </div>
         </div>
       )}
 
-      {showRequest && (
+      {aiFeedback && (\n        <div className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/60 p-3" role="dialog" aria-modal="true" aria-labelledby="science-ai-feedback-title">\n          <div className="w-full max-w-2xl rounded-2xl border border-border bg-background p-5 shadow-2xl sm:p-7">\n            <div className="mb-4 flex items-center justify-between gap-3"><div><Badge className="mb-2"><Sparkles className="mr-1 h-3 w-3" /> Gemini Science Guide</Badge><h2 id="science-ai-feedback-title" className="text-2xl font-bold">Your experiment review</h2></div><Button size="icon" variant="ghost" aria-label="Close AI feedback" onClick={() => setAiFeedback(null)}><X className="h-4 w-4" /></Button></div>\n            <p className="text-sm leading-6 text-muted-foreground">{aiFeedback.summary}</p>\n            <div className="mt-4 rounded-xl bg-emerald-500/5 p-4"><h3 className="mb-1 font-semibold">The science behind it</h3><p className="text-sm leading-6">{aiFeedback.science_connection}</p></div>\n            {[{title:"What you did well",items:aiFeedback.what_went_well},{title:"What might explain your result",items:aiFeedback.possible_reasons},{title:"Try this next",items:aiFeedback.next_steps}].map((section) => <div key={section.title} className="mt-4"><h3 className="mb-2 font-semibold">{section.title}</h3><ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">{section.items.map((item) => <li key={item}>{item}</li>)}</ul></div>)}\n            <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3"><p className="text-sm"><strong>Safety reminder:</strong> {aiFeedback.safety_reminder}</p></div>\n            <Button className="mt-5 w-full" onClick={() => setAiFeedback(null)}>Continue exploring</Button>\n          </div>\n        </div>\n      )}\n\n      {showRequest && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-3" role="dialog" aria-modal="true" aria-labelledby="request-experiment-title">
           <div className="w-full max-w-lg rounded-2xl border border-border bg-background p-5 shadow-2xl sm:p-6">
             <div className="mb-4 flex items-center justify-between"><h2 id="request-experiment-title" className="text-xl font-bold">Request an experiment</h2><Button size="icon" variant="ghost" aria-label="Close request form" onClick={() => setShowRequest(false)}><X className="h-4 w-4" /></Button></div>
