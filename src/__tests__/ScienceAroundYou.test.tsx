@@ -120,6 +120,9 @@ describe("Explain Science Around You", () => {
   });
 
   it("sends the selected advanced level and shows its deeper prompt", async () => {
+    const advancedEvaluation = makeEvaluation();
+    advancedEvaluation.difficulty = "advanced";
+    mocks.invoke.mockResolvedValue({ data: advancedEvaluation, error: null });
     renderPage();
     fireEvent.click(screen.getByRole("button", { name: /Advanced.*Deeper mechanisms/i }));
     fireEvent.click(screen.getByRole("button", { name: /Start the science test/i }));
