@@ -2,6 +2,8 @@
 -- Anonymous and non-admin authenticated users may read authentic author records only.
 -- Admins retain access to non-authentic records for moderation and cleanup.
 DROP POLICY IF EXISTS "Anyone can view author public info" ON public.authors;
+DROP POLICY IF EXISTS "Public can view authentic authors" ON public.authors;
+DROP POLICY IF EXISTS "Authenticated users can view authentic authors or administer all" ON public.authors;
 
 CREATE POLICY "Public can view authentic authors"
 ON public.authors
