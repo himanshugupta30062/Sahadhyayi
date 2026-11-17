@@ -152,6 +152,7 @@ function createPage({ title, description, route, image, type, entityType, entity
     <p>${escapeHtml(description)}</p>
     ${safeBodyText ? `<p>${escapeHtml(safeBodyText)}</p>` : ""}
     ${bookAuthor?.url ? `<p>By <a href="${escapeHtml(bookAuthor.url)}">${escapeHtml(bookAuthor.name)}</a></p>` : bookAuthor?.name ? `<p>By ${escapeHtml(bookAuthor.name)}</p>` : ""}
+    ${entityType === "Book" ? "<section aria-label=\"Book details\"><h2>About this book</h2><dl>" + (bookGenre ? "<dt>Genre</dt><dd>" + escapeHtml(bookGenre) + "</dd>" : "") + (bookPublicationYear ? "<dt>Publication year</dt><dd>" + escapeHtml(bookPublicationYear) + "</dd>" : "") + (bookLanguage ? "<dt>Language</dt><dd>" + escapeHtml(bookLanguage) + "</dd>" : "") + (bookIsbn ? "<dt>ISBN</dt><dd>" + escapeHtml(bookIsbn) + "</dd>" : "") + (bookPages ? "<dt>Pages</dt><dd>" + escapeHtml(bookPages) + "</dd>" : "") + "</dl></section>" : ""}
     ${Array.isArray(relatedBooks) && relatedBooks.length ? `<section aria-label="Books by this author"><h2>Books by ${escapeHtml(entityName || "this author")}</h2><ul>${relatedBooks.map((book) => `<li><a href="${escapeHtml(book.route)}">${escapeHtml(book.title)}</a></li>`).join("")}</ul></section>` : ""}
     ${Array.isArray(relatedArticles) && relatedArticles.length ? `<nav aria-label="Related articles"><h2>More articles by this reader</h2><ul>${relatedArticles.map((article) => `<li><a href="${escapeHtml(article.route)}">${escapeHtml(article.title)}</a></li>`).join("")}</ul></nav>` : ""}
     ${Array.isArray(itemList) && itemList.length ? `<nav aria-label="People in this collection"><h2>Profiles in this collection</h2><ul>${itemList.map((entry) => `<li><a href="${escapeHtml(route)}#profile-${escapeHtml(entry.slug)}">${escapeHtml(entry.name)}</a></li>`).join("")}</ul></nav>` : ""}
@@ -581,6 +582,15 @@ if (booksError) {
     const bookAuthor = authorName
       ? { name: authorName, ...(authorSlug ? { url: `/authors/${authorSlug}` } : {}) }
       : undefined;
+    const relatedBooks = (books ?? [])
+      .filter((candidate) => candidate.id !== book.id && ((book.author_id && candidate.author_id === book.author_id) || (!book.author_id && authorName && String(candidate.author ?? "").trim().toLowerCase() === authorName.toLowerCase())))
+      .slice(0, 5)
+      .map((candidate) => {
+        const relatedId = String(candidate.id ?? "").trim();
+        const relatedTitle = String(candidate.title ?? "").trim();
+        return relatedId && relatedTitle && !relatedId.includes("/") && relatedId !== "." && relatedId !== ".." ? { title: relatedTitle, route: `/book/${encodeURIComponent(relatedId)}` } : null;
+      })
+      .filter(Boolean);
     writeRoute(route, createPage({
       title: `${title} - Read Online & Book Details | Sahadhyayi`,
       description,
@@ -596,6 +606,7 @@ if (booksError) {
       bookLanguage: book.language,
       bookPages: Number(book.pages),
       bookPublicationYear: book.publication_year,
+      relatedBooks,
       breadcrumbs: [{ name: "Home", route: "/" }, { name: "Library", route: "/library" }, { name: title, route }],
     }));
     bookCount += 1;
