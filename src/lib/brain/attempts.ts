@@ -65,10 +65,10 @@ export function toBrainAttemptHistory(row: BrainAssessmentAttemptRow): BrainAtte
   };
 }
 
-export async function listBrainAssessmentAttempts(limit = 50): Promise<BrainAttemptHistoryEntry[]> {
+export async function listBrainAssessmentAttempts(limit = 50): Promise<BrainAttemptHistoryEntry[] | null> {
   const { data: authData, error: authError } = await supabase.auth.getUser();
   if (authError) throw authError;
-  if (!authData.user) return [];
+  if (!authData.user) return null;
 
   const { data, error } = await supabase
     .from("brain_assessment_attempts")
