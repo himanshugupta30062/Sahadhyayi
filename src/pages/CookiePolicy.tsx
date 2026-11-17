@@ -149,14 +149,14 @@ const CookiePolicy: React.FC = () => {
                 Transparency & Technology
               </Badge>
               <Badge variant="outline" className="border-[#1C442D]/30 text-[#1C442D] dark:border-[#D5B16D]/40 dark:text-[#D5B16D] text-[11px]">
-                Zero Third-Party Ad Tracking
+                No Behavioural Ad Profiling
               </Badge>
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#1C201D] dark:text-[#F3F0E7]">
               Cookie Policy
             </h1>
             <p className="text-sm text-[#636B65] dark:text-[#A5ADA6]">
-              Last updated: November 16, 2026
+              Last updated: November 17, 2026
             </p>
           </div>
 
@@ -184,7 +184,7 @@ const CookiePolicy: React.FC = () => {
                     Offline Reading Storage
                   </div>
                   <p className="text-[#636B65] dark:text-[#A5ADA6]">
-                    We use browser IndexedDB and cache storage to preserve downloaded books so you never lose your page offline.
+                    Where supported and enabled, browser storage may cache reading assets or downloaded content for offline access. Browser eviction, device settings, storage limits or clearing site data may remove cached material.
                   </p>
                 </div>
 
@@ -194,17 +194,26 @@ const CookiePolicy: React.FC = () => {
                     Zero Behavioral Ad Trackers
                   </div>
                   <p className="text-[#636B65] dark:text-[#A5ADA6]">
-                    We do not deploy invasive cross-site advertising pixels or surveillance trackers that follow you around the web.
+                    We do not intend to use cookies for cross-site behavioural advertising. Third-party services embedded in or required by a feature may process technical information under their own terms; the live configuration can change, so this inventory should be checked periodically.
                   </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
+          <nav aria-label="Cookie Policy contents" className="p-4 sm:p-5 rounded-2xl border border-[#E8E2D9] dark:border-[#222B25] bg-white dark:bg-[#141A17] space-y-3">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#1C442D] dark:text-[#D5B16D]">On this page</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+              {["What Are Cookies?","How We Use Cookies","Types of Cookies We Use","Third-Party Cookies","Managing Cookies","Cookie Retention","Impact of Disabling Cookies","Updates to This Policy","Contact Us"].map((title, index) => (
+                <a key={title} href={`#cookie-section-${index + 1}`} className="text-[#636B65] dark:text-[#A5ADA6] hover:underline">{index + 1}. {title}</a>
+              ))}
+            </div>
+          </nav>
+
           {/* Main Legal Sections Container */}
           <div className="bg-white dark:bg-[#141A17] rounded-3xl border border-[#E8E2D9] dark:border-[#222B25] p-6 sm:p-10 shadow-sm space-y-10 text-sm sm:text-base leading-relaxed text-[#353D37] dark:text-[#D6DDD7]">
             {/* 1. What Are Cookies? */}
-            <section className="space-y-4">
+            <section id="cookie-section-1" className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] pb-2 border-b border-[#F0ECE4] dark:border-[#222B25]">
                 1. What Are Cookies?
               </h2>
@@ -214,7 +223,7 @@ const CookiePolicy: React.FC = () => {
             </section>
 
             {/* 2. How We Use Cookies */}
-            <section className="space-y-4">
+            <section id="cookie-section-2" className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] pb-2 border-b border-[#F0ECE4] dark:border-[#222B25]">
                 2. How We Use Cookies
               </h2>
@@ -231,7 +240,7 @@ const CookiePolicy: React.FC = () => {
             </section>
 
             {/* 3. Types of Cookies We Use */}
-            <section className="space-y-4">
+            <section id="cookie-section-3" className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] pb-2 border-b border-[#F0ECE4] dark:border-[#222B25]">
                 3. Types of Cookies We Use
               </h2>
@@ -239,7 +248,7 @@ const CookiePolicy: React.FC = () => {
                 <div className="p-4 rounded-2xl bg-[#FAF7F2] dark:bg-[#0B0D0C] border border-[#E8E2D9] dark:border-[#222B25] space-y-1">
                   <h3 className="font-bold text-sm text-[#1C201D] dark:text-[#F3F0E7]">A. Essential Cookies (Strictly Necessary)</h3>
                   <p>
-                    These cookies are indispensable for the platform to function. They enable core security features, authentication tokens, and CSRF protection. Because our platform cannot function securely without them, they cannot be disabled.
+                    Technologies in this category support sign-in, session integrity, security and core site functions. Blocking them may prevent account features from working. Some authentication state may be stored in local or session storage rather than an HTTP cookie.
                   </p>
                 </div>
 
@@ -253,7 +262,7 @@ const CookiePolicy: React.FC = () => {
                 <div className="p-4 rounded-2xl bg-[#FAF7F2] dark:bg-[#0B0D0C] border border-[#E8E2D9] dark:border-[#222B25] space-y-1">
                   <h3 className="font-bold text-sm text-[#1C201D] dark:text-[#F3F0E7]">C. Performance & Reliability Telemetry</h3>
                   <p>
-                    We collect aggregated, anonymized telemetry regarding page load times and network responsiveness to continuously optimize asset delivery for readers across different regions.
+                    Where enabled, operational diagnostics may record technical events such as errors, performance or network information to maintain and improve reliability. The data collected, aggregation and retention depend on the active analytics and hosting configuration.
                   </p>
                 </div>
               </div>
@@ -300,7 +309,7 @@ const CookiePolicy: React.FC = () => {
             </section>
 
             {/* 4. Third-Party Cookies */}
-            <section className="space-y-4">
+            <section id="cookie-section-4" className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] pb-2 border-b border-[#F0ECE4] dark:border-[#222B25]">
                 4. Third-Party Cookies
               </h2>
@@ -313,17 +322,17 @@ const CookiePolicy: React.FC = () => {
                 <li><strong>Mappls Web SDK:</strong> Serves map tiles and geography layers for the interactive reader discovery map.</li>
               </ul>
               <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">
-                We do not incorporate third-party advertising cookies, retargeting pixels, or social media tracking beacons that monitor your reading activity for marketing.
+                We do not intend to use third-party advertising cookies or retargeting pixels to build advertising profiles from reading activity. Infrastructure, map, analytics or embedded services may use their own technologies; consult the relevant provider notices and the current inventory for details.
               </p>
             </section>
 
             {/* 5. Managing Cookies */}
-            <section className="space-y-4">
+            <section id="cookie-section-5" className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] pb-2 border-b border-[#F0ECE4] dark:border-[#222B25]">
                 5. Managing Cookies
               </h2>
               <p>
-                You possess full autonomy over cookies stored on your device. You can manage or purge cookies at any time through your browser settings:
+                You can review, block or clear cookies and site storage through your browser or device settings. Blocking essential storage may affect sign-in, preferences, offline reading and other features. Browser controls do not necessarily provide a per-purpose preference centre, and clearing storage may sign you out or remove locally cached content:
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
                 <div className="p-3.5 rounded-xl border border-[#E8E2D9] dark:border-[#222B25] bg-[#FAF7F2] dark:bg-[#0B0D0C] space-y-1">
@@ -342,22 +351,22 @@ const CookiePolicy: React.FC = () => {
             </section>
 
             {/* 6. Cookie Retention */}
-            <section className="space-y-4">
+            <section id="cookie-section-6" className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] pb-2 border-b border-[#F0ECE4] dark:border-[#222B25]">
                 6. Cookie Retention
               </h2>
               <div className="space-y-3 text-xs sm:text-sm">
                 <p>
-                  <strong>Session Cookies:</strong> Ephemeral cookies that are erased automatically as soon as you close your browser tab or window.
+                  <strong>Session technologies:</strong> Some session cookies expire when the browser session ends. Other session or authentication values may persist according to the provider and authentication-client configuration.
                 </p>
                 <p>
-                  <strong>Persistent Cookies:</strong> Remain stored for their defined lifespan (between 30 days and 1 year) or until you explicitly clear them through browser settings. These ensure you remain logged in and your customized font sizes and reading themes persist between sessions.
+                  <strong>Persistent technologies:</strong> Cookies and browser-storage entries remain until their configured expiry, sign-out, feature-specific deletion, browser eviction or manual clearing. We do not promise a universal retention period; actual lifetimes vary by key, provider and configuration.
                 </p>
               </div>
             </section>
 
             {/* 7. Impact of Disabling Cookies */}
-            <section className="space-y-4">
+            <section id="cookie-section-7" className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] pb-2 border-b border-[#F0ECE4] dark:border-[#222B25]">
                 7. Impact of Disabling Cookies
               </h2>
@@ -367,7 +376,7 @@ const CookiePolicy: React.FC = () => {
             </section>
 
             {/* 8. Updates to This Policy */}
-            <section className="space-y-4">
+            <section id="cookie-section-8" className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] pb-2 border-b border-[#F0ECE4] dark:border-[#222B25]">
                 8. Updates to This Policy
               </h2>
@@ -377,7 +386,7 @@ const CookiePolicy: React.FC = () => {
             </section>
 
             {/* 9. Contact Us */}
-            <section className="space-y-4">
+            <section id="cookie-section-9" className="space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-[#1C201D] dark:text-[#F3F0E7] pb-2 border-b border-[#F0ECE4] dark:border-[#222B25]">
                 9. Contact Us
               </h2>
