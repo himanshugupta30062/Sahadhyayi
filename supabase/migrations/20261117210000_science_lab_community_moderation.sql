@@ -34,17 +34,17 @@ security definer
 set search_path = public
 as $$
 begin
-  if auth.role() = 'service_role' or public.is_admin() then
-    if new.moderation_status is distinct from old.moderation_status then
-      new.moderated_at := now();
-    end if;
-    return new;
-  end if;
-
   if tg_op = 'INSERT' then
     new.moderation_status := case when new.share_public then 'pending' else 'private' end;
     new.moderated_at := null;
     new.moderation_note := null;
+    return new;
+  end if;
+
+  if auth.role() = 'service_role' or public.is_admin() then
+    if new.moderation_status is distinct from old.moderation_status then
+      new.moderated_at := now();
+    end if;
     return new;
   end if;
 
