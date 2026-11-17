@@ -36,15 +36,17 @@ import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 import SignInLink from '@/components/SignInLink';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
-type ActivityCategory = 'all' | 'events' | 'challenges' | 'games' | 'brain' | 'iq-test' | 'meetups';
+type ActivityCategory = 'all' | 'events' | 'challenges' | 'games' | 'iq-test';
 
 export default function Activity() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const tabParam = (searchParams.get('tab') as ActivityCategory) || 'all';
+  const requestedTab = searchParams.get('tab');
+  // Keep old deep links working after Events and Meetups become one category.
+  const initialTab = requestedTab === 'meetups' ? 'events' : requestedTab;
   const [activeCategory, setActiveCategory] = useState<ActivityCategory>(
-    tabParam === ('groups' as any) ? 'all' : tabParam
+    initialTab === 'groups' ? 'all' : (initialTab as ActivityCategory) || 'all'
   );
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -58,22 +60,17 @@ export default function Activity() {
   // Sync tab state when URL changes (e.g. from nav clicks)
   useEffect(() => {
     const rawTab = searchParams.get('tab');
-    if (rawTab && rawTab !== 'groups' && rawTab !== activeCategory) {
+    if (rawTab === 'meetups') {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.set('tab', 'events');
+        return next;
+      }, { replace: true });
+      setActiveCategory('events');
+    } else if (rawTab && rawTab !== 'groups' && rawTab !== activeCategory) {
       setActiveCategory(rawTab as ActivityCategory);
     }
   }, [searchParams, activeCategory]);
-
-  useEffect(() => {
-    if (searchParams.get('tab') === 'meetups') {
-      const timer = setTimeout(() => {
-        const el = document.getElementById('activity-meetups-section');
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [searchParams]);
 
   // 1. Reading Challenges
   const { data: challenges = [], isLoading: isLoadingChallenges } = useChallenges();
@@ -174,10 +171,10 @@ export default function Activity() {
 
             {/* Quick Action Navigation Buttons */}
             <div className="mt-8 flex flex-wrap gap-2.5">
-              <Link to="/events">
+              <Link to="/activity?tab=events">
                 <Button variant="outline" className="gap-2 rounded-xl bg-white dark:bg-[#111614] text-xs h-10 border-[#E8E2D9] dark:border-[#29332D]">
                   <CalendarDays className="h-4 w-4 text-[#1C442D] dark:text-[#D5B16D]" />
-                  Events Calendar
+                  Events & Meetups
                 </Button>
               </Link>
               <Link to="/games">
@@ -192,12 +189,6 @@ export default function Activity() {
                   IQ Test
                 </Button>
               </Link>
-              <Link to="/activity?tab=meetups">
-                <Button variant="outline" className="gap-2 rounded-xl bg-white dark:bg-[#111614] text-xs h-10 border-[#E8E2D9] dark:border-[#29332D]">
-                  <MapPin className="h-4 w-4 text-[#1C442D] dark:text-[#D5B16D]" />
-                  Reader Meetups
-                </Button>
-              </Link>
             </div>
           </div>
         </section>
@@ -205,14 +196,14 @@ export default function Activity() {
         {/* ── Main Activity Workspace ── */}
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 space-y-10">
           {/* ── Category Quick Jump Cards ── */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
                 id: 'events',
-                title: 'Events',
-                desc: 'Literary fests & launches',
+                title: 'Events & Meetups',
+                desc: 'Online, in-person & literary events',
                 icon: CalendarDays,
-                count: events.length || '10+',
+                count: events.length || 'Explore',
               },
               {
                 id: 'challenges',
@@ -234,13 +225,6 @@ export default function Activity() {
                 desc: 'Visual reasoning & puzzles',
                 icon: BrainCircuit,
                 count: 'Fresh puzzles',
-              },
-              {
-                id: 'meetups',
-                title: 'Meetups',
-                desc: 'In-person & local circles',
-                icon: MapPin,
-                count: meetups.length || 'Active',
               },
             ].map(({ id, title, desc, icon: Icon, count }) => {
               const isSelected = activeCategory === id;
@@ -346,11 +330,10 @@ export default function Activity() {
               <div className="flex flex-wrap gap-1.5">
                 {[
                   { id: 'all', label: 'All Activities' },
-                  { id: 'events', label: 'Events' },
+                  { id: 'events', label: 'Events & Meetups' },
                   { id: 'challenges', label: 'Reading Challenges' },
                   { id: 'games', label: 'Book Games' },
                   { id: 'iq-test', label: 'IQ Test' },
-                  { id: 'meetups', label: 'Meetups' },
                 ].map(({ id, label }) => {
                   const isCurrent = activeCategory === id;
                   return (
@@ -620,13 +603,13 @@ export default function Activity() {
             )}
 
             {/* 4. EVENTS & MEETUPS SECTION */}
-            {(activeCategory === 'all' || activeCategory === 'events' || activeCategory === 'meetups') && (
+            {(activeCategory === 'all' || activeCategory === 'events') && (
               <section id="activity-meetups-section" className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="flex items-center gap-2 font-serif text-xl font-bold text-[#1C201D] dark:text-[#F3F0E7]">
                       <CalendarDays className="h-5 w-5 text-rose-600 dark:text-rose-400" />
-                      {activeCategory === 'meetups' ? 'Reader Meetups & Gatherings' : 'Literary Events & Meetups'}
+                      Events & Meetups
                     </h2>
                     <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">
                       Find your next bookish gathering—online or in your city—and meet readers beyond the page.
@@ -641,13 +624,13 @@ export default function Activity() {
 
                 {isLoadingEvents ? (
                   <div className="py-8 text-center text-xs text-muted-foreground">Loading events…</div>
-                ) : (activeCategory === 'meetups' ? meetups : events).length === 0 ? (
+                ) : events.length === 0 ? (
                   <div className="rounded-xl border border-dashed border-[#E8E2D9] p-6 text-center text-xs text-muted-foreground dark:border-[#29332D]">
                     No upcoming events scheduled right now. Check back soon!
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {(activeCategory === 'meetups' ? meetups : events)
+                    {events
                       .filter((e) => !searchQuery || e.title.toLowerCase().includes(searchQuery.toLowerCase()))
                       .slice(0, 6)
                       .map((event) => (
