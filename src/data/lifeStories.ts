@@ -1,4 +1,4 @@
-type LifeStory = {
+export type LifeStory = {
   slug: string;
   name: string;
   role: string;
