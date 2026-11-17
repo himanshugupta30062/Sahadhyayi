@@ -217,16 +217,23 @@ function isTitleMatch(targetTitle: string, candidateTitle?: string | null): bool
   if (target === candidate) return true;
   if (candidate.includes(target) || target.includes(candidate)) return true;
 
-  // Word overlap comparison for longer titles
-  const targetWords = target.split(/\s+/).filter((w) => w.length > 3);
-  if (targetWords.length > 0) {
+  // Word overlap comparison for longer titles, while rejecting very short generic matches.
+  const targetWords = target.split(/\\s+/).filter((w) => w.length > 3);
+  if (targetWords.length >= 2) {
     const matchCount = targetWords.filter((w) => candidate.includes(w)).length;
-    if (matchCount / targetWords.length >= 0.7) {
-      return true;
-    }
+    return matchCount / targetWords.length >= 0.8;
   }
-
   return false;
+}
+
+function isAuthorMatch(targetAuthor: string, candidateAuthors?: string[] | null): boolean {
+  if (!targetAuthor || targetAuthor.toLowerCase() === 'unknown author') return true;
+  if (!Array.isArray(candidateAuthors) || candidateAuthors.length === 0) return false;
+  const target = normalizeAuthor(targetAuthor).normalizedAuthor.toLowerCase();
+  return candidateAuthors.some((candidate) => {
+    const normalized = normalizeAuthor(candidate).normalizedAuthor.toLowerCase();
+    return normalized === target || normalized.includes(target) || target.includes(normalized);
+  });
 }
 
 /**
@@ -251,17 +258,10 @@ export async function fetchOpenLibraryCoverBySearch(
     if (!res.ok) return null;
 
     const data = await res.json();
-    let docWithCover = data.docs?.find((d: any) => d.cover_i && isTitleMatch(cleanTitle, d.title));
+    let docWithCover = data.docs?.find((d: any) => d.cover_i && isTitleMatch(cleanTitle, d.title) && isAuthorMatch(normAuthor, d.author_name));
 
-    // Fallback: If author was specified and returned no cover, retry title-only
-    if (!docWithCover && authorParam) {
-      const fallbackUrl = `https://openlibrary.org/search.json?title=${encodeURIComponent(cleanTitle)}&limit=5&fields=title,author_name,cover_i`;
-      const fbRes = await fetch(fallbackUrl);
-      if (fbRes.ok) {
-        const fbData = await fbRes.json();
-        docWithCover = fbData.docs?.find((d: any) => d.cover_i && isTitleMatch(cleanTitle, d.title));
-      }
-    }
+    // Do not fall back to title-only matching when an author is known: a plausible
+    // title match by a different author can silently put the wrong book jacket on a card.
 
     if (docWithCover && docWithCover.cover_i) {
       return `https://covers.openlibrary.org/b/id/${docWithCover.cover_i}-L.jpg`;
