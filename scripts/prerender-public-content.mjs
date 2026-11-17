@@ -53,7 +53,7 @@ function setMeta(html, attribute, key, content) {
   return pattern.test(html) ? html.replace(pattern, tag) : html.replace("</head>", `  ${tag}\n</head>`);
 }
 
-function createPage({ title, description, route, image, type, entityType, entityName, bodyText, publishedAt, modifiedAt, authorName, wordCount, schemaType, about, breadcrumbs, relatedBooks, relatedArticles, sameAs, bookAuthor, bookIsbn, bookGenre, bookLanguage, bookPages, bookPublicationYear }) {
+function createPage({ title, description, route, image, type, entityType, entityName, bodyText, publishedAt, modifiedAt, authorName, wordCount, schemaType, about, breadcrumbs, relatedBooks, relatedArticles, sameAs, personDetails, itemList, bookAuthor, bookIsbn, bookGenre, bookLanguage, bookPages, bookPublicationYear }) {
   const canonical = `${SITE_URL}${route}`;
   let html = template.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
   html = setMeta(html, "name", "description", description);
@@ -91,6 +91,9 @@ function createPage({ title, description, route, image, type, entityType, entity
           mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
           ...(image && /^https:\/\/i.test(image) ? { image } : {}),
           ...(Array.isArray(sameAs) && sameAs.length ? { sameAs: sameAs.filter((value) => typeof value === "string" && /^https:\/\/i.test(value)) } : {}),
+          ...(personDetails?.jobTitle ? { jobTitle: personDetails.jobTitle } : {}),
+          ...(personDetails?.birthPlace ? { birthPlace: { "@type": "Place", name: personDetails.birthPlace } } : {}),
+          ...(Array.isArray(personDetails?.knowsAbout) && personDetails.knowsAbout.length ? { knowsAbout: personDetails.knowsAbout } : {}),
         }
       : entityType === "Article"
         ? {
@@ -115,6 +118,7 @@ function createPage({ title, description, route, image, type, entityType, entity
     url: canonical,
     isPartOf: { "@type": "WebSite", name: "Sahadhyayi", url: SITE_URL },
     ...(mainEntity ? { mainEntity } : {}),
+    ...(Array.isArray(itemList) && itemList.length ? { mainEntity: { "@type": "ItemList", numberOfItems: itemList.length, itemListElement: itemList.map((entry, index) => ({ "@type": "ListItem", position: index + 1, item: { "@type": "Person", name: entry.name, url: `${SITE_URL}${route}#profile-${entry.slug}`, ...(entry.description ? { description: entry.description } : {}), ...(Array.isArray(entry.knowsAbout) && entry.knowsAbout.length ? { knowsAbout: entry.knowsAbout } : {}) } })) } } : {}),
     ...(Array.isArray(about) && about.length ? { about: about.map((name) => ({ "@type": "Thing", name })) } : {}),
     ...(Array.isArray(breadcrumbs) && breadcrumbs.length ? {
       breadcrumb: {
@@ -145,6 +149,7 @@ function createPage({ title, description, route, image, type, entityType, entity
     ${bookAuthor?.url ? `<p>By <a href="${escapeHtml(bookAuthor.url)}">${escapeHtml(bookAuthor.name)}</a></p>` : bookAuthor?.name ? `<p>By ${escapeHtml(bookAuthor.name)}</p>` : ""}
     ${Array.isArray(relatedBooks) && relatedBooks.length ? `<section aria-label="Books by this author"><h2>Books by ${escapeHtml(entityName || "this author")}</h2><ul>${relatedBooks.map((book) => `<li><a href="${escapeHtml(book.route)}">${escapeHtml(book.title)}</a></li>`).join("")}</ul></section>` : ""}
     ${Array.isArray(relatedArticles) && relatedArticles.length ? `<nav aria-label="Related articles"><h2>More articles by this reader</h2><ul>${relatedArticles.map((article) => `<li><a href="${escapeHtml(article.route)}">${escapeHtml(article.title)}</a></li>`).join("")}</ul></nav>` : ""}
+    ${Array.isArray(itemList) && itemList.length ? `<nav aria-label="People in this collection"><h2>Profiles in this collection</h2><ul>${itemList.map((entry) => `<li><a href="${escapeHtml(route)}#profile-${escapeHtml(entry.slug)}">${escapeHtml(entry.name)}</a></li>`).join("")}</ul></nav>` : ""}
     <p><a href="/library">Explore the library</a> · <a href="/articles">Read articles</a> · <a href="/groups">Find reading groups</a> · <a href="/authors">Discover authors</a></p>
   </main>`;
   html = html.replace(/<div id="root">[^]*?div>/i, `<div id="root">${fallback}</div>`);
