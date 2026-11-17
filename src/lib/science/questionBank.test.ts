@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { SCIENCE_QUESTIONS, getScienceQuestionsForDifficulty, shuffleScienceQuestions } from "./questionBank";
 
 describe("everyday science question bank", () => {
-  it("contains ten distinct open-ended questions across real-world science domains", () => {
-    expect(SCIENCE_QUESTIONS).toHaveLength(10);
-    expect(new Set(SCIENCE_QUESTIONS.map((question) => question.id)).size).toBe(10);
+  it("contains thirty distinct open-ended questions across three real-world science difficulty banks", () => {
+    expect(SCIENCE_QUESTIONS).toHaveLength(30);
+    expect(new Set(SCIENCE_QUESTIONS.map((question) => question.id)).size).toBe(30);
     expect(new Set(SCIENCE_QUESTIONS.map((question) => question.domain)).size).toBeGreaterThanOrEqual(3);
     for (const question of SCIENCE_QUESTIONS) {
       expect(question.prompt.trim().length).toBeGreaterThan(25);
@@ -14,14 +14,16 @@ describe("everyday science question bank", () => {
     }
   });
 
-  it("provides progressively deeper challenge prompts without changing the stable question IDs", () => {
+  it("provides three distinct ten-question banks with level-specific prompts", () => {
     const beginner = getScienceQuestionsForDifficulty("beginner");
     const intermediate = getScienceQuestionsForDifficulty("intermediate");
     const advanced = getScienceQuestionsForDifficulty("advanced");
-    expect(beginner.map((question) => question.id)).toEqual(SCIENCE_QUESTIONS.map((question) => question.id));
-    expect(intermediate[0].prompt).toContain("cause-and-effect sequence");
-    expect(advanced[0].prompt).toContain("interacting factors");
-    expect(advanced[0].prompt).not.toEqual(beginner[0].prompt);
+    expect(beginner).toHaveLength(10);
+    expect(intermediate).toHaveLength(10);
+    expect(advanced).toHaveLength(10);
+    expect(new Set([...beginner, ...intermediate, ...advanced].map((question) => question.id)).size).toBe(30);
+    expect(intermediate.some((question) => question.title === "A sea breeze")).toBe(true);
+    expect(advanced.some((question) => question.title === "A bridge and resonance")).toBe(true);
   });
 
   it("shuffles without mutating the canonical question bank", () => {
