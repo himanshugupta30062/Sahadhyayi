@@ -7,13 +7,12 @@ describe("parseVerificationReport", () => {
   });
 
   it("parses JSON wrapped in markdown fences", () => {
-    expect(parseVerificationReport('```json
-{"confidence":0.8}
-```')).toEqual({ confidence: 0.8 });
+    const fenced = ["```json", '{"confidence":0.8}', "```"].join(String.fromCharCode(10));
+    expect(parseVerificationReport(fenced)).toEqual({ confidence: 0.8 });
   });
 
   it("strips a UTF-8 BOM", () => {
-    expect(parseVerificationReport('﻿{"title":"The Trial"}')).toEqual({ title: "The Trial" });
+    expect(parseVerificationReport(String.fromCharCode(0xfeff) + '{"title":"The Trial"}')).toEqual({ title: "The Trial" });
   });
 
   it("extracts a bounded object from surrounding provider prose", () => {
