@@ -121,7 +121,8 @@ const xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
     const imageTag = image
       ? '\n    <image:image>\n      <image:loc>' + xmlEscape(image) + '</image:loc>\n    </image:image>'
       : '';
-    return '  <url>\n    <loc>' + xmlEscape(loc) + '</loc>\n    <changefreq>' + changefreq + '</changefreq>\n    <priority>' + priority + '</priority>' + imageTag + '\n  </url>';
+    const lastmodTag = lastmod ? '\n    <lastmod>' + lastmod + '</lastmod>' : '';
+    return '  <url>\n    <loc>' + xmlEscape(loc) + '</loc>' + lastmodTag + '\n    <changefreq>' + changefreq + '</changefreq>\n    <priority>' + priority + '</priority>' + imageTag + '\n  </url>';
   }).join('\n') + '\n</urlset>\n';
 
 fs.mkdirSync('public', { recursive: true });
