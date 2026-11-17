@@ -19,16 +19,9 @@ type BookRecord = {
   publication_year: number | null;
   pdf_url: string | null;
   cover_image_url: string | null;
-  pdf_sha256: string | null;
-  pdf_file_size: number | null;
-  pdf_page_count: number | null;
-  pdf_verification_status: string | null;
   genre: string | null;
   description: string | null;
   language: string | null;
-  status: string | null;
-  catalog_status: string | null;
-  is_archived: boolean | null;
   created_at: string;
 };
 
@@ -125,7 +118,7 @@ export default function AdminBookPdfManager() {
       for (let offset = 0; ; offset += pageSize) {
         let queryBuilder = supabase
           .from('books_library')
-          .select('id,title,author,isbn,publication_year,pdf_url,cover_image_url,pdf_sha256,pdf_file_size,pdf_page_count,pdf_verification_status,genre,description,language,status,catalog_status,is_archived,created_at')
+          .select('id,title,author,isbn,publication_year,pdf_url,cover_image_url,genre,description,language,created_at')
           .order('title', { ascending: true })
           .range(offset, offset + pageSize - 1);
 
@@ -193,205 +186,24 @@ export default function AdminBookPdfManager() {
     }
   }, []);
 
+  // Legacy direct-to-public upload and replacement bypass the quarantine verification workflow.
+  // Keep these handlers fail-closed until the admin workflow is migrated to verified submissions.
   const handleUpload = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!user) {
-      toast({ title: 'Sign in required', description: 'Sign in with an administrator account to upload a PDF.', variant: 'destructive' });
-      return;
-    }
-    if (!selectedBook || !file || !sourceUrl.trim() || !rightsNotes.trim() || !confirmRights) {
-      toast({ title: 'Complete the review details', description: 'Select a book and PDF, provide its source and rights evidence, and confirm you are authorized to distribute it.', variant: 'destructive' });
-      return;
-    }
-
-    let parsedSource: URL;
-    try {
-      parsedSource = new URL(sourceUrl.trim());
-      if (parsedSource.protocol !== 'https:' && parsedSource.protocol !== 'http:') throw new Error('Invalid protocol');
-    } catch {
-      toast({ title: 'Invalid source URL', description: 'Enter a valid http or https URL for the source or rights evidence.', variant: 'destructive' });
-      return;
-    }
-
-    setIsUploading(true);
-    setUploadStage('validating');
-    let uploadedPath = '';
-    try {
-      await validatePdf(file);
-      setUploadStage('uploading');
-      const signature = crypto.randomUUID();
-      uploadedPath = `${selectedBook.id}/${signature}.pdf`;
-
-      const { error: uploadError } = await supabase.storage.from(BUCKET).upload(uploadedPath, file, {
-        contentType: 'application/pdf',
-        cacheControl: '3600',
-        upsert: false,
-      });
-      if (uploadError) throw uploadError;
-
-      setUploadStage('linking');
-      const pdfUrl = supabase.storage.from(BUCKET).getPublicUrl(uploadedPath).data.publicUrl;
-      const { data: updatedBook, error: updateError } = await supabase
-        .from('books_library')
-        .update({ pdf_url: pdfUrl })
-        .eq('id', selectedBook.id)
-        .select('id')
-        .maybeSingle();
-      if (updateError) throw updateError;
-      if (!updatedBook) throw new Error('The book record was not updated. Check catalog write permissions.');
-
-      setUploadStage('audit');
-      const { error: auditError } = await supabase.from('book_pdf_admin_audit' as any).insert({
-        book_id: selectedBook.id,
-        previous_pdf_url: selectedBook.pdf_url,
-        pdf_url: pdfUrl,
-        source_url: parsedSource.toString(),
-        rights_basis: rightsBasis,
-        rights_notes: rightsNotes.trim(),
-        file_name: file.name,
-        file_size_bytes: file.size,
-        uploaded_by: user.id,
-      });
-      if (auditError) {
-        // Do not roll back the working PDF link; surface that the audit log needs attention.
-        console.error('PDF uploaded but audit logging failed:', auditError);
-        toast({ title: 'PDF linked, audit log failed', description: 'The book was updated, but the audit record could not be saved. Please report this to the technical admin.', variant: 'destructive' });
-      } else {
-        toast({ title: 'PDF added successfully', description: `The PDF is now linked to “${selectedBook.title}”.` });
-      }
-
-      setFile(null);
-      setSourceUrl('');
-      setRightsNotes('');
-      setConfirmRights(false);
-      const fileInput = document.getElementById('book-pdf-file') as HTMLInputElement | null;
-      if (fileInput) fileInput.value = '';
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['admin-book-pdf-manager-books'] }),
-        queryClient.invalidateQueries({ queryKey: ['books'] }),
-      ]);
-    } catch (uploadError) {
-      console.error('Admin PDF upload failed:', uploadError);
-      toast({
-        title: 'PDF upload failed',
-        description: uploadError instanceof Error ? uploadError.message : 'The file could not be uploaded. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsUploading(false);
-      setUploadStage('idle');
-    }
+    toast({
+      title: 'Use the verified submission workflow',
+      description: 'Direct PDF uploads from this manager are disabled. Submit the PDF through Contribute a PDF, then review and publish it from Admin PDF Reviews.',
+      variant: 'destructive',
+    });
   };
 
   const handleReplace = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!user) {
-      toast({ title: 'Sign in required', description: 'Sign in with an administrator account.', variant: 'destructive' });
-      return;
-    }
-    if (!selectedBook || !replaceFile || !replaceSourceUrl.trim() || !replaceRightsNotes.trim() || !replaceConfirmRights) {
-      toast({ title: 'Complete all fields', description: 'Provide the replacement PDF, source URL, rights basis, evidence notes, and confirm authorization.', variant: 'destructive' });
-      return;
-    }
-
-    let parsedSource: URL;
-    try {
-      parsedSource = new URL(replaceSourceUrl.trim());
-      if (parsedSource.protocol !== 'https:') throw new Error('HTTPS required');
-    } catch {
-      toast({ title: 'Invalid source URL', description: 'Enter a valid https URL for the source or rights evidence.', variant: 'destructive' });
-      return;
-    }
-
-    setIsReplacing(true);
-    setReplaceStage('validating');
-    try {
-      await validatePdf(replaceFile);
-      setReplaceStage('uploading');
-
-      // Upload new PDF to quarantine first for scanning
-      const signature = crypto.randomUUID();
-      const quarantinePath = `${selectedBook.id}/${signature}-replacement.pdf`;
-      const { error: uploadError } = await supabase.storage.from('book-pdf-quarantine').upload(quarantinePath, replaceFile, {
-        contentType: 'application/pdf',
-        cacheControl: '0',
-        upsert: false,
-      });
-      if (uploadError) throw uploadError;
-
-      setReplaceStage('replacing');
-      // Use the pdf-management function to replace PDF
-      const { data, error } = await supabase.functions.invoke('pdf-management', {
-        body: {
-          action: 'replace_pdf',
-          bookId: selectedBook.id,
-          newSubmissionId: signature, // We'll need a proper submission ID
-          rightsBasis: replaceRightsBasis,
-          evidenceUrl: parsedSource.toString(),
-          rightsNotes: replaceRightsNotes.trim(),
-        },
-      });
-
-      // Since we don't have a proper submission, let's use the review-book-pdf function
-      // Actually, we need a different approach - create a submission first
-      const submissionId = crypto.randomUUID();
-      const { error: subError } = await supabase.from('book_pdf_submissions' as any).insert({
-        id: submissionId,
-        user_id: user.id,
-        submission_source: 'admin_replacement',
-        original_filename: replaceFile.name.slice(0, 255),
-        storage_path: quarantinePath,
-        file_size_bytes: replaceFile.size,
-        submitted_title: selectedBook.title,
-        submitted_author: selectedBook.author,
-        rights_attested: true,
-        rights_statement: 'Admin replacement with verified rights.',
-        status: 'approved',
-        target_book_id: selectedBook.id,
-      });
-      if (subError) throw subError;
-
-      const { data: replaceResult, error: replaceError } = await supabase.functions.invoke('review-book-pdf', {
-        body: {
-          submissionId,
-          action: 'replace_pdf',
-          bookId: selectedBook.id,
-          newSubmissionId: submissionId,
-          rightsBasis: replaceRightsBasis,
-          evidenceUrl: parsedSource.toString(),
-          rightsNotes: replaceRightsNotes.trim(),
-        },
-      });
-
-      if (replaceError) throw replaceError;
-      if (!replaceResult?.success) throw new Error(replaceResult?.error || 'Replacement failed');
-
-      setReplaceStage('audit');
-      toast({ title: 'PDF replaced successfully', description: `The PDF for “${selectedBook.title}” has been replaced. Previous version archived in audit trail.` });
-
-      setReplaceFile(null);
-      setReplaceSourceUrl('');
-      setReplaceRightsNotes('');
-      setReplaceConfirmRights(false);
-      const replaceFileInput = document.getElementById('replace-pdf-file') as HTMLInputElement | null;
-      if (replaceFileInput) replaceFileInput.value = '';
-      setShowReplaceDialog(false);
-
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['admin-book-pdf-manager-books'] }),
-        queryClient.invalidateQueries({ queryKey: ['books'] }),
-      ]);
-    } catch (error) {
-      console.error('PDF replacement failed:', error);
-      toast({
-        title: 'Replacement failed',
-        description: error instanceof Error ? error.message : 'Could not replace the PDF. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsReplacing(false);
-      setReplaceStage('idle');
-    }
+    toast({
+      title: 'Replacement is temporarily disabled',
+      description: 'The legacy replacement path does not complete verification safely. Submit a verified replacement through the PDF review workflow instead.',
+      variant: 'destructive',
+    });
   };
 
   const handleDelete = async () => {
@@ -493,7 +305,7 @@ export default function AdminBookPdfManager() {
               {error && <p role="alert" className="text-sm text-destructive">Could not load books: {error instanceof Error ? error.message : 'Unknown catalog error'}. Check administrator access and the books_library API permissions, then retry.</p>}
               {!isLoading && !error && filteredBooks.length === 0 && <p className="py-8 text-center text-sm text-muted-foreground">No matching books found.</p>}
               {filteredBooks.map((book) => {
-                const pdfStatus = getPDFStatusBadge(book.pdf_url, book.pdf_verification_status);
+                const pdfStatus = getPDFStatusBadge(book.pdf_url, null);
                 return (
                   <button
                     key={book.id}
@@ -523,11 +335,6 @@ export default function AdminBookPdfManager() {
                         {book.isbn && <p className="mt-0.5 text-xs text-muted-foreground font-mono">ISBN {book.isbn}</p>}
                         <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
                           {book.language && <span>{book.language}</span>}
-                          {Boolean(book.pdf_page_count) && <span>{book.pdf_page_count} pp</span>}
-                          {Boolean(book.pdf_file_size) && <span>{formatFileSize(book.pdf_file_size)}</span>}
-                          {book.pdf_verification_status && book.pdf_verification_status !== 'verified' && (
-                            <span className="text-amber-600">{book.pdf_verification_status.replace(/_/g, ' ')}</span>
-                          )}
                         </div>
                       </div>
                     </div>
