@@ -1,4 +1,4 @@
-import type { BrainDomain, BrainDifficulty, BrainQuestion } from "./questionTypes";
+import type { BrainQuestion } from "./questionTypes";
 
 export const EXPANDED_QUESTIONS: BrainQuestion[] = [
   {
