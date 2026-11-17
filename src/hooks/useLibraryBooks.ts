@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client-universal';
 import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
 import { getCoverQualityScore } from '@/utils/getCoverQualityScore';
+import { getVerifiedAssetRankingBonus } from '@/utils/catalog/assetQualityScoring';
 import {
   BASE_BOOK_SELECT_COLUMNS,
   detectBookSchemaCapabilities,
@@ -580,7 +581,7 @@ export const getBookCompletenessScore = (book: any): number => {
     subScore += Math.min(40, Math.round(book.qualityScore * 0.4));
   }
 
-  return baseScore + subScore;
+  return baseScore + subScore + getVerifiedAssetRankingBonus(book);
 };
 
 /**
