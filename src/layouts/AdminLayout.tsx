@@ -20,6 +20,7 @@ const sections = [
       { label: "PDF submissions", href: "/admin/book-pdfs", icon: BookOpen },
       { label: "PDF verification", href: "/admin/book-pdf-reviews", icon: FileCheck2 },
       { label: "Library quality", href: "/admin/library-quality", icon: ShieldCheck },
+      { label: "Book SEO review", href: "/admin/book-seo-review", icon: FileCheck2 },
       { label: "Library archive", href: "/admin/library-archive", icon: BookOpen },
       { label: "Author enrichment", href: "/admin/author-enrichment", icon: WandSparkles },
       { label: "Newsroom manager", href: "/admin/news", icon: Newspaper },
