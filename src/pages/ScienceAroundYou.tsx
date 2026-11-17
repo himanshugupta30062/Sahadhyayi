@@ -31,7 +31,6 @@ import {
   type ScienceQuestionEvaluation,
 } from "@/lib/science/attempts";
 import {
-  SCIENCE_QUESTIONS,
   getScienceQuestionsForDifficulty,
   shuffleScienceQuestions,
   type ScienceQuestion,
