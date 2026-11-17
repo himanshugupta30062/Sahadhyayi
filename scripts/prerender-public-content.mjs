@@ -106,7 +106,7 @@ function createPage({ title, description, route, image, type, entityType, entity
   // visitors with JavaScript disabled. React replaces this fallback when it mounts.
   const safeBodyText = bodyText ? plainText(bodyText, 1800) : "";
   const fallback = `<main id="seo-fallback" style="max-width:900px;margin:3rem auto;padding:0 1.25rem;font-family:system-ui,sans-serif;line-height:1.65">
-    <h1>\${escapeHtml(title.replace(/[ \t]{0,16}\|[ \t]{0,16}Sahadhyayi$/i, ""))}</h1>
+    <h1>${escapeHtml(title.replace(/[ \t]{0,16}\|[ \t]{0,16}Sahadhyayi$/i, ""))}</h1>
     <p>${escapeHtml(description)}</p>
     ${safeBodyText ? `<p>${escapeHtml(safeBodyText)}</p>` : ""}
     <p><a href="/library">Explore the library</a> · <a href="/articles">Read articles</a> · <a href="/groups">Find reading groups</a> · <a href="/authors">Discover authors</a></p>
