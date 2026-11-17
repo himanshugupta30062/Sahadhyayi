@@ -104,11 +104,15 @@ serve(async (req: Request) => {
   }
 
   const allowedDifficulties: ScienceDifficulty[] = ["beginner", "intermediate", "advanced"];
-  const difficulty = allowedDifficulties.includes(body?.difficulty as ScienceDifficulty)
-    ? body.difficulty as ScienceDifficulty
-    : "beginner";
+  if (!body) return response({ error: "Send a valid JSON assessment payload." }, 400);
+  const difficulty: ScienceDifficulty = body.difficulty === undefined
+    ? "beginner"
+    : allowedDifficulties.includes(body.difficulty as ScienceDifficulty)
+      ? body.difficulty as ScienceDifficulty
+      : null as never;
+  if (!difficulty) return response({ error: "Choose a valid assessment difficulty." }, 400);
 
-  if (!body || !Array.isArray(body.answers) || body.answers.length !== SERVER_SCIENCE_QUESTIONS.length) {
+  if (!Array.isArray(body.answers) || body.answers.length !== SERVER_SCIENCE_QUESTIONS.length) {
     return response({ error: "This assessment must contain the complete question set." }, 400);
   }
 
