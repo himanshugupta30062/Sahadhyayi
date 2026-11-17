@@ -53,6 +53,11 @@ function addUrl(loc, changefreq = 'weekly', priority = '0.6', image, lastmod) {
 
 addUrl('/', 'weekly', '1.0', HOME_IMAGE);
 staticPages.forEach(route => addUrl(route, 'weekly', route === '/library' || route === '/articles' ? '0.9' : '0.5'));
+
+[
+  'artificial-intelligence', 'machine-learning', 'climate-science',
+  'psychology', 'medicine', 'physics'
+].forEach(slug => addUrl('/research-papers/topic/' + slug, 'weekly', '0.7'));
 blogSlugs.forEach(slug => addUrl('/blog/' + slug, 'monthly', '0.6'));
 
 const scientistSlugs = [

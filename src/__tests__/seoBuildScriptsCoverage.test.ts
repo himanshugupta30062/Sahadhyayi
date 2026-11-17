@@ -111,6 +111,7 @@ describe('SEO build-script coverage', () => {
     await runScript('../../scripts/generateSitemap.js');
     const sitemap = mocks.writes.find((entry) => entry.path.endsWith('sitemap.xml'))?.content || '';
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/library</loc>');
+    expect(sitemap).toContain('<loc>https://sahadhyayi.com/research-papers/topic/artificial-intelligence</loc>');
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/book/book-1</loc>');
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/authors/munshi-premchand</loc>');
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/articles/useful-reading-guide</loc>');
@@ -176,11 +177,18 @@ describe('SEO build-script coverage', () => {
     expect(author).toContain('Books by Munshi Premchand');
     expect(author).toContain('<a href="/book/book-1">A &lt;script&gt;alert(1)&lt;/script&gt; Book</a>');
     const research = mocks.writes.find((entry) => entry.path.endsWith('/research-papers/index.html'))?.content || '';
+    const aiResearch = mocks.writes.find((entry) => entry.path.endsWith('/research-papers/topic/artificial-intelligence/index.html'))?.content || '';
     expect(research).toContain('<title>Research Papers &amp; Academic Studies | Sahadhyayi</title>');
     expect(research).toContain('"@type":"CollectionPage"');
     expect(research).toContain('"@type":"BreadcrumbList"');
     expect(research).toContain('"name":"Artificial intelligence"');
     expect(research).toContain('"name":"Research Papers"');
+    expect(aiResearch).toContain('<title>Artificial intelligence Research Papers &amp; Studies | Sahadhyayi</title>');
+    expect(aiResearch).toContain('<link rel="canonical" href="https://sahadhyayi.com/research-papers/topic/artificial-intelligence" />');
+    expect(aiResearch).toContain('"@type":"CollectionPage"');
+    expect(aiResearch).toContain('"name":"Artificial intelligence"');
+    expect(aiResearch).toContain('Home');
+    expect(aiResearch).toContain('Research Papers');
     expect(article).toContain('<title>A Useful Reading Guide | Sahadhyayi</title>');
     expect(article).toContain('<meta property="og:type" content="article" />');
     expect(article).toContain('"@type":"Article"');

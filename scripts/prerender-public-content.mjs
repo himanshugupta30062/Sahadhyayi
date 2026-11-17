@@ -186,6 +186,52 @@ for (const page of publicPages) {
   writeRoute(page.route, createPage({ ...page, type: "website" }));
 }
 
+const researchTopicPages = [
+  {
+    "slug": "artificial-intelligence",
+    "name": "Artificial intelligence",
+    "description": "Explore research papers on artificial intelligence, including machine reasoning, generative models, responsible AI, and real-world applications."
+  },
+  {
+    "slug": "machine-learning",
+    "name": "Machine learning",
+    "description": "Discover machine learning research on algorithms, model training, evaluation, deep learning, and practical applications."
+  },
+  {
+    "slug": "climate-science",
+    "name": "Climate science",
+    "description": "Explore climate science research on climate change, impacts, mitigation, adaptation, and evidence from environmental studies."
+  },
+  {
+    "slug": "psychology",
+    "name": "Psychology",
+    "description": "Discover psychology research on cognition, behaviour, mental processes, development, and social experience."
+  },
+  {
+    "slug": "medicine",
+    "name": "Medicine",
+    "description": "Explore medical and health research across clinical studies, public health, diagnosis, treatment, and biomedical science."
+  },
+  {
+    "slug": "physics",
+    "name": "Physics",
+    "description": "Discover physics research across fundamental theory, materials, particles, quantum science, and the physical universe."
+  }
+];
+for (const topic of researchTopicPages) {
+  const route = `/research-papers/topic/${topic.slug}`;
+  writeRoute(route, createPage({
+    title: `${topic.name} Research Papers & Studies | Sahadhyayi`,
+    description: topic.description,
+    route,
+    type: "website",
+    schemaType: "CollectionPage",
+    about: [topic.name, "Research papers", "Academic studies"],
+    breadcrumbs: [{ name: "Home", route: "/" }, { name: "Research Papers", route: "/research-papers" }, { name: topic.name, route }],
+    bodyText: topic.description,
+  }));
+}
+
 const lifeStoryProfiles = [
   { slug: "kalpana-chawla", name: "Kalpana Chawla", description: "Explore the life of Kalpana Chawla, the astronaut and aerospace engineer from Karnal who became the first woman of Indian origin to travel to space." },
   { slug: "arunima-sinha", name: "Arunima Sinha", description: "Discover mountaineer Arunima Sinha's journey from recovery after a train accident to becoming the first female amputee to summit Mount Everest." },
