@@ -179,7 +179,8 @@ async function fetchFilteredBooks(
       cover_image_url: row.cover_image_url || p.coverImageUrl,
       description: row.description || p.description,
       publication_year: row.publication_year || p.publicationYear,
-      language: row.language || p.language || 'English',
+      // Preserve missing language as unknown; a fabricated default inflates metadata quality.
+      language: row.language || p.language || undefined,
       pdf_url: row.pdf_url || p.assets.find(a => a.format === 'pdf')?.downloadUrl,
       reader_link_status: row.reader_link_status,
       reader_link_http_status: row.reader_link_http_status,
