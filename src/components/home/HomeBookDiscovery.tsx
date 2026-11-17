@@ -69,6 +69,7 @@ export const HomeBookDiscovery: React.FC = () => {
   const [selectedGenre, setSelectedGenre] = useState<string>('All');
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(false);
+  const [isDocumentVisible, setIsDocumentVisible] = useState<boolean>(true);
   const genreBarRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -81,6 +82,15 @@ export const HomeBookDiscovery: React.FC = () => {
     isError,
     refetch,
   } = useLibraryBooks(undefined, 600, { requireCover: true, genre: selectedGenre });
+
+  // Pause the decorative marquee while the page is backgrounded.
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const updateVisibility = () => setIsDocumentVisible(!document.hidden);
+    updateVisibility();
+    document.addEventListener('visibilitychange', updateVisibility);
+    return () => document.removeEventListener('visibilitychange', updateVisibility);
+  }, []);
 
   // Listen to prefers-reduced-motion media query
   useEffect(() => {
@@ -339,7 +349,12 @@ export const HomeBookDiscovery: React.FC = () => {
           will-change: transform;
         }
         .sahadhyayi-marquee-animating {
-          animation: sahadhyayi-marquee-scroll 48s linear infinite;
+          animation: sahadhyayi-marquee-scroll 52s linear infinite;
+        }
+        @media (max-width: 640px) {
+          .sahadhyayi-marquee-animating {
+            animation-duration: 64s;
+          }
         }
         .sahadhyayi-marquee-reverse {
           animation-direction: reverse;
@@ -534,8 +549,11 @@ export const HomeBookDiscovery: React.FC = () => {
               isMarqueeActive ? 'sahadhyayi-marquee-animating' : 'overflow-x-auto scrollbar-none justify-center'
             }`}
             style={{
-              animationPlayState: isPaused ? 'paused' : 'running',
+              animationPlayState: isPaused || !isDocumentVisible ? 'paused' : 'running',
             }}
+            role="region"
+            aria-label="Featured books carousel"
+            aria-live="off"
           >
             {/* Primary Track (Always accessible to screen readers & keyboard navigation) */}
             <div className="flex gap-3 sm:gap-4 flex-shrink-0">
