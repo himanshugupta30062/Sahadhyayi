@@ -130,6 +130,7 @@ const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
 const AdminOverview = lazy(() => import('./pages/AdminOverview'));
 const AdminLibraryQuality = lazy(() => import('./pages/AdminLibraryQuality'));
+const AdminBookSeoReview = lazy(() => import('./pages/AdminBookSeoReview'));
 const AdminBookPdfManager = lazy(() => import('./pages/AdminBookPdfManager'));
 const AdminBookPdfReviews = lazy(() => import('./pages/AdminBookPdfReviews'));
 const AdminLibraryArchive = lazy(() => import('./pages/AdminLibraryArchive'));
@@ -803,6 +804,16 @@ const App = memo(() => {
                             <AdminRoute>
                               <Suspense fallback={<LoadingFallback message="Loading quality dashboard..." />}>
                                 <AdminLibraryQuality />
+                              </Suspense>
+                            </AdminRoute>
+                          }
+                        />
+                        <Route
+                          path="/admin/book-seo-review"
+                          element={
+                            <AdminRoute>
+                              <Suspense fallback={<LoadingFallback message="Loading book SEO review queue..." />}>
+                                <AdminBookSeoReview />
                               </Suspense>
                             </AdminRoute>
                           }
