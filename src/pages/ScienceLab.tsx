@@ -41,7 +41,8 @@ type ExperimentAttempt = {
   what_learned: string | null;
   worked: boolean | null;
   created_at: string;
-  ai_feedback?: ScienceAiFeedback | null;\n  moderation_status?: "private" | "pending" | "approved" | "rejected";
+  ai_feedback?: ScienceAiFeedback | null;
+  moderation_status?: "private" | "pending" | "approved" | "rejected";
   mediaUrls?: Array<{ url: string; media_type: "image" | "video" }>;
   experiment?: Pick<Experiment, "title" | "slug" | "category"> | null;
 };
