@@ -99,7 +99,7 @@ async function searchCatalogue(admin: any, query: string, page = 1, pageSize = 2
 async function getCatalogueBookById(admin: any, bookId: string): Promise<Record<string, unknown> | null> {
   const { data, error } = await admin
     .from("books_library")
-    .select("id,title,author,isbn,pdf_url,publication_year,language,cover_image_url,status,catalog_status,is_archived")
+    .select("id,title,author,isbn,pdf_url,publication_year,language,cover_image_url")
     .eq("id", bookId)
     .maybeSingle();
 
@@ -416,7 +416,6 @@ serve(async (req) => {
 
     // Run malware scan
     const scannerToken = Deno.env.get("BOUNCER_API_KEY");
-    let scanBypassed = false;
     let malwareDetails: Record<string, unknown> = {};
 
     if (!scannerToken) {
@@ -431,8 +430,6 @@ serve(async (req) => {
           // Update submission with malware scan failure
           await admin.from("book_pdf_submissions").update({
             malware_scan_status: scanResult.verdict,
-            malware_scan_completed_at: new Date().toISOString(),
-            malware_scan_details: malwareDetails,
           }).eq("id", submissionId);
 
           return json({
@@ -445,8 +442,6 @@ serve(async (req) => {
 
         await admin.from("book_pdf_submissions").update({
           malware_scan_status: "clean",
-          malware_scan_completed_at: new Date().toISOString(),
-          malware_scan_details: malwareDetails,
         }).eq("id", submissionId);
       } catch (error) {
         console.error("Bouncer scan request failed", error instanceof Error ? error.message : "unknown error");
@@ -483,7 +478,6 @@ serve(async (req) => {
       rights_evidence_url: evidenceUrl,
       reviewed_by: authData.user.id,
       reviewed_at: new Date().toISOString(),
-      published_at: new Date().toISOString(),
       catalogue_match_status: submission.catalogue_match_status || (submission.target_book_id === targetBookId ? "admin_selected" : "new_created"),
     }).eq("id", submissionId);
 
@@ -510,7 +504,6 @@ serve(async (req) => {
         rights_basis: rightsBasis,
         evidence_host: evidenceValidation.host,
         created_new_book: createNewBook,
-        scan_bypassed: scanBypassed,
         malware_details: malwareDetails,
       },
     });
@@ -562,11 +555,14 @@ serve(async (req) => {
 
     // Get the new submission's PDF from quarantine
     const { data: newSubmission, error: newSubError } = await admin.from("book_pdf_submissions")
-      .select("id,storage_path,original_filename,file_size_bytes,pdf_sha256,pdf_page_count,submitted_title,submitted_author")
+      .select("id,storage_path,original_filename,file_size_bytes,pdf_sha256,pdf_page_count,submitted_title,submitted_author,status,rights_attested,verification_completed_at")
       .eq("id", newSubmissionId)
       .maybeSingle();
 
     if (newSubError || !newSubmission) return json({ error: "New submission not found." }, 404);
+    if (newSubmission.status !== "needs_review" || !newSubmission.verification_completed_at || !newSubmission.rights_attested) {
+      return json({ error: "Replacement PDFs must complete automated verification and contributor rights attestation before publication." }, 409);
+    }
 
     // Verify the new PDF
     const { data: source, error: downloadError } = await admin.storage.from("book-pdf-quarantine").download(newSubmission.storage_path);
@@ -639,7 +635,6 @@ serve(async (req) => {
       rights_evidence_url: evidenceUrl,
       reviewed_by: authData.user.id,
       reviewed_at: new Date().toISOString(),
-      published_at: new Date().toISOString(),
       catalogue_match_status: "admin_selected",
       status: "approved",
     }).eq("id", newSubmissionId);
