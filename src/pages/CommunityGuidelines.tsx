@@ -1,5 +1,5 @@
 import React from "react";
-import { HeartHandshake, ShieldCheck, MessageCircle, Flag, Users, BookOpen, Lock, AlertTriangle, Printer, Mail } from "lucide-react";
+import { HeartHandshake, Printer, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
