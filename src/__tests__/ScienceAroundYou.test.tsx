@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import ScienceAroundYou from "@/pages/ScienceAroundYou";
-import { SCIENCE_QUESTIONS } from "@/lib/science/questionBank";
+import { getScienceQuestionsForDifficulty } from "@/lib/science/questionBank";
 
 const mocks = vi.hoisted(() => ({
   invoke: vi.fn(),
@@ -32,7 +32,7 @@ function makeEvaluation(score = 80) {
       "Technology & engineering": 75,
       "Earth & space science": 90,
     },
-    results: SCIENCE_QUESTIONS.map((question) => ({
+    results: getScienceQuestionsForDifficulty("beginner").map((question) => ({
       questionId: question.id,
       domain: question.domain,
       score,
