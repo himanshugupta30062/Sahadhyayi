@@ -1,6 +1,7 @@
 /** @vitest-environment jsdom */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
 import {
   getBookLookupKey,
   getOpenLibraryCoverUrl,
@@ -12,6 +13,19 @@ import {
 } from '@/utils/catalog/bookCoverResolver';
 
 describe('bookCoverResolver', () => {
+
+  describe('cover URL normalization', () => {
+    it('rejects known generic Archive.org and Google Books thumbnail endpoints', () => {
+      expect(normalizeCoverUrl('https://archive.org/services/img/originofspecies00darwuoft')).toBeNull();
+      expect(normalizeCoverUrl('https://books.google.com/books/content?id=ryQBzwEACAAJ&printsec=frontcover&img=1')).toBeNull();
+    });
+
+    it('keeps ordinary HTTPS publisher and Open Library cover URLs', () => {
+      expect(normalizeCoverUrl('https://covers.openlibrary.org/b/id/123-L.jpg')).toBe('https://covers.openlibrary.org/b/id/123-L.jpg');
+      expect(normalizeCoverUrl('https://publisher.example.com/covers/book.jpg')).toBe('https://publisher.example.com/covers/book.jpg');
+    });
+  });
+
   beforeEach(() => {
     clearCoverCache();
     vi.restoreAllMocks();
