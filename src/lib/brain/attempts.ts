@@ -81,7 +81,7 @@ export async function listBrainAssessmentAttempts(limit = 50): Promise<BrainAtte
   return (data ?? []).map((row) => toBrainAttemptHistory(row as unknown as BrainAssessmentAttemptRow));
 }
 
-export async function saveBrainAssessmentAttempt(input: BrainAssessmentAttemptInput): Promise<BrainAssessmentAttemptHistoryEntry | null> {
+export async function saveBrainAssessmentAttempt(input: BrainAssessmentAttemptInput): Promise<BrainAttemptHistoryEntry | null> {
   validateAttempt(input);
   const { data: authData, error: authError } = await supabase.auth.getUser();
   if (authError) throw authError;
