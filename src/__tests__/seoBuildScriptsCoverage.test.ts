@@ -155,6 +155,9 @@ describe('SEO build-script coverage', () => {
     expect(book).toContain('<link rel="canonical" href="https://sahadhyayi.com/book/book-1" />');
     expect(book).not.toContain('<script>alert(1)</script>');
     expect(book).toContain('A &amp; B story');
+    expect(book).toContain('<section aria-label="About the author"><h2>About the author</h2><p>Writer &amp; storyteller</p></section>');
+    expect(book).toContain('Genre: Literary fiction');
+    expect(book).toContain('Publication year: 1936');
     expect(book).toContain('"@type":"Book"');
     expect(book).toContain('"isbn":"9780000000001"');
     expect(book).toContain('"genre":"Literary fiction"');
