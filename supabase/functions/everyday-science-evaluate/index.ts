@@ -33,7 +33,7 @@ type ModelEvaluation = {
   misconceptionCorrection?: string | null;
 };
 
-const questionsById = new Map(SERVER_SCIENCE_QUESTIONS.map((question) => [question.id, question]));
+const requestTimes = new Map<string, number[]>();
 const requestTimes = new Map<string, number[]>();
 
 function response(body: Record<string, unknown>, status = 200): Response {
@@ -110,8 +110,14 @@ serve(async (req: Request) => {
   }
   const difficulty = (body.difficulty ?? "beginner") as ScienceDifficulty;
 
-  if (!Array.isArray(body.answers) || body.answers.length !== SERVER_SCIENCE_QUESTIONS.length) {
+  if (!Array.isArray(body.answers) || body.answers.length !== 10) {
     return response({ error: "This assessment must contain the complete question set." }, 400);
+  }
+
+  const selectedQuestions = SERVER_SCIENCE_QUESTIONS.filter((question) => question.difficulty === difficulty);
+  const questionsById = new Map(selectedQuestions.map((question) => [question.id, question]));
+  if (selectedQuestions.length !== 10 || body.answers.length !== selectedQuestions.length) {
+    return response({ error: "This difficulty level must contain its complete ten-question set." }, 400);
   }
 
   const answers: StudentAnswer[] = [];
@@ -126,7 +132,7 @@ serve(async (req: Request) => {
     seen.add(questionId);
     answers.push({ questionId, answer });
   }
-  if (seen.size !== SERVER_SCIENCE_QUESTIONS.length) {
+  if (seen.size !== selectedQuestions.length) {
     return response({ error: "The assessment question set is incomplete." }, 400);
   }
   if (!answers.some((item) => item.answer.length >= 8)) {
