@@ -144,25 +144,11 @@ export function isVerifiedPdf(book: any): boolean {
     return false;
   }
 
-  // Check verified PDF indicators:
-  // - Direct .pdf extension
-  // - Or hosted on verified document repository (Supabase, Gutenberg, Open Textbook, OpenStax, Archive.org download, NCERT, DOAB)
-  // - Or book.accessStatus indicates verified full text
-  const isPdfExtension = /\.pdf(\?|#|$)/i.test(pdf);
-  const isTrustedHost =
-    pdf.includes('supabase.co') ||
-    pdf.includes('gutenberg.org') ||
-    pdf.includes('open.umn.edu') ||
-    pdf.includes('openstax.org') ||
-    pdf.includes('archive.org/download') ||
-    pdf.includes('ncert.nic.in') ||
-    pdf.includes('doabooks.org');
-  const isVerifiedAccessStatus =
-    book.accessStatus === 'verified_full_text' ||
-    book.accessStatus === 'open_textbook' ||
-    book.accessStatus === 'public_domain';
-
-  return isPdfExtension || isTrustedHost || isVerifiedAccessStatus;
+  // A filename extension or trusted host is not verification: URLs can be
+  // stale, return HTML, point to previews, or contain the wrong edition.
+  // Direct PDFs are verified only by the server-side HTTP/MIME audit above
+  // or by an explicitly verified structured PDF asset handled earlier.
+  return false;
 }
 
 /**
