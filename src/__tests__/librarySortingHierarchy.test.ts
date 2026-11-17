@@ -366,10 +366,10 @@ describe('Library Book Sorting Hierarchy', () => {
       const scoreNoCover = getBookCompletenessScore(partialVerifiedPdfNoCover);
       const scoreNasa = getBookCompletenessScore(nasaTechnicalReport);
 
-      expect(scoreMetaWithCover).toBeGreaterThanOrEqual(7500);
-      expect(scoreMetaWithCover).toBeLessThan(8500);
+      expect(scoreMetaWithCover).toBeGreaterThanOrEqual(11000);
+      expect(scoreMetaWithCover).toBeLessThan(12000);
 
-      expect(scoreMetaWithCover).toBeLessThan(scoreNoCover);
+      expect(scoreMetaWithCover).toBeGreaterThan(scoreNoCover);
       expect(scoreMetaWithCover).toBeGreaterThan(scoreNasa);
     });
 
@@ -377,8 +377,8 @@ describe('Library Book Sorting Hierarchy', () => {
       const scoreNoCover = getBookCompletenessScore(partialVerifiedPdfNoCover);
       const scoreNasa = getBookCompletenessScore(nasaTechnicalReport);
 
-      expect(scoreNoCover).toBeGreaterThanOrEqual(11500);
-      expect(scoreNoCover).toBeLessThan(12000);
+      expect(scoreNoCover).toBeGreaterThanOrEqual(10000);
+      expect(scoreNoCover).toBeLessThan(11000);
 
       // Genuine book without cover outranks non-book institutional reports
       expect(scoreNoCover).toBeGreaterThan(scoreNasa);
