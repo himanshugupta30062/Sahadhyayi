@@ -201,6 +201,16 @@ serve(async (req) => {
   }
 
   const action = body.action;
+
+  // These legacy admin operations are not safe against the currently deployed
+  // production schema. Replacement has a non-atomic fallback path and rescan
+  // writes metadata columns that do not exist in production. Keep both closed
+  // until their schema migration and end-to-end workflow are deployed.
+  if (action === "replace_pdf" || action === "rescan_malware") {
+    return json({
+      error: "This PDF management operation is temporarily unavailable while the production-safe workflow is completed. No PDF or catalogue record was changed.",
+    }, 503);
+  }
   if (!["delete_pdf", "replace_pdf", "reverify_pdf", "rescan_malware", "get_pdf_audit", "get_submission_details"].includes(String(action))) {
     return json({ error: "Unsupported action." }, 400);
   }
