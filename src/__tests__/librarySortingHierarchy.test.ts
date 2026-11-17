@@ -18,6 +18,18 @@ import {
 } from '@/hooks/useLibraryBooks';
 
 describe('Library Book Sorting Hierarchy', () => {
+  it('does not trust a direct PDF URL without server-side audit evidence', () => {
+    const unauditedPdf = {
+      id: 'unaudited-pdf',
+      title: 'A Real Book',
+      author: 'A Known Author',
+      pdf_url: 'https://archive.org/download/book/book.pdf',
+    };
+
+    expect(isVerifiedPdf(unauditedPdf)).toBe(false);
+    expect(getBookResourceType(unauditedPdf)).toBe('unverified_direct_pdf');
+  });
+
   it('does not treat a URL ending in .pdf as verified when the server audit reports a non-PDF response', () => {
     const misleadingPdf = {
       id: 'misleading-pdf',
@@ -80,6 +92,9 @@ describe('Library Book Sorting Hierarchy', () => {
     description: 'A foundational dialogue concerning justice, the order and character of the just city-state, and the just man.',
     language: 'English',
     pdf_url: 'https://example.com/books/republic.pdf',
+    reader_link_status: 'working',
+    reader_link_http_status: 200,
+    reader_link_content_type: 'application/pdf',
     created_at: '2026-01-01T00:00:00Z',
     pages: 350,
     isbn: '9780140449143',
@@ -94,6 +109,9 @@ describe('Library Book Sorting Hierarchy', () => {
     description: 'An investigation into the foundations and limits of human knowledge and metaphysics.',
     language: 'English',
     pdf_url: 'https://example.com/books/kant-critique.pdf',
+    reader_link_status: 'working',
+    reader_link_http_status: 200,
+    reader_link_content_type: 'application/pdf',
     created_at: '2026-01-02T00:00:00Z',
   };
 
@@ -105,6 +123,9 @@ describe('Library Book Sorting Hierarchy', () => {
     description: '',
     language: 'English',
     pdf_url: 'https://example.com/books/ethics.pdf',
+    reader_link_status: 'working',
+    reader_link_http_status: 200,
+    reader_link_content_type: 'application/pdf',
     created_at: '2026-01-03T00:00:00Z',
   };
 
@@ -756,6 +777,9 @@ describe('Library Book Sorting Hierarchy', () => {
         cover_image_url: null,
         description: 'A masterpiece of Western philosophy exploring human reason and epistemology.',
         pdf_url: 'https://archive.org/download/kant_critique/kant.pdf',
+        reader_link_status: 'working',
+        reader_link_http_status: 200,
+        reader_link_content_type: 'application/pdf',
         created_at: '2026-01-01T00:00:00Z',
       };
 
