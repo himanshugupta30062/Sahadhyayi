@@ -153,6 +153,15 @@ describe('Library Book Sorting Hierarchy', () => {
     created_at: '2026-01-15T00:00:00Z',
   };
 
+  describe('Cover-first page ranking regression', () => {
+    it('ranks a genuine metadata-only book with a cover above a coverless PDF', () => {
+      expect(getBookCompletenessScore(metadataOnlyBook)).toBeGreaterThan(
+        getBookCompletenessScore(partialVerifiedPdfNoCover)
+      );
+      expect(compareLibraryBooks(metadataOnlyBook, partialVerifiedPdfNoCover)).toBeLessThan(0);
+    });
+  });
+
   // Requirement 7: Non-empty pdf_url validation
   describe('Requirement 7: PDF link verification rules', () => {
     it('accepts valid, accessible PDF URLs with direct .pdf extension', () => {
@@ -316,7 +325,7 @@ describe('Library Book Sorting Hierarchy', () => {
       expect(scorePreview).toBeGreaterThanOrEqual(12500);
 
       // A supported preview with a genuine cover outranks a coverless PDF for visual browsing.
-      expect(scorePreview).toBeLessThan(scorePartialPdf);
+      expect(scorePreview).toBeGreaterThan(scorePartialPdf);
       expect(scorePreview).toBeGreaterThan(scoreNoCover);
       expect(scorePreview).toBeGreaterThan(scoreNasa);
     });
@@ -357,10 +366,10 @@ describe('Library Book Sorting Hierarchy', () => {
       const scoreNoCover = getBookCompletenessScore(partialVerifiedPdfNoCover);
       const scoreNasa = getBookCompletenessScore(nasaTechnicalReport);
 
-      expect(scoreMetaWithCover).toBeGreaterThanOrEqual(7500);
-      expect(scoreMetaWithCover).toBeLessThan(8500);
+      expect(scoreMetaWithCover).toBeGreaterThanOrEqual(11000);
+      expect(scoreMetaWithCover).toBeLessThan(12000);
 
-      expect(scoreMetaWithCover).toBeLessThan(scoreNoCover);
+      expect(scoreMetaWithCover).toBeGreaterThan(scoreNoCover);
       expect(scoreMetaWithCover).toBeGreaterThan(scoreNasa);
     });
 
@@ -368,8 +377,8 @@ describe('Library Book Sorting Hierarchy', () => {
       const scoreNoCover = getBookCompletenessScore(partialVerifiedPdfNoCover);
       const scoreNasa = getBookCompletenessScore(nasaTechnicalReport);
 
-      expect(scoreNoCover).toBeGreaterThanOrEqual(11500);
-      expect(scoreNoCover).toBeLessThan(12000);
+      expect(scoreNoCover).toBeGreaterThanOrEqual(10000);
+      expect(scoreNoCover).toBeLessThan(11000);
 
       // Genuine book without cover outranks non-book institutional reports
       expect(scoreNoCover).toBeGreaterThan(scoreNasa);

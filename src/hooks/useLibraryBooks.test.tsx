@@ -81,6 +81,33 @@ describe('useLibraryBooks utility functions', () => {
       expect(isVerifiedPdf({ pdf_url: 'ftp://invalid-protocol.com/book.pdf' })).toBe(false);
     });
 
+    it('requires production link-check evidence when the database exposes it', () => {
+      const uncheckedWithLegacyAsset = {
+        pdf_url: 'https://example.com/book.pdf',
+        reader_link_status: 'unchecked',
+        assets: [{ format: 'pdf', verified: true, downloadUrl: 'https://example.com/book.pdf' }],
+      };
+      expect(isVerifiedPdf(uncheckedWithLegacyAsset)).toBe(false);
+      expect(isVerifiedPdf({
+        pdf_url: 'https://example.com/book.pdf',
+        reader_link_status: 'working',
+        reader_link_http_status: 200,
+        reader_link_content_type: 'application/pdf',
+      })).toBe(true);
+      expect(isVerifiedPdf({
+        pdf_url: 'https://example.com/book.pdf',
+        reader_link_status: 'working',
+        reader_link_http_status: 200,
+        reader_link_content_type: 'text/html',
+      })).toBe(false);
+      expect(isVerifiedPdf({
+        pdf_url: 'https://example.com/book.pdf',
+        reader_link_status: 'working',
+        reader_link_http_status: 404,
+        reader_link_content_type: 'application/pdf',
+      })).toBe(false);
+    });
+
     it('accepts direct .pdf extensions and trusted hosts', () => {
       expect(isVerifiedPdf({ pdf_url: 'https://cdn.example.com/book.pdf' })).toBe(true);
       expect(isVerifiedPdf({ pdf_url: 'https://cdn.example.com/book.pdf?token=123' })).toBe(true);
