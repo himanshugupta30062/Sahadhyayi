@@ -53,7 +53,7 @@ function setMeta(html, attribute, key, content) {
   return pattern.test(html) ? html.replace(pattern, tag) : html.replace("</head>", `  ${tag}\n</head>`);
 }
 
-function createPage({ title, description, route, image, type }) {
+function createPage({ title, description, route, image, type, entityType, entityName }) {
   const canonical = `${SITE_URL}${route}`;
   let html = template.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
   html = setMeta(html, "name", "description", description);
@@ -67,6 +67,22 @@ function createPage({ title, description, route, image, type }) {
     html = setMeta(html, "property", "og:image", image);
     html = setMeta(html, "name", "twitter:image", image);
   }
+  const mainEntity = entityType === "Book"
+    ? { "@type": "Book", name: entityName, description, url: canonical, ...(image && /^https:\/\//i.test(image) ? { image } : {}) }
+    : entityType === "Person"
+      ? { "@type": "Person", name: entityName, description, url: canonical }
+      : null;
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: title,
+    description,
+    url: canonical,
+    isPartOf: { "@type": "WebSite", name: "Sahadhyayi", url: SITE_URL },
+    ...(mainEntity ? { mainEntity } : {}),
+  };
+  const jsonLd = JSON.stringify(structuredData).replace(/</g, "\\u003c");
+  html = html.replace("</head>", `  <script type="application/ld+json">${jsonLd}</script>\\n</head>`);
   const canonicalTag = `<link rel="canonical" href="${escapeHtml(canonical)}" />`;
   const canonicalPattern = /<link[ \t]{1,16}[^>\r\n]{0,2048}rel="canonical"[^>\r\n]{0,2048}>/i;
   html = canonicalPattern.test(html)
@@ -133,7 +149,9 @@ for (const person of lifeStoryProfiles) {
     title: `${person.name} — Life Story | Sahadhyayi`,
     description: person.description,
     route,
-    type: "profile"
+    type: "profile",
+    entityType: "Person",
+    entityName: person.name,
   }));
 }
 
@@ -153,7 +171,9 @@ for (const scientist of scientistProfiles) {
     title: `${scientist.name} — Life, Work & Discoveries | Sahadhyayi`,
     description: scientist.description,
     route,
-    type: "profile"
+    type: "profile",
+    entityType: "Person",
+    entityName: scientist.name,
   }));
 }
 
@@ -194,6 +214,8 @@ if (booksError) {
       route,
       image: book.cover_image_url,
       type: "book",
+      entityType: "Book",
+      entityName: title,
     }));
     bookCount += 1;
   }
@@ -223,6 +245,8 @@ if (authorsError) {
       description,
       route,
       type: "profile",
+      entityType: "Person",
+      entityName: name,
     }));
     authorCount += 1;
   }
