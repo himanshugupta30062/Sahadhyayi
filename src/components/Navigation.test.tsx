@@ -326,9 +326,12 @@ describe('Primary Navigation (5 core sections)', () => {
     expect(activityButton).toBeInTheDocument();
     fireEvent.mouseEnter(activityButton);
 
-    expect(screen.getByText('Hub & Gatherings')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Events & Festivals' })).toBeInTheDocument();
-    expect(screen.getByText('Challenges & Games')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Clubs & Events' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Challenges & Games' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Brain & Science' })).toBeInTheDocument();
+    expect(screen.queryByText('Hub & Gatherings')).not.toBeInTheDocument();
+    expect(screen.queryByText('IQ Test & Reasoning')).not.toBeInTheDocument();
+    expect(screen.queryByText('Science & Understanding')).not.toBeInTheDocument();
 
     expect(screen.getByRole('menuitem', { name: 'Activity Hub' })).toHaveAttribute('href', '/activity');
     expect(screen.getByRole('menuitem', { name: 'Events & Festivals' })).toHaveAttribute('href', '/events');
