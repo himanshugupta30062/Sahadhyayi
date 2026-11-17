@@ -78,18 +78,34 @@ export default function HomeFeatureUniverse() {
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
-    const elements = el.querySelectorAll<HTMLElement>("[data-home-reveal]");
+
+    const elements = Array.from(el.querySelectorAll<HTMLElement>("[data-home-reveal]"));
+    const revealAll = () => elements.forEach((element) => element.classList.add("home-revealed"));
+
+    // Never leave content hidden in browsers without IntersectionObserver support
+    // or for visitors who explicitly request reduced motion.
+    if (
+      typeof window === "undefined" ||
+      !("IntersectionObserver" in window) ||
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+    ) {
+      revealAll();
+      return;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("home-revealed");
+            observer.unobserve(entry.target);
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.08, rootMargin: "0px 0px -6% 0px" }
     );
-    elements.forEach((child) => observer.observe(child));
+
+    elements.forEach((element) => observer.observe(element));
     return () => observer.disconnect();
   }, []);
   const moodMessage = useMemo(() => {
@@ -106,7 +122,7 @@ export default function HomeFeatureUniverse() {
 
   return (
     <section ref={sectionRef} className="home-feature-universe relative overflow-hidden bg-[#FAF9F5] text-[#1C201D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
-      <style>{`.home-feature-universe [data-home-reveal]{opacity:0;transform:translateY(18px);transition:opacity 650ms ease,transform 650ms cubic-bezier(.2,.7,.2,1)}.home-feature-universe [data-home-reveal].home-revealed{opacity:1;transform:translateY(0)}.home-feature-universe .home-feature-card{transition:transform 280ms ease,box-shadow 280ms ease,border-color 280ms ease}.home-feature-universe .home-feature-card:hover{transform:translateY(-4px);box-shadow:0 14px 32px rgba(20,35,24,.07)}.home-feature-universe .home-feature-link{transition:background-color 180ms ease,padding 180ms ease}.home-feature-universe .home-feature-link:hover{padding-left:14px}@media(prefers-reduced-motion:reduce){.home-feature-universe [data-home-reveal],.home-feature-universe .home-feature-card,.home-feature-universe .home-feature-link{transition:none!important;transform:none!important}}`}</style>
+      <style>{`.home-feature-universe [data-home-reveal]{opacity:0;transform:translate3d(0,16px,0);transition:opacity 560ms ease,transform 560ms cubic-bezier(.2,.7,.2,1)}.home-feature-universe [data-home-reveal].home-revealed{opacity:1;transform:translate3d(0,0,0)}.home-feature-universe .home-feature-card{transition:transform 280ms ease,box-shadow 280ms ease,border-color 280ms ease}.home-feature-universe .home-feature-card:hover{transform:translateY(-4px);box-shadow:0 14px 32px rgba(20,35,24,.07)}.home-feature-universe .home-feature-link{transition:background-color 180ms ease,padding 180ms ease}.home-feature-universe .home-feature-link:hover{padding-left:14px}@media(prefers-reduced-motion:reduce){.home-feature-universe [data-home-reveal]{opacity:1!important;transition:none!important;transform:none!important}.home-feature-universe .home-feature-card,.home-feature-universe .home-feature-link{transition:none!important;transform:none!important}}`}</style>
       <div className="mx-auto max-w-7xl px-4 pt-8 pb-14 sm:px-6 sm:pt-10 sm:pb-16 lg:px-8">
         <div data-home-reveal className="mb-10 max-w-3xl">
           <p className="mb-3 flex items-center gap-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-[.24em] text-[#8F681C] dark:text-[#D5B16D]"><span className="h-px w-7 bg-[#8F681C] dark:bg-[#D5B16D]"/>Beyond the book</p>
