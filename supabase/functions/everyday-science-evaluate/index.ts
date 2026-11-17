@@ -1,4 +1,9 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import {
+  calculateScienceAnswerScore,
+  clampScienceDimension,
+  type ScienceScoreDimensions,
+} from "../_shared/scienceScoring.ts";
 import { SERVER_SCIENCE_QUESTIONS, SCIENCE_QUESTION_SET_VERSION } from "../_shared/scienceQuestionBank.ts";
 
 const corsHeaders = {
@@ -16,22 +21,8 @@ const jsonHeaders = {
 const MAX_ANSWER_CHARACTERS = 2000;
 const MAX_REQUEST_BYTES = 40000;
 const GEMINI_TIMEOUT_MS = 35000;
-const SCORE_WEIGHTS = {
-  accuracy: 0.35,
-  conceptualUnderstanding: 0.25,
-  reasoning: 0.20,
-  completeness: 0.15,
-  clarity: 0.05,
-} as const;
-
 type StudentAnswer = { questionId: string; answer: string };
-type DimensionScores = {
-  accuracy: number;
-  conceptualUnderstanding: number;
-  reasoning: number;
-  completeness: number;
-  clarity: number;
-};
+type DimensionScores = ScienceScoreDimensions;
 type ModelEvaluation = {
   questionId: string;
   dimensions: DimensionScores;
@@ -46,21 +37,6 @@ const requestTimes = new Map<string, number[]>();
 
 function response(body: Record<string, unknown>, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: jsonHeaders });
-}
-
-function clampScore(value: unknown): number {
-  if (typeof value !== "number" || !Number.isFinite(value)) return 0;
-  return Math.round(Math.max(0, Math.min(100, value)));
-}
-
-function calculateScore(dimensions: DimensionScores): number {
-  return Math.round(
-    clampScore(dimensions.accuracy) * SCORE_WEIGHTS.accuracy +
-    clampScore(dimensions.conceptualUnderstanding) * SCORE_WEIGHTS.conceptualUnderstanding +
-    clampScore(dimensions.reasoning) * SCORE_WEIGHTS.reasoning +
-    clampScore(dimensions.completeness) * SCORE_WEIGHTS.completeness +
-    clampScore(dimensions.clarity) * SCORE_WEIGHTS.clarity
-  );
 }
 
 function safeText(value: unknown, maxLength = 700): string {
@@ -235,11 +211,11 @@ serve(async (req: Request) => {
       evaluationsById.set(item.questionId, {
         questionId: item.questionId,
         dimensions: {
-          accuracy: clampScore(dimensions.accuracy),
-          conceptualUnderstanding: clampScore(dimensions.conceptualUnderstanding),
-          reasoning: clampScore(dimensions.reasoning),
-          completeness: clampScore(dimensions.completeness),
-          clarity: clampScore(dimensions.clarity),
+          accuracy: clampScienceDimension(dimensions.accuracy),
+          conceptualUnderstanding: clampScienceDimension(dimensions.conceptualUnderstanding),
+          reasoning: clampScienceDimension(dimensions.reasoning),
+          completeness: clampScienceDimension(dimensions.completeness),
+          clarity: clampScienceDimension(dimensions.clarity),
         },
         strengths: safeStringList(item.strengths),
         improvements: safeStringList(item.improvements),
@@ -269,7 +245,7 @@ serve(async (req: Request) => {
       return {
         questionId: question.id,
         domain: question.domain,
-        score: calculateScore(dimensions),
+        score: calculateScienceAnswerScore(dimensions),
         dimensions,
         strengths: evaluation?.strengths ?? [],
         improvements: evaluation?.improvements ?? ["Try explaining the key scientific process in your own words."],
