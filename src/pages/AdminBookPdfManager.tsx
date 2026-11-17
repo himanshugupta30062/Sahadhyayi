@@ -325,68 +325,28 @@ export default function AdminBookPdfManager() {
                       <Eye className="h-3 w-3" /> View current PDF
                     </a>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      <Button variant="outline" size="sm" onClick={() => { setShowReplaceDialog(true); setReplaceFile(null); setReplaceSourceUrl(''); setReplaceRightsNotes(''); setReplaceConfirmRights(false); }}>
-                        <Replace className="mr-1 h-3 w-3" /> Replace PDF
-                      </Button>
-                      <Button variant="destructive" size="sm" onClick={() => { setShowDeleteConfirm(true); setDeleteReason(''); }}>
-                        <Trash2 className="mr-1 h-3 w-3" /> Delete PDF
-                      </Button>
                       <Button variant="ghost" size="sm" onClick={handleViewAudit}>
                         <History className="mr-1 h-3 w-3" /> Audit Trail
                       </Button>
                     </div>
                   </>
                 )}
-                <p className="mt-2 text-muted-foreground">Uploading a replacement creates a new file and records the previous URL in the audit trail.</p>
+                <p className="mt-2 text-muted-foreground">PDF replacement and deletion are temporarily unavailable until the audited production-safe operations are deployed.</p>
               </div>
             )}
           </div>
 
-          {/* Upload/Replace Form */}
-          <form onSubmit={handleUpload} className="space-y-5 rounded-2xl border bg-card p-5 sm:p-6">
-            <h2 className="flex items-center gap-2 text-xl font-semibold"><FileUp className="h-5 w-5" /> 2. Upload and verify</h2>
-            <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-sm"><p className="font-medium">Rights check required</p><p className="mt-1 text-muted-foreground">Do not upload copyrighted PDFs unless distribution is authorized. A search result or Telegram link alone is not proof of permission.</p></div>
-            <div>
-              <label htmlFor="book-pdf-file" className="mb-2 block text-sm font-medium">PDF file (maximum 50 MB)</label>
-              <Input id="book-pdf-file" type="file" accept="application/pdf,.pdf" onChange={(event) => setFile(event.target.files?.[0] || null)} />
-              {file && <p className="mt-2 text-xs text-muted-foreground">{file.name} · {(file.size / (1024 * 1024)).toFixed(2)} MB</p>}
+          <div className="space-y-4 rounded-2xl border bg-card p-5 sm:p-6">
+            <h2 className="flex items-center gap-2 text-xl font-semibold"><ShieldCheck className="h-5 w-5" /> 2. Verified PDF workflow</h2>
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
+              <p className="font-semibold">Direct uploads are disabled</p>
+              <p className="mt-1 text-muted-foreground">To add a PDF, use <strong>Contribute a PDF</strong> from the Library. The file is uploaded to private quarantine, verified, and then sent to <strong>Admin PDF Reviews</strong> for approval and publication.</p>
             </div>
-            <div>
-              <label htmlFor="pdf-source-url" className="mb-2 block text-sm font-medium">Source / rights evidence URL</label>
-              <Input id="pdf-source-url" type="url" required value={sourceUrl} onChange={(event) => setSourceUrl(event.target.value)} placeholder="https://official-source.example/book.pdf" />
+            <div className="rounded-xl border p-4 text-sm">
+              <p className="font-medium">Admin actions temporarily restricted</p>
+              <p className="mt-1 text-muted-foreground">Replacement, deletion, and malware rescan are hidden here until their audited database operations are available. Existing PDF links and audit history remain viewable.</p>
             </div>
-            <div>
-              <label htmlFor="pdf-rights-basis" className="mb-2 block text-sm font-medium">Distribution basis</label>
-              <select id="pdf-rights-basis" value={rightsBasis} onChange={(event) => setRightsBasis(event.target.value as typeof rightsBasis)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                {RIGHTS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="pdf-rights-notes" className="mb-2 block text-sm font-medium">Rights evidence / licence notes</label>
-              <textarea id="pdf-rights-notes" required minLength={10} value={rightsNotes} onChange={(event) => setRightsNotes(event.target.value)} rows={3} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" placeholder="Describe the licence, public-domain basis, or written permission. Include edition details." />
-            </div>
-            <label className="flex items-start gap-3 rounded-xl border p-3 text-sm">
-              <input type="checkbox" checked={confirmRights} onChange={(event) => setConfirmRights(event.target.checked)} className="mt-1 h-4 w-4 accent-primary" />
-              <span>I reviewed the source and confirm that Sahadhyayi is permitted to distribute this PDF under the selected basis.</span>
-            </label>
-            <Button type="submit" disabled={isUploading || !selectedBook || !file || !confirmRights || !sourceUrl.trim() || rightsNotes.trim().length < 10} className="w-full">
-              {isUploading ? (
-                <>
-                  {uploadStage === 'validating' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {uploadStage === 'uploading' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {uploadStage === 'linking' && <Link className="mr-2 h-4 w-4" />}
-                  {uploadStage === 'audit' && <FileCheck2 className="mr-2 h-4 w-4" />}
-                  Uploading and linking…
-                </>
-              ) : (
-                <>
-                  <FileCheck2 className="mr-2 h-4 w-4" />
-                  Validate and upload PDF
-                </>
-              )}
-            </Button>
-            <p className="text-xs text-muted-foreground">The browser checks the PDF signature and size. These checks do not replace malware scanning, full content inspection, or legal review.</p>
-          </form>
+          </div>
         </section>
       </div>
 
