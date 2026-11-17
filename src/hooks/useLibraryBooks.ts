@@ -644,6 +644,87 @@ export const getBookCompletenessScore = (book: any): number => {
 };
 
 /**
+ * Overall catalog correctness score (0–100).
+ *
+ * Unlike the legacy resource-tier score, this evaluates the whole record:
+ * bibliographic identity, cover evidence, reading availability, file-quality
+ * evidence, metadata matching and verifier status. Missing measurements are
+ * treated conservatively; URL shape alone is never treated as proof of quality.
+ */
+export const getBookOverallQualityScore = (book: any): number => {
+  if (!book) return 0;
+
+  let score = 0;
+
+  // Bibliographic identity and completeness: 20 points.
+  const title = String(book.title || '').trim();
+  const author = String(book.author || '').trim();
+  const language = String(book.language || '').trim();
+  const year = Number(book.publication_year || book.publicationYear);
+  const isbn = String(book.isbn || '').replace(/[^0-9X]/gi, '');
+  const pages = Number(book.pages || 0);
+  if (title.length >= 2 && !/^(untitled|test|sample|n\/a|null)$/i.test(title)) score += 6;
+  if (author && !/^(unknown|unknown author|anonymous)$/i.test(author)) score += 5;
+  if (language) score += 3;
+  if (Number.isInteger(year) && year > 1400 && year <= new Date().getFullYear()) score += 2;
+  if (isbn.length === 10 || isbn.length === 13) score += 2;
+  if (Number.isFinite(pages) && pages > 10) score += 2;
+
+  // Cover: 15 points. A URL earns only basic presence credit; verified image
+  // quality evidence determines the remaining points.
+  if (hasValidCover(book)) {
+    score += 8;
+    const coverQuality = Number(book.cover_quality_score);
+    score += Number.isFinite(coverQuality)
+      ? Math.round(Math.max(0, Math.min(100, coverQuality)) * 0.07)
+      : 3;
+  }
+
+  // Reading access: 25 points. Pending direct-PDF candidates receive partial
+  // credit, not verified-PDF credit.
+  const resource = getBookResourceType(book);
+  if (isVerifiedPdf(book)) score += 25;
+  else if (hasOtherVerifiedFullText(book)) score += 22;
+  else if (resource === 'online_reader') score += 16;
+  else if (resource === 'unverified_direct_pdf') score += 9;
+  else if (resource === 'external_book_page') score += 8;
+
+  // Description and subject metadata: 15 points.
+  const description = String(book.description || '').trim();
+  if (description.length >= 200) score += 7;
+  else if (description.length >= 80) score += 5;
+  else if (description.length >= 20) score += 3;
+  if (String(book.genre || '').trim()) score += 3;
+  if (String(book.author_bio || '').trim().length >= 30) score += 2;
+  if (String(book.publisher || '').trim()) score += 1;
+  if (String(book.edition || '').trim()) score += 1;
+  if (String(book.original_title || book.originalTitle || '').trim()) score += 1;
+
+  // Cross-asset and bibliographic verification evidence: 25 points.
+  const metadataMatch = Number(book.metadata_match_score);
+  const pdfQuality = Number(book.pdf_quality_score);
+  const assetQuality = Number(book.asset_quality_score);
+  if (Number.isFinite(metadataMatch)) score += Math.round(Math.max(0, Math.min(100, metadataMatch)) * 0.10);
+  else score += 3; // neutral partial credit until a comparison is available
+  if (Number.isFinite(pdfQuality)) score += Math.round(Math.max(0, Math.min(100, pdfQuality)) * 0.10);
+  else if (isVerifiedPdf(book)) score += 5;
+  if (book.asset_quality_status === 'verified' && Number.isFinite(assetQuality)) {
+    score += Math.round(Math.max(0, Math.min(100, assetQuality)) * 0.05);
+  } else if (book.asset_quality_status === 'pending' || !book.asset_quality_status) {
+    score += 2;
+  }
+
+  // Explicit negative evidence must outweigh superficial completeness.
+  if (book.asset_quality_status === 'failed') score -= 25;
+  else if (book.asset_quality_status === 'needs_review') score -= 10;
+  if (Number.isFinite(metadataMatch) && metadataMatch < 40) score -= 15;
+  if (Number.isFinite(pdfQuality) && pdfQuality < 40 && resource !== 'no_reading_resource') score -= 15;
+  if (book.isBrokenLink === true || book.accessStatus === 'access_unverified') score -= 25;
+
+  return Math.max(0, Math.min(100, Math.round(score)));
+};
+
+/**
  * Deterministic library book comparator function.
  */
 export const compareLibraryBooks = (a: any, b: any): number => {
