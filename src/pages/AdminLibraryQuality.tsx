@@ -17,6 +17,7 @@ import {
 } from '@/types/bookCatalog';
 import { generateLibraryDuplicateAudit } from '@/utils/catalog/duplicateAudit';
 import { sortBooksByCompleteness, diversifyBooksPerPage } from '@/hooks/useLibraryBooks';
+import { mapRawToEdition } from '@/utils/catalog/deduplicationEngine';
 import {
   detectBookSchemaCapabilities,
   getPublicBookSelectColumns,
@@ -219,10 +220,33 @@ export const AdminLibraryQuality: React.FC = () => {
         if (page.length < fetchSize) break;
       }
 
-      // Match the Library's ranking and 12-book page diversification, then
-      // audit exactly the 36 records that would appear on its first 3 pages.
+      // Match the Library's record mapping, ranking and 12-book page diversification,
+      // then audit the top 36 books_library records (community publications use a
+      // separate table and are not accepted by this books_library auditor).
       const visibleRows = filterPublicBooks(allRows);
-      const top36 = diversifyBooksPerPage(sortBooksByCompleteness(visibleRows), 12).slice(0, 36);
+      const rankedRows = visibleRows.map((row: any) => {
+        const edition = mapRawToEdition(row);
+        return {
+          ...row,
+          title: row.title || edition.title,
+          author: row.author || edition.author || 'Unknown Author',
+          genre: row.genre || edition.genre,
+          cover_image_url: row.cover_image_url || edition.coverImageUrl,
+          description: row.description || edition.description,
+          publication_year: row.publication_year || edition.publicationYear,
+          language: row.language || edition.language || undefined,
+          pdf_url: row.pdf_url || edition.assets.find((asset) => asset.format === 'pdf')?.downloadUrl,
+          epub_url: row.epub_url || edition.assets.find((asset) => asset.format === 'epub')?.downloadUrl,
+          isbn: row.isbn || edition.isbn13 || edition.isbn10,
+          pages: row.pages || edition.pages,
+          accessStatus: edition.accessStatus,
+          licenseEvidence: edition.licenseEvidence,
+          qualityScore: edition.qualityScore,
+          qualityReasons: edition.qualityReasons,
+          assets: edition.assets,
+        };
+      });
+      const top36 = diversifyBooksPerPage(sortBooksByCompleteness(rankedRows), 12).slice(0, 36);
       const bookIds = top36.map((book: any) => String(book.id)).filter(Boolean);
       if (bookIds.length === 0) throw new Error('No public catalog books were available to audit.');
 
@@ -242,8 +266,8 @@ export const AdminLibraryQuality: React.FC = () => {
       }
 
       toast({
-        title: 'First three Library pages audited',
-        description: `${totalProcessed} ranked books inspected. ${totalFailed} database updates failed. Structural checks remain Needs review; no book was auto-approved.`,
+        title: 'Top-ranked Library books audited',
+        description: `${totalProcessed} top-ranked books_library records inspected. ${totalFailed} database updates failed. Structural checks remain Needs review; no book was auto-approved.`,
         variant: totalFailed > 0 ? 'destructive' : 'default',
       });
       void queryClient.invalidateQueries({ queryKey: ['library-duplicate-audit'] });
@@ -513,7 +537,7 @@ export const AdminLibraryQuality: React.FC = () => {
                 <div className="flex flex-wrap gap-2">
                   <Button onClick={handleAuditTopThreePages} disabled={assetAuditRunning} variant="default">
                     <ShieldCheck className={`w-4 h-4 mr-2 ${assetAuditRunning ? 'animate-spin' : ''}`} />
-                    {assetAuditRunning ? 'Auditing Library pages…' : 'Audit first 3 pages (36 books)'}
+                    {assetAuditRunning ? 'Auditing Library pages…' : 'Audit top 36 library books'}
                   </Button>
                   <Button onClick={handleRunAssetAudit} disabled={assetAuditRunning} variant="outline">
                     <RefreshCw className={`w-4 h-4 mr-2 ${assetAuditRunning ? 'animate-spin' : ''}`} />
