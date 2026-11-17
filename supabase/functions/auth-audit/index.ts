@@ -9,7 +9,7 @@ const corsHeaders = {
 
 const allowedEvents = new Set([
   'sign_in_attempted', 'sign_in_succeeded', 'sign_in_failed',
-  'signup_submitted', 'account_created',
+  'signup_submitted', 'signup_failed', 'account_created',
 ])
 const allowedMethods = new Set(['password', 'oauth', 'unknown'])
 
