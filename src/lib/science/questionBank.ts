@@ -150,11 +150,7 @@ export function shuffleScienceQuestions(
 }
 
 
-/**
- * Keep one stable ten-question topic set while progressively increasing the
- * reasoning expected at each level. The difficulty version is stored with
- * each attempt so future question-bank changes remain comparable.
- */
+/** Return the dedicated, versioned ten-question pack for one difficulty. */
 export function getScienceQuestionsForDifficulty(difficulty: ScienceDifficulty): ScienceQuestion[] {
   return SCIENCE_QUESTIONS.filter((question) => question.difficulty === difficulty);
 }
