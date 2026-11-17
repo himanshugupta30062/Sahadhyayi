@@ -32,7 +32,7 @@ function makeBuilder(table: string, result: { data?: unknown; error: Error | nul
   builder.single = vi.fn(async () => result);
   builder.insert = vi.fn(async (...args: unknown[]) => {
     mocks.calls.push({ table, method: 'insert', args });
-    return result;
+    return table === 'user_bookshelf' ? mocks.shelfInsert : result;
   });
   builder.then = (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) =>
     Promise.resolve(result).then(resolve, reject);
@@ -98,22 +98,11 @@ describe('syncReadingProgressToSupabase', () => {
   });
 
   it('falls back to a shelf update when a concurrent insert fails', async () => {
-    const shelfBuilders: Array<Record<string, any>> = [];
-    const originalFrom = mocks.from.getMockImplementation();
-    mocks.from.mockImplementation((table: string) => {
-      const builder = originalFrom?.(table) as Record<string, any>;
-      if (table === 'user_bookshelf') shelfBuilders.push(builder);
-      return builder;
-    });
-    // The second shelf operation is the insert; make its result a conflict.
-    const originalInsert = mocks.shelfInsert;
     mocks.shelfInsert = { data: null, error: new Error('duplicate key') };
-    const shelfRead = mocks.shelfRead;
-    shelfRead.data = null;
+    mocks.shelfRead.data = null;
     await syncReadingProgressToSupabase('reader-1', input);
     expect(mocks.calls.some(call => call.table === 'user_bookshelf' && call.method === 'insert')).toBe(true);
     expect(mocks.calls.some(call => call.table === 'user_bookshelf' && call.method === 'update')).toBe(true);
-    mocks.shelfInsert = originalInsert;
   });
 
   it('propagates progress and existing-shelf update errors but ignores activity failures', async () => {
