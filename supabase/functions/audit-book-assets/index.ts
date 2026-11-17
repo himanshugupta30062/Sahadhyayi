@@ -89,10 +89,10 @@ async function inspectCover(raw: unknown) {
     const valid = response.ok && type.startsWith("image/") && Boolean(dims);
     return {
       checked: true, reachable: response.ok, contentType: type,
-      byteSize: bytes.length, decodable: valid,
+      byteSize: bytes.length, formatRecognized: valid,
       width: dims?.width, height: dims?.height,
       blankOrPlaceholder: !valid || (dims?.width === 1 && dims?.height === 1),
-      warnings: valid ? [] : ["Image response could not be validated as PNG/JPEG with readable dimensions"],
+      warnings: valid ? ["Image format and dimensions recognized; pixel-level decode and visual placeholder detection require a dedicated image decoder"] : ["Image response could not be validated as PNG/JPEG with readable dimensions"],
     };
   } catch (e) {
     return { checked: true, reachable: false, decodable: false, warnings: [e instanceof Error ? e.message : "Image check failed"] };
@@ -103,13 +103,17 @@ async function inspectPdf(raw: unknown) {
   const url = safeUrl(raw);
   if (!url) return { checked: true, reachable: false, signatureValid: false, parseable: false, warnings: ["URL missing or host not allowlisted"] };
   try {
-    const { response, bytes } = await readBounded(url, "bytes=0-1048575");
+    const [{ response, bytes }, tail] = await Promise.all([
+      readBounded(url, "bytes=0-1048575"),
+      readBounded(url, "bytes=-65536"),
+    ]);
     const type = (response.headers.get("content-type") || "").split(";")[0].toLowerCase();
     const prefix = new TextDecoder("latin1").decode(bytes.slice(0, 16));
     const sample = new TextDecoder("latin1").decode(bytes);
     const signatureValid = prefix.startsWith("%PDF-");
     const pageCount = (sample.match(/\/Type\s*\/Page\b/g) || []).length;
-    const parseable = signatureValid && sample.includes("%%EOF");
+    const tailText = new TextDecoder("latin1").decode(tail.bytes);
+    const parseable = response.ok && tail.response.ok && signatureValid && tailText.includes("%%EOF");
     return {
       checked: true, reachable: response.ok, contentType: type,
       signatureValid, parseable, pageCount: pageCount || undefined,
@@ -123,7 +127,7 @@ async function inspectPdf(raw: unknown) {
 }
 
 function scoreCover(e: any): number {
-  if (!e.reachable || !e.decodable || e.blankOrPlaceholder) return 0;
+  if (!e.reachable || !e.formatRecognized || e.blankOrPlaceholder) return 0;
   let s = 35;
   if (e.contentType?.startsWith("image/")) s += 10;
   if ((e.width || 0) >= 300 && (e.height || 0) >= 450) s += 15;
