@@ -32,6 +32,17 @@ describe('Navigation Menu Routes Audit', () => {
     }
   });
 
+  it('keeps everyday science in its own public Learn section, separate from IQ Test', () => {
+    const learnSection = PUBLIC_NAVIGATION_SECTIONS.find((section) => section.name === 'Learn');
+    const activitySection = NAVIGATION_SECTIONS.find((section) => section.name === 'Activity');
+
+    expect(learnSection?.items).toEqual([
+      { name: 'Explain Science Around You', href: '/science-around-you' },
+    ]);
+    expect(activitySection?.items.some((item) => item.name === 'IQ Test' && item.href === '/brain')).toBe(true);
+    expect(activitySection?.items.some((item) => item.name === 'Explain Science Around You')).toBe(false);
+  });
+
   it('properly redirects alias paths to canonical destinations', () => {
     const testCases = [
       { from: '/privacy', to: '/privacy-policy' },
