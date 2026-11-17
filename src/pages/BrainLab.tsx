@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight, BrainCircuit, CheckCircle2, Clock3, Compass, Grid3X3,
-  Lightbulb, Puzzle, Sparkles, Target, Trophy, Zap, Shapes, ChartNoAxesCombined,
+  Lightbulb, Puzzle, Sparkles, Target, Trophy, Zap, Shapes, TrendingUp,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import SEO from "@/components/SEO";
@@ -64,13 +64,26 @@ export default function BrainLab() {
 
   useEffect(() => {
     let active = true;
+    let localEntries: BrainAttemptHistoryEntry[] = [];
+    try {
+      const stored = window.localStorage.getItem("sahadhyayi-iq-test-history");
+      const parsed: unknown = stored ? JSON.parse(stored) : [];
+      if (Array.isArray(parsed)) {
+        localEntries = parsed
+          .filter((item) => item && typeof item.date === "string" && Number.isFinite(item.score) && Number.isFinite(item.total) && item.total > 0)
+          .map((item) => ({ date: item.date, score: item.score, total: item.total, mode: item.mode ?? "Test", domains: item.domains ?? {}, durationSeconds: item.durationSeconds ?? 0 }));
+      }
+    } catch { localEntries = []; }
+    setHistory(localEntries);
     void listBrainAssessmentAttempts(50).then((attempts) => {
       if (!active) return;
       if (attempts === null) {
         setHistoryStatus("local");
         return;
       }
-      setHistory(attempts);
+      const unique = new Map<string, BrainAttemptHistoryEntry>();
+      [...attempts, ...localEntries].forEach((item) => unique.set(item.date + "|" + item.score + "|" + item.total, item));
+      setHistory([...unique.values()].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 90));
       setHistoryStatus("cloud");
     }).catch(() => {
       if (active) setHistoryStatus("local");
@@ -204,7 +217,7 @@ export default function BrainLab() {
         <section className="mt-10 grid gap-4 lg:grid-cols-[1.1fr_.9fr]">
           <Card>
             <CardHeader className="pb-3">
-              <div className="flex items-center gap-2"><ChartNoAxesCombined className="h-5 w-5 text-violet-500" /><CardTitle className="text-lg">Your progress</CardTitle></div>
+              <div className="flex items-center gap-2"><TrendingUp className="h-5 w-5 text-violet-500" /><CardTitle className="text-lg">Your progress</CardTitle></div>
               <CardDescription>{historyStatus === "cloud" ? "Your latest saved assessments from your account." : historyStatus === "loading" ? "Checking for saved assessment history." : "Sign in to sync your assessment history across devices. Guest attempts remain on this device."}</CardDescription>
             </CardHeader>
             <CardContent>
