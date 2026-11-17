@@ -16,6 +16,7 @@ const labels: Record<string, string> = {
   sign_in_succeeded: 'Sign-in successful',
   sign_in_failed: 'Sign-in failed',
   signup_submitted: 'Registration submitted',
+  signup_failed: 'Registration failed',
   account_created: 'Account created',
 };
 
