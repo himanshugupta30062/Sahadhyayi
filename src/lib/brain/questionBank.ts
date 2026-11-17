@@ -1,4 +1,4 @@
-import type { BrainQuestion } from "./questionTypes";
+import type { BrainDifficulty, BrainQuestion } from "./questionTypes";
 
 export const EXPANDED_QUESTIONS: BrainQuestion[] = [
   {
@@ -375,6 +375,382 @@ export const EXPANDED_QUESTIONS: BrainQuestion[] = [
     ],
     "answer": 2,
     "explanation": "Each face contributes (5−2)² = 9 interior face cubes; six faces contribute 54."
+  }
+,
+  {
+    "id": "xv-006",
+    "domain": "Visual patterns",
+    "skill": "Growing groups",
+    "difficulty": "Easy",
+    "prompt": "A visual pattern shows 1 dot, then 2 dots, then 4 dots, then 8 dots. How many dots should the next frame contain?",
+    "options": [
+      "10",
+      "12",
+      "16",
+      "18"
+    ],
+    "answer": 2,
+    "explanation": "The number of dots doubles at each step: 1, 2, 4, 8, 16."
+  },
+  {
+    "id": "xv-007",
+    "domain": "Visual patterns",
+    "skill": "Alternating orientation",
+    "difficulty": "Easy",
+    "prompt": "A sequence alternates an upright triangle and an upside-down triangle. If the seventh shape is upright, what is the eighth?",
+    "options": [
+      "Upright triangle",
+      "Upside-down triangle",
+      "Square",
+      "Circle"
+    ],
+    "answer": 1,
+    "explanation": "Odd positions are upright and even positions are upside down."
+  },
+  {
+    "id": "xv-008",
+    "domain": "Visual patterns",
+    "skill": "Quarter-turn rotation",
+    "difficulty": "Medium",
+    "prompt": "A symbol rotates 90° clockwise at each step. It points up initially. Which way does it point after five steps?",
+    "options": [
+      "Up",
+      "Right",
+      "Down",
+      "Left"
+    ],
+    "answer": 1,
+    "explanation": "Four quarter-turns complete a full rotation; the fifth step points right."
+  },
+  {
+    "id": "xv-009",
+    "domain": "Visual patterns",
+    "skill": "Composite pattern",
+    "difficulty": "Medium",
+    "prompt": "A tile gains one small square in each successive frame: 2, 3, 4, 5. How many small squares are in frame six?",
+    "options": [
+      "5",
+      "6",
+      "7",
+      "8"
+    ],
+    "answer": 2,
+    "explanation": "The count increases by one per frame, so frame six contains 7 squares."
+  },
+  {
+    "id": "xv-010",
+    "domain": "Visual patterns",
+    "skill": "Symmetry",
+    "difficulty": "Hard",
+    "prompt": "Which capital letter has both vertical and horizontal line symmetry in a standard block typeface?",
+    "options": [
+      "A",
+      "H",
+      "M",
+      "T"
+    ],
+    "answer": 1,
+    "explanation": "A standard block H is symmetric across both its vertical and horizontal midlines."
+  },
+  {
+    "id": "xn-006",
+    "domain": "Number patterns",
+    "skill": "Triangular numbers",
+    "difficulty": "Easy",
+    "prompt": "Find the next number: 1, 3, 6, 10, 15, …",
+    "options": [
+      "18",
+      "20",
+      "21",
+      "24"
+    ],
+    "answer": 2,
+    "explanation": "The differences are +2, +3, +4, +5; the next difference is +6, giving 21."
+  },
+  {
+    "id": "xn-007",
+    "domain": "Number patterns",
+    "skill": "Alternating sequence",
+    "difficulty": "Easy",
+    "prompt": "What comes next: 2, 5, 4, 7, 6, 9, …?",
+    "options": [
+      "7",
+      "8",
+      "10",
+      "12"
+    ],
+    "answer": 1,
+    "explanation": "The sequence alternates +3 and −1. After 9, subtract 1 to get 8."
+  },
+  {
+    "id": "xn-008",
+    "domain": "Number patterns",
+    "skill": "Cubes",
+    "difficulty": "Medium",
+    "prompt": "Which number completes the sequence: 8, 27, 64, 125, …?",
+    "options": [
+      "180",
+      "196",
+      "216",
+      "225"
+    ],
+    "answer": 2,
+    "explanation": "These are cubes 2³, 3³, 4³ and 5³. The next is 6³ = 216."
+  },
+  {
+    "id": "xn-009",
+    "domain": "Number patterns",
+    "skill": "Ratio sequence",
+    "difficulty": "Medium",
+    "prompt": "A sequence begins 160, 80, 40, 20. What is the next term?",
+    "options": [
+      "5",
+      "10",
+      "15",
+      "18"
+    ],
+    "answer": 1,
+    "explanation": "Each term is half the previous term, so 20 ÷ 2 = 10."
+  },
+  {
+    "id": "xn-010",
+    "domain": "Number patterns",
+    "skill": "Digit properties",
+    "difficulty": "Hard",
+    "prompt": "Which number is both a perfect square and a multiple of 3?",
+    "options": [
+      "20",
+      "25",
+      "36",
+      "50"
+    ],
+    "answer": 2,
+    "explanation": "36 is 6² and is divisible by 3."
+  },
+  {
+    "id": "xl-006",
+    "domain": "Logic",
+    "skill": "Set relationships",
+    "difficulty": "Easy",
+    "prompt": "All tulips are flowers. No flowers are made of metal. Which statement must be true?",
+    "options": [
+      "Some tulips are metal",
+      "No tulips are made of metal",
+      "All metal objects are tulips",
+      "Some flowers are not tulips"
+    ],
+    "answer": 1,
+    "explanation": "Since every tulip is a flower and no flower is metal, no tulip can be metal."
+  },
+  {
+    "id": "xl-007",
+    "domain": "Logic",
+    "skill": "Sequence ordering",
+    "difficulty": "Easy",
+    "prompt": "Ravi is taller than Mina. Mina is taller than Dev. Who is the shortest?",
+    "options": [
+      "Ravi",
+      "Mina",
+      "Dev",
+      "Cannot be determined"
+    ],
+    "answer": 2,
+    "explanation": "The order from tallest to shortest is Ravi, Mina, Dev."
+  },
+  {
+    "id": "xl-008",
+    "domain": "Logic",
+    "skill": "Necessary conditions",
+    "difficulty": "Medium",
+    "prompt": "A device starts only if both its battery and power switch work. The device starts. What must be true?",
+    "options": [
+      "Only the battery works",
+      "Only the switch works",
+      "Both battery and switch work",
+      "The device has no battery"
+    ],
+    "answer": 2,
+    "explanation": "Starting requires both conditions, so both must be working."
+  },
+  {
+    "id": "xl-009",
+    "domain": "Logic",
+    "skill": "Deductive reasoning",
+    "difficulty": "Medium",
+    "prompt": "Every member of the chess club attends the weekly meeting. Leena is a chess club member. What follows?",
+    "options": [
+      "Leena may attend",
+      "Leena attends the weekly meeting",
+      "Leena leads the meeting",
+      "Everyone at the meeting plays chess"
+    ],
+    "answer": 1,
+    "explanation": "The universal rule applies to Leena because she is a club member."
+  },
+  {
+    "id": "xl-010",
+    "domain": "Logic",
+    "skill": "Truth and contradiction",
+    "difficulty": "Hard",
+    "prompt": "A box contains exactly one of a red ball or a blue ball. It does not contain a red ball. Which must it contain?",
+    "options": [
+      "A red ball",
+      "A blue ball",
+      "Both balls",
+      "Neither ball"
+    ],
+    "answer": 1,
+    "explanation": "There are exactly two possibilities and red is ruled out, so the ball is blue."
+  },
+  {
+    "id": "xvbl-006",
+    "domain": "Verbal reasoning",
+    "skill": "Synonyms",
+    "difficulty": "Easy",
+    "prompt": "Choose the closest meaning of 'concise'.",
+    "options": [
+      "Brief",
+      "Unclear",
+      "Detailed",
+      "Indirect"
+    ],
+    "answer": 0,
+    "explanation": "Concise means expressing something in few words; brief is the closest synonym."
+  },
+  {
+    "id": "xvbl-007",
+    "domain": "Verbal reasoning",
+    "skill": "Analogy",
+    "difficulty": "Easy",
+    "prompt": "Paw is to cat as hoof is to …",
+    "options": [
+      "Eagle",
+      "Horse",
+      "Fish",
+      "Snake"
+    ],
+    "answer": 1,
+    "explanation": "A paw is a foot structure of a cat; a hoof is a foot structure of a horse."
+  },
+  {
+    "id": "xvbl-008",
+    "domain": "Verbal reasoning",
+    "skill": "Cause and effect",
+    "difficulty": "Medium",
+    "prompt": "A road is closed because a bridge is being repaired. Which statement is best supported?",
+    "options": [
+      "The bridge is unsafe forever",
+      "The closure is related to repair work",
+      "All roads are closed",
+      "The repair is complete"
+    ],
+    "answer": 1,
+    "explanation": "The notice directly links the road closure to the bridge repair."
+  },
+  {
+    "id": "xvbl-009",
+    "domain": "Verbal reasoning",
+    "skill": "Word classification",
+    "difficulty": "Medium",
+    "prompt": "Which word belongs to a different category?",
+    "options": [
+      "Mercury",
+      "Venus",
+      "Mars",
+      "Pacific"
+    ],
+    "answer": 3,
+    "explanation": "Mercury, Venus and Mars are planets; the Pacific is an ocean."
+  },
+  {
+    "id": "xvbl-010",
+    "domain": "Verbal reasoning",
+    "skill": "Precise inference",
+    "difficulty": "Hard",
+    "prompt": "A library notice says: 'Books borrowed on Friday are due after seven days.' If a book is borrowed on Friday, when is it due?",
+    "options": [
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "The following Monday"
+    ],
+    "answer": 1,
+    "explanation": "Seven days after Friday is the next Friday."
+  },
+  {
+    "id": "xs-006",
+    "domain": "Spatial reasoning",
+    "skill": "Opposite directions",
+    "difficulty": "Easy",
+    "prompt": "You face south and turn 180°. Which direction do you face?",
+    "options": [
+      "East",
+      "West",
+      "North",
+      "South"
+    ],
+    "answer": 2,
+    "explanation": "A half-turn reverses the direction, so south becomes north."
+  },
+  {
+    "id": "xs-007",
+    "domain": "Spatial reasoning",
+    "skill": "Cube properties",
+    "difficulty": "Easy",
+    "prompt": "How many edges does a cube have?",
+    "options": [
+      "8",
+      "10",
+      "12",
+      "16"
+    ],
+    "answer": 2,
+    "explanation": "A cube has 4 edges on the top, 4 on the bottom and 4 vertical edges: 12 total."
+  },
+  {
+    "id": "xs-008",
+    "domain": "Spatial reasoning",
+    "skill": "Manhattan distance",
+    "difficulty": "Medium",
+    "prompt": "On a grid, you move 5 blocks east and 2 blocks west. How far are you from your starting point?",
+    "options": [
+      "2 blocks east",
+      "3 blocks east",
+      "3 blocks west",
+      "7 blocks east"
+    ],
+    "answer": 1,
+    "explanation": "The net movement is 5 east minus 2 west, or 3 blocks east."
+  },
+  {
+    "id": "xs-009",
+    "domain": "Spatial reasoning",
+    "skill": "Net geometry",
+    "difficulty": "Medium",
+    "prompt": "A net has six equal squares arranged as four in a row, with one square attached above the second and one below the second. What solid can it fold into?",
+    "options": [
+      "Cube",
+      "Cylinder",
+      "Cone",
+      "Triangular prism"
+    ],
+    "answer": 0,
+    "explanation": "Six equal square faces in this arrangement form a cube net."
+  },
+  {
+    "id": "xs-010",
+    "domain": "Spatial reasoning",
+    "skill": "Painted cube",
+    "difficulty": "Hard",
+    "prompt": "A 4×4×4 cube is painted on every outer face and cut into unit cubes. How many small cubes have no paint?",
+    "options": [
+      "4",
+      "8",
+      "16",
+      "24"
+    ],
+    "answer": 1,
+    "explanation": "Only the interior cubes are unpainted: (4−2)³ = 8."
   }
 ];
 
