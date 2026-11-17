@@ -31,8 +31,21 @@ export const SahadhyayiJourney: React.FC = () => {
   const [showResumeBanner, setShowResumeBanner] = useState<boolean>(false);
   const [savedProgress, setSavedProgress] = useState<JourneyProgress | null>(null);
   const [hasInteracted, setHasInteracted] = useState<boolean>(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(false);
 
   const journeyContainerRef = useRef<HTMLElement>(null);
+
+  // Keep motion and auto-tour behavior aligned with the visitor's accessibility preference.
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    const handleMotionPreference = (event: MediaQueryListEvent) => {
+      setPrefersReducedMotion(event.matches);
+      if (event.matches) setIsAutoPlaying(false);
+    };
+    mediaQuery.addEventListener('change', handleMotionPreference);
+    return () => mediaQuery.removeEventListener('change', handleMotionPreference);
+  }, []);
 
   // Load saved progress from localStorage on mount
   useEffect(() => {
@@ -124,10 +137,13 @@ export const SahadhyayiJourney: React.FC = () => {
   }, [scrollToDestination]);
 
   useEffect(() => {
-    if (!isAutoPlaying) return;
-    const interval = window.setInterval(handleNextStop, 6000);
+    if (!isAutoPlaying || prefersReducedMotion) return;
+    const interval = window.setInterval(() => {
+      // Do not advance the journey while the visitor is in another tab or app.
+      if (!document.hidden) handleNextStop();
+    }, 6000);
     return () => window.clearInterval(interval);
-  }, [isAutoPlaying, handleNextStop]);
+  }, [isAutoPlaying, prefersReducedMotion, handleNextStop]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -164,6 +180,7 @@ export const SahadhyayiJourney: React.FC = () => {
       className="sahadhyayi-bicycle-adventure relative isolate pt-12 pb-10 sm:pt-16 sm:pb-12 lg:pt-20 lg:pb-14 px-4 sm:px-6 lg:px-8 bg-background transition-colors duration-300 overflow-hidden"
       aria-label="Sahadhyayi interactive cycling journey"
     >
+      <style>{`@keyframes journey-stop-enter{from{opacity:0;transform:translate3d(0,12px,0)}to{opacity:1;transform:translate3d(0,0,0)}}@media(prefers-reduced-motion:no-preference){.sahadhyayi-bicycle-adventure .journey-stop-enter{animation:journey-stop-enter 420ms cubic-bezier(.2,.7,.2,1) both}}@media(prefers-reduced-motion:reduce){.sahadhyayi-bicycle-adventure .journey-stop-enter{animation:none!important;opacity:1;transform:none}}`}</style>
       {/* Ambient background glows */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
         <div className="absolute top-1/4 -left-40 w-[700px] h-[700px] rounded-full bg-[hsl(var(--brand-primary)/0.05)] blur-[160px]" />
@@ -352,13 +369,14 @@ export const SahadhyayiJourney: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAutoPlaying((p) => !p)}
+                  disabled={prefersReducedMotion}
                   className={
                     'inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer border ' +
                     (isAutoPlaying
                       ? 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-700/40'
                       : 'bg-background border-border text-foreground hover:bg-muted')
                   }
-                  aria-label={isAutoPlaying ? 'Pause tour' : 'Auto ride'}
+                  aria-label={prefersReducedMotion ? 'Auto ride unavailable while reduced motion is enabled' : isAutoPlaying ? 'Pause tour' : 'Auto ride'}
                 >
                   {isAutoPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
                   <span className="hidden sm:inline">{isAutoPlaying ? 'Pause' : 'Auto'}</span>
@@ -452,8 +470,9 @@ export const SahadhyayiJourney: React.FC = () => {
 
           {/* Active destination card */}
           <div
+            key={activeDestination.id}
             id={'journey-detail-' + activeDestination.index}
-            className="rounded-3xl border border-border/60 overflow-hidden shadow-xl transition-all duration-300"
+            className="journey-stop-enter rounded-3xl border border-border/60 overflow-hidden shadow-xl transition-all duration-300"
             style={{
               borderTopColor: activeDestination.accentColor,
               borderTopWidth: '3px',

@@ -17,31 +17,32 @@ export const HeroContent: React.FC = () => {
   const PrimaryIcon = primaryCta.icon;
 
   return (
-    <div className="flex flex-col items-center text-center lg:items-start lg:text-left max-w-xl mx-auto lg:mx-0">
+    <div className="hero-content-motion flex flex-col items-center text-center lg:items-start lg:text-left max-w-xl mx-auto lg:mx-0">
+      <style>{`@keyframes hero-content-rise{from{opacity:0;transform:translate3d(0,16px,0)}to{opacity:1;transform:translate3d(0,0,0)}}@media(prefers-reduced-motion:no-preference){.hero-content-motion .hero-reveal{opacity:0;animation:hero-content-rise 650ms cubic-bezier(.2,.7,.2,1) forwards}.hero-content-motion .hero-reveal-1{animation-delay:80ms}.hero-content-motion .hero-reveal-2{animation-delay:190ms}.hero-content-motion .hero-reveal-3{animation-delay:330ms}.hero-content-motion .hero-reveal-4{animation-delay:470ms}.hero-content-motion .hero-reveal-5{animation-delay:590ms}}@media(prefers-reduced-motion:reduce){.hero-content-motion .hero-reveal{opacity:1;animation:none;transform:none}}`}</style>
       {/* Brand Pill matching reference design */}
-      <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#131715] border border-[#E5E0D8] dark:border-[#242E28] text-xs font-semibold uppercase tracking-[0.2em] text-[#8F681C] dark:text-[#D5B16D] mb-6 shadow-2xs dark:shadow-xs">
+      <div className="hero-reveal hero-reveal-1 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#131715] border border-[#E5E0D8] dark:border-[#242E28] text-xs font-semibold uppercase tracking-[0.2em] text-[#8F681C] dark:text-[#D5B16D] mb-6 shadow-2xs dark:shadow-xs">
         <Sparkles className="w-3.5 h-3.5 text-[#8F681C] dark:text-[#D5B16D]" />
         <span>A Reading Community</span>
       </div>
 
       {/* Main Headline */}
-      <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] tracking-tight leading-[1.12] mb-5">
+      <h1 className="hero-reveal hero-reveal-2 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] tracking-tight leading-[1.12] mb-5">
         Capture your <span className="text-[#8F681C] dark:text-[#D5B16D]">reading journey.</span>
         <br />
         Share it with friends.
       </h1>
 
       {/* Supporting Description */}
-      <p className="text-sm sm:text-base md:text-lg text-[#636B65] dark:text-[#A5ADA6] leading-relaxed mb-8 max-w-lg">
+      <p className="hero-reveal hero-reveal-3 text-sm sm:text-base md:text-lg text-[#636B65] dark:text-[#A5ADA6] leading-relaxed mb-8 max-w-lg">
         Keep your books, reviews, and reading moments together. Share ideas, join reading groups, and discover new reads with fellow readers.
       </p>
 
       {/* CTAs */}
-      <div className="flex flex-col sm:flex-row items-center gap-3.5 w-full sm:w-auto">
+      <div className="hero-reveal hero-reveal-4 flex flex-col sm:flex-row items-center gap-3.5 w-full sm:w-auto">
         <Link
           to={primaryCta.to}
           aria-label={primaryCta.label}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-[#1C442D] hover:bg-[#143221] text-white dark:bg-[#D5B16D] dark:hover:bg-[#e4c688] dark:text-stone-950 text-sm sm:text-base font-semibold shadow-md shadow-[#1C442D]/20 dark:shadow-[#D5B16D]/20 transition-all duration-200 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] focus-visible:ring-offset-[#FAF9F5] dark:focus-visible:ring-offset-[#0B0D0C]"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-[#1C442D] hover:bg-[#143221] text-white dark:bg-[#D5B16D] dark:hover:bg-[#e4c688] dark:text-stone-950 text-sm sm:text-base font-semibold shadow-md shadow-[#1C442D]/20 dark:shadow-[#D5B16D]/20 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] focus-visible:ring-offset-[#FAF9F5] dark:focus-visible:ring-offset-[#0B0D0C]"
         >
           <PrimaryIcon className="w-4 h-4 text-white dark:text-stone-950" />
           <span>{primaryCta.label}</span>
@@ -57,7 +58,7 @@ export const HeroContent: React.FC = () => {
       </div>
 
       {/* Social proof strip */}
-      <div className="mt-8 flex items-center gap-3">
+      <div className="hero-reveal hero-reveal-5 mt-8 flex items-center gap-3">
         <div className="flex -space-x-2">
           <div className="w-7 h-7 rounded-full border-2 border-[#FAF7F2] dark:border-[#0B0D0C] bg-[#1F2F24] flex items-center justify-center text-[10px] font-bold text-[#A7F3D0]">
             S
