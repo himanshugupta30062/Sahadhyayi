@@ -41,7 +41,8 @@ const BookCard = ({ book, onDownloadPDF = () => {} }: BookCardProps) => {
     cover_image_url: book.cover_image_url,
   });
 
-  const activeCoverUrl = book.cover_image_url || resolvedCover;
+  // Prefer the resolver result: raw DB URLs may point to generic Archive/Google placeholders.
+  const activeCoverUrl = resolvedCover;
   const resourceType = getBookResourceType(book);
   const hasDirectPdf = isVerifiedPdf(book);
   const hasOnlineReader = isOnlineReader(book);

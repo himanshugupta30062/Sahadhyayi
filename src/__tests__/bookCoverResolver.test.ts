@@ -1,6 +1,7 @@
 /** @vitest-environment jsdom */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { normalizeCoverUrl } from '@/utils/normalizeCoverUrl';
 import {
   getBookLookupKey,
   getOpenLibraryCoverUrl,
@@ -12,6 +13,19 @@ import {
 } from '@/utils/catalog/bookCoverResolver';
 
 describe('bookCoverResolver', () => {
+
+  describe('cover URL normalization', () => {
+    it('rejects known generic Archive.org and Google Books thumbnail endpoints', () => {
+      expect(normalizeCoverUrl('https://archive.org/services/img/originofspecies00darwuoft')).toBeNull();
+      expect(normalizeCoverUrl('https://books.google.com/books/content?id=ryQBzwEACAAJ&printsec=frontcover&img=1')).toBeNull();
+    });
+
+    it('keeps ordinary HTTPS publisher and Open Library cover URLs', () => {
+      expect(normalizeCoverUrl('https://covers.openlibrary.org/b/id/123-L.jpg')).toBe('https://covers.openlibrary.org/b/id/123-L.jpg');
+      expect(normalizeCoverUrl('https://publisher.example.com/covers/book.jpg')).toBe('https://publisher.example.com/covers/book.jpg');
+    });
+  });
+
   beforeEach(() => {
     clearCoverCache();
     vi.restoreAllMocks();
@@ -116,6 +130,23 @@ describe('bookCoverResolver', () => {
   });
 
   describe('resolveGenuineBookCover', () => {
+
+    it('replaces a generic Archive.org thumbnail with a matched Open Library cover', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+        ok: true,
+        json: async () => ({ docs: [{ title: 'On the Origin of Species', author_name: ['Charles Darwin'], cover_i: 987654 }] }),
+      } as unknown as Response);
+
+      const cover = await resolveGenuineBookCover({
+        id: 'darwin-origin',
+        title: 'On the Origin of Species',
+        author: 'Charles Darwin',
+        cover_image_url: 'https://archive.org/services/img/originofspecies00darwuoft',
+      });
+
+      expect(cover).toBe('https://covers.openlibrary.org/b/id/987654-L.jpg');
+    });
+
     it('returns existing valid cover without network calls', async () => {
       const fetchSpy = vi.spyOn(globalThis, 'fetch');
       const cover = await resolveGenuineBookCover({
