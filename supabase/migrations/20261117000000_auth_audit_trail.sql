@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS public.auth_audit_events (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   event_type text NOT NULL CHECK (event_type IN (
     'sign_in_attempted','sign_in_succeeded','sign_in_failed',
-    'signup_submitted','account_created'
+    'signup_submitted','signup_failed','account_created'
   )),
   auth_method text NOT NULL DEFAULT 'password' CHECK (auth_method IN ('password','oauth','unknown')),
   user_id uuid NULL REFERENCES auth.users(id) ON DELETE SET NULL,
@@ -51,3 +51,24 @@ $$;
 
 REVOKE ALL ON FUNCTION public.get_admin_auth_activity(integer) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.get_admin_auth_activity(integer) TO authenticated;
+
+-- Record actual Auth user creation server-side, including registrations awaiting email verification.
+CREATE OR REPLACE FUNCTION public.audit_auth_user_created()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, auth, pg_temp
+AS $$
+BEGIN
+  INSERT INTO public.auth_audit_events (event_type, auth_method, user_id)
+  VALUES ('account_created', 'unknown', NEW.id);
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_audit_auth_user_created ON auth.users;
+CREATE TRIGGER trg_audit_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.audit_auth_user_created();
+
+REVOKE ALL ON FUNCTION public.audit_auth_user_created() FROM PUBLIC, anon, authenticated;
