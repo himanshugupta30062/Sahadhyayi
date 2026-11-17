@@ -372,8 +372,6 @@ serve(async (req) => {
         genre: newGenre,
         description: newDescription,
         language: newLanguage,
-        status: "active",
-        catalog_status: "active",
       }).select("id, title").single();
 
       if (createError || !createdBook) {
@@ -384,12 +382,12 @@ serve(async (req) => {
     } else {
       if (typeof targetBookId !== "string" || !UUID.test(targetBookId)) return json({ error: "Select a valid existing library book." }, 400);
 
+      // Select only columns confirmed in the production books_library schema.
       const { data: book, error: bookError } = await admin.from("books_library")
-        .select("id,title,description,pdf_url,status,catalog_status,is_archived")
+        .select("id,title,description,pdf_url")
         .eq("id", targetBookId)
         .maybeSingle();
       if (bookError || !book) return json({ error: "Selected library book was not found." }, 404);
-      if (book.is_archived) return json({ error: "Cannot publish to an archived book." }, 400);
       if (book.pdf_url) return json({ error: "This book already has a PDF. Use the replace_pdf action instead." }, 409);
 
       if (body.updateBookTitleWithAlias && submission.submitted_title && !book.title.toLowerCase().includes(submission.submitted_title.toLowerCase())) {
