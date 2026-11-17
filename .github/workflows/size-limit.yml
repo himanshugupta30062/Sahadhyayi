@@ -6,8 +6,38 @@ permissions:
   contents: read
 
 jobs:
-  size:
+  bundle-budgets:
+    name: Build and enforce bundle budgets
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
+      - name: Build and report largest rendered modules
+        run: BUNDLE_ANALYSIS_REPORT=1 npm run build
+      - name: Enforce JavaScript bundle budgets
+        run: npm run size
+      - name: Enforce initial-route JavaScript budget
+        if: always() && !cancelled()
+        run: npm run size:initial
+      - name: Upload bundle analysis for inspection
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-analysis
+          path: dist/bundle-analysis.json
+          if-no-files-found: warn
+          retention-days: 7
+
+  social-navigation-tests:
+    name: Test social navigation and page behavior
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -18,17 +48,3 @@ jobs:
         run: npm ci --ignore-scripts
       - name: Test changed social navigation and page behavior
         run: npm test -- src/__tests__/socialMediaPage.test.tsx src/__tests__/globalUiAndAccessibility.test.tsx
-      - name: Build and report largest rendered modules
-        run: BUNDLE_ANALYSIS_REPORT=1 npm run build
-      - name: Enforce JavaScript bundle budgets
-        run: npm run size
-      - name: Enforce initial-route JavaScript budget
-        run: npm run size:initial
-      - name: Upload bundle analysis for inspection
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: bundle-analysis
-          path: dist/bundle-analysis.json
-          if-no-files-found: warn
-          retention-days: 7
