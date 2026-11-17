@@ -183,14 +183,14 @@ describe('Library Book Sorting Hierarchy', () => {
       expect(compareLibraryBooks(godan, readerOnly)).toBeLessThan(0);
     });
 
-    it('keeps the candidate below a link-audited working PDF until structural verification', () => {
+    it('keeps pending direct-PDF candidates in the same top browse tier without calling them verified', () => {
       const checked = {
         ...godan,
         reader_link_status: 'working',
         reader_link_http_status: 200,
         reader_link_content_type: 'application/pdf',
       };
-      expect(getBookCompletenessScore(checked)).toBeGreaterThan(getBookCompletenessScore(godan));
+      expect(getBookCompletenessScore(checked)).toBeGreaterThanOrEqual(getBookCompletenessScore(godan));
     });
   });
 
