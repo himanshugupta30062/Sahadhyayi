@@ -4014,6 +4014,7 @@ export type Database = {
           answers: Json
           evaluation: Json
           question_set_version: string
+          difficulty: "beginner" | "intermediate" | "advanced"
           created_at: string
         }
         Insert: {
@@ -4025,6 +4026,7 @@ export type Database = {
           answers?: Json
           evaluation?: Json
           question_set_version?: string
+          difficulty?: "beginner" | "intermediate" | "advanced"
           created_at?: string
         }
         Update: {
