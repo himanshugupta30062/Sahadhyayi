@@ -76,6 +76,34 @@ describe('overall book correctness ranking', () => {
     expect(compareLibraryBooks(trusted, incorrect)).toBeLessThan(0);
   });
 
+  it('ranks usable reading editions above metadata-only books', () => {
+    const readable = {
+      ...baseBook,
+      pdf_url: 'https://cdn.example.org/godan.pdf',
+      reader_link_status: 'working',
+      reader_link_http_status: 200,
+      reader_link_content_type: 'application/pdf',
+    };
+    const metadataOnly = { ...baseBook, pdf_url: null, epub_url: null };
+    expect(compareLibraryBooks(readable, metadataOnly)).toBeLessThan(0);
+  });
+
+  it('keeps pending PDF candidates below verified reading files', () => {
+    const verified = {
+      ...baseBook,
+      pdf_url: 'https://cdn.example.org/godan.pdf',
+      reader_link_status: 'working',
+      reader_link_http_status: 200,
+      reader_link_content_type: 'application/pdf',
+    };
+    const pending = {
+      ...baseBook,
+      pdf_url: 'https://cdn.example.org/other.pdf',
+      reader_link_status: 'unchecked',
+    };
+    expect(compareLibraryBooks(verified, pending)).toBeLessThan(0);
+  });
+
   it('keeps scores bounded and handles missing measurements', () => {
     expect(getBookOverallQualityScore({ title: 'A Book', author: 'An Author' })).toBeGreaterThanOrEqual(0);
     expect(getBookOverallQualityScore({ title: 'A Book', author: 'An Author' })).toBeLessThanOrEqual(100);

@@ -723,7 +723,27 @@ export const getBookOverallQualityScore = (book: any): number => {
 /**
  * Deterministic library book comparator function.
  */
+/**
+ * Access tier is a ranking guardrail: a genuinely readable edition should
+ * outrank a metadata-only record, even when the latter has richer descriptive
+ * fields. Pending direct-PDF URLs remain below audited reading resources.
+ */
+export const getReadingAccessRank = (book: any): number => {
+  if (!book || book.isBrokenLink === true || book.accessStatus === 'access_unverified') return 0;
+  if (isVerifiedPdf(book)) return 5;
+  if (hasOtherVerifiedFullText(book)) return 4;
+  const resource = getBookResourceType(book);
+  if (resource === 'online_reader') return 3;
+  if (resource === 'unverified_direct_pdf') return 2;
+  if (resource === 'external_book_page') return 1;
+  return 0;
+};
+
 export const compareLibraryBooks = (a: any, b: any): number => {
+  const accessA = getReadingAccessRank(a);
+  const accessB = getReadingAccessRank(b);
+  if (accessA !== accessB) return accessB - accessA;
+
   const overallA = getBookOverallQualityScore(a);
   const overallB = getBookOverallQualityScore(b);
   if (overallA !== overallB) return overallB - overallA;
