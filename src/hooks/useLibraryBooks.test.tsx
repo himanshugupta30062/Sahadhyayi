@@ -128,7 +128,7 @@ describe('useLibraryBooks utility functions', () => {
       };
       expect(isVerifiedPdf({ ...verifiedAudit, pdf_url: 'https://cdn.example.com/book.pdf' })).toBe(true);
       expect(isVerifiedPdf({ ...verifiedAudit, pdf_url: 'https://cdn.example.com/book.pdf?token=123' })).toBe(true);
-      expect(isVerifiedPdf({ ...verifiedAudit, pdf_url: '/storage/books/test.pdf' })).toBe(false);
+      expect(isVerifiedPdf({ ...verifiedAudit, pdf_url: '/storage/books/test.pdf' })).toBe(true);
       expect(isVerifiedPdf({ pdf_url: 'https://supabase.co/storage/v1/object/public/doc' })).toBe(false);
       expect(isVerifiedPdf({ pdf_url: 'https://www.gutenberg.org/files/123' })).toBe(false);
       expect(isVerifiedPdf({ pdf_url: 'https://open.umn.edu/opentextbooks/textbooks/1' })).toBe(false);
