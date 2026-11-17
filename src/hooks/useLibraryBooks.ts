@@ -857,19 +857,13 @@ export function diversifyBooksPerPage(sortedBooks: any[], pageSize: number = 12)
   const remaining = [...sortedBooks];
   const diversified: any[] = [];
 
-  const getScore = (book: any): number => {
-    if (!book) return 0;
-    if (typeof book.completenessScore === 'number') return book.completenessScore;
-    return getBookCompletenessScore(book);
-  };
-
   while (remaining.length > 0) {
     const pageBooks: any[] = [];
     const seenAuthors = new Set<string>();
     const seenTitles = new Set<string>();
     const deferredForNextPages: any[] = [];
-    let hasDeferredVerified = false; // score >= 7000 (Verified direct PDF / EPUB / online reader)
-    let hasDeferredGenuine = false;  // score >= 4000 (Genuine books with cover / metadata)
+    let hasDeferredVerified = false; // access rank >= 3 (PDF candidate or stronger)
+    let hasDeferredGenuine = false;  // access rank >= 1 (any usable reading destination)
 
     // Pass 1: Greedily pick unique authors and unique titles up to pageSize
     for (let i = 0; i < remaining.length; i++) {
