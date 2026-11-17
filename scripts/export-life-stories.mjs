@@ -15,7 +15,7 @@ const errors = (result.diagnostics ?? []).filter((diagnostic) => diagnostic.cate
 if (errors.length) throw new Error(ts.formatDiagnosticsWithColorAndContext(errors, {
   getCurrentDirectory: () => process.cwd(),
   getCanonicalFileName: (fileName) => fileName,
-  getNewLine: () => "\\n",
+  getNewLine: () => "\n",
 }));
 
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "sahadhyayi-life-stories-"));
