@@ -74,6 +74,9 @@ const MapPage = () => {
   const [exploreLocation, setExploreLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [exploreLocationLoading, setExploreLocationLoading] = useState(false);
   const [exploreLocationError, setExploreLocationError] = useState<string | null>(null);
+  const [exploreAreaQuery, setExploreAreaQuery] = useState('');
+  const [exploreAreaSearching, setExploreAreaSearching] = useState(false);
+  const [exploreLocationLabel, setExploreLocationLabel] = useState<string | null>(null);
   const [locationSharingEnabled, setLocationSharingEnabled] = useState(false);
   const [locationConsentChecked, setLocationConsentChecked] = useState(false);
   const [showBitmojiCreator, setShowBitmojiCreator] = useState(false);
@@ -153,6 +156,7 @@ const MapPage = () => {
     try {
       const coords = await getCurrentLocation();
       setExploreLocation(coords);
+      setExploreLocationLabel(null);
       mapActionsRef.current.explore?.recenter(coords);
       toast.success('Showing reading places and literary events within 25 km.');
     } catch (error) {
@@ -161,6 +165,59 @@ const MapPage = () => {
       toast.error(message);
     } finally {
       setExploreLocationLoading(false);
+    }
+  };
+
+  // City/area search is an explicit, one-shot geocoding request. It provides
+  // an alternative when GPS permission is unavailable and never enables
+  // social location sharing.
+  const handleSearchExploreArea = async () => {
+    const query = exploreAreaQuery.trim();
+    if (query.length < 2) {
+      setExploreLocationError('Enter a city, town or area to search.');
+      return;
+    }
+
+    setExploreAreaSearching(true);
+    setExploreLocationError(null);
+    try {
+      const params = new URLSearchParams({ q: query, limit: '1', lang: 'en' });
+      const response = await fetch(`https://photon.komoot.io/api/?${params.toString()}`, {
+        headers: { Accept: 'application/geo+json' },
+      });
+      if (!response.ok) throw new Error(`Place search is temporarily unavailable (${response.status}).`);
+      const payload = await response.json() as {
+        features?: Array<{
+          geometry?: { coordinates?: [number, number] };
+          properties?: { name?: string; city?: string; state?: string; country?: string; countrycode?: string };
+        }>;
+      };
+      const feature = payload.features?.[0];
+      const coordinates = feature?.geometry?.coordinates;
+      const lng = coordinates?.[0];
+      const lat = coordinates?.[1];
+      if (typeof lat !== 'number' || typeof lng !== 'number' ||
+          !Number.isFinite(lat) || !Number.isFinite(lng) ||
+          Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+        throw new Error('We could not find that place. Try adding the state or country.');
+      }
+
+      const properties = feature?.properties;
+      const label = [properties?.name, properties?.city, properties?.state, properties?.country]
+        .filter((value, index, values): value is string => Boolean(value) && values.indexOf(value) === index)
+        .join(', ') || query;
+      const coords = { lat, lng };
+      setExploreLocation(coords);
+      setExploreLocationLabel(label);
+      setSelectedMarker(null);
+      mapActionsRef.current.explore?.recenter(coords);
+      toast.success(`Showing nearby reading places around ${label}.`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Could not search for that area.';
+      setExploreLocationError(message);
+      toast.error(message);
+    } finally {
+      setExploreAreaSearching(false);
     }
   };
 
@@ -417,7 +474,7 @@ const MapPage = () => {
 
   const explorePoints = useMemo<MapplsPoint[]>(() => {
     const points: MapplsPoint[] = [];
-    if (exploreSearchLocation) {
+    if (exploreSearchLocation && !exploreLocationLabel) {
       points.push({
         id: 'self',
         lat: exploreSearchLocation.lat,
@@ -455,7 +512,7 @@ const MapPage = () => {
     });
 
     return points;
-  }, [exploreItems, exploreSearchLocation, selfAvatarUrl, user?.id, searchQuery]);
+  }, [exploreItems, exploreSearchLocation, exploreLocationLabel, selfAvatarUrl, user?.id, searchQuery]);
 
   const handleMarkerClick = (point: MapplsPoint) => {
     if (point.id === 'self') {
@@ -791,13 +848,33 @@ const MapPage = () => {
                 <div className="min-w-0">
                   <p className="text-sm font-semibold">Discover reading places around you</p>
                   <p className="text-xs text-muted-foreground">Libraries, bookstores, cafés and geocoded literary events within 25 km.</p>
-                  {exploreLocation && <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1">Nearby search is active. Your location is used only for this search and is not shared with readers.</p>}
+                  {exploreSearchLocation && <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-1">{exploreLocationLabel ? `Showing places around ${exploreLocationLabel}.` : 'Nearby search is active. Your location is used only for this search and is not shared with readers.'}</p>}
                 </div>
-                <Button type="button" size="sm" onClick={handleFindNearbyPlaces} disabled={exploreLocationLoading} className="shrink-0">
+                <Button type="button" size="sm" onClick={handleFindNearbyPlaces} disabled={exploreLocationLoading || exploreAreaSearching} className="shrink-0">
                   <Compass className="w-4 h-4 mr-1.5" />
-                  {exploreLocationLoading ? 'Finding location…' : exploreLocation ? 'Refresh nearby' : 'Find near me'}
+                  {exploreLocationLoading ? 'Finding location…' : 'Find near me'}
                 </Button>
               </div>
+              <form
+                className="flex flex-col sm:flex-row gap-2 rounded-xl border border-[#E5DED2] dark:border-[#29332D] bg-white/80 dark:bg-[#111614]/80 p-3"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void handleSearchExploreArea();
+                }}
+              >
+                <input
+                  type="search"
+                  value={exploreAreaQuery}
+                  onChange={(event) => setExploreAreaQuery(event.target.value)}
+                  placeholder="Or enter a city / area (e.g. Faridabad, Haryana)"
+                  aria-label="Search libraries by city or area"
+                  className="min-w-0 flex-1 rounded-lg border border-[#DCD5C9] dark:border-[#39443D] bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#1C442D] dark:focus:ring-[#D5B16D]"
+                />
+                <Button type="submit" size="sm" disabled={exploreAreaSearching || exploreLocationLoading || exploreAreaQuery.trim().length < 2}>
+                  {exploreAreaSearching ? 'Searching area…' : 'Search this area'}
+                </Button>
+              </form>
+              <p className="text-[10px] text-muted-foreground">Area search uses OpenStreetMap-based geocoding. It runs only when you submit a search; it does not track your typing. Results are best-effort and may be incomplete.</p>
               {exploreLocationError && <p className="text-xs text-amber-700 dark:text-amber-300" role="status">{exploreLocationError}</p>}
               {(exploreItemsLoading || exploreItemsFetching) && <p className="text-xs text-muted-foreground" role="status">Finding nearby libraries, bookstores and cafés…</p>}
               <p className="text-[10px] text-muted-foreground">Nearby public places use OpenStreetMap data; event listings come from Sahadhyayi. <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">© OpenStreetMap contributors</a>.</p>
