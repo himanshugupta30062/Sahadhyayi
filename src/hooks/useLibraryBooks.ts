@@ -940,11 +940,11 @@ export function diversifyBooksPerPage(sortedBooks: any[], pageSize: number = 12)
       }
     }
 
-    // Pass 3: If still not full, allow candidates with unseen title (different book work).
-    // Prioritize high-quality tier (score >= 7000), then genuine books (score >= 4000),
-    // then remaining candidates.
+    // Pass 3: Fill with distinct titles without crossing the reading-access tier.
+    // Metadata-only records must not jump ahead of deferred PDFs just because
+    // their titles are different or their cover/description score is higher.
     if (pageBooks.length < pageSize && deferredForNextPages.length > 0) {
-      // 3a. High-quality tier distinct titles (score >= 7000)
+      // 3a. PDF candidates and stronger access tiers
       if (hasDeferredVerified) {
         let idx = 0;
         while (pageBooks.length < pageSize && idx < deferredForNextPages.length) {
@@ -965,7 +965,7 @@ export function diversifyBooksPerPage(sortedBooks: any[], pageSize: number = 12)
         }
       }
 
-      // 3b. Genuine books distinct titles (score >= 4000)
+      // 3b. Other records with a usable reading destination
       if (pageBooks.length < pageSize && hasDeferredGenuine) {
         let idx = 0;
         while (pageBooks.length < pageSize && idx < deferredForNextPages.length) {
@@ -986,15 +986,17 @@ export function diversifyBooksPerPage(sortedBooks: any[], pageSize: number = 12)
         }
       }
 
-      // 3c. Remaining candidates distinct titles
+      // 3c. Remaining candidates distinct titles, but never below the best
+      // deferred access tier still waiting for a slot.
       if (pageBooks.length < pageSize) {
         let idx = 0;
         while (pageBooks.length < pageSize && idx < deferredForNextPages.length) {
           const candidate = deferredForNextPages[idx];
+          const minimumAccessRank = hasDeferredVerified ? 3 : hasDeferredGenuine ? 1 : 0;
           const tKey = getTitleDiversificationKey(candidate.title);
           const hasTitleCollision = Boolean(tKey && seenTitles.has(tKey));
 
-          if (!hasTitleCollision) {
+          if (getReadingAccessRank(candidate) >= minimumAccessRank && !hasTitleCollision) {
             pageBooks.push(candidate);
             if (tKey) seenTitles.add(tKey);
             deferredForNextPages.splice(idx, 1);
@@ -1005,9 +1007,16 @@ export function diversifyBooksPerPage(sortedBooks: any[], pageSize: number = 12)
       }
     }
 
-    // Pass 4: Final fallback only if no other unique titles exist so no page is left incomplete
+    // Pass 4: Final fallback may relax author/title diversity, but never reading
+    // access priority. A page can be shorter rather than showing metadata-only
+    // records ahead of a readable PDF deferred to a later page.
     while (pageBooks.length < pageSize && deferredForNextPages.length > 0) {
-      pageBooks.push(deferredForNextPages.shift()!);
+      const minimumAccessRank = hasDeferredVerified ? 3 : hasDeferredGenuine ? 1 : 0;
+      const nextEligibleIndex = deferredForNextPages.findIndex(
+        (candidate) => getReadingAccessRank(candidate) >= minimumAccessRank
+      );
+      if (nextEligibleIndex === -1) break;
+      pageBooks.push(deferredForNextPages.splice(nextEligibleIndex, 1)[0]);
     }
 
     diversified.push(...pageBooks);
