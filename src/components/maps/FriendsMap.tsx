@@ -162,12 +162,10 @@ export const FriendsMap = ({
           const currentIcon = marker.getIcon();
           if (currentIcon && typeof currentIcon === 'object' && 'scaledSize' in currentIcon) {
             const hoverIcon = { ...currentIcon };
-            hoverIcon.scaledSize = avatarUrl ? 
-              new window.google.maps.Size(70, 70) : 
-              new window.google.maps.Size(18, 18);
-            if (avatarUrl) {
-              hoverIcon.anchor = new window.google.maps.Point(35, 35);
-            }
+            const isMobileViewport = window.matchMedia('(max-width: 640px)').matches;
+            const hoverAvatarSize = isMobileViewport ? 44 : 70;
+            hoverIcon.scaledSize = avatarUrl ? new window.google.maps.Size(hoverAvatarSize, hoverAvatarSize) : new window.google.maps.Size(18, 18);
+            if (avatarUrl) hoverIcon.anchor = new window.google.maps.Point(hoverAvatarSize / 2, hoverAvatarSize / 2);
             marker.setIcon(hoverIcon);
           } else if (currentIcon && typeof currentIcon === 'object' && 'scale' in currentIcon) {
             const hoverIcon = { ...currentIcon };
@@ -195,12 +193,10 @@ export const FriendsMap = ({
           const currentIcon = marker.getIcon();
           if (currentIcon && typeof currentIcon === 'object' && 'scaledSize' in currentIcon) {
             const originalIcon = { ...currentIcon };
-            originalIcon.scaledSize = avatarUrl ? 
-              new window.google.maps.Size(50, 50) : 
-              new window.google.maps.Size(15, 15);
-            if (avatarUrl) {
-              originalIcon.anchor = new window.google.maps.Point(25, 25);
-            }
+            const isMobileViewport = window.matchMedia('(max-width: 640px)').matches;
+            const originalAvatarSize = isMobileViewport ? 40 : 50;
+            originalIcon.scaledSize = avatarUrl ? new window.google.maps.Size(originalAvatarSize, originalAvatarSize) : new window.google.maps.Size(15, 15);
+            if (avatarUrl) originalIcon.anchor = new window.google.maps.Point(originalAvatarSize / 2, originalAvatarSize / 2);
             marker.setIcon(originalIcon);
           } else if (currentIcon && typeof currentIcon === 'object' && 'scale' in currentIcon) {
             const originalIcon = { ...currentIcon };
