@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   CalendarDays,
   BrainCircuit,
@@ -36,44 +36,32 @@ import { safeFormatDistanceToNow } from '@/lib/dateUtils';
 import SignInLink from '@/components/SignInLink';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
-type ActivityCategory = 'all' | 'events' | 'challenges' | 'games' | 'brain' | 'iq-test' | 'meetups';
+type ActivityCategory = 'all' | 'clubs-events' | 'challenges' | 'games' | 'brain-science';
 
 export default function Activity() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const tabParam = (searchParams.get('tab') as ActivityCategory) || 'all';
+  const requestedTab = searchParams.get('tab');
+  // Normalize old links into the consolidated Activity destinations.
+  const legacyTabMap: Record<string, ActivityCategory> = { events: 'clubs-events', meetups: 'clubs-events', groups: 'clubs-events', 'iq-test': 'brain-science' };
+  const initialTab = requestedTab ? legacyTabMap[requestedTab] || requestedTab : null;
   const [activeCategory, setActiveCategory] = useState<ActivityCategory>(
-    tabParam === ('groups' as any) ? 'all' : tabParam
+    initialTab === 'groups' ? 'all' : (initialTab as ActivityCategory) || 'all'
   );
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Redirect legacy /activity?tab=groups directly to Social Media Reading Groups
-  useEffect(() => {
-    if (searchParams.get('tab') === 'groups') {
-      navigate('/social?tab=groups', { replace: true });
-    }
-  }, [searchParams, navigate]);
+
 
   // Sync tab state when URL changes (e.g. from nav clicks)
   useEffect(() => {
     const rawTab = searchParams.get('tab');
-    if (rawTab && rawTab !== 'groups' && rawTab !== activeCategory) {
+    if (rawTab && legacyTabMap[rawTab]) {
+      setSearchParams((prev) => { const next = new URLSearchParams(prev); next.set('tab', legacyTabMap[rawTab]); return next; }, { replace: true });
+      setActiveCategory(legacyTabMap[rawTab]);
+    } else if (rawTab && rawTab !== activeCategory && ['clubs-events', 'challenges', 'games', 'brain-science'].includes(rawTab)) {
       setActiveCategory(rawTab as ActivityCategory);
     }
   }, [searchParams, activeCategory]);
-
-  useEffect(() => {
-    if (searchParams.get('tab') === 'meetups') {
-      const timer = setTimeout(() => {
-        const el = document.getElementById('activity-meetups-section');
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [searchParams]);
 
   // 1. Reading Challenges
   const { data: challenges = [], isLoading: isLoadingChallenges } = useChallenges();
@@ -129,19 +117,11 @@ export default function Activity() {
     );
   };
 
-  const meetups = events.filter(
-    (e) =>
-      e.category_id?.includes('meetup') ||
-      e.slug?.includes('meetup') ||
-      e.title?.toLowerCase().includes('meetup') ||
-      !e.is_online,
-  );
-
   return (
     <>
       <SEO
-        title="Activity Hub - Events, Challenges, Book Games & Reader Meetups | Sahadhyayi"
-        description="Discover interactive reading activities on Sahadhyayi: book festivals, reading challenges, literary quizzes, and local meetups."
+        title="Activity Hub - Clubs, Literary Events, Challenges, Games & Brain Science | Sahadhyayi"
+        description="Join reading clubs and literary gatherings, discover festivals, take reading challenges, play book games, and explore reasoning and everyday science."
         canonical="https://sahadhyayi.com/activity"
       />
 
@@ -169,15 +149,15 @@ export default function Activity() {
             </h1>
 
             <p className="mt-4 max-w-xl text-sm sm:text-base leading-relaxed text-[#636B65] dark:text-[#A5ADA6]">
-              Challenge your reading streaks, join literary quizzes, attend author meetups, and converse in book clubs with readers across India and worldwide.
+              Join reading clubs and literary gatherings, discover festivals, take reading challenges, play book games, and explore IQ, reasoning and everyday science.
             </p>
 
             {/* Quick Action Navigation Buttons */}
             <div className="mt-8 flex flex-wrap gap-2.5">
-              <Link to="/events">
+              <Link to="/activity?tab=clubs-events">
                 <Button variant="outline" className="gap-2 rounded-xl bg-white dark:bg-[#111614] text-xs h-10 border-[#E8E2D9] dark:border-[#29332D]">
                   <CalendarDays className="h-4 w-4 text-[#1C442D] dark:text-[#D5B16D]" />
-                  Events Calendar
+                  Clubs & Events
                 </Button>
               </Link>
               <Link to="/games">
@@ -189,13 +169,7 @@ export default function Activity() {
               <Link to="/brain">
                 <Button variant="outline" className="gap-2 rounded-xl bg-white dark:bg-[#111614] text-xs h-10 border-[#E8E2D9] dark:border-[#29332D]">
                   <BrainCircuit className="h-4 w-4 text-[#1C442D] dark:text-[#D5B16D]" />
-                  IQ Test
-                </Button>
-              </Link>
-              <Link to="/activity?tab=meetups">
-                <Button variant="outline" className="gap-2 rounded-xl bg-white dark:bg-[#111614] text-xs h-10 border-[#E8E2D9] dark:border-[#29332D]">
-                  <MapPin className="h-4 w-4 text-[#1C442D] dark:text-[#D5B16D]" />
-                  Reader Meetups
+                  Brain & Science
                 </Button>
               </Link>
             </div>
@@ -205,14 +179,14 @@ export default function Activity() {
         {/* ── Main Activity Workspace ── */}
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 space-y-10">
           {/* ── Category Quick Jump Cards ── */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
-                id: 'events',
-                title: 'Events',
-                desc: 'Literary fests & launches',
+                id: 'clubs-events',
+                title: 'Clubs & Events',
+                desc: 'Club hubs, gatherings, events & festivals',
                 icon: CalendarDays,
-                count: events.length || '10+',
+                count: events.length || 'Explore',
               },
               {
                 id: 'challenges',
@@ -229,18 +203,11 @@ export default function Activity() {
                 count: '4 Games',
               },
               {
-                id: 'iq-test',
-                title: 'IQ Test',
-                desc: 'Visual reasoning & puzzles',
+                id: 'brain-science',
+                title: 'Brain & Science',
+                desc: 'IQ, reasoning & everyday science',
                 icon: BrainCircuit,
-                count: 'Fresh puzzles',
-              },
-              {
-                id: 'meetups',
-                title: 'Meetups',
-                desc: 'In-person & local circles',
-                icon: MapPin,
-                count: meetups.length || 'Active',
+                count: 'Explore',
               },
             ].map(({ id, title, desc, icon: Icon, count }) => {
               const isSelected = activeCategory === id;
@@ -346,11 +313,10 @@ export default function Activity() {
               <div className="flex flex-wrap gap-1.5">
                 {[
                   { id: 'all', label: 'All Activities' },
-                  { id: 'events', label: 'Events' },
+                  { id: 'clubs-events', label: 'Clubs & Events' }, 
                   { id: 'challenges', label: 'Reading Challenges' },
                   { id: 'games', label: 'Book Games' },
-                  { id: 'iq-test', label: 'IQ Test' },
-                  { id: 'meetups', label: 'Meetups' },
+                  { id: 'brain-science', label: 'Brain & Science' }, 
                 ].map(({ id, label }) => {
                   const isCurrent = activeCategory === id;
                   return (
@@ -578,21 +544,21 @@ export default function Activity() {
             )}
 
             {/* 3. BRAIN LAB SECTION */}
-            {(activeCategory === 'all' || activeCategory === 'iq-test') && (
+            {(activeCategory === 'all' || activeCategory === 'brain-science') && (
               <section className="space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <h2 className="flex items-center gap-2 font-serif text-xl font-bold text-[#1C201D] dark:text-[#F3F0E7]">
                       <BrainCircuit className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-                      IQ Test & Reasoning Puzzles
+                      Brain, Reasoning & Everyday Science
                     </h2>
                     <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">
-                      Explore visual matrices, logical patterns and original reasoning challenges.
+                      Test your reasoning, practise visual puzzles, and explain the science behind everyday things.
                     </p>
                   </div>
                   <Link to="/brain">
                     <Button variant="ghost" size="sm" className="text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">
-                      Explore IQ Test →
+                      Explore Everyday Science →
                     </Button>
                   </Link>
                 </div>
@@ -615,39 +581,56 @@ export default function Activity() {
                     <p className="mt-3 text-xs leading-relaxed text-[#636B65] dark:text-[#A5ADA6]">Try a broader practice set covering logic, numbers, words and visual patterns.</p>
                     <Link to="/brain/iq-test" className="mt-4 block"><Button variant="outline" className="w-full rounded-xl text-xs">Start assessment →</Button></Link>
                   </Card>
+                  <Card className="rounded-2xl border-emerald-200/70 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-xs dark:border-emerald-900/40 dark:from-emerald-950/20 dark:to-[#111614]">
+                    <div className="flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"><Sparkles className="h-5 w-5" /></span><div><Badge variant="secondary" className="text-[10px]">Everyday Science</Badge><h3 className="mt-1 font-serif text-base font-bold">Explain Science Around You</h3></div></div>
+                    <p className="mt-3 text-xs leading-relaxed text-[#636B65] dark:text-[#A5ADA6]">Explain how familiar things work—fans, air conditioners, buses and more—and get an AI-assisted evaluation of your understanding.</p>
+                    <Link to="/science-around-you" className="mt-4 block"><Button className="w-full rounded-xl text-xs">Try Everyday Science →</Button></Link>
+                  </Card>
                 </div>
               </section>
             )}
 
-            {/* 4. EVENTS & MEETUPS SECTION */}
-            {(activeCategory === 'all' || activeCategory === 'events' || activeCategory === 'meetups') && (
+            {/* 4. CLUBS, GATHERINGS & LITERARY EVENTS SECTION */}
+            {(activeCategory === 'all' || activeCategory === 'clubs-events') && (
               <section id="activity-meetups-section" className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="flex items-center gap-2 font-serif text-xl font-bold text-[#1C201D] dark:text-[#F3F0E7]">
                       <CalendarDays className="h-5 w-5 text-rose-600 dark:text-rose-400" />
-                      {activeCategory === 'meetups' ? 'Reader Meetups & Gatherings' : 'Literary Events & Meetups'}
+                      Clubs, Gatherings & Literary Events
                     </h2>
                     <p className="text-xs text-[#636B65] dark:text-[#A5ADA6]">
-                      Find your next bookish gathering—online or in your city—and meet readers beyond the page.
+                      Discover reading club hubs, meet fellow readers at gatherings, and find book fairs, author sessions and literary festivals.
                     </p>
                   </div>
                   <Link to="/events">
                     <Button variant="ghost" size="sm" className="text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">
-                      View Full Calendar →
+                      Explore Events & Festivals →
                     </Button>
                   </Link>
                 </div>
 
+                <div className="grid gap-3 sm:grid-cols-2 mb-2">
+                  <Card className="rounded-xl border-[#E8E2D9] bg-white p-4 shadow-xs dark:border-[#29332D] dark:bg-[#111614]">
+                    <div className="flex items-center gap-2"><Users className="h-4 w-4 text-[#1C442D] dark:text-[#D5B16D]" /><h3 className="font-serif text-sm font-bold">Club Hubs</h3></div>
+                    <p className="mt-1 text-xs text-[#636B65] dark:text-[#A5ADA6]">Find reading clubs, explore group discussions and join a circle around books you love.</p>
+                    <Link to="/groups" className="mt-3 inline-flex text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">Explore Club Hubs →</Link>
+                  </Card>
+                  <Card className="rounded-xl border-[#E8E2D9] bg-white p-4 shadow-xs dark:border-[#29332D] dark:bg-[#111614]">
+                    <div className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-rose-600 dark:text-rose-400" /><h3 className="font-serif text-sm font-bold">Gatherings, Events & Festivals</h3></div>
+                    <p className="mt-1 text-xs text-[#636B65] dark:text-[#A5ADA6]">Browse online and in-person meetups, author conversations, book fairs and literary festivals.</p>
+                    <Link to="/events" className="mt-3 inline-flex text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">Browse the calendar →</Link>
+                  </Card>
+                </div>
                 {isLoadingEvents ? (
                   <div className="py-8 text-center text-xs text-muted-foreground">Loading events…</div>
-                ) : (activeCategory === 'meetups' ? meetups : events).length === 0 ? (
+                ) : events.length === 0 ? (
                   <div className="rounded-xl border border-dashed border-[#E8E2D9] p-6 text-center text-xs text-muted-foreground dark:border-[#29332D]">
                     No upcoming events scheduled right now. Check back soon!
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {(activeCategory === 'meetups' ? meetups : events)
+                    {events
                       .filter((e) => !searchQuery || e.title.toLowerCase().includes(searchQuery.toLowerCase()))
                       .slice(0, 6)
                       .map((event) => (

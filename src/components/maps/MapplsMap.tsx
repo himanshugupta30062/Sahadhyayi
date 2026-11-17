@@ -95,7 +95,10 @@ export interface MapplsMapProps {
   className?: string;
 }
 
-const SDK_URL = 'https://sdk.mappls.com/map/sdk/web?v=3.0';
+// Use Mappls' documented raster layer as the default. The vector layer can
+// initialize its controls while its style/tiles remain blank on restricted or
+// partially provisioned Web Maps applications.
+const SDK_URL = 'https://sdk.mappls.com/map/sdk/web?v=3.0&layer=raster';
 const SDK_LOAD_TIMEOUT_MS = 15_000;
 
 const loadMappls = (apiKey: string): Promise<void> => {

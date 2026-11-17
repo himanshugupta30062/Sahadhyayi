@@ -281,12 +281,21 @@ describe('Library Book Sorting Hierarchy', () => {
     });
   });
 
-  describe('Cover-first page ranking regression', () => {
-    it('ranks a genuine metadata-only book with a cover above a coverless PDF', () => {
-      expect(getBookCompletenessScore(metadataOnlyBook)).toBeGreaterThan(
-        getBookCompletenessScore(partialVerifiedPdfNoCover)
+  describe('Reading-access-first ranking regression', () => {
+    it('ranks a readable PDF above a metadata-only book even when the PDF has no cover', () => {
+      expect(compareLibraryBooks(partialVerifiedPdfNoCover, metadataOnlyBook)).toBeLessThan(0);
+      expect(sortBooksByCompleteness([metadataOnlyBook, partialVerifiedPdfNoCover])[0].id)
+        .toBe(partialVerifiedPdfNoCover.id);
+    });
+
+    it('keeps deferred readable PDFs ahead of metadata-only books during page diversification', () => {
+      const firstPdf = { ...partialVerifiedPdfNoCover, id: 'pdf-first', title: 'First Book' };
+      const secondPdf = { ...partialVerifiedPdfNoCover, id: 'pdf-second', title: 'Second Book' };
+      const firstPage = diversifyBooksPerPage(
+        sortBooksByCompleteness([metadataOnlyBook, secondPdf, firstPdf]),
+        2
       );
-      expect(compareLibraryBooks(metadataOnlyBook, partialVerifiedPdfNoCover)).toBeLessThan(0);
+      expect(firstPage.slice(0, 2).map((book) => book.id)).toEqual(['pdf-first', 'pdf-second']);
     });
   });
 

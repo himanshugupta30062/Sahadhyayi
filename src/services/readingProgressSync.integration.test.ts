@@ -105,19 +105,22 @@ describe('syncReadingProgressToSupabase', () => {
     expect(mocks.calls.some(call => call.table === 'user_bookshelf' && call.method === 'update')).toBe(true);
   });
 
-  it('propagates reading-progress write errors', async () => {
+  it('propagates progress persistence errors', async () => {
     mocks.progressWrite.error = new Error('progress write failed');
+
     await expect(syncReadingProgressToSupabase('reader-1', input)).rejects.toThrow('progress write failed');
   });
 
-  it('propagates existing-shelf update errors', async () => {
+  it('propagates errors when updating an existing shelf row', async () => {
     mocks.shelfRead.data = { id: 9, status: 'reading' };
     mocks.shelfWrite.error = new Error('shelf update failed');
+
     await expect(syncReadingProgressToSupabase('reader-1', input)).rejects.toThrow('shelf update failed');
   });
 
-  it('ignores best-effort activity recording failures after persistence succeeds', async () => {
+  it('does not fail a successful sync when activity recording is unavailable', async () => {
     mocks.recordActivity.mockRejectedValue(new Error('activity unavailable'));
+
     await expect(syncReadingProgressToSupabase('reader-1', input)).resolves.toMatchObject({ bookId: 'book-1' });
   });
 });

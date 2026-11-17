@@ -6,6 +6,10 @@ import {
 } from "../_shared/scienceScoring.ts";
 import { SERVER_SCIENCE_QUESTIONS, SCIENCE_QUESTION_SET_VERSION } from "../_shared/scienceQuestionBank.ts";
 import { SCIENCE_DIFFICULTY_VERSION, type ScienceDifficulty } from "../_shared/sciencePrompts.ts";
+import {
+  SCIENCE_EVALUATION_CALIBRATION_GUIDANCE,
+  SCIENCE_EVALUATION_CALIBRATION_VERSION,
+} from "../_shared/scienceEvaluationGuidance.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -33,7 +37,6 @@ type ModelEvaluation = {
   misconceptionCorrection?: string | null;
 };
 
-const requestTimes = new Map<string, number[]>();
 const requestTimes = new Map<string, number[]>();
 
 function response(body: Record<string, unknown>, status = 200): Response {
@@ -167,6 +170,7 @@ serve(async (req: Request) => {
     "Use the supplied reference answer and key concepts as the authoritative rubric. Do not invent facts, sources, scientist biographies, book titles, or links.",
     "The learner selected the " + difficulty + " difficulty level. Calibrate expectations accordingly: beginner rewards a sound core explanation in plain language; intermediate expects a connected cause-and-effect sequence and relevant components; advanced expects deeper mechanisms, interacting factors, and appropriate limitations or exceptions. Do not penalize a learner for not supplying advanced detail at beginner level.",
     "Score each dimension from 0 to 100: accuracy (35% weight), conceptualUnderstanding (25%), reasoning (20%), completeness (15%), clarity (5%). A blank or irrelevant answer receives zero across all dimensions.",
+    SCIENCE_EVALUATION_CALIBRATION_GUIDANCE,
     "A scientifically correct concise answer may score highly even when it is not exhaustive. Clarity concerns whether the explanation can be understood, not grammar or language sophistication.",
     "Return valid JSON only, with this shape: { evaluations: [{ questionId, dimensions: { accuracy, conceptualUnderstanding, reasoning, completeness, clarity }, strengths: string[], improvements: string[], feedback: string, misconceptionCorrection: string|null }] }.",
     "Return exactly one evaluation for each supplied questionId, with no extra keys. Keep feedback concise, constructive and age-neutral. Do not include hidden chain-of-thought."
@@ -295,7 +299,7 @@ serve(async (req: Request) => {
 
     return response({
       difficulty,
-      questionSetVersion: SCIENCE_QUESTION_SET_VERSION + "-" + difficulty + "-" + SCIENCE_DIFFICULTY_VERSION,
+      questionSetVersion: SCIENCE_QUESTION_SET_VERSION + "-" + difficulty + "-" + SCIENCE_DIFFICULTY_VERSION + "-" + SCIENCE_EVALUATION_CALIBRATION_VERSION,
       overallScore,
       categoryScores,
       results,
