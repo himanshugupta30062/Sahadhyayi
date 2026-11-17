@@ -64,12 +64,12 @@ export const useGroups = (options: { enabled?: boolean } = {}) => {
   return useQuery({
     queryKey: ['all-groups', userId],
     queryFn: async () => {
+      // Do not embed group_chat_members in this public directory request. Anonymous
+      // visitors can discover public groups but intentionally cannot SELECT membership
+      // rows. Fetch the group rows first, then obtain only privacy-safe aggregates.
       const { data, error } = await supabase
         .from('group_chats')
-        .select(`
-          *,
-          group_members:group_chat_members(count)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -77,9 +77,66 @@ export const useGroups = (options: { enabled?: boolean } = {}) => {
         throw error;
       }
 
-      // An empty result is a genuine empty state. Never replace backend failures or
-      // zero rows with hard-coded demo groups and fabricated member counts.
-      return data ?? [];
+      const groups = data ?? [];
+      if (groups.length === 0) return [];
+
+      const countsByGroupId = new Map<string, number>();
+      const publicGroupIds = groups
+        .filter((group) => group.visibility === 'public' && group.is_encrypted !== true)
+        .map((group) => group.id);
+      const memberOnlyGroupIds = groups
+        .filter((group) => group.visibility !== 'public' || group.is_encrypted === true)
+        .map((group) => group.id);
+
+      // This RPC returns aggregate counts only for public, non-encrypted,
+      // non-archived groups. It never exposes member IDs or private-group counts.
+      if (publicGroupIds.length > 0) {
+        const { data: publicCounts, error: publicCountsError } = await supabase.rpc(
+          'get_public_group_member_counts',
+        );
+
+        if (publicCountsError) {
+          // The directory remains usable even if an optional count is unavailable.
+          console.warn('Could not load public reading-group member counts:', publicCountsError);
+        } else {
+          (publicCounts ?? []).forEach((row) => {
+            const count = Number(row.member_count);
+            if (publicGroupIds.includes(row.group_id) && Number.isFinite(count)) {
+              countsByGroupId.set(row.group_id, count);
+            }
+          });
+        }
+      }
+
+      // Authenticated members may see the roster of groups they belong to. Count
+      // active rows only, and only for non-public/encrypted groups already visible
+      // to this user through the group-directory RLS policy.
+      if (userId && memberOnlyGroupIds.length > 0) {
+        const { data: memberRows, error: memberRowsError } = await supabase
+          .from('group_chat_members')
+          .select('group_id')
+          .in('group_id', memberOnlyGroupIds)
+          .eq('status', 'active');
+
+        if (memberRowsError) {
+          console.warn('Could not load private reading-group member counts:', memberRowsError);
+        } else {
+          (memberRows ?? []).forEach((row) => {
+            countsByGroupId.set(row.group_id, (countsByGroupId.get(row.group_id) ?? 0) + 1);
+          });
+        }
+      }
+
+      // Keep the legacy group_members shape for existing cards/components while
+      // returning only the aggregate count needed by the UI.
+      return groups.map((group) => {
+        const count = countsByGroupId.get(group.id) ?? 0;
+        return {
+          ...group,
+          member_count: count,
+          group_members: [{ count }],
+        };
+      });
     },
     enabled: queryEnabled,
   });
