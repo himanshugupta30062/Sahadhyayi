@@ -113,6 +113,7 @@ describe('SEO build-script coverage', () => {
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/book/book-1</loc>');
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/authors/munshi-premchand</loc>');
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/articles/useful-reading-guide</loc>');
+    expect(sitemap).toContain('<lastmod>2026-11-11</lastmod>');
     expect(sitemap).not.toContain('/articles/../unsafe');
     expect(sitemap).not.toContain('/book/../unsafe');
     expect(sitemap).toContain('sahadhyayi-logo-digital-reading.png');

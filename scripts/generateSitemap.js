@@ -39,12 +39,16 @@ const xmlEscape = value => String(value).replace(/[&<>"']/g, character => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;'
 })[character]);
 
-function addUrl(loc, changefreq = 'weekly', priority = '0.6', image) {
+function addUrl(loc, changefreq = 'weekly', priority = '0.6', image, lastmod) {
   // Only absolute same-site HTTPS image URLs are eligible for sitemap images.
   const safeImage = typeof image === 'string' && /^https:\/\/sahadhyayi\.com\//i.test(image)
     ? image
     : undefined;
-  urls.push({ loc: SITE_URL + loc, changefreq, priority, image: safeImage });
+  const parsedLastmod = lastmod ? new Date(lastmod) : null;
+  const safeLastmod = parsedLastmod && Number.isFinite(parsedLastmod.getTime())
+    ? parsedLastmod.toISOString().slice(0, 10)
+    : undefined;
+  urls.push({ loc: SITE_URL + loc, changefreq, priority, image: safeImage, lastmod: safeLastmod });
 }
 
 addUrl('/', 'weekly', '1.0', HOME_IMAGE);
@@ -78,7 +82,7 @@ if (SUPABASE_URL && SUPABASE_KEY) {
       'authors', 100000, label => console.warn(`[sitemap] Stopped ${label} pagination at 100,000 rows.`)
     ),
     fetchPaginatedRows(
-      supabase.from('articles').select('slug,cover_image_url,published_at').eq('is_published', true).not('slug', 'is', null),
+      supabase.from('articles').select('slug,cover_image_url,published_at,updated_at').eq('is_published', true).not('slug', 'is', null),
       'published articles', 50000, label => console.warn(`[sitemap] Stopped ${label} pagination at 50,000 rows.`)
     )
   ]);
@@ -104,7 +108,7 @@ if (SUPABASE_URL && SUPABASE_KEY) {
     (articlesResult.data || []).forEach(article => {
       const slug = String(article.slug ?? '').trim();
       if (!/^[a-z0-9][a-z0-9-]{0,139}$/i.test(slug)) return;
-      addUrl('/articles/' + encodeURIComponent(slug), 'weekly', '0.7', article.cover_image_url);
+      addUrl('/articles/' + encodeURIComponent(slug), 'weekly', '0.7', article.cover_image_url, article.updated_at || article.published_at);
     });
   }
 } else {
@@ -113,11 +117,12 @@ if (SUPABASE_URL && SUPABASE_KEY) {
 
 const xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n' +
-  urls.map(({ loc, changefreq, priority, image }) => {
+  urls.map(({ loc, changefreq, priority, image, lastmod }) => {
     const imageTag = image
       ? '\n    <image:image>\n      <image:loc>' + xmlEscape(image) + '</image:loc>\n    </image:image>'
       : '';
-    return '  <url>\n    <loc>' + xmlEscape(loc) + '</loc>\n    <changefreq>' + changefreq + '</changefreq>\n    <priority>' + priority + '</priority>' + imageTag + '\n  </url>';
+    const lastmodTag = lastmod ? '\n    <lastmod>' + lastmod + '</lastmod>' : '';
+    return '  <url>\n    <loc>' + xmlEscape(loc) + '</loc>' + lastmodTag + '\n    <changefreq>' + changefreq + '</changefreq>\n    <priority>' + priority + '</priority>' + imageTag + '\n  </url>';
   }).join('\n') + '\n</urlset>\n';
 
 fs.mkdirSync('public', { recursive: true });
