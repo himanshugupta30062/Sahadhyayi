@@ -147,9 +147,9 @@ export default function AdminBookSeoReview() {
     if (!window.confirm("Apply only the approved leading/trailing whitespace corrections to this book? Factual metadata will not be changed.")) return;
     setApplyingId(decision.book_id);
     try {
-      const { data, error } = await supabase.rpc("admin_apply_book_seo_review_decision", {
+      const { data, error } = await supabase.rpc("admin_apply_book_seo_review_decision" as any, {
         p_decision_id: decision.id,
-      });
+      } as any);
       if (error) throw error;
       await queryClient.invalidateQueries({ queryKey: ["admin-book-seo-decisions", decision.audit_generated_at] });
       toast({
