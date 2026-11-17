@@ -375,6 +375,10 @@ const App = memo(() => {
                           }
                         />
                         <Route
+                          path="/research-papers/topic/:topicSlug"
+                          element={<Suspense fallback={<LoadingFallback message="Loading research topic..." />}><ResearchPapers /></Suspense>}
+                        />
+                        <Route
                           path="/research-papers"
                           element={
                             <Suspense fallback={<LoadingFallback message="Loading research papers..." />}>
