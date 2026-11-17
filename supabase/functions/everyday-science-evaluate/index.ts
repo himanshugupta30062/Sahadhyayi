@@ -34,7 +34,6 @@ type ModelEvaluation = {
 };
 
 const requestTimes = new Map<string, number[]>();
-const requestTimes = new Map<string, number[]>();
 
 function response(body: Record<string, unknown>, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: jsonHeaders });
