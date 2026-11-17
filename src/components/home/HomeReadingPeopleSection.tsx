@@ -59,9 +59,10 @@ export const HomeReadingPeopleSection: React.FC = () => {
       className="home-reading-people relative isolate py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-[#F5F3EC] dark:bg-[#0B0D0C] text-[#1C201D] dark:text-[#F3F0E7] transition-colors duration-300"
       aria-label="Find Your Reading People"
     >
+      <style>{`@keyframes people-section-rise{from{opacity:0;transform:translate3d(0,18px,0)}to{opacity:1;transform:translate3d(0,0,0)}}@media(prefers-reduced-motion:no-preference){.home-reading-people .people-reveal{animation:people-section-rise 620ms cubic-bezier(.2,.7,.2,1) both}.home-reading-people .people-reveal-1{animation-delay:80ms}.home-reading-people .people-reveal-2{animation-delay:180ms}.home-reading-people .people-reveal-3{animation-delay:280ms}.home-reading-people .people-reveal-4{animation-delay:380ms}.home-reading-people .people-card-reveal{animation:people-section-rise 560ms cubic-bezier(.2,.7,.2,1) both}.home-reading-people .people-card-reveal:nth-child(1){animation-delay:80ms}.home-reading-people .people-card-reveal:nth-child(2){animation-delay:150ms}.home-reading-people .people-card-reveal:nth-child(3){animation-delay:220ms}.home-reading-people .people-card-reveal:nth-child(4){animation-delay:290ms}}@media(prefers-reduced-motion:reduce){.home-reading-people .people-reveal,.home-reading-people .people-card-reveal{animation:none!important;opacity:1;transform:none}}`}</style>
       <div className="relative z-10 max-w-7xl mx-auto">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12 sm:mb-14">
+        <div className="people-reveal people-reveal-1 flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12 sm:mb-14">
           <div className="max-w-2xl">
             <div className="flex items-center gap-2.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.24em] text-[#8F681C] dark:text-[#D5B16D] mb-3">
               <span aria-hidden="true" className="h-px w-7 bg-[#8F681C] dark:bg-[#D5B16D]" />
@@ -85,10 +86,10 @@ export const HomeReadingPeopleSection: React.FC = () => {
         </div>
 
         {/* Live Community Pulse Bar */}
-        <CommunityPulseBar className="mb-8" />
+        <div className="people-reveal people-reveal-2"><CommunityPulseBar className="mb-8" /></div>
 
         {/* Signature feature: readers map */}
-        <div className="group relative mb-8 block overflow-hidden rounded-[2.25rem] border border-[#DFD8CC] bg-gradient-to-br from-[#EEF4ED] via-[#F8F6F0] to-[#E9F1E9] p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-[#243329] dark:from-[#132219] dark:via-[#0F1412] dark:to-[#16201A] sm:p-10 lg:p-12">
+        <div className="people-reveal people-reveal-3 group relative mb-8 block overflow-hidden rounded-[2.25rem] border border-[#DFD8CC] bg-gradient-to-br from-[#EEF4ED] via-[#F8F6F0] to-[#E9F1E9] p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-[#243329] dark:from-[#132219] dark:via-[#0F1412] dark:to-[#16201A] sm:p-10 lg:p-12">
           <div className="pointer-events-none absolute -right-12 -top-20 h-72 w-72 rounded-full border border-[#5B8064]/20 dark:border-[#A6C9A8]/20" aria-hidden="true"/>
           <div className="pointer-events-none absolute right-8 top-8 h-52 w-52 rounded-full border border-dashed border-[#5B8064]/25 dark:border-[#A6C9A8]/20" aria-hidden="true"/>
           <div className="relative z-10 grid items-center gap-8 lg:grid-cols-[1.05fr_.95fr]">
@@ -124,11 +125,11 @@ export const HomeReadingPeopleSection: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="people-reveal-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {/* Pillar 1: Reader Map */}
           <Link
             to="/map"
-            className="group flex flex-col justify-between rounded-3xl bg-white dark:bg-[#131715] border border-[#E5E0D8] hover:border-[#8F681C]/60 dark:border-[#242E28] dark:hover:border-[#D5B16D]/50 p-6 sm:p-7 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl"
+            className="people-card-reveal group flex flex-col justify-between rounded-3xl bg-white dark:bg-[#131715] border border-[#E5E0D8] hover:border-[#8F681C]/60 dark:border-[#242E28] dark:hover:border-[#D5B16D]/50 p-6 sm:p-7 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl"
           >
             <div>
               <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center mb-5 transition-transform group-hover:scale-105 shadow-2xs">
@@ -227,7 +228,7 @@ export const HomeReadingPeopleSection: React.FC = () => {
         </div>
 
         {/* Feature Spotlight: Shared Marginalia */}
-        <div className="rounded-3xl bg-white dark:bg-[#131715] border border-[#E5E0D8] dark:border-[#242E28] p-6 sm:p-8 shadow-xs">
+        <div className="people-reveal people-reveal-4 rounded-3xl bg-white dark:bg-[#131715] border border-[#E5E0D8] dark:border-[#242E28] p-6 sm:p-8 shadow-xs">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
             <div className="flex items-center gap-3.5">
               <div className="w-11 h-11 rounded-2xl bg-[#FBF4E6] dark:bg-[#1D1B16] text-[#8F681C] dark:text-[#D5B16D] border border-[#E8D9BF] dark:border-[#383020] flex items-center justify-center shrink-0 shadow-2xs">
