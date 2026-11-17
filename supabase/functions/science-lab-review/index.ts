@@ -35,8 +35,9 @@ Deno.serve(async (req: Request) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY");
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const geminiKey = Deno.env.get("GEMINI_API_KEY");
-  if (!supabaseUrl || !supabaseAnonKey || !geminiKey) {
+  if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey || !geminiKey) {
     console.error("Science Lab reviewer is missing a required server setting.");
     return reply({ error: "The experiment reviewer is temporarily unavailable." }, 503);
   }
@@ -58,7 +59,8 @@ Deno.serve(async (req: Request) => {
   const { data: authData, error: authError } = await client.auth.getUser();
   if (authError || !authData.user) return reply({ error: "Your sign-in session is invalid. Please sign in again." }, 401);
 
-  const { data: rateAllowed, error: rateError } = await client.rpc("check_rate_limit", {
+  const rateLimitClient = createClient(supabaseUrl, supabaseServiceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const { data: rateAllowed, error: rateError } = await rateLimitClient.rpc("check_rate_limit", {
     p_identifier: authData.user.id,
     p_endpoint: "science-lab-review",
     p_max_requests: 6,
