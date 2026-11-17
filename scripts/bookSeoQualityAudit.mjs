@@ -14,7 +14,37 @@ function isValidIsbn(value) {
 }
 
 function normalized(value) {
-  return String(value ?? "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  const raw = String(value ?? "");
+  let result = "";
+  let inTag = false;
+  let inWhitespace = true;
+  for (let i = 0; i < raw.length; i++) {
+    const char = raw[i];
+    if (char === "<") {
+      inTag = true;
+      if (!inWhitespace && result.length > 0) {
+        result += " ";
+        inWhitespace = true;
+      }
+    } else if (char === ">") {
+      inTag = false;
+      if (!inWhitespace && result.length > 0) {
+        result += " ";
+        inWhitespace = true;
+      }
+    } else if (!inTag) {
+      if (char <= " ") {
+        if (!inWhitespace && result.length > 0) {
+          result += " ";
+          inWhitespace = true;
+        }
+      } else {
+        result += char;
+        inWhitespace = false;
+      }
+    }
+  }
+  return result.trimEnd();
 }
 
 /**

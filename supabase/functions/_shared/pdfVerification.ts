@@ -1,22 +1,31 @@
 export function parseVerificationReport(rawText: string): Record<string, unknown> {
-  const cleaned = rawText
-    .replace(/^\uFEFF/, "")
-    .trim()
-    .replace(/^\x60{3}(?:json)?\s*/i, "")
-    .replace(/\s*\x60{3}\s*$/, "")
-    .trim();
+  let cleaned = rawText.replace(/^\uFEFF/, "").trim();
+  if (cleaned.startsWith("```")) {
+    cleaned = cleaned.replace(/^```(?:json)?\s*/i, "");
+  }
+  if (cleaned.endsWith("```")) {
+    cleaned = cleaned.slice(0, -3).trimEnd();
+  }
+  cleaned = cleaned.trim();
 
-  const candidates = [cleaned];
+  try {
+    const parsed: unknown = JSON.parse(cleaned);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return parsed as Record<string, unknown>;
+    }
+    throw new Error("Gemini returned an invalid verification report. Please retry verification; the PDF remains private.");
+  } catch (err) {
+    if (err instanceof Error && err.message.includes("Gemini returned an invalid verification report")) {
+      throw err;
+    }
+  }
+
   const firstBrace = cleaned.indexOf("{");
   const lastBrace = cleaned.lastIndexOf("}");
   if (firstBrace >= 0 && lastBrace > firstBrace) {
     const extracted = cleaned.slice(firstBrace, lastBrace + 1);
-    if (extracted !== cleaned) candidates.push(extracted);
-  }
-
-  for (const candidate of candidates) {
     try {
-      const parsed: unknown = JSON.parse(candidate);
+      const parsed: unknown = JSON.parse(extracted);
       if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
         return parsed as Record<string, unknown>;
       }

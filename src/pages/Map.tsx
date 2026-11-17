@@ -118,7 +118,7 @@ const MapPage = () => {
       mapActionsRef.current[mode]?.recenter(currentLocation);
       toast.info('Recentered to your location');
     } else {
-      handleToggleSharing();
+      void handleToggleSharing();
     }
   };
 
