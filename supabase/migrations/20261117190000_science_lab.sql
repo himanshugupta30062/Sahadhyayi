@@ -90,7 +90,8 @@ create policy "Users can read their own experiment requests"
   using ((select auth.uid()) = user_id);
 
 grant select on public.science_experiments to anon, authenticated;
-grant select, insert, update, delete on public.science_experiment_attempts to authenticated;
+grant select on public.science_experiment_attempts to anon, authenticated;
+grant insert, update, delete on public.science_experiment_attempts to authenticated;
 grant select, insert on public.science_experiment_requests to authenticated;
 
 -- Initial curated activities. These are intentionally low-risk, household-material demonstrations.
