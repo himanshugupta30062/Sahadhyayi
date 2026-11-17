@@ -41,6 +41,8 @@ type ExperimentAttempt = {
   what_learned: string | null;
   worked: boolean | null;
   created_at: string;
+  ai_feedback?: ScienceAiFeedback | null;
+  mediaUrls?: Array<{ url: string; media_type: "image" | "video" }>;
   experiment?: Pick<Experiment, "title" | "slug" | "category"> | null;
 };
 
