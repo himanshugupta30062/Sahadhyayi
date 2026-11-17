@@ -53,7 +53,7 @@ function setMeta(html, attribute, key, content) {
   return pattern.test(html) ? html.replace(pattern, tag) : html.replace("</head>", `  ${tag}\n</head>`);
 }
 
-function createPage({ title, description, route, image, type, entityType, entityName, bodyText, publishedAt, modifiedAt, authorName, wordCount, schemaType, about, breadcrumbs, relatedBooks, sameAs }) {
+function createPage({ title, description, route, image, type, entityType, entityName, bodyText, publishedAt, modifiedAt, authorName, wordCount, schemaType, about, breadcrumbs, relatedBooks, sameAs, bookAuthor, bookIsbn, bookGenre, bookLanguage, bookPages, bookPublicationYear }) {
   const canonical = `${SITE_URL}${route}`;
   let html = template.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
   html = setMeta(html, "name", "description", description);
@@ -68,7 +68,20 @@ function createPage({ title, description, route, image, type, entityType, entity
     html = setMeta(html, "name", "twitter:image", image);
   }
   const mainEntity = entityType === "Book"
-    ? { "@type": "Book", name: entityName, description, url: canonical, ...(image && /^https:\/\//i.test(image) ? { image } : {}) }
+    ? {
+        "@type": "Book",
+        name: entityName,
+        description,
+        url: canonical,
+        mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
+        ...(image && /^https:\/\//i.test(image) ? { image } : {}),
+        ...(bookAuthor ? { author: { "@type": "Person", name: bookAuthor.name, ...(bookAuthor.url ? { url: bookAuthor.url } : {}) } } : {}),
+        ...(bookIsbn ? { isbn: bookIsbn } : {}),
+        ...(bookGenre ? { genre: bookGenre } : {}),
+        ...(bookLanguage ? { inLanguage: bookLanguage } : {}),
+        ...(Number.isFinite(bookPages) && bookPages > 0 ? { numberOfPages: bookPages } : {}),
+        ...(bookPublicationYear ? { datePublished: String(bookPublicationYear) } : {}),
+      }
     : entityType === "Person"
       ? {
           "@type": "Person",
@@ -129,6 +142,7 @@ function createPage({ title, description, route, image, type, entityType, entity
     <h1>${escapeHtml(title.replace(/[ \t]{0,16}\|[ \t]{0,16}Sahadhyayi$/i, ""))}</h1>
     <p>${escapeHtml(description)}</p>
     ${safeBodyText ? `<p>${escapeHtml(safeBodyText)}</p>` : ""}
+    ${bookAuthor?.url ? `<p>By <a href="${escapeHtml(bookAuthor.url)}">${escapeHtml(bookAuthor.name)}</a></p>` : bookAuthor?.name ? `<p>By ${escapeHtml(bookAuthor.name)}</p>` : ""}
     ${Array.isArray(relatedBooks) && relatedBooks.length ? `<section aria-label="Books by this author"><h2>Books by ${escapeHtml(entityName || "this author")}</h2><ul>${relatedBooks.map((book) => `<li><a href="${escapeHtml(book.route)}">${escapeHtml(book.title)}</a></li>`).join("")}</ul></section>` : ""}
     <p><a href="/library">Explore the library</a> · <a href="/articles">Read articles</a> · <a href="/groups">Find reading groups</a> · <a href="/authors">Discover authors</a></p>
   </main>`;
@@ -291,7 +305,7 @@ if (articlesError) {
 
 const { data: books, error: booksError } = await fetchPaginatedRows(
   supabase.from("books_library")
-    .select("id,title,description,cover_image_url,author_id,author")
+    .select("id,title,description,cover_image_url,author_id,author,isbn,genre,language,pages,publication_year")
     .not("id", "is", null)
     .not("title", "is", null),
   "books",
@@ -302,6 +316,15 @@ const { data: books, error: booksError } = await fetchPaginatedRows(
 if (booksError) {
   console.warn(`[prerender] Could not fetch public books: ${booksError.message}`);
 } else {
+  const { data: bookAuthors, error: bookAuthorsError } = await fetchPaginatedRows(
+    supabase.from("authors").select("id,name"),
+    "book authors",
+    5000,
+    (label, maxRows) => console.warn(`[prerender] Reached the ${maxRows}-row ${label} safety cap; additional records were not prerendered.`),
+  );
+  if (bookAuthorsError) console.warn(`[prerender] Could not fetch book author links: ${bookAuthorsError.message}`);
+  const authorById = new Map((bookAuthors ?? []).map((author) => [author.id, author]));
+  const authorByName = new Map((bookAuthors ?? []).map((author) => [String(author.name ?? "").trim().toLowerCase(), author]));
   for (const book of books ?? []) {
     const id = String(book.id ?? "").trim();
     const title = String(book.title ?? "").trim();
@@ -309,14 +332,28 @@ if (booksError) {
     const route = `/book/${encodeURIComponent(id)}`;
     const description = plainText(book.description) ||
       `Explore ${title} on Sahadhyayi, the digital reading community for fellow readers.`;
+    const authorRecord = (book.author_id && authorById.get(book.author_id)) || authorByName.get(String(book.author ?? "").trim().toLowerCase());
+    const authorName = String(authorRecord?.name || book.author || "").trim();
+    const authorSlug = authorRecord?.name ? slugify(authorRecord.name) : "";
+    const bookAuthor = authorName
+      ? { name: authorName, ...(authorSlug ? { url: `/authors/${authorSlug}` } : {}) }
+      : undefined;
     writeRoute(route, createPage({
-      title: `${title} - Read Online | Sahadhyayi`,
+      title: `${title} - Read Online & Book Details | Sahadhyayi`,
       description,
       route,
       image: book.cover_image_url,
       type: "book",
       entityType: "Book",
       entityName: title,
+      bodyText: book.description,
+      bookAuthor,
+      bookIsbn: book.isbn,
+      bookGenre: book.genre,
+      bookLanguage: book.language,
+      bookPages: Number(book.pages),
+      bookPublicationYear: book.publication_year,
+      breadcrumbs: [{ name: "Home", route: "/" }, { name: "Library", route: "/library" }, { name: title, route }],
     }));
     bookCount += 1;
   }

@@ -66,7 +66,7 @@ describe('SEO build-script coverage', () => {
     mocks.createClient.mockClear();
     mocks.rows = {
       books_library: [
-        { id: 'book-1', title: 'A <script>alert(1)</script> Book', description: '<p>A &amp; B story</p>', cover_image_url: 'https://images.example/cover.jpg', author_id: 'author-1', author: 'Munshi Premchand' },
+        { id: 'book-1', title: 'A <script>alert(1)</script> Book', description: '<p>A &amp; B story</p>', cover_image_url: 'https://images.example/cover.jpg', author_id: 'author-1', author: 'Munshi Premchand', isbn: '9780000000001', genre: 'Literary fiction', language: 'en', pages: 240, publication_year: 1936 },
         { id: '../unsafe', title: 'Unsafe route', description: null, cover_image_url: null },
       ],
       authors: [
@@ -148,12 +148,21 @@ describe('SEO build-script coverage', () => {
     const book = mocks.writes.find((entry) => entry.path.endsWith('/book/book-1/index.html'))?.content || '';
     const author = mocks.writes.find((entry) => entry.path.endsWith('/authors/munshi-premchand/index.html'))?.content || '';
     const article = mocks.writes.find((entry) => entry.path.endsWith('/articles/useful-reading-guide/index.html'))?.content || '';
-    expect(book).toContain('<title>A &lt;script&gt;alert(1)&lt;/script&gt; Book - Read Online | Sahadhyayi</title>');
+    expect(book).toContain('<title>A &lt;script&gt;alert(1)&lt;/script&gt; Book - Read Online &amp; Book Details | Sahadhyayi</title>');
     expect(book).toContain('<meta property="og:image" content="https://images.example/cover.jpg" />');
     expect(book).toContain('<link rel="canonical" href="https://sahadhyayi.com/book/book-1" />');
     expect(book).not.toContain('<script>alert(1)</script>');
     expect(book).toContain('A &amp; B story');
     expect(book).toContain('"@type":"Book"');
+    expect(book).toContain('"isbn":"9780000000001"');
+    expect(book).toContain('"genre":"Literary fiction"');
+    expect(book).toContain('"inLanguage":"en"');
+    expect(book).toContain('"numberOfPages":240');
+    expect(book).toContain('"datePublished":"1936"');
+    expect(book).toContain('"mainEntityOfPage":{"@type":"WebPage","@id":"https://sahadhyayi.com/book/book-1"}');
+    expect(book).toContain('<p>By <a href="/authors/munshi-premchand">Munshi Premchand</a></p>');
+    expect(book).toContain('"@type":"BreadcrumbList"');
+    expect(book).toContain('A &amp; B story');
     expect(book).toContain('"name":"A \\u003cscript\\u003ealert(1)\\u003c/script\\u003e Book"');
     expect(author).toContain('"@type":"Person"');
     expect(author).toContain('"name":"Munshi Premchand"');
