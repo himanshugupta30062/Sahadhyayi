@@ -18,6 +18,59 @@ import {
 } from '@/hooks/useLibraryBooks';
 
 describe('Library Book Sorting Hierarchy', () => {
+  it('does not treat a URL ending in .pdf as verified when the server audit reports a non-PDF response', () => {
+    const misleadingPdf = {
+      id: 'misleading-pdf',
+      title: 'A Real Book',
+      author: 'A Known Author',
+      pdf_url: 'https://example.com/book.pdf',
+      reader_link_status: 'working',
+      reader_link_http_status: 200,
+      reader_link_content_type: 'text/html',
+    };
+
+    expect(isVerifiedPdf(misleadingPdf)).toBe(false);
+    expect(getBookResourceType(misleadingPdf)).toBe('external_book_page');
+  });
+
+  it('does not consider missing language complete bibliographic metadata', () => {
+    expect(hasCompleteMetadata({
+      title: 'A Genuine Book',
+      author: 'A Known Author',
+      cover_image_url: 'https://example.com/cover.jpg',
+      description: 'A sufficiently detailed description of this genuine book.',
+    })).toBe(false);
+  });
+
+  it('keeps a failed asset record below an otherwise comparable verified book', () => {
+    const verified = {
+      id: 'verified-edition',
+      title: 'The Same Book',
+      author: 'A Known Author',
+      cover_image_url: 'https://example.com/cover.jpg',
+      description: 'A sufficiently detailed description of this genuine book.',
+      language: 'English',
+      pdf_url: 'https://example.com/book.pdf',
+      reader_link_status: 'working',
+      reader_link_http_status: 200,
+      reader_link_content_type: 'application/pdf',
+      asset_quality_status: 'verified',
+      asset_quality_score: 90,
+    };
+    const failed = {
+      ...verified,
+      id: 'failed-edition',
+      reader_link_status: 'broken',
+      reader_link_http_status: 404,
+      reader_link_content_type: 'text/html',
+      asset_quality_status: 'failed',
+      asset_quality_score: 0,
+    };
+
+    expect(compareLibraryBooks(verified, failed)).toBeLessThan(0);
+  });
+
+
   // Test fixtures for all 5 tiers + ghost
   const completeVerifiedPdf = {
     id: 'book-1-complete-pdf',
