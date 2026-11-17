@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import './BookDetails.css';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Calendar, BookOpen, Globe, User, LogIn, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -289,9 +290,9 @@ const BookDetails = () => {
         keywords={keywords}
         schema={combinedSchema}
       />
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="book-details-page min-h-screen">
         {/* Header */}
-        <div className="bg-white/80 backdrop-blur-sm border-b border-blue-200 sticky top-0 z-10">
+        <div className="book-details-topbar sticky top-0 z-30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
               <Link to="/library">
@@ -309,7 +310,7 @@ const BookDetails = () => {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="book-details-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Mobile Breadcrumb */}
           <Breadcrumb 
             items={breadcrumbItems} 
@@ -317,9 +318,9 @@ const BookDetails = () => {
           />
 
           {/* Main Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-12">
+          <div className="book-details-hero grid grid-cols-1 lg:grid-cols-5 gap-8 mb-12">
             {/* Book Cover - Left Side */}
-            <div className="lg:col-span-2">
+            <div className="book-details-cover-column lg:col-span-2">
               <BookCover
                 title={book.title}
                 bookId={book.id}
@@ -332,10 +333,10 @@ const BookDetails = () => {
             </div>
 
             {/* Book Info - Right Side */}
-            <div className="lg:col-span-3 space-y-6">
+            <div className="book-details-info lg:col-span-3 space-y-6">
               {/* Title and Basic Info */}
               <div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                <h1 className="book-details-title text-4xl font-bold mb-4 leading-tight">
                   {book.title}
                 </h1>
                 
@@ -358,8 +359,8 @@ const BookDetails = () => {
                     <span className="text-gray-500">({ratingCount} {ratingCount === 1 ? 'rating' : 'ratings'})</span>
                   </div>
                 </div>
-                <div className="mb-6">
-                  <p className="text-sm text-gray-600 mb-1">Rate this book:</p>
+                <div className="book-details-rate mb-6">
+                  <p className="text-sm text-muted-foreground mb-1">Rate this book:</p>
                   {ratingLoading ? (
                     <div className="text-sm text-gray-500">Loading...</div>
                   ) : (
@@ -375,7 +376,7 @@ const BookDetails = () => {
                 </div>
 
                 {/* Metadata Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="book-details-metadata grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                   {book.genre && (
                     <Card className="bg-blue-50 border-blue-200">
                       <CardContent className="p-3 text-center">
