@@ -264,6 +264,7 @@ export default function ScienceAroundYou() {
       const resultIds = new Set(Array.isArray(data?.results) ? data.results.map((item) => item?.questionId) : []);
       if (
         !data ||
+        data.difficulty !== difficulty ||
         !Array.isArray(data.results) ||
         data.results.length !== questions.length ||
         resultIds.size !== questions.length ||
