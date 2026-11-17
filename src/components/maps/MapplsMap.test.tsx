@@ -19,6 +19,14 @@ describe('MapplsMap', () => {
     expect(document.querySelector('script[data-mappls-sdk="true"]')).toBeNull();
   });
 
+  it('requests the documented raster basemap so the map does not remain a blank vector canvas', () => {
+    window.mappls = {};
+    render(<MapplsMap apiKey="valid-key" points={[]} />);
+
+    const script = document.querySelector<HTMLScriptElement>('script[data-mappls-sdk="true"]');
+    expect(script?.src).toContain('https://sdk.mappls.com/map/sdk/web?v=3.0&layer=raster&access_token=valid-key');
+  });
+
   it('uses the documented Map constructor, load events, marker API and fitBounds API', async () => {
     const listeners: Record<string, (event?: unknown) => void> = {};
     const setCenter = vi.fn();
