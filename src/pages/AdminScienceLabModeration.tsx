@@ -74,8 +74,11 @@ export default function AdminScienceLabModeration() {
         .from("science_experiment_attempts" as any)
         .update({ moderation_status: decision, moderation_note: note || null })
         .eq("id", id)
-        .eq("moderation_status", "pending");
+        .eq("moderation_status", "pending")
+        .select("id")
+        .maybeSingle();
       if (error) throw error;
+      if (!data?.id) throw new Error("This submission has already been reviewed or is no longer available.");
     },
     onSuccess: async (_data, variables) => {
       toast.success(variables.decision === "approved" ? "Experiment approved for community sharing." : "Submission declined.");
