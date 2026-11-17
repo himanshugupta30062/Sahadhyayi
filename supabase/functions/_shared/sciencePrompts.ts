@@ -1,3 +1,11 @@
+export type ScienceDifficulty = "beginner" | "intermediate" | "advanced";
+
+export const SCIENCE_DIFFICULTY_LABELS: Record<ScienceDifficulty, string> = {
+  beginner: "Beginner",
+  intermediate: "Intermediate",
+  advanced: "Advanced",
+};
+
 export type ScienceDomain =
   | "Physics"
   | "Technology & engineering"
@@ -16,6 +24,7 @@ export type SciencePrompt = {
  * It contains no answer key, scoring guidance, or private evaluation data.
  */
 export const SCIENCE_QUESTION_SET_VERSION = "everyday-science-v1";
+export const SCIENCE_DIFFICULTY_VERSION = "difficulty-calibration-v1";
 
 export const SCIENCE_PROMPTS: SciencePrompt[] = [
   {
