@@ -1,18 +1,72 @@
 
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BookOpen, Calendar, User, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SEO from '@/components/SEO';
 import { toSeoDescription } from '@/utils/seoText';
 import DOMPurify from 'dompurify';
-import { blogPostDetails } from '@/data/blogPostDetails';
+
+type BlogPostEntry = {
+  title: string;
+  content: string;
+  author: string;
+  date: string;
+  readTime: string;
+  image: string;
+  description?: string;
+};
+
+type BlogPostMap = Record<string, BlogPostEntry>;
+
 
 const BlogPost = () => {
+
   const { slug } = useParams();
+  const [posts, setPosts] = useState<BlogPostMap | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
-  
+  useEffect(() => {
+    let active = true;
 
-  const post = blogPostDetails[slug as keyof typeof blogPostDetails];
+    fetch('/data/blog-post-details.json')
+      .then((response) => {
+        if (!response.ok) throw new Error('Unable to load blog articles');
+        return response.json() as Promise<BlogPostMap>;
+      })
+      .then((data) => {
+        if (active) setPosts(data);
+      })
+      .catch(() => {
+        if (active) setLoadError(true);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const post = slug ? posts?.[slug] : undefined;
+
+  if (!posts && !loadError) {
+    return (
+      <main className="min-h-screen flex items-center justify-center" aria-live="polite">
+        <p className="text-muted-foreground">Loading article…</p>
+      </main>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Unable to load this article</h1>
+          <p className="mb-4 text-muted-foreground">Please check your connection and try again.</p>
+          <Link to="/blog"><Button>Back to Blog</Button></Link>
+        </div>
+      </main>
+    );
+  }
 
   // Build a lightweight table of contents from the article's existing H2/H3 headings.
   // This keeps every article's content as the source of truth and avoids hard-coded section lists.
