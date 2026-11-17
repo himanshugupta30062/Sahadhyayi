@@ -106,7 +106,9 @@ export function isVerifiedPdf(book: any): boolean {
   if (Array.isArray(book.assets) && book.assets.length > 0) {
     const pdfAsset = book.assets.find((a: any) => a.format === 'pdf');
     if (pdfAsset) {
-      if (pdfAsset.verified === false) return false;
+      // A structured PDF is verified only when the verifier explicitly marks it true.
+      // Missing verification metadata must never be treated as proof of a working file.
+      if (pdfAsset.verified !== true) return false;
       const url = (pdfAsset.downloadUrl || pdfAsset.readerUrl || '').trim();
       if (!url || url.includes('books.google.') || url.includes('broken') || url.includes('404')) {
         return false;
