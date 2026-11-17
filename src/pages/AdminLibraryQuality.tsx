@@ -16,6 +16,13 @@ import {
   ResolutionResult,
 } from '@/types/bookCatalog';
 import { generateLibraryDuplicateAudit } from '@/utils/catalog/duplicateAudit';
+import { sortBooksByCompleteness, diversifyBooksPerPage } from '@/hooks/useLibraryBooks';
+import {
+  detectBookSchemaCapabilities,
+  getPublicBookSelectColumns,
+  applyPublicBookFilter,
+  filterPublicBooks,
+} from '@/utils/catalog/bookVisibility';
 import { applyDuplicateResolution, verifyAdminStatus } from '@/utils/catalog/duplicateResolution';
 import {
   archiveUnwantedBook,
@@ -180,6 +187,70 @@ export const AdminLibraryQuality: React.FC = () => {
       toast({
         title: 'Asset audit stopped',
         description: `${totalProcessed} books were inspected before the error. ${error instanceof Error ? error.message : 'Could not continue the book asset audit.'}`,
+        variant: 'destructive',
+      });
+    } finally {
+      setAssetAuditRunning(false);
+    }
+  };
+
+  const handleAuditTopThreePages = async () => {
+    setAssetAuditRunning(true);
+    let totalProcessed = 0;
+    let totalFailed = 0;
+    try {
+      const capabilities = await detectBookSchemaCapabilities();
+      const columns = getPublicBookSelectColumns(capabilities);
+      const allRows: any[] = [];
+      const fetchSize = 500;
+
+      // Fetch the full public catalog before ranking so older books are not
+      // excluded by the database's default 1,000-row response cap.
+      for (let offset = 0; ; offset += fetchSize) {
+        let query = supabase.from('books_library').select(columns);
+        query = applyPublicBookFilter(query, capabilities);
+        const { data, error } = await query
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: true })
+          .range(offset, offset + fetchSize - 1);
+        if (error) throw error;
+        const page = data || [];
+        allRows.push(...page);
+        if (page.length < fetchSize) break;
+      }
+
+      // Match the Library's ranking and 12-book page diversification, then
+      // audit exactly the 36 records that would appear on its first 3 pages.
+      const visibleRows = filterPublicBooks(allRows);
+      const top36 = diversifyBooksPerPage(sortBooksByCompleteness(visibleRows), 12).slice(0, 36);
+      const bookIds = top36.map((book: any) => String(book.id)).filter(Boolean);
+      if (bookIds.length === 0) throw new Error('No public catalog books were available to audit.');
+
+      for (let offset = 0; offset < bookIds.length; offset += 20) {
+        const batchIds = bookIds.slice(offset, offset + 20);
+        const { data, error } = await supabase.functions.invoke('audit-book-assets', {
+          body: { book_ids: batchIds, limit: batchIds.length },
+        });
+        if (error) throw error;
+
+        const results = Array.isArray(data?.results) ? data.results : [];
+        const processed = Number(data?.processed ?? results.length);
+        totalProcessed += processed;
+        totalFailed += results.filter((result: { error?: string }) => Boolean(result.error)).length;
+        setAssetAuditResults((previous) => [...results, ...previous].slice(0, 40));
+        setAssetAuditProcessed((previous) => previous + processed);
+      }
+
+      toast({
+        title: 'First three Library pages audited',
+        description: `${totalProcessed} ranked books inspected. ${totalFailed} database updates failed. Structural checks remain Needs review; no book was auto-approved.`,
+        variant: totalFailed > 0 ? 'destructive' : 'default',
+      });
+      void queryClient.invalidateQueries({ queryKey: ['library-duplicate-audit'] });
+    } catch (error) {
+      toast({
+        title: 'Top-page asset audit stopped',
+        description: `${totalProcessed} books were inspected before the error. ${error instanceof Error ? error.message : 'Could not audit the first three Library pages.'}`,
         variant: 'destructive',
       });
     } finally {
@@ -439,10 +510,16 @@ export const AdminLibraryQuality: React.FC = () => {
                     Inspect up to 100 books per run, processed safely in five sequential batches of 20. Structural checks never auto-approve a book.
                   </p>
                 </div>
-                <Button onClick={handleRunAssetAudit} disabled={assetAuditRunning}>
-                  <RefreshCw className={`w-4 h-4 mr-2 ${assetAuditRunning ? 'animate-spin' : ''}`} />
-                  {assetAuditRunning ? 'Checking up to 100 books…' : 'Audit next 100 books'}
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button onClick={handleAuditTopThreePages} disabled={assetAuditRunning} variant="default">
+                    <ShieldCheck className={`w-4 h-4 mr-2 ${assetAuditRunning ? 'animate-spin' : ''}`} />
+                    {assetAuditRunning ? 'Auditing Library pages…' : 'Audit first 3 pages (36 books)'}
+                  </Button>
+                  <Button onClick={handleRunAssetAudit} disabled={assetAuditRunning} variant="outline">
+                    <RefreshCw className={`w-4 h-4 mr-2 ${assetAuditRunning ? 'animate-spin' : ''}`} />
+                    {assetAuditRunning ? 'Checking up to 100 books…' : 'Audit next 100 books'}
+                  </Button>
+                </div>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div className="rounded-xl bg-slate-50 p-3">
