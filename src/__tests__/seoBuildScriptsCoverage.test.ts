@@ -66,11 +66,11 @@ describe('SEO build-script coverage', () => {
     mocks.createClient.mockClear();
     mocks.rows = {
       books_library: [
-        { id: 'book-1', title: 'A <script>alert(1)</script> Book', description: '<p>A &amp; B story</p>', cover_image_url: 'https://images.example/cover.jpg' },
+        { id: 'book-1', title: 'A <script>alert(1)</script> Book', description: '<p>A &amp; B story</p>', cover_image_url: 'https://images.example/cover.jpg', author_id: 'author-1', author: 'Munshi Premchand' },
         { id: '../unsafe', title: 'Unsafe route', description: null, cover_image_url: null },
       ],
       authors: [
-        { name: 'Munshi Premchand', bio: '<p>Writer &amp; storyteller</p>' },
+        { id: 'author-1', name: 'Munshi Premchand', bio: '<p>Writer &amp; storyteller</p>', profile_image_url: 'https://images.example/premchand.jpg', website_url: 'https://premchand.example' },
         { name: '   ', bio: null },
       ],
       articles: [
@@ -159,6 +159,12 @@ describe('SEO build-script coverage', () => {
     expect(author).toContain('"name":"Munshi Premchand"');
     expect(author).toContain('<title>Munshi Premchand - Author Profile | Sahadhyayi</title>');
     expect(author).toContain('Writer &amp; storyteller');
+    expect(author).toContain('<meta property="og:image" content="https://images.example/premchand.jpg" />');
+    expect(author).toContain('"mainEntityOfPage":{"@type":"WebPage","@id":"https://sahadhyayi.com/authors/munshi-premchand"}');
+    expect(author).toContain('"sameAs":["https://premchand.example"]');
+    expect(author).toContain('"@type":"BreadcrumbList"');
+    expect(author).toContain('Books by Munshi Premchand');
+    expect(author).toContain('<a href="/book/book-1">A &lt;script&gt;alert(1)&lt;/script&gt; Book</a>');
     const research = mocks.writes.find((entry) => entry.path.endsWith('/research-papers/index.html'))?.content || '';
     expect(research).toContain('<title>Research Papers &amp; Academic Studies | Sahadhyayi</title>');
     expect(research).toContain('"@type":"CollectionPage"');
