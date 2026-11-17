@@ -68,9 +68,9 @@ describe('useReadingJournal', () => {
 
     const { result } = renderHook(() => useReadingJournal());
 
-    expect(result.current.entries.map(entry => entry.id)).toEqual(['hl-highlight', 'quote-quote', 'note-private']);
+    expect(result.current.entries.map(entry => entry.id)).toEqual(['quote-quote', 'hl-highlight', 'note-private']);
     expect(result.current.entries[2]).toMatchObject({ type: 'reflection', bookTitle: 'Book One', page: 3, note: 'My thought' });
-    expect(result.current.entries[0]).toMatchObject({ type: 'highlight', location: 'Chapter 1', color: 'yellow' });
+    expect(result.current.entries[1]).toMatchObject({ type: 'highlight', location: 'Chapter 1', color: 'yellow' });
   });
 
   it('filters reflections by the authenticated reader and selected book', () => {
@@ -126,7 +126,7 @@ describe('useReadingJournal', () => {
       { id: 'n2', user_id: 'reader-1', visibility: 'private', book_id: 'book-1', page: 8, quote: 'Passage 2', created_at: '2026-01-02' },
     ];
     mocks.highlights = [{ id: 'h1', book_id: 'book-1', page: 9, text: 'Highlight', created_at: '2026-01-03' }];
-    mocks.quotes = [{ id: 'q1', bookId: 'book-1', text: 'Quote' }];
+    mocks.quotes = [{ id: 'q1', bookId: 'book-1', page: 7, text: 'Quote' }];
     const { result } = renderHook(() => useReadingJournal());
 
     expect(result.current.bookSummaries).toEqual([
