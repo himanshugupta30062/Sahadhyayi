@@ -18,7 +18,11 @@ interface OverpassElement {
   tags?: Record<string, string>;
 }
 
-const OVERPASS_ENDPOINT = 'https://overpass-api.de/api/interpreter';
+const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.nchc.org.tw/api/interpreter',
+] as const;
 
 const distanceBetween = (
   from: { lat: number; lng: number },
@@ -60,15 +64,34 @@ const fetchOpenMapPlaces = async (
           : `nwr["amenity"="library"](${bounds});nwr["shop"="books"](${bounds});nwr["amenity"="cafe"](${bounds});`;
 
   const query = `[out:json][timeout:20];(${selectors})out center tags;`;
-  const response = await fetch(OVERPASS_ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-    body: query,
-    signal,
-  });
-  if (!response.ok) throw new Error(`OpenStreetMap search failed (${response.status})`);
+  let payload: { elements?: OverpassElement[] } | null = null;
+  let lastError: Error | null = null;
 
-  const payload = await response.json() as { elements?: OverpassElement[] };
+  // Overpass instances are community-operated and can be temporarily busy.
+  // Retry the same bounded query against alternate public instances before
+  // degrading to the curated Sahadhyayi directory.
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    if (signal.aborted) throw signal.reason;
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+        body: query,
+        signal,
+      });
+      if (!response.ok) {
+        lastError = new Error(`OpenStreetMap search failed (${response.status})`);
+        continue;
+      }
+      payload = await response.json() as { elements?: OverpassElement[] };
+      break;
+    } catch (error) {
+      if (signal.aborted) throw error;
+      lastError = error instanceof Error ? error : new Error('OpenStreetMap search failed');
+    }
+  }
+
+  if (!payload) throw lastError ?? new Error('All OpenStreetMap search services are unavailable');
   return (payload.elements ?? []).flatMap((element): ExploreMapItem[] => {
     const lat = element.lat ?? element.center?.lat;
     const lng = element.lon ?? element.center?.lon;
