@@ -12,7 +12,6 @@ import { PasswordStrength } from '@/components/ui/password-strength';
 import { validateEmail, validatePassword, isRateLimited } from '@/utils/validation';
 import { useToast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
-import { motion } from 'framer-motion';
 import { HCaptchaWidget } from '@/components/auth/HCaptchaWidget';
 
 
@@ -192,22 +191,14 @@ const SignUp = () => {
           <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-orange-200/20 dark:bg-orange-500/10 blur-3xl" />
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="w-full max-w-md relative z-10"
+        <div className="auth-page-enter "w-full max-w-md relative z-10"
         >
           <Card className="border-none shadow-elevated bg-white/95 dark:bg-card/95 backdrop-blur-sm rounded-2xl overflow-hidden">
             <CardHeader className="text-center pb-2 pt-8">
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.4 }}
-                className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/25"
+              <div className="auth-icon-enter "mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/25"
               >
                 <UserPlus className="w-8 h-8 text-white" />
-              </motion.div>
+              </div>
               <CardTitle className="text-2xl font-bold text-foreground tracking-tight">
                 Join Sahadhyayi
               </CardTitle>
@@ -218,7 +209,7 @@ const SignUp = () => {
             <CardContent className="px-6 pb-8"><div className="mb-5 grid grid-cols-3 gap-2 text-center text-xs sm:text-sm text-muted-foreground"><span className="rounded-xl border border-amber-200/70 dark:border-amber-800/50 bg-amber-50/80 dark:bg-amber-950/30 p-2.5"><span className="block text-base mb-1" aria-hidden="true">📚</span>Discover books</span><span className="rounded-xl border border-amber-200/70 dark:border-amber-800/50 bg-amber-50/80 dark:bg-amber-950/30 p-2.5"><span className="block text-base mb-1" aria-hidden="true">🤝</span>Meet readers</span><span className="rounded-xl border border-amber-200/70 dark:border-amber-800/50 bg-amber-50/80 dark:bg-amber-950/30 p-2.5"><span className="block text-base mb-1" aria-hidden="true">✍️</span>Share ideas</span></div>
               <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (
-                  <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
+                  <div className="auth-feedback-enter">
                     <Alert variant="destructive" className="rounded-xl">
                       <AlertDescription>
                         {error}
@@ -230,14 +221,14 @@ const SignUp = () => {
                         )}
                       </AlertDescription>
                     </Alert>
-                  </motion.div>
+                  </div>
                 )}
                 {success && (
-                  <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
+                  <div className="auth-feedback-enter">
                     <Alert className="rounded-xl border-green-200 bg-green-50 text-green-800">
                       <AlertDescription>{success}</AlertDescription>
                     </Alert>
-                  </motion.div>
+                  </div>
                 )}
                 
                 <div className="space-y-1.5">
@@ -358,7 +349,7 @@ const SignUp = () => {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       </div>
     </>
   );
