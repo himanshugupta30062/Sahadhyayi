@@ -42,7 +42,8 @@ describe('mapRawToEdition', () => {
     expect(edition.id).toBe('42');
     expect(edition.title).toContain('Pride and Prejudice');
     expect(edition.author).toContain('Jane Austen');
-    expect(edition.language).toBe('English');
+    expect(edition.language).toBe('');
+    expect(mapRawToEdition({ title: 'Book', author: 'Author' }).language).toBe('');
     expect(edition.accessStatus).toBe('public_domain');
     expect(edition.assets.map(asset => asset.format)).toEqual(['epub', 'pdf']);
     expect(edition.sources[0]).toMatchObject({
