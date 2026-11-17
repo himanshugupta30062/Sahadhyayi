@@ -41,7 +41,7 @@ describe('LifeStories', () => {
       </Wrapper>
     );
 
-    expect(screen.getByText(/Every life has a story/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Every life has a story/i)).toBeInTheDocument();
     expect(await screen.findByText('Kalpana Chawla')).toBeInTheDocument();
     expect(screen.getByText('Rabindranath Tagore')).toBeInTheDocument();
     expect(screen.getByText('Srinivasa Ramanujan')).toBeInTheDocument();
