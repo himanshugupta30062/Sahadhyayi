@@ -1037,7 +1037,8 @@ const mapBook = (book: any): Book => ({
   cover_image_url: normalizeCoverUrl(book.cover_image_url) || undefined,
   description: book.description,
   publication_year: book.publication_year,
-  language: book.language || 'English',
+  // Do not invent English for records with missing language; that inflated their metadata score.
+  language: book.language || undefined,
   pdf_url: book.pdf_url,
   epub_url: book.epub_url,
   external_url: book.external_url,
