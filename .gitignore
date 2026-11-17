@@ -37,3 +37,6 @@ src/components/book-expert/Sahadhyayi_Book_optimized.generated.webp
 supabase/.temp/
 *.tsbuildinfo
 
+
+# Generated from src/data/blogPostDetails.ts during dev/build
+public/blog-posts.json
