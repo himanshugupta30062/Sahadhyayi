@@ -974,66 +974,66 @@ export const useLibraryBooks = (
       const caps = await detectBookSchemaCapabilities();
       const columns = getPublicBookSelectColumns(caps);
 
-      let query = supabase.from('books_library').select(columns);
-      query = applyPublicBookFilter(query, caps);
-
-      // Filter at the database before applying the limit, so homepage discovery
-      // does not miss real covers merely because they occur later in the catalog.
-      if (requireCover) {
-        query = query.not('cover_image_url', 'is', null).neq('cover_image_url', '');
-      }
-      if (genre) {
-        query = query.ilike('genre', genre.trim());
-      }
-      if (cleanedQuery) {
-        query = query.or(
-          `title.ilike.%${cleanedQuery}%,author.ilike.%${cleanedQuery}%,genre.ilike.%${cleanedQuery}%`
+      const buildQuery = (selectColumns: string, useFallbackVisibility = false) => {
+        let query = supabase.from('books_library').select(selectColumns);
+        query = applyPublicBookFilter(
+          query,
+          useFallbackVisibility
+            ? { hasStatus: false, hasCatalogStatus: false, checked: true }
+            : caps
         );
-      }
-
-      if (requireCover) {
-        query = query.order('created_at', { ascending: false });
-      }
-      if (limit) {
-        query = query.limit(limit);
-      } else if (requireCover) {
-        query = query.limit(1000);
-      }
-
-      const { data, error } = await query;
-      if (error) {
-        // Fallback: If full column select fails (e.g. temporary schema or network glitch), try minimal guaranteed columns
-        console.warn('Initial books_library query failed, attempting core fallback:', error.message);
-        let fallbackQuery = supabase
-          .from('books_library')
-          .select('id,title,author,genre,cover_image_url,description,pdf_url,created_at');
-
-        fallbackQuery = applyPublicBookFilter(fallbackQuery, { hasStatus: false, hasCatalogStatus: false, checked: true });
 
         if (requireCover) {
-          fallbackQuery = fallbackQuery.not('cover_image_url', 'is', null).neq('cover_image_url', '');
+          query = query.not('cover_image_url', 'is', null).neq('cover_image_url', '');
         }
-        if (genre) {
-          fallbackQuery = fallbackQuery.ilike('genre', genre.trim());
-        }
+        if (genre) query = query.ilike('genre', genre.trim());
         if (cleanedQuery) {
-          fallbackQuery = fallbackQuery.or(
+          query = query.or(
             `title.ilike.%${cleanedQuery}%,author.ilike.%${cleanedQuery}%,genre.ilike.%${cleanedQuery}%`
           );
         }
-        if (requireCover) {
-          fallbackQuery = fallbackQuery.order('created_at', { ascending: false });
-        }
-        const fallback = limit
-          ? await fallbackQuery.limit(limit)
-          : await fallbackQuery.limit(requireCover ? 1000 : 24);
+        // Stable ordering is required when reading the catalogue in ranges.
+        query = query.order('created_at', { ascending: false }).order('id', { ascending: true });
+        return query;
+      };
 
-        if (!fallback.error && fallback.data) {
-          const visibleFallback = filterPublicBooks(fallback.data);
-          return sortBooksByCompleteness(visibleFallback.map(mapBook));
+      // Supabase/PostgREST applies a server row cap (commonly 1,000). Fetching
+      // only the first page and sorting it locally caused older high-quality
+      // books to be omitted from the catalogue ranking entirely.
+      const fetchAllMatchingBooks = async (selectColumns: string, fallback = false) => {
+        const pageSize = 500;
+        const rows: any[] = [];
+        if (limit && limit > 0) {
+          const result = await buildQuery(selectColumns, fallback).limit(limit);
+          if (result.error) throw result.error;
+          return result.data || [];
         }
-        throw error;
+
+        for (let offset = 0; ; offset += pageSize) {
+          const result = await buildQuery(selectColumns, fallback).range(offset, offset + pageSize - 1);
+          if (result.error) throw result.error;
+          const page = result.data || [];
+          rows.push(...page);
+          if (page.length < pageSize) break;
+        }
+        return rows;
+      };
+
+      let data: any[];
+      try {
+        data = await fetchAllMatchingBooks(columns);
+      } catch (error) {
+        console.warn('Initial books_library query failed, attempting core fallback:', error);
+        try {
+          data = await fetchAllMatchingBooks(
+            'id,title,author,genre,cover_image_url,description,pdf_url,created_at',
+            true
+          );
+        } catch {
+          throw error;
+        }
       }
+
       const visible = filterPublicBooks(data || []);
       return sortBooksByCompleteness(visible.map(mapBook));
     },
