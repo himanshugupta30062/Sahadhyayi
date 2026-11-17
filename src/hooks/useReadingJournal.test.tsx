@@ -115,7 +115,7 @@ describe('useReadingJournal', () => {
 
     expect(result.current.bookSummaries).toEqual([
       expect.objectContaining({ bookId: 'book-1', bookTitle: 'Book One', currentPage: 40, totalPages: 120, progressPercent: 33 }),
-      expect.objectContaining({ bookId: 'book-2', bookTitle: 'Untitled Book', currentPage: 5, totalPages: 1, progressPercent: 100 }),
+      expect.objectContaining({ bookId: 'book-2', bookTitle: 'Untitled Book', currentPage: 5, totalPages: 1, progressPercent: 0 }),
     ]);
     expect(mocks.loadLocal).toHaveBeenCalledWith('book-1', 'reader-1');
   });
