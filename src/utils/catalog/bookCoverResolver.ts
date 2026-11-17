@@ -184,7 +184,9 @@ export async function fetchGoogleBooksCover(
     if (!rawUrl) return null;
 
     // Ensure secure HTTPS and remove curl/zoom limitations
-    return rawUrl.replace(/^http:\/\//i, 'https://').replace(/&edge=curl/gi, '');
+    // Google Books often returns a generic "image not available" thumbnail with HTTP 200.
+    // Reject the endpoint here as well as in normalization so it cannot re-enter via lookup.
+    return normalizeCoverUrl(rawUrl.replace(/^http:\/\//i, 'https://').replace(/&edge=curl/gi, ''));
   } catch {
     return null;
   }
