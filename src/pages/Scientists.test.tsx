@@ -76,6 +76,7 @@ describe('Scientists', () => {
       expect(screen.getByRole('heading', { name: 'C. V. Raman' })).toBeInTheDocument();
     });
     expect(screen.queryByRole('heading', { name: 'Marie Curie' })).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Filter by discipline')).toHaveValue('all');
   });
 
   it('switches between Indian and Global collections', async () => {
@@ -97,6 +98,31 @@ describe('Scientists', () => {
       expect(screen.getByRole('heading', { name: 'Marie Curie' })).toBeInTheDocument();
     });
     expect(screen.queryByRole('heading', { name: 'C. V. Raman' })).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Filter by discipline')).toHaveValue('all');
+  });
+
+  it('filters the active collection by discipline and clears all filters', async () => {
+    render(
+      <MemoryRouter>
+        <Scientists />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'C. V. Raman' })).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByLabelText('Filter by discipline'), { target: { value: 'Physics' } });
+    expect(screen.getByRole('heading', { name: 'C. V. Raman' })).toBeInTheDocument();
+    expect(screen.getByText(/Showing 1 of 1 scientists/)).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Search scientists'), { target: { value: 'no matching scientist' } });
+    expect(screen.getByRole('heading', { name: 'No scientists found' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'C. V. Raman' })).toBeInTheDocument();
+    });
+    expect(screen.getByLabelText('Filter by discipline')).toHaveValue('all');
   });
 
   it('filters scientists by search query and shows empty state', async () => {

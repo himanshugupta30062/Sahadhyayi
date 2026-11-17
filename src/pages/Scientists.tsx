@@ -12,6 +12,7 @@ import { fetchScientistProfiles } from '@/lib/scientistsRepository';
 const Scientists = () => {
   const [collection, setCollection] = useState<ScientistRegion>('india');
   const [search, setSearch] = useState('');
+  const [discipline, setDiscipline] = useState('all');
   const [scientistProfiles, setScientistProfiles] = useState(fallbackScientists);
 
   useEffect(() => {
@@ -22,19 +23,31 @@ const Scientists = () => {
     return () => { active = false; };
   }, []);
 
+  const availableDisciplines = useMemo(() => {
+    const disciplines = scientistProfiles
+      .filter((scientist) => scientist.region === collection)
+      .map((scientist) => scientist.discipline.trim())
+      .filter(Boolean);
+    return [...new Set(disciplines)].sort((a, b) => a.localeCompare(b));
+  }, [collection, scientistProfiles]);
+
   const visibleScientists = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
     return scientistProfiles.filter((scientist) => {
       const inCollection = scientist.region === collection;
+      const matchesDiscipline = discipline === 'all' || scientist.discipline.trim() === discipline;
       const matchesQuery = !query || [
         scientist.name,
         scientist.discipline,
         scientist.summary,
         ...scientist.knownFor,
+        ...scientist.work.map((item) => item.title),
       ].join(' ').toLocaleLowerCase().includes(query);
-      return inCollection && matchesQuery;
+      return inCollection && matchesDiscipline && matchesQuery;
     });
-  }, [collection, search, scientistProfiles]);
+  }, [collection, discipline, search, scientistProfiles]);
+
+  const hasActiveFilters = Boolean(search.trim()) || discipline !== 'all';
 
   const indianCount = scientistProfiles.filter((scientist) => scientist.region === 'india').length;
   const globalCount = scientistProfiles.filter((scientist) => scientist.region === 'world').length;
@@ -114,6 +127,32 @@ const Scientists = () => {
             </div>
           </section>
 
+          <section aria-label="Filter scientists" className="mb-7 rounded-2xl border border-[#E5DED2] bg-white p-4 dark:border-[#29332D] dark:bg-[#111614] sm:p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div className="min-w-0 flex-1">
+                <label htmlFor="scientist-discipline" className="mb-2 block text-xs font-semibold uppercase tracking-[0.12em] text-[#687067] dark:text-[#A5ADA6]">Filter by discipline</label>
+                <select
+                  id="scientist-discipline"
+                  value={discipline}
+                  onChange={(event) => setDiscipline(event.target.value)}
+                  className="h-11 w-full rounded-xl border border-[#D9D2C6] bg-[#FAF7F2] px-3 text-sm text-[#202820] outline-none transition focus-visible:ring-2 focus-visible:ring-[#8F681C] dark:border-[#465448] dark:bg-[#0B0D0C] dark:text-[#F3F0E7] sm:max-w-sm"
+                >
+                  <option value="all">All disciplines</option>
+                  {availableDisciplines.map((item) => <option key={item} value={item}>{item}</option>)}
+                </select>
+              </div>
+              {hasActiveFilters && (
+                <Button type="button" variant="outline" onClick={() => { setSearch(''); setDiscipline('all'); }} className="h-11 shrink-0">
+                  Clear all filters
+                </Button>
+              )}
+            </div>
+            <p className="mt-3 text-xs text-[#788076] dark:text-[#A5ADA6]" aria-live="polite">
+              Showing {visibleScientists.length} of {scientistProfiles.filter((scientist) => scientist.region === collection).length} scientists
+              {discipline !== 'all' ? ` · ${discipline}` : ''}
+            </p>
+          </section>
+
           <section aria-live="polite">
             <div className="mb-5 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 text-sm font-semibold">
@@ -167,8 +206,8 @@ const Scientists = () => {
               <div className="rounded-2xl border border-dashed border-[#D9D2C6] bg-white/70 px-6 py-14 text-center dark:border-[#29332D] dark:bg-[#111614]">
                 <Search className="mx-auto h-7 w-7 text-[#8B9188]" aria-hidden="true" />
                 <h3 className="mt-3 font-serif text-xl font-bold">No scientists found</h3>
-                <p className="mt-2 text-sm text-[#687067] dark:text-[#A5ADA6]">Try another name, field or discovery.</p>
-                <Button variant="outline" onClick={() => setSearch('')} className="mt-4">Clear search</Button>
+                <p className="mt-2 text-sm text-[#687067] dark:text-[#A5ADA6]">Try another name, field or discovery, or remove a discipline filter.</p>
+                <Button variant="outline" onClick={() => { setSearch(''); setDiscipline('all'); }} className="mt-4">Clear filters</Button>
               </div>
             )}
           </section>
