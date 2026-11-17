@@ -159,6 +159,6 @@ export function getScienceQuestionsForDifficulty(difficulty: ScienceDifficulty):
   };
   return SCIENCE_QUESTIONS.map((question) => ({
     ...question,
-    prompt: question.prompt + "\\n\\nChallenge level: " + challengeByDifficulty[difficulty],
+    prompt: question.prompt + "\n\nChallenge level: " + challengeByDifficulty[difficulty],
   }));
 }
