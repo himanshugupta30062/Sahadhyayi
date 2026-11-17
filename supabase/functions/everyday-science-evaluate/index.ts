@@ -157,7 +157,7 @@ serve(async (req: Request) => {
       question: question.prompt,
       referenceAnswer: question.referenceAnswer,
       keyConcepts: question.keyConcepts,
-      student's answer: item.answer,
+      studentAnswer: item.answer,
     };
   });
 
