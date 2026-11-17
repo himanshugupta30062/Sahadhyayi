@@ -78,7 +78,7 @@ export async function listBrainAssessmentAttempts(limit = 50): Promise<BrainAtte
     .limit(Math.min(Math.max(Math.floor(limit), 1), 100));
 
   if (error) throw error;
-  return (data ?? []).map((row) => toBrainAttemptHistory(row as BrainAssessmentAttemptRow));
+  return (data ?? []).map((row) => toBrainAttemptHistory(row as unknown as BrainAssessmentAttemptRow));
 }
 
 export async function saveBrainAssessmentAttempt(input: BrainAssessmentAttemptInput): Promise<BrainAssessmentAttemptHistoryEntry | null> {
@@ -104,5 +104,5 @@ export async function saveBrainAssessmentAttempt(input: BrainAssessmentAttemptIn
     .single();
 
   if (error) throw error;
-  return toBrainAttemptHistory(data as BrainAssessmentAttemptRow);
+  return toBrainAttemptHistory(data as unknown as BrainAssessmentAttemptRow);
 }
