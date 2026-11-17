@@ -53,7 +53,7 @@ function setMeta(html, attribute, key, content) {
   return pattern.test(html) ? html.replace(pattern, tag) : html.replace("</head>", `  ${tag}\n</head>`);
 }
 
-function createPage({ title, description, route, image, type, entityType, entityName, bodyText, publishedAt, modifiedAt, authorName, wordCount, schemaType, about, breadcrumbs }) {
+function createPage({ title, description, route, image, type, entityType, entityName, bodyText, publishedAt, modifiedAt, authorName, wordCount, schemaType, about, breadcrumbs, relatedBooks, sameAs }) {
   const canonical = `${SITE_URL}${route}`;
   let html = template.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
   html = setMeta(html, "name", "description", description);
@@ -70,7 +70,15 @@ function createPage({ title, description, route, image, type, entityType, entity
   const mainEntity = entityType === "Book"
     ? { "@type": "Book", name: entityName, description, url: canonical, ...(image && /^https:\/\//i.test(image) ? { image } : {}) }
     : entityType === "Person"
-      ? { "@type": "Person", name: entityName, description, url: canonical }
+      ? {
+          "@type": "Person",
+          name: entityName,
+          description,
+          url: canonical,
+          mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
+          ...(image && /^https:\/\/i.test(image) ? { image } : {}),
+          ...(Array.isArray(sameAs) && sameAs.length ? { sameAs: sameAs.filter((value) => typeof value === "string" && /^https:\/\/i.test(value)) } : {}),
+        }
       : entityType === "Article"
         ? {
             "@type": "Article",
@@ -121,6 +129,7 @@ function createPage({ title, description, route, image, type, entityType, entity
     <h1>${escapeHtml(title.replace(/[ \t]{0,16}\|[ \t]{0,16}Sahadhyayi$/i, ""))}</h1>
     <p>${escapeHtml(description)}</p>
     ${safeBodyText ? `<p>${escapeHtml(safeBodyText)}</p>` : ""}
+    ${Array.isArray(relatedBooks) && relatedBooks.length ? `<section aria-label="Books by this author"><h2>Books by ${escapeHtml(entityName || "this author")}</h2><ul>${relatedBooks.map((book) => `<li><a href="${escapeHtml(book.route)}">${escapeHtml(book.title)}</a></li>`).join("")}</ul></section>` : ""}
     <p><a href="/library">Explore the library</a> · <a href="/articles">Read articles</a> · <a href="/groups">Find reading groups</a> · <a href="/authors">Discover authors</a></p>
   </main>`;
   html = html.replace(/<div id="root">[^]*?div>/i, `<div id="root">${fallback}</div>`);
@@ -282,7 +291,7 @@ if (articlesError) {
 
 const { data: books, error: booksError } = await fetchPaginatedRows(
   supabase.from("books_library")
-    .select("id,title,description,cover_image_url")
+    .select("id,title,description,cover_image_url,author_id,author")
     .not("id", "is", null)
     .not("title", "is", null),
   "books",
@@ -315,7 +324,7 @@ if (booksError) {
 
 const { data: authors, error: authorsError } = await fetchPaginatedRows(
   supabase.from("authors")
-    .select("name,bio")
+    .select("id,name,bio,profile_image_url,website_url,location,genres,updated_at")
     .not("name", "is", null),
   "authors",
   5000,
@@ -332,6 +341,22 @@ if (authorsError) {
     const route = `/authors/${slug}`;
     const description = plainText(author.bio) ||
       `Discover books and learn about ${name} on Sahadhyayi.`;
+    const relatedBooks = (books ?? [])
+      .filter((book) => (author.id && book.author_id === author.id) || (!book.author_id && String(book.author ?? "").trim().toLowerCase() === name.toLowerCase()))
+      .map((book) => {
+        const id = String(book.id ?? "").trim();
+        const title = String(book.title ?? "").trim();
+        return id && title && !id.includes("/") && id !== "." && id !== ".."
+          ? { title, route: `/book/${encodeURIComponent(id)}` }
+          : null;
+      })
+      .filter(Boolean);
+    const authorImage = typeof author.profile_image_url === "string" && /^https:\/\/i.test(author.profile_image_url)
+      ? author.profile_image_url
+      : undefined;
+    const sameAs = typeof author.website_url === "string" && /^https:\/\/i.test(author.website_url)
+      ? [author.website_url]
+      : [];
     writeRoute(route, createPage({
       title: `${name} - Author Profile | Sahadhyayi`,
       description,
@@ -339,6 +364,11 @@ if (authorsError) {
       type: "profile",
       entityType: "Person",
       entityName: name,
+      image: authorImage,
+      bodyText: author.bio,
+      sameAs,
+      relatedBooks,
+      breadcrumbs: [{ name: "Home", route: "/" }, { name: "Authors", route: "/authors" }, { name, route }],
     }));
     authorCount += 1;
   }
