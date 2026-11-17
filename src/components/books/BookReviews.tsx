@@ -95,7 +95,7 @@ export default function BookReviews({ bookId }: { bookId: string }) {
   };
 
   return (
-    <Card className="bg-white/80 border-emerald-100">
+    <Card className="book-review-card bg-white/80 border-emerald-100">
       <CardContent className="p-5 sm:p-6 space-y-5">
         <div className="flex items-center gap-2">
           <MessageSquareText className="h-5 w-5 text-emerald-700" />
@@ -116,13 +116,13 @@ export default function BookReviews({ bookId }: { bookId: string }) {
           }, {});
           const topReaction = Object.entries(reactions).sort((a, b) => b[1] - a[1])[0];
           return <section aria-label="Review analytics" className="rounded-xl border bg-muted/20 p-4 space-y-3">
-            <div className="flex flex-wrap items-baseline gap-2"><h3 className="font-semibold">Community snapshot</h3><span className="text-xs text-muted-foreground">From {reviews.length} reviews loaded</span></div>
+            <div className="flex flex-wrap items-baseline gap-2"><h3 className="font-semibold">Community snapshot</h3><span className="text-xs text-muted-foreground">Based on up to 50 recent reviews</span></div>
             <div className="flex items-center gap-2"><span className="text-2xl font-semibold tabular-nums">{average === null ? '—' : average.toFixed(1)}</span><span className="text-amber-600">★</span><span className="text-sm text-muted-foreground">/ 5 · {rated.length} ratings</span>{topReaction && <span className="ml-auto rounded-full bg-primary/10 px-2 py-1 text-xs capitalize">{topReaction[0]} · {topReaction[1]}</span>}</div>
             {dimensionAverages.length > 0 && <div className="space-y-2">{dimensionAverages.map(item => <div key={item.dimension} className="grid grid-cols-[90px_1fr_34px] items-center gap-2 text-xs"><span className="capitalize">{item.dimension}</span><div className="h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-emerald-600" style={{ width: ((item.average || 0) / 5 * 100) + '%' }} /></div><span className="text-right tabular-nums">{item.average?.toFixed(1)}</span></div>)}</div>}
           </section>;
         })()}
         {user ? (
-          <div className="rounded-xl border border-emerald-100 bg-emerald-50/40 p-4 space-y-3">
+          <div className="book-review-composer rounded-xl border border-emerald-100 bg-emerald-50/40 p-4 space-y-3">
             <h3 className="font-medium">{myReview && !editing ? 'Your review' : myReview ? 'Edit your review' : 'Share your thoughts'}</h3>
             {myReview && !editing ? (
               <>
@@ -135,7 +135,7 @@ export default function BookReviews({ bookId }: { bookId: string }) {
                   </div>
                 ) : (
                   <>
-                    <p className="whitespace-pre-wrap text-sm text-gray-700">{myReview.review_text}</p>
+                    <p className="whitespace-pre-wrap text-sm text-gray-700 break-words">{myReview.review_text}</p>
                     {myReview.contains_spoilers && (
                       <Button type="button" size="sm" variant="ghost" onClick={() => setShowOwnSpoilers(false)}>
                         <EyeOff className="mr-1 h-4 w-4" />Hide my review
@@ -173,7 +173,7 @@ export default function BookReviews({ bookId }: { bookId: string }) {
                   <span className="text-sm text-gray-600">This review contains spoilers</span>
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <span className="text-xs text-gray-500">{reviewText.trim().length}/5000</span>
+                  <span className="text-xs text-gray-500" aria-live="polite">{reviewText.trim().length}/5000 characters</span>
                   <div className="flex gap-2">
                     {editing && <Button variant="outline" onClick={() => { setEditing(false); setReviewText(myReview?.review_text || ''); setContainsSpoilers(myReview?.contains_spoilers || false); setOverallRating(myReview?.overall_rating || 0); setPlotRating(myReview?.plot_rating || 0); setCharactersRating(myReview?.characters_rating || 0); setWritingRating(myReview?.writing_rating || 0); }}>Cancel</Button>}
                     <Button onClick={handleSave} disabled={saveReview.isPending || !reviewText.trim() || reviewText.trim().length > 5000 || overallRating < 1}>{saveReview.isPending ? 'Saving…' : 'Publish review'}</Button>
@@ -183,14 +183,14 @@ export default function BookReviews({ bookId }: { bookId: string }) {
             )}
           </div>
         ) : (
-          <p className="text-sm text-gray-600">Sign in to write a review. <Link className="font-medium text-emerald-700 underline" to={`/signin?redirect=/book/${bookId}`}>Sign in</Link></p>
+          <p className="book-review-signin text-sm text-gray-600">Sign in to write a review. <Link className="font-medium text-emerald-700 underline" to={`/signin?redirect=/book/${bookId}`}>Sign in</Link></p>
         )}
 
         {isLoading ? <p className="text-sm text-gray-500">Loading reviews…</p> : null}
         {error && user ? (
           <p className="text-sm text-amber-700 dark:text-amber-400">Reviews are temporarily unavailable. Please refresh to try again.</p>
         ) : null}
-        {!isLoading && (!error || !user) && visibleReviews.length === 0 && <p className="text-sm text-gray-500">No other reviews yet. Be the first to share a thoughtful take.</p>}
+        {!isLoading && (!error || !user) && visibleReviews.length === 0 && <p className="text-sm text-gray-500">No community reviews yet. Be the first to share a thoughtful take.</p>}
         <div className="space-y-4">
           {!isLoading && !error && otherReviews.length > 0 && <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3"><span className="text-sm text-muted-foreground">{visibleReviews.length} of {otherReviews.length} reviews</span><div className="flex gap-2"><select aria-label="Sort reviews" className="h-9 rounded-md border bg-background px-2 text-sm" value={reviewOrder} onChange={(event)=>setReviewOrder(event.target.value as typeof reviewOrder)}><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="highest">Highest rated</option><option value="helpful">Most helpful</option></select><select aria-label="Filter reviews" className="h-9 rounded-md border bg-background px-2 text-sm" value={spoilerFilter} onChange={(event)=>setSpoilerFilter(event.target.value as typeof spoilerFilter)}><option value="all">All reviews</option><option value="clean">Hide spoilers</option></select></div></div>}
           {visibleReviews.map((review) => {
@@ -199,7 +199,7 @@ export default function BookReviews({ bookId }: { bookId: string }) {
             const votedHelpful = votes.some(vote => vote.user_id === user?.id);
             const name = review.reviewer?.full_name || (review.reviewer?.username ? `@${review.reviewer.username}` : 'Reader');
             return (
-              <article key={review.id} className="border-t border-gray-100 pt-4 space-y-2">
+              <article key={review.id} className="book-review-item border-t border-gray-100 pt-4 space-y-2">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="font-medium text-gray-900">{name}</p>
