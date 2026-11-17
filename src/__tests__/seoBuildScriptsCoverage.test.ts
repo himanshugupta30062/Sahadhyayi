@@ -158,6 +158,12 @@ describe('SEO build-script coverage', () => {
     expect(author).toContain('"name":"Munshi Premchand"');
     expect(author).toContain('<title>Munshi Premchand - Author Profile | Sahadhyayi</title>');
     expect(author).toContain('Writer &amp; storyteller');
+    const research = mocks.writes.find((entry) => entry.path.endsWith('/research-papers/index.html'))?.content || '';
+    expect(research).toContain('<title>Research Papers &amp; Academic Studies | Sahadhyayi</title>');
+    expect(research).toContain('"@type":"CollectionPage"');
+    expect(research).toContain('"@type":"BreadcrumbList"');
+    expect(research).toContain('"name":"Artificial intelligence"');
+    expect(research).toContain('"name":"Research Papers"');
     expect(article).toContain('<title>A Useful Reading Guide | Sahadhyayi</title>');
     expect(article).toContain('<meta property="og:type" content="article" />');
     expect(article).toContain('"@type":"Article"');
