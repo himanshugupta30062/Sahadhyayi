@@ -44,14 +44,27 @@ serve(async req => {
     try { source = new URL(body.url); } catch { return json({ error: "The source URL is invalid." }, 400); }
     if (source.protocol !== "https:" || !allowedHost(source.hostname)) return json({ error: "Only HTTPS pages on myherupa.com are allowed." }, 400);
 
-    const response = await fetch(source.toString(), {
-      headers: { "User-Agent": "SahadhyayiLibraryImporter/1.0 (+https://sahadhyayi.com)" },
-      signal: AbortSignal.timeout(15000),
-      redirect: "follow",
-    });
-    if (!response.ok) return json({ error: `myHerupa returned HTTP ${response.status}.` }, 502);
-    const finalUrl = new URL(response.url);
-    if (!allowedHost(finalUrl.hostname)) return json({ error: "The source redirected outside myherupa.com." }, 400);
+    // Follow only same-site redirects. Validate each Location before issuing
+    // another request so a compromised page cannot turn this fetcher into an SSRF proxy.
+    let requestUrl = source;
+    let response: Response | null = null;
+    for (let redirectCount = 0; redirectCount <= 3; redirectCount += 1) {
+      response = await fetch(requestUrl.toString(), {
+        headers: { "User-Agent": "SahadhyayiLibraryImporter/1.0 (+https://sahadhyayi.com)" },
+        signal: AbortSignal.timeout(15000),
+        redirect: "manual",
+      });
+      if (response.status < 300 || response.status >= 400) break;
+      const location = response.headers.get("location");
+      if (!location || redirectCount === 3) return json({ error: "The source page has an unsupported redirect." }, 502);
+      const nextUrl = new URL(location, requestUrl);
+      if (nextUrl.protocol !== "https:" || !allowedHost(nextUrl.hostname)) {
+        return json({ error: "The source redirected outside myherupa.com." }, 400);
+      }
+      requestUrl = nextUrl;
+    }
+    if (!response || !response.ok) return json({ error: `myHerupa returned HTTP ${response?.status || 502}.` }, 502);
+    const finalUrl = requestUrl;
     const html = (await response.text()).slice(0, 1_500_000);
     const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
     const pageTitle = titleMatch ? stripTags(titleMatch[1]) : source.pathname;
