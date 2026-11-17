@@ -68,4 +68,24 @@ describe("generateMatrixPuzzle", () => {
       expect(answer.layers[1].scale).toBeGreaterThan(puzzle.cells[7]!.layers[1].scale);
     }
   });
+  it("combines shape distribution with alternating fill in the new rule family", () => {
+    let observed = false;
+    for (let attempt = 0; attempt < 300; attempt += 1) {
+      const puzzle = generateMatrixPuzzle("hard");
+      if (puzzle.rule !== "fill-alternation") continue;
+      observed = true;
+      const answer = puzzle.options[puzzle.answerIndex];
+      const visibleShapes = [puzzle.cells[6]!, puzzle.cells[7]!, puzzle.cells[2]!, puzzle.cells[5]!]
+        .map((cell) => cell.layers[0].shape);
+      expect(visibleShapes).not.toContain(answer.layers[0].shape);
+      expect(answer.layers).toHaveLength(1);
+      expect(answer.layers[0].filled).toBe(true);
+      expect(puzzle.cells[6]!.layers[0].filled).toBe(true);
+      expect(puzzle.cells[7]!.layers[0].filled).toBe(false);
+      expect(puzzle.cells[2]!.layers[0].filled).toBe(true);
+      expect(puzzle.cells[5]!.layers[0].filled).toBe(false);
+    }
+    expect(observed).toBe(true);
+  });
+
 });
