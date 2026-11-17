@@ -163,6 +163,10 @@ describe('SEO build-script coverage', () => {
     expect(book).toContain('"datePublished":"1936"');
     expect(book).toContain('"mainEntityOfPage":{"@type":"WebPage","@id":"https://sahadhyayi.com/book/book-1"}');
     expect(book).toContain('<p>By <a href="/authors/munshi-premchand">Munshi Premchand</a></p>');
+    expect(book).toContain('<section aria-label="Book details"><h2>About this book</h2>');
+    expect(book).toContain('<dt>Genre</dt><dd>Literary fiction</dd>');
+    expect(book).toContain('<dt>Publication year</dt><dd>1936</dd>');
+    expect(book).toContain('<dt>ISBN</dt><dd>9780000000001</dd>');
     expect(book).toContain('"@type":"BreadcrumbList"');
     expect(book).toContain('A &amp; B story');
     expect(book).toContain('"name":"A \\u003cscript\\u003ealert(1)\\u003c/script\\u003e Book"');
