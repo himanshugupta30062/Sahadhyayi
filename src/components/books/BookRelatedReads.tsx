@@ -1,10 +1,12 @@
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import { LazyImage } from '@/components/ui/LazyImage';
-import { useAllLibraryBooks, type Book } from '@/hooks/useLibraryBooks';
+import { supabase } from '@/integrations/supabase/client-universal';
+import { detectBookSchemaCapabilities, getPublicBookSelectColumns, applyPublicBookFilter, filterPublicBooks } from '@/utils/catalog/bookVisibility';
+import type { Book } from '@/hooks/useLibraryBooks';
 
 interface BookRelatedReadsProps {
   book: Pick<Book, 'id' | 'title' | 'author' | 'genre' | 'language'>;
@@ -14,24 +16,65 @@ const normalize = (value?: string | null) =>
   (value || '').trim().toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ');
 
 export default function BookRelatedReads({ book }: BookRelatedReadsProps) {
-  const { data: catalog = [], isLoading, isError } = useAllLibraryBooks();
+  const author = book.author?.trim() || '';
+  const genre = book.genre?.trim() || '';
+
+  const { data: candidates = [], isLoading, isError } = useQuery({
+    queryKey: ['book-related-reads', book.id, author, genre],
+    enabled: Boolean(author || genre),
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const capabilities = await detectBookSchemaCapabilities();
+      const columns = getPublicBookSelectColumns(capabilities);
+      const queries = [
+        author
+          ? applyPublicBookFilter(
+              supabase.from('books_library').select(columns).eq('author', author).neq('id', book.id).limit(30),
+              capabilities,
+            )
+          : null,
+        genre
+          ? applyPublicBookFilter(
+              supabase.from('books_library').select(columns).eq('genre', genre).neq('id', book.id).limit(30),
+              capabilities,
+            )
+          : null,
+      ].filter(Boolean);
+
+      const results = await Promise.all(queries);
+      const successful = results.filter((result) => !result.error);
+      if (successful.length === 0 && results.length > 0) {
+        throw results[0].error || new Error('Related books are unavailable');
+      }
+
+      const unique = new Map<string, Book>();
+      successful.forEach((result) => {
+        filterPublicBooks((result.data || []) as Book[]).forEach((candidate) => {
+          if (candidate.id !== book.id) unique.set(candidate.id, candidate);
+        });
+      });
+      return [...unique.values()];
+    },
+  });
 
   const relatedBooks = useMemo(() => {
-    const author = normalize(book.author);
-    const genre = normalize(book.genre);
-    const language = normalize(book.language);
-
-    if (!author && !genre) return [];
-
+    const normalizedAuthor = normalize(author);
+    const normalizedGenre = normalize(genre);
+    const normalizedLanguage = normalize(book.language);
     const seenTitles = new Set<string>([normalize(book.title)]);
-    return (catalog as Book[])
-      .filter((candidate) => candidate.id !== book.id)
+
+    return candidates
       .map((candidate) => {
-        const sameAuthor = Boolean(author && normalize(candidate.author) === author);
-        const sameGenre = Boolean(genre && normalize(candidate.genre) === genre);
-        const sameLanguage = Boolean(language && normalize(candidate.language) === language);
-        const score = (sameAuthor ? 4 : 0) + (sameGenre ? 2 : 0) + (sameLanguage ? 1 : 0);
-        return { ...candidate, sameAuthor, sameGenre, score, normalizedTitle: normalize(candidate.title) };
+        const sameAuthor = Boolean(normalizedAuthor && normalize(candidate.author) === normalizedAuthor);
+        const sameGenre = Boolean(normalizedGenre && normalize(candidate.genre) === normalizedGenre);
+        const sameLanguage = Boolean(normalizedLanguage && normalize(candidate.language) === normalizedLanguage);
+        return {
+          ...candidate,
+          sameAuthor,
+          sameGenre,
+          score: (sameAuthor ? 4 : 0) + (sameGenre ? 2 : 0) + (sameLanguage ? 1 : 0),
+          normalizedTitle: normalize(candidate.title),
+        };
       })
       .filter((candidate) => candidate.score > 0 && candidate.normalizedTitle && !seenTitles.has(candidate.normalizedTitle))
       .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
@@ -41,7 +84,7 @@ export default function BookRelatedReads({ book }: BookRelatedReadsProps) {
         return true;
       })
       .slice(0, 6);
-  }, [book.author, book.genre, book.id, book.language, book.title, catalog]);
+  }, [author, book.language, book.title, candidates, genre]);
 
   if (isLoading || isError || relatedBooks.length === 0) return null;
 
@@ -85,8 +128,7 @@ export default function BookRelatedReads({ book }: BookRelatedReadsProps) {
             </div>
             <div className="mb-2 flex min-h-5 flex-wrap gap-1">
               {related.sameAuthor && <Badge variant="secondary" className="max-w-full text-[10px]">Same author</Badge>}
-              {!related.sameAuthor && related.sameGenre && <Badge variant="outline" className="max-w-full text-[10px]">Same genre</Badge>}
-              {related.sameAuthor && related.sameGenre && <Badge variant="outline" className="max-w-full text-[10px]">Same genre</Badge>}
+              {related.sameGenre && <Badge variant="outline" className="max-w-full text-[10px]">Same genre</Badge>}
             </div>
             <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground group-hover:text-primary">{related.title}</h3>
             {related.author && <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{related.author}</p>}
