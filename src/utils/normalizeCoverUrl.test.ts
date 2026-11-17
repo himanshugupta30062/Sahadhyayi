@@ -22,7 +22,8 @@ describe('normalizeCoverUrl', () => {
     expect(normalizeCoverUrl('javascript:alert(1)')).toBeNull();
   });
 
-  it('keeps genuine remote cover URLs', () => {
+  it('keeps genuine remote and same-origin cover URLs', () => {
+    expect(normalizeCoverUrl('/storage/v1/object/public/covers/local-cover.jpg')).toBe('/storage/v1/object/public/covers/local-cover.jpg');
     expect(normalizeCoverUrl('https://covers.openlibrary.org/b/id/12345-L.jpg')).toBe('https://covers.openlibrary.org/b/id/12345-L.jpg');
     expect(normalizeCoverUrl('https://pressbooks.example.edu/book-cover.jpg')).toBe('https://pressbooks.example.edu/book-cover.jpg');
   });
