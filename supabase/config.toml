@@ -109,3 +109,6 @@ verify_jwt = true
 verify_jwt = false
 [functions.everyday-science-evaluate]
 verify_jwt = true
+
+[functions.science-lab-review]
+verify_jwt = true
