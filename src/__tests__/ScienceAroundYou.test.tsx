@@ -119,6 +119,22 @@ describe("Explain Science Around You", () => {
     expect(screen.getByText(/Question 1 of 10/i)).toBeInTheDocument();
   });
 
+  it("sends the selected advanced level and shows its deeper prompt", async () => {
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: /Advanced.*Deeper mechanisms/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Start the science test/i }));
+    expect(screen.getByText(/Analyze the underlying mechanism in depth/i)).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Your explanation"), {
+      target: { value: "The bus slows due to braking forces while the passenger's body tends to maintain its velocity because of inertia." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Go to question 10" }));
+    fireEvent.click(screen.getByRole("button", { name: /Evaluate my answers/i }));
+    await screen.findByRole("heading", { name: /Your everyday science report/i });
+    expect(mocks.invoke).toHaveBeenCalledWith("everyday-science-evaluate", {
+      body: expect.objectContaining({ difficulty: "advanced" }),
+    });
+  });
+
   it("shows a previous attempt and confirms successful profile history saving", async () => {
     mocks.listAttempts
       .mockResolvedValueOnce([{
