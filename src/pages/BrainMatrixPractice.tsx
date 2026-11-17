@@ -5,30 +5,8 @@ import SEO from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  generateMatrixPuzzle,
-  type MatrixCell,
-  type MatrixDifficulty,
-} from "@/lib/brain/matrixGenerator";
-
-function MatrixTile({ cell, className = "" }: { cell: MatrixCell; className?: string }) {
-  return (
-    <svg viewBox="0 0 100 100" role="img" aria-label={cell.layers.map((layer) => layer.shape).join(" inside ") } className={className}>
-      {cell.layers.map((layer, index) => {
-        const transform = `translate(50 50) scale(${layer.scale}) translate(-50 -50)`;
-        const fill = layer.filled ? "currentColor" : "none";
-        return (
-          <g key={`${layer.shape}-${index}`} transform={transform} fill={fill} stroke="currentColor" strokeWidth="3.5" strokeLinejoin="round">
-            {layer.shape === "circle" && <circle cx="50" cy="50" r="37" />}
-            {layer.shape === "square" && <rect x="13" y="13" width="74" height="74" />}
-            {layer.shape === "triangle" && <path d="M50 10 L91 86 H9 Z" />}
-            {layer.shape === "diamond" && <path d="M50 8 L92 50 L50 92 L8 50 Z" />}
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
+import { generateMatrixPuzzle, type MatrixDifficulty } from "@/lib/brain/matrixGenerator";
+import MatrixTile from "@/components/brain/MatrixTile";
 
 const DIFFICULTY_LABELS: Record<MatrixDifficulty, string> = {
   easy: "Easy",
