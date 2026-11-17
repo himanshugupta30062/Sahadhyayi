@@ -153,6 +153,15 @@ describe('Library Book Sorting Hierarchy', () => {
     created_at: '2026-01-15T00:00:00Z',
   };
 
+  describe('Cover-first page ranking regression', () => {
+    it('ranks a genuine metadata-only book with a cover above a coverless PDF', () => {
+      expect(getBookCompletenessScore(metadataOnlyBook)).toBeGreaterThan(
+        getBookCompletenessScore(partialVerifiedPdfNoCover)
+      );
+      expect(compareLibraryBooks(metadataOnlyBook, partialVerifiedPdfNoCover)).toBeLessThan(0);
+    });
+  });
+
   // Requirement 7: Non-empty pdf_url validation
   describe('Requirement 7: PDF link verification rules', () => {
     it('accepts valid, accessible PDF URLs with direct .pdf extension', () => {
