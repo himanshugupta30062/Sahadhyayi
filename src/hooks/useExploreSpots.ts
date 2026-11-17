@@ -89,12 +89,19 @@ const fetchOpenMapPlaces = async (
   // degrading to the curated Sahadhyayi directory.
   for (const endpoint of OVERPASS_ENDPOINTS) {
     if (signal.aborted) throw signal.reason;
+    const requestController = new AbortController();
+    const timeoutId = setTimeout(() => {
+      requestController.abort(new Error('OpenStreetMap provider request timed out'));
+    }, 12_000);
+    const abortFromQuery = () => requestController.abort(signal.reason);
+    signal.addEventListener('abort', abortFromQuery, { once: true });
+
     try {
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
         body: query,
-        signal,
+        signal: requestController.signal,
       });
       if (!response.ok) {
         lastError = new Error(`OpenStreetMap search failed (${response.status})`);
@@ -105,6 +112,9 @@ const fetchOpenMapPlaces = async (
     } catch (error) {
       if (signal.aborted) throw error;
       lastError = error instanceof Error ? error : new Error('OpenStreetMap search failed');
+    } finally {
+      clearTimeout(timeoutId);
+      signal.removeEventListener('abort', abortFromQuery);
     }
   }
 
