@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { Session, User } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client-universal";
+import { recordAuthAudit } from '@/lib/authAudit';
 
 type AuthContextType = {
   user: User | null;
@@ -33,6 +34,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(sess);
         setUser(sess?.user ?? null);
         setLoading(false);
+        if (event === 'SIGNED_IN' && sess?.user) {
+          void recordAuthAudit('sign_in_succeeded', 'unknown', { userId: sess.user.id });
+        }
         if (event === "SIGNED_OUT") {
           try {
             queryClient.clear();
@@ -48,12 +52,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [queryClient]);
 
   const signIn = async (email: string, password: string, captchaToken?: string) => {
+    void recordAuthAudit('sign_in_attempted', 'password');
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
       ...(captchaToken ? { options: { captchaToken } } : {}),
     });
-    if (error) throw error;
+    if (error) {
+      const code = typeof (error as { code?: unknown }).code === 'string'
+        ? (error as { code: string }).code
+        : 'auth_error';
+      void recordAuthAudit('sign_in_failed', 'password', { errorCode: code });
+      throw error;
+    }
     if (data.session) {
       setUser(data.session.user);
       setSession(data.session);
