@@ -701,9 +701,9 @@ export const getBookOverallQualityScore = (book: any): number => {
   if (String(book.original_title || book.originalTitle || '').trim()) score += 1;
 
   // Cross-asset and bibliographic verification evidence: 25 points.
-  const metadataMatch = Number(book.metadata_match_score);
-  const pdfQuality = Number(book.pdf_quality_score);
-  const assetQuality = Number(book.asset_quality_score);
+  const metadataMatch = book.metadata_match_score == null ? Number.NaN : Number(book.metadata_match_score);
+  const pdfQuality = book.pdf_quality_score == null ? Number.NaN : Number(book.pdf_quality_score);
+  const assetQuality = book.asset_quality_score == null ? Number.NaN : Number(book.asset_quality_score);
   if (Number.isFinite(metadataMatch)) score += Math.round(Math.max(0, Math.min(100, metadataMatch)) * 0.10);
   else score += 3; // neutral partial credit until a comparison is available
   if (Number.isFinite(pdfQuality)) score += Math.round(Math.max(0, Math.min(100, pdfQuality)) * 0.10);
