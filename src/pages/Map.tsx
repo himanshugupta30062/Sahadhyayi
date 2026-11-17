@@ -791,7 +791,7 @@ const MapPage = () => {
               </div>
               {exploreLocationError && <p className="text-xs text-amber-700 dark:text-amber-300" role="status">{exploreLocationError}</p>}
               {(exploreItemsLoading || exploreItemsFetching) && <p className="text-xs text-muted-foreground" role="status">Finding nearby libraries, bookstores and cafés…</p>}
-              <p className="text-[10px] text-muted-foreground">Nearby public places include OpenStreetMap data; event listings come from Sahadhyayi. OpenStreetMap contributors are credited via the place details.</p>
+              <p className="text-[10px] text-muted-foreground">Nearby public places use OpenStreetMap data; event listings come from Sahadhyayi. <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">© OpenStreetMap contributors</a>.</p>
               <div className="relative overflow-hidden rounded-2xl border border-[#E5DED2] dark:border-[#29332D] shadow-md bg-white dark:bg-[#111614] h-[520px] sm:h-[580px]">
                 <MapplsMap
                   key="explore-map"
