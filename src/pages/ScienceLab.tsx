@@ -201,17 +201,6 @@ export default function ScienceLab() {
   const handleMediaSelection = (files: FileList | null) => {
     if (!files) return;
     const selectedFiles = Array.from(files);
-    if (selectedFiles.length > 3) { toast.error("Choose up to 3 photos or videos."); return; }
-    const allowed = new Set(["image/jpeg", "image/png", "image/webp", "video/mp4", "video/webm"]);
-    if (selectedFiles.some((file) => !allowed.has(file.type))) { toast.error("Use JPG, PNG, WebP, MP4 or WebM files only."); return; }
-    if (selectedFiles.some((file) => file.size > (file.type.startsWith("video/") ? 25 : 10) * 1024 * 1024)) { toast.error("Each photo must be 10 MB or less and each video 25 MB or less."); return; }
-    if (selectedFiles.reduce((total, file) => total + file.size, 0) > 30 * 1024 * 1024) { toast.error("The total upload limit is 30 MB."); return; }
-    setMediaFiles(selectedFiles);
-  };
-
-  const handleMediaSelection = (files: FileList | null) => {
-    if (!files) return;
-    const selectedFiles = Array.from(files);
     const allowed = new Set(["image/jpeg", "image/png", "image/webp", "video/mp4", "video/webm"]);
     if (selectedFiles.length > 3) { toast.error("Choose up to 3 photos or videos."); return; }
     if (selectedFiles.some((file) => !allowed.has(file.type))) { toast.error("Use JPG, PNG, WebP, MP4 or WebM files only."); return; }
