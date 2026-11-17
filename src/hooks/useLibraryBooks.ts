@@ -467,6 +467,7 @@ export function getBookResourceType(book: any): BookResourceType {
 export function hasUnverifiedOrBrokenLink(book: any): boolean {
   if (!book) return false;
   if (isVerifiedPdf(book) || hasOtherVerifiedFullText(book)) return false;
+  if (hasUnverifiedDirectPdf(book)) return true;
   if (book.isBrokenLink === true) return true;
   if (book.accessStatus === 'access_unverified') return true;
 
@@ -729,8 +730,10 @@ export const getReadingAccessRank = (book: any): number => {
   if (isVerifiedPdf(book)) return 5;
   if (hasOtherVerifiedFullText(book)) return 4;
   const resource = getBookResourceType(book);
-  if (resource === 'online_reader') return 3;
-  if (resource === 'unverified_direct_pdf') return 2;
+  // An unchecked direct-PDF candidate is still unverified, but it is a stronger
+  // full-text candidate than a limited preview. Keep it below audited files.
+  if (resource === 'unverified_direct_pdf') return 3;
+  if (resource === 'online_reader') return 2;
   if (resource === 'external_book_page') return 1;
   return 0;
 };
