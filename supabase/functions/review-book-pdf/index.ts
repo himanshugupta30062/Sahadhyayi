@@ -378,13 +378,12 @@ serve(async (req) => {
     const evidenceUrl = typeof body.evidenceUrl === "string" ? body.evidenceUrl.trim() : "";
     const createNewBook = Boolean(body.createNewBook);
 
-    // Creating a catalogue row before malware scanning/public upload can leave
-    // orphan records when verification or storage fails. Until publication is
-    // transactional, only publish against an existing catalogue entry.
+    // Validate the destination before scanning. New catalogue rows are deferred
+    // until after all file and malware checks have passed.
+    let createdNewBook = false;
     if (createNewBook) {
-      return json({
-        error: "Publishing a new catalogue entry is temporarily unavailable. Select an existing catalogue book; new-book publication will return after transactional rollback is implemented.",
-      }, 503);
+      const newTitle = typeof body.newBookTitle === "string" ? body.newBookTitle.trim() : (submission.submitted_title || "");
+      if (!newTitle) return json({ error: "Book title is required to create a new catalogue entry." }, 400);
     }
 
     if (typeof rightsBasis !== "string" || !RIGHTS.has(rightsBasis)) return json({ error: "Select a valid distribution-rights basis." }, 400);
@@ -392,44 +391,21 @@ serve(async (req) => {
     const evidenceValidation = validateEvidenceUrl(evidenceUrl);
     if (!evidenceValidation.valid) return json({ error: evidenceValidation.error }, 400);
 
-    // Handle target book selection
-    if (createNewBook) {
-      const newTitle = typeof body.newBookTitle === "string" ? body.newBookTitle.trim() : (submission.submitted_title || "");
-      const newAuthor = typeof body.newBookAuthor === "string" ? body.newBookAuthor.trim() : (submission.submitted_author || "Unknown");
-      const newGenre = typeof body.newBookGenre === "string" ? body.newBookGenre.trim() : "Classic";
-      const newDescription = typeof body.newBookDescription === "string" ? body.newBookDescription.trim() : null;
-      const newLanguage = typeof body.newBookLanguage === "string" ? body.newBookLanguage.trim() : "English";
-
-      if (!newTitle) return json({ error: "Book title is required to create a new catalogue entry." }, 400);
-
-      const { data: createdBook, error: createError } = await admin.from("books_library").insert({
-        title: newTitle,
-        author: newAuthor,
-        genre: newGenre,
-        description: newDescription,
-        language: newLanguage,
-      }).select("id, title").single();
-
-      if (createError || !createdBook) {
-        console.error("Failed to create new catalogue book", createError);
-        return json({ error: "Could not create new catalogue book record." }, 503);
-      }
-      targetBookId = createdBook.id;
-    } else {
+    // Validate an existing target now; defer new-book insertion until the PDF
+    // passes its checks so failed scans cannot leave empty catalogue rows.
+    if (!createNewBook) {
       if (typeof targetBookId !== "string" || !UUID.test(targetBookId)) return json({ error: "Select a valid existing library book." }, 400);
-
-      // Select only columns confirmed in the production books_library schema.
       const { data: book, error: bookError } = await admin.from("books_library")
         .select("id,title,description,pdf_url")
         .eq("id", targetBookId)
         .maybeSingle();
       if (bookError || !book) return json({ error: "Selected library book was not found." }, 404);
       if (book.pdf_url) return json({ error: "This book already has a PDF. Use the replace_pdf action instead." }, 409);
-
       if (body.updateBookTitleWithAlias && submission.submitted_title && !book.title.toLowerCase().includes(submission.submitted_title.toLowerCase())) {
         const aliasNote = `Also known as: ${submission.submitted_title}`;
-        const updatedDescription = book.description ? `${book.description}\n\n${aliasNote}` : aliasNote;
-        await admin.from("books_library").update({ description: updatedDescription }).eq("id", targetBookId);
+        const updatedDescription = book.description ? `${book.description}\\n\\n${aliasNote}` : aliasNote;
+        const { error: aliasError } = await admin.from("books_library").update({ description: updatedDescription }).eq("id", targetBookId);
+        if (aliasError) return json({ error: "Could not save the catalogue title alias." }, 503);
       }
     }
 
@@ -485,12 +461,33 @@ serve(async (req) => {
       }
     }
 
-    // Upload to public bucket
+    // Create the new catalogue entry only after verification, rights and malware checks.
+    if (createNewBook) {
+      const newTitle = typeof body.newBookTitle === "string" ? body.newBookTitle.trim() : (submission.submitted_title || "");
+      const newAuthor = typeof body.newBookAuthor === "string" ? body.newBookAuthor.trim() : (submission.submitted_author || "Unknown");
+      const newGenre = typeof body.newBookGenre === "string" ? body.newBookGenre.trim() : "Classic";
+      const newDescription = typeof body.newBookDescription === "string" ? body.newBookDescription.trim() : null;
+      const newLanguage = typeof body.newBookLanguage === "string" ? body.newBookLanguage.trim() : "English";
+      const { data: createdBook, error: createError } = await admin.from("books_library").insert({
+        title: newTitle, author: newAuthor, genre: newGenre, description: newDescription, language: newLanguage,
+      }).select("id, title").single();
+      if (createError || !createdBook) {
+        console.error("Failed to create new catalogue book", createError);
+        return json({ error: "Could not create new catalogue book record." }, 503);
+      }
+      targetBookId = createdBook.id;
+      createdNewBook = true;
+    }
+
+    // Upload to public bucket. Roll back a just-created catalogue row if Storage fails.
     const publicPath = `${targetBookId}/${submissionId}.pdf`;
     const { error: uploadError } = await admin.storage.from("book-pdfs").upload(publicPath, source, {
       contentType: "application/pdf", cacheControl: "3600", upsert: false,
     });
-    if (uploadError) return json({ error: "Could not publish the approved PDF. Check the public bucket configuration." }, 503);
+    if (uploadError) {
+      if (createdNewBook) await admin.from("books_library").delete().eq("id", targetBookId);
+      return json({ error: "Could not publish the approved PDF. Check the public bucket configuration." }, 503);
+    }
 
     const pdfUrl = admin.storage.from("book-pdfs").getPublicUrl(publicPath).data.publicUrl;
 
@@ -504,6 +501,7 @@ serve(async (req) => {
 
     if (updateBookError) {
       await admin.storage.from("book-pdfs").remove([publicPath]);
+      if (createdNewBook) await admin.from("books_library").delete().eq("id", targetBookId);
       return json({ error: "Could not link the PDF to the library book; publication was rolled back." }, 503);
     }
 
@@ -520,6 +518,7 @@ serve(async (req) => {
     if (submissionUpdateError) {
       await admin.from("books_library").update({ pdf_url: null }).eq("id", targetBookId);
       await admin.storage.from("book-pdfs").remove([publicPath]);
+      if (createdNewBook) await admin.from("books_library").delete().eq("id", targetBookId);
       return json({ error: "Could not save publication metadata; the public link was rolled back." }, 503);
     }
 
