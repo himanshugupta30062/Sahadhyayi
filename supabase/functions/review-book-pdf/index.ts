@@ -364,7 +364,7 @@ serve(async (req) => {
       }
     }
 
-    if (!["needs_review", "approved"].includes(submission.status)) return json({ error: "Only a pending PDF submission can be approved." }, 409);
+    if (submission.status === "rejected") return json({ error: "Rejected submissions cannot be published." }, 409);
 
     let targetBookId = typeof body.targetBookId === "string" ? body.targetBookId : (typeof submission.target_book_id === "string" ? submission.target_book_id : "");
     const createNewBook = Boolean(body.createNewBook) || !targetBookId;
