@@ -326,32 +326,27 @@ serve(async (req) => {
   const reason = typeof body.reason === "string" ? body.reason.trim().slice(0, 2000) : "";
   if ((action === "reject" || action === "request_changes") && !reason) return json({ error: "Provide a reason for rejection or requested changes." }, 400);
 
-  if (action === "approve" || action === "reject" || action === "request_changes") {
-    if (action === "approve" && !submission.rights_attested) return json({ error: "A contributor rights attestation is required." }, 409);
-    if (action === "approve" && (submission.status !== "needs_review" || !submission.verification_completed_at)) return json({ error: "This PDF cannot be approved until automated verification has completed successfully and the submission is in the review queue." }, 409);
-    const status = action === "approve" ? "approved" : action === "reject" ? "rejected" : "needs_review";
-
-    // Use optimistic locking to prevent race conditions - only update if status hasn't changed
+  if (action === "reject" || action === "request_changes") {
+    if (action === "reject" && !reason) return json({ error: "Provide a reason for rejection." }, 400);
+    const status = action === "reject" ? "rejected" : "needs_review";
     const { error: updateError } = await admin.from("book_pdf_submissions").update({
       status,
       reviewed_by: authData.user.id,
       reviewed_at: new Date().toISOString(),
       rejection_reason: action === "reject" ? reason : null,
     }).eq("id", submissionId).eq("status", submission.status);
-
-    if (updateError) return json({ error: "Could not save the review decision (submission may have been modified by another admin)." }, 503);
-
+    if (updateError) return json({ error: "Could not save the review decision." }, 503);
     await admin.from("book_pdf_review_audit").insert({
       submission_id: submissionId,
       reviewer_id: authData.user.id,
-      action: action === "approve" ? "approved" : action === "reject" ? "rejected" : "changes_requested",
+      action: action === "reject" ? "rejected" : "changes_requested",
       reason: reason || null,
     });
     return json({ success: true, status });
   }
 
-  // PUBLISH ACTION - with transactional safety and malware scanning
-  if (action === "publish") {
+  // One admin approval publishes the inspected PDF directly to the Library.
+  if (action === "approve" || action === "publish") {
     // Idempotency check: if already published, return success
     if (submission.status === "approved" && submission.published_book_id) {
       const { data: existingBook } = await admin.from("books_library")
@@ -369,14 +364,10 @@ serve(async (req) => {
       }
     }
 
-    if (submission.status !== "approved") return json({ error: "Approve the submission before publishing it." }, 409);
-    if (!submission.verification_completed_at) return json({ error: "Publishing is blocked because PDF verification has not completed successfully." }, 409);
-    if (!submission.rights_attested) return json({ error: "A contributor rights attestation is required." }, 409);
+    if (!["needs_review", "approved"].includes(submission.status)) return json({ error: "Only a pending PDF submission can be approved." }, 409);
 
-    let targetBookId = typeof body.targetBookId === "string" ? body.targetBookId : "";
-    const rightsBasis = body.rightsBasis;
-    const evidenceUrl = typeof body.evidenceUrl === "string" ? body.evidenceUrl.trim() : "";
-    const createNewBook = Boolean(body.createNewBook);
+    let targetBookId = typeof body.targetBookId === "string" ? body.targetBookId : (typeof submission.target_book_id === "string" ? submission.target_book_id : "");
+    const createNewBook = Boolean(body.createNewBook) || !targetBookId;
 
     // Validate the destination before scanning. New catalogue rows are deferred
     // until after all file and malware checks have passed.
@@ -385,11 +376,6 @@ serve(async (req) => {
       const newTitle = typeof body.newBookTitle === "string" ? body.newBookTitle.trim() : (submission.submitted_title || "");
       if (!newTitle) return json({ error: "Book title is required to create a new catalogue entry." }, 400);
     }
-
-    if (typeof rightsBasis !== "string" || !RIGHTS.has(rightsBasis)) return json({ error: "Select a valid distribution-rights basis." }, 400);
-
-    const evidenceValidation = validateEvidenceUrl(evidenceUrl);
-    if (!evidenceValidation.valid) return json({ error: evidenceValidation.error }, 400);
 
     // Validate an existing target now; defer new-book insertion until the PDF
     // passes its checks so failed scans cannot leave empty catalogue rows.
@@ -400,7 +386,7 @@ serve(async (req) => {
         .eq("id", targetBookId)
         .maybeSingle();
       if (bookError || !book) return json({ error: "Selected library book was not found." }, 404);
-      if (book.pdf_url) return json({ error: "This book already has a PDF. Use the replace_pdf action instead." }, 409);
+      if (book.pdf_url) return json({ error: "The selected Library book already has a PDF. Submit this as a new edition or choose another book." }, 409);
       if (body.updateBookTitleWithAlias && submission.submitted_title && !book.title.toLowerCase().includes(submission.submitted_title.toLowerCase())) {
         const aliasNote = `Also known as: ${submission.submitted_title}`;
         const updatedDescription = book.description ? `${book.description}\\n\\n${aliasNote}` : aliasNote;
@@ -461,7 +447,7 @@ serve(async (req) => {
       }
     }
 
-    // Create the new catalogue entry only after verification, rights and malware checks.
+    // Create the new catalogue entry only after admin review and file-safety checks.
     if (createNewBook) {
       const newTitle = typeof body.newBookTitle === "string" ? body.newBookTitle.trim() : (submission.submitted_title || "");
       const newAuthor = typeof body.newBookAuthor === "string" ? body.newBookAuthor.trim() : (submission.submitted_author || "Unknown");
@@ -508,8 +494,9 @@ serve(async (req) => {
     // Update submission with publication metadata
     const { error: submissionUpdateError } = await admin.from("book_pdf_submissions").update({
       published_book_id: targetBookId,
-      rights_basis: rightsBasis,
-      rights_evidence_url: evidenceUrl,
+      status: "approved",
+      rights_basis: null,
+      rights_evidence_url: null,
       reviewed_by: authData.user.id,
       reviewed_at: new Date().toISOString(),
       catalogue_match_status: submission.catalogue_match_status || (submission.target_book_id === targetBookId ? "admin_selected" : "new_created"),
@@ -536,14 +523,12 @@ serve(async (req) => {
       action: "published",
       details: {
         target_book_id: targetBookId,
-        rights_basis: rightsBasis,
-        evidence_host: evidenceValidation.host,
         created_new_book: createNewBook,
         malware_details: malwareDetails,
       },
     });
 
-    return json({ success: true, status: "approved", targetBookId, pdfUrl });
+    return json({ success: true, status: "approved", targetBookId, pdfUrl, catalogueAction: createNewBook ? "created" : "matched" });
   }
 
   // DELETE PDF ACTION - Admin deletion with audit
