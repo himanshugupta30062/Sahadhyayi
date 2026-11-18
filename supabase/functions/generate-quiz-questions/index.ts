@@ -72,12 +72,23 @@ serve(async (req) => {
       .eq('book_id', bookId)
       .eq('difficulty', difficulty);
 
-    if (!questionsError && existingQuestions && existingQuestions.length >= count) {
-      const shuffled = existingQuestions.sort(() => Math.random() - 0.5).slice(0, count);
-      return new Response(
-        JSON.stringify({ questions: shuffled, source: 'cached' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (!questionsError && existingQuestions?.length) {
+      const validCachedQuestions = existingQuestions.filter((q: any) => {
+        const options = Array.isArray(q.options) ? q.options : [];
+        return typeof q.question === 'string' && q.question.trim().length > 0 &&
+          options.length >= 2 &&
+          options.every((option: unknown) => typeof option === 'string' && option.trim().length > 0) &&
+          Number.isInteger(Number(q.correct_answer)) &&
+          Number(q.correct_answer) >= 0 && Number(q.correct_answer) < options.length;
+      });
+
+      if (validCachedQuestions.length >= count) {
+        const shuffled = [...validCachedQuestions].sort(() => Math.random() - 0.5).slice(0, count);
+        return new Response(
+          JSON.stringify({ questions: shuffled, source: 'cached' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     if (!geminiApiKey) {
