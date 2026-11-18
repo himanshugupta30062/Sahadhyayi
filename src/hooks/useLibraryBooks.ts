@@ -227,32 +227,25 @@ export function hasOtherVerifiedFullText(book: any): boolean {
   if (book.isBrokenLink === true) return false;
   if (book.accessStatus === 'access_unverified' || book.accessStatus === 'preview_only') return false;
 
-  const epub = (book.epub_url || book.epubUrl || '').trim();
-  if (epub && !epub.includes('broken') && !epub.includes('404') && (/^https?:\/\//i.test(epub) || epub.startsWith('/'))) {
-    return true;
-  }
-
+  // A URL, extension, or curated status label alone is only a candidate.
+  // Require explicit verifier evidence before assigning verified full-text rank.
   if (Array.isArray(book.assets) && book.assets.length > 0) {
     const otherAsset = book.assets.find(
       (a: any) =>
         (a.format === 'epub' || a.format === 'html' || a.format === 'official_reader') &&
-        a.verified !== false
+        a.verified === true
     );
     if (otherAsset) {
       const url = (otherAsset.downloadUrl || otherAsset.readerUrl || '').trim();
-      if (url && !url.includes('broken') && !url.includes('404')) {
+      if (
+        url &&
+        /^https?:\/\//i.test(url) &&
+        !/broken|404|invalid/i.test(url) &&
+        !/books\.google\./i.test(url)
+      ) {
         return true;
       }
     }
-  }
-
-  if (book.accessStatus === 'carefully_edited' || book.accessStatus === 'official_reader') {
-    return true;
-  }
-
-  const pdf = (book.pdf_url || book.pdfUrl || '').trim();
-  if (pdf.includes('.epub') || pdf.includes('standardebooks')) {
-    return true;
   }
 
   return false;
@@ -308,7 +301,7 @@ export function isOnlineReader(book: any): boolean {
     const readerAsset = book.assets.find(
       (a: any) =>
         (a.format === 'official_reader' || a.format === 'web_reader' || a.format === 'google_preview') &&
-        a.verified !== false
+        a.verified === true
     );
     if (readerAsset) {
       const url = (readerAsset.readerUrl || readerAsset.downloadUrl || '').trim();
