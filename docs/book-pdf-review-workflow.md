@@ -2,7 +2,7 @@
 
 ## Components
 - User contributions are stored only in the private `book-pdf-quarantine` bucket.
-- `verify-book-pdf` authenticates the user, checks submission ownership (or admin role), validates the PDF signature/size, and asks Gemini for metadata/content-match signals. The report is advisory and the status remains `needs_review`.
+- The contributor form validates the PDF signature and 50 MB size limit, then stores it privately with status `uploaded`. No Gemini verification or contributor rights-evidence form is required for this flow.
 - `review-book-pdf` provides a private PDF preview and one admin decision: approve (which publishes directly to the Library) or reject. Approval creates a new catalogue row when the submission does not target an existing book; no separate approve-then-publish workflow is required.
 - `/admin/book-pdf-reviews` is the review queue. The legacy `/admin/book-pdfs` route is intentionally unchanged.
 
