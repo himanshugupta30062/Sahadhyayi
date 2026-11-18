@@ -26,6 +26,7 @@ vi.mock('framer-motion', async () => {
     motion: {
       div: createMotionElement('div'),
       button: createMotionElement('button'),
+      span: createMotionElement('span'),
     },
     AnimatePresence: ({ children }: any) =>
       ReactModule.createElement(ReactModule.Fragment, null, children),
