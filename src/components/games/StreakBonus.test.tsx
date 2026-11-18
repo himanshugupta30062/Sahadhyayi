@@ -54,11 +54,11 @@ describe('StreakPopup', () => {
   });
 
   it.each([
-    [3, 'Great!', '👍'],
-    [5, 'Awesome!', '🔥'],
-    [7, 'Incredible!', '⚡'],
-    [10, 'LEGENDARY!', '👑'],
-  ])('shows the %s popup at streak %i', (streak, message, emoji) => {
+    ['Great!', 3, '👍'],
+    ['Awesome!', 5, '🔥'],
+    ['Incredible!', 7, '⚡'],
+    ['LEGENDARY!', 10, '👑'],
+  ])('shows the %s popup at a %i-answer streak', (message, streak, emoji) => {
     render(<StreakPopup streak={streak} />);
 
     expect(screen.getByText(message)).toBeInTheDocument();
