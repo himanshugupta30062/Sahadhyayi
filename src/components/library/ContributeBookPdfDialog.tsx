@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
@@ -43,13 +42,13 @@ async function validatePdf(file: File) {
 }
 
 const statusLabel: Record<string, string> = {
-  uploaded: 'Uploaded — awaiting checks',
+  uploaded: 'Waiting for admin preview',
   queued: 'Queued for verification',
   scanning: 'Safety scan in progress',
   extracting: 'Reading book details',
   matching: 'Matching catalogue records',
   needs_review: 'Needs human review',
-  approved: 'Approved — awaiting publishing',
+  approved: 'Added to Library',
   rejected: 'Not approved',
   failed: 'Processing failed',
 };
@@ -81,9 +80,8 @@ function ContributeBookPdfDialogContent() {
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
-  const [rightsAttested, setRightsAttested] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [busyStage, setBusyStage] = useState<'idle' | 'validating' | 'uploading' | 'verifying' | 'matching'>('idle');
+  const [busyStage, setBusyStage] = useState<'idle' | 'validating' | 'uploading' | 'matching'>('idle');
   const [selectedBook, setSelectedBook] = useState<CatalogueBook | null>(null);
   const [selectedBookIds, setSelectedBookIds] = useState<string[]>([]);
   const [matchedCandidates, setMatchedCandidates] = useState<CatalogueBook[]>([]);
@@ -144,7 +142,8 @@ function ContributeBookPdfDialogContent() {
     setSelectedBook(book);
     setShowExistingMatch(false);
     if (book.pdf_url) {
-      toast({ title: 'PDF already exists', description: 'This book already has a PDF linked. You can still contribute a new version for review.', variant: 'default' });
+      toast({ title: 'This book already has a PDF', description: 'Choose a different catalogue entry or submit this edition as a new book for review.', variant: 'destructive' });
+      return;
     }
     setStep('confirm');
   };
@@ -161,8 +160,8 @@ function ContributeBookPdfDialogContent() {
       toast({ title: 'Sign in required', description: 'Sign in before contributing a PDF.', variant: 'destructive' });
       return;
     }
-    if (!file || !rightsAttested) {
-      toast({ title: 'Complete the form', description: 'Choose a PDF and confirm that you are authorized to submit it.', variant: 'destructive' });
+    if (!file) {
+      toast({ title: 'Choose a PDF', description: 'Select a PDF file to submit for admin review.', variant: 'destructive' });
       return;
     }
 
@@ -204,8 +203,8 @@ function ContributeBookPdfDialogContent() {
             file_size_bytes: file.size,
             submitted_title: title.trim() || null,
             submitted_author: author.trim() || null,
-            rights_attested: true,
-            rights_statement: 'Contributor attests they are authorized to submit this file for review.',
+            rights_attested: false,
+            rights_statement: null,
             status: 'uploaded',
             target_book_id: selectedBook?.id || null,
           });
@@ -226,27 +225,10 @@ function ContributeBookPdfDialogContent() {
           if (!existingObject || existingObject.size !== file.size) throw uploadError;
         }
 
-        setBusyStage('verifying');
-        // Kick off AI verification after the private upload succeeds. Failure to
-        // start the worker must not turn a successful upload into a failed submission;
-        // the admin queue can retry verification later.
-        const { error: verificationError } = await supabase.functions.invoke('verify-book-pdf', {
-          body: { submissionId: id },
-        });
-        if (verificationError) {
-          console.warn('PDF was uploaded privately but automatic verification did not start.', verificationError);
-          toast({
-            title: 'PDF uploaded — verification pending',
-            description: 'Your file is safely stored in private quarantine, but automated checks could not start. It remains in your submissions for the review team.',
-            variant: 'default',
-          });
-        } else {
-          toast({ title: 'PDF submitted privately', description: 'Your file is quarantined for verification. It is not publicly downloadable.' });
-        }
+        toast({ title: 'PDF submitted privately', description: 'Your PDF is now waiting for an administrator to preview it. It will appear in the public Library only if approved.' });
         setFile(null);
         setTitle('');
         setAuthor('');
-        setRightsAttested(false);
         setSelectedBook(null);
         setSelectedBookIds([]);
         setMatchedCandidates([]);
@@ -268,7 +250,7 @@ function ContributeBookPdfDialogContent() {
             ? failure.message
             : 'The PDF could not be submitted. Please try again.';
         console.error('Book PDF contribution failed', {
-          stage: submissionCreated ? 'storage-upload-or-verification' : 'submission-record-or-validation',
+          stage: submissionCreated ? 'storage-upload' : 'submission-record-or-validation',
           code: typeof failure?.code === 'string' ? failure.code : undefined,
           details: typeof failure?.details === 'string' ? failure.details : undefined,
           hint: typeof failure?.hint === 'string' ? failure.hint : undefined,
@@ -303,8 +285,7 @@ function ContributeBookPdfDialogContent() {
     switch (busyStage) {
       case 'validating': return 'Validating PDF…';
       case 'uploading': return 'Uploading to secure storage…';
-      case 'verifying': return 'Starting AI verification…';
-      case 'matching': return 'Searching catalogue…';
+            case 'matching': return 'Searching catalogue…';
       default: return 'Submitting…';
     }
   };
@@ -313,7 +294,6 @@ function ContributeBookPdfDialogContent() {
     switch (busyStage) {
       case 'validating': return 20;
       case 'uploading': return 50;
-      case 'verifying': return 80;
       case 'matching': return 40;
       default: return 0;
     }
@@ -327,7 +307,7 @@ function ContributeBookPdfDialogContent() {
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Contribute a book PDF</DialogTitle>
-          <DialogDescription>Help improve the catalogue. New files stay private while verification and rights review are pending.</DialogDescription>
+          <DialogDescription>Contribute a PDF to an existing book or propose a new Library entry. Every upload stays private until an administrator previews and approves it.</DialogDescription>
         </DialogHeader>
 
         {!user ? (
@@ -363,7 +343,7 @@ function ContributeBookPdfDialogContent() {
               <div className="space-y-4 animate-in fade-in slide-in-from-left-2">
                 <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm">
                   <div className="flex items-center gap-2 font-medium"><Search className="h-4 w-4" /> Search catalogue first (optional)</div>
-                  <p className="mt-1 text-muted-foreground">Check if the book already exists in our catalogue. If it does, you can link your PDF to the existing record instead of creating a duplicate.</p>
+                  <p className="mt-1 text-muted-foreground">Search for the book first. If it is not listed, continue as a new book; an administrator can add the catalogue entry when the PDF passes review.</p>
                 </div>
 
                 <div className="space-y-2">
@@ -391,7 +371,7 @@ function ContributeBookPdfDialogContent() {
                     disabled={busy}
                     className="flex-1"
                   >
-                    Skip → Upload PDF
+                    Continue as New Book
                   </Button>
                 </div>
 
@@ -402,20 +382,20 @@ function ContributeBookPdfDialogContent() {
                       <CheckCircle2 className="h-4 w-4 text-green-600" />
                       Found {matchedCandidates.length} matching book{matchedCandidates.length !== 1 ? 's' : ''}
                     </h3>
-                    <p className="text-sm text-muted-foreground">Select a book to link your PDF, or continue to upload as a new entry.</p>
+                    <p className="text-sm text-muted-foreground">Select a book that does not already have a PDF, or continue to submit this as a new Library book.</p>
                     <div className="space-y-2 max-h-60 overflow-y-auto">
                       {matchedCandidates.map((candidate) => (
                         <button
                           key={candidate.id}
                           type="button"
                           onClick={() => handleSelectExistingBook(candidate)}
-                          disabled={busy}
-                          className="w-full rounded-lg border p-3 text-left transition hover:border-primary bg-card flex flex-col gap-1"
+                          disabled={busy || Boolean(candidate.pdf_url)}
+                          className="w-full rounded-lg border p-3 text-left transition hover:border-primary bg-card flex flex-col gap-1 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           <div className="flex items-start justify-between gap-2">
                             <span className="font-medium truncate">{candidate.title}</span>
                             <Badge variant={candidate.pdf_url ? 'secondary' : 'outline'}>
-                              {candidate.pdf_url ? 'Has PDF' : 'No PDF'}
+                              {candidate.pdf_url ? 'Already has PDF' : 'No PDF — can link'}
                             </Badge>
                           </div>
                           <p className="text-sm text-muted-foreground">
@@ -455,7 +435,7 @@ function ContributeBookPdfDialogContent() {
               <form onSubmit={submit} className="space-y-4 animate-in fade-in">
                 <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm">
                   <div className="flex items-center gap-2 font-medium"><ShieldCheck className="h-4 w-4" /> Private review process</div>
-                  <p className="mt-1 text-muted-foreground">Uploading does not publish the PDF. A valid book match does not by itself establish distribution rights.</p>
+                  <p className="mt-1 text-muted-foreground">Your PDF stays private until an administrator previews it and approves it for the Library.</p>
                 </div>
 
                 {selectedBook && (
@@ -500,7 +480,7 @@ function ContributeBookPdfDialogContent() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="contribute-title-upload">Book title (optional if linked to catalogue)</Label>
+                  <Label htmlFor="contribute-title-upload">Book title {selectedBook ? '(from catalogue)' : '(required for a new Library entry)'}</Label>
                   <Input id="contribute-title-upload" value={title} maxLength={500} onChange={(e) => setTitle(e.target.value)} placeholder="Title printed in the book" disabled={busy || !!selectedBook} />
                   {selectedBook && <p className="text-xs text-muted-foreground">Title will be taken from the selected catalogue book.</p>}
                 </div>
@@ -509,11 +489,6 @@ function ContributeBookPdfDialogContent() {
                   <Input id="contribute-author-upload" value={author} maxLength={500} onChange={(e) => setAuthor(e.target.value)} placeholder="Author name" disabled={busy || !!selectedBook} />
                   {selectedBook && <p className="text-xs text-muted-foreground">Author will be taken from the selected catalogue book.</p>}
                 </div>
-
-                <label className="flex items-start gap-3 text-sm leading-5">
-                  <Checkbox checked={rightsAttested} onCheckedChange={(checked) => setRightsAttested(checked === true)} disabled={busy} />
-                  <span>I confirm I am authorized to submit this file for review and have provided accurate information. I understand this does not automatically authorize public distribution.</span>
-                </label>
 
                 {busy && (
                   <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
@@ -535,9 +510,9 @@ function ContributeBookPdfDialogContent() {
                   </div>
                 )}
 
-                <Button type="submit" className="w-full gap-2" disabled={busy || !file || !rightsAttested || (!selectedBook && !title.trim())}>
+                <Button type="submit" className="w-full gap-2" disabled={busy || !file || (!selectedBook && !title.trim())}>
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileUp className="h-4 w-4" />}
-                  {busy ? 'Submitting privately…' : selectedBook ? 'Submit for verification (linked to catalogue)' : 'Submit for verification'}
+                  {busy ? 'Submitting privately…' : selectedBook ? 'Submit PDF for review' : 'Submit New Book for Review'}
                 </Button>
               </form>
             )}
@@ -582,11 +557,6 @@ function ContributeBookPdfDialogContent() {
                   )}
                 </div>
 
-                <label className="flex items-start gap-3 text-sm leading-5">
-                  <Checkbox checked={rightsAttested} onCheckedChange={(checked) => setRightsAttested(checked === true)} disabled={busy} />
-                  <span>I confirm I am authorized to submit this file for review and have provided accurate information. I understand this does not automatically authorize public distribution.</span>
-                </label>
-
                 {busy && (
                   <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
                     <div className="flex items-center justify-between text-sm">
@@ -611,9 +581,9 @@ function ContributeBookPdfDialogContent() {
                   <Button variant="outline" onClick={handleBackToUpload} disabled={busy} className="flex-1">
                     <ArrowLeft className="mr-2 h-4 w-4" /> Change Book
                   </Button>
-                  <Button type="button" onClick={submit} className="w-full gap-2" disabled={busy || !file || !rightsAttested}>
+                  <Button type="button" onClick={submit} className="w-full gap-2" disabled={busy || !file}>
                     {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileUp className="h-4 w-4" />}
-                    {busy ? 'Submitting…' : 'Submit for verification'}
+                    {busy ? 'Submitting…' : 'Submit for admin review'}
                   </Button>
                 </div>
               </div>

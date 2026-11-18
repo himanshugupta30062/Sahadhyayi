@@ -240,7 +240,7 @@ const FAQS: FAQItem[] = [
     category: "library-reader",
     categoryLabel: "Library & Reader",
     question: "How can I contribute or upload a book PDF to Sahadhyayi?",
-    answer: "If you have a public domain, Creative Commons, or open-access book, click 'Contribute Book PDF' in the Library. Provide title, author, year, and upload the PDF file. Our automated sanitization and editorial review process verifies copyright compliance and OCR text quality before publishing.",
+    answer: "Sign in, open Library, and choose 'Contribute a PDF'. Search for an existing catalogue entry or submit a new title, then upload an unencrypted PDF (up to 50 MB). The PDF stays private until an administrator opens its preview and approves it. Approval adds the PDF to the public Library in the same action; rejection keeps it out of the Library. File integrity and malware-safety checks remain in place.",
     tags: ["contribute", "pdf", "upload", "copyright", "review"],
     recommendedLink: { label: "Browse Library Catalogue", href: "/library" },
   },
