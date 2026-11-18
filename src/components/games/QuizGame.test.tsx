@@ -95,6 +95,12 @@ describe('QuizGame', () => {
     expect(screen.getByText('20 pts')).toBeInTheDocument();
   });
 
+  it('keeps the hint hidden until the parent enables it', () => {
+    renderGame({ showHint: false });
+
+    expect(screen.queryByText('Read each option carefully.')).not.toBeInTheDocument();
+  });
+
   it('disables hidden answers and lifelines that have already been used', () => {
     renderGame({ hiddenOptions: [0, 2], lifelinesUsed: ['skip'] });
 
