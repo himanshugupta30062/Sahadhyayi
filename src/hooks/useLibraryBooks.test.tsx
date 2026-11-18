@@ -205,16 +205,27 @@ describe('useLibraryBooks utility functions', () => {
       expect(hasOtherVerifiedFullText({ isBrokenLink: true, epub_url: 'https://example.com/book.epub' })).toBe(false);
       expect(hasOtherVerifiedFullText({ accessStatus: 'preview_only', epub_url: 'https://example.com/book.epub' })).toBe(false);
 
-      expect(hasOtherVerifiedFullText({ epub_url: 'https://example.com/book.epub' })).toBe(true);
-      expect(hasOtherVerifiedFullText({ epubUrl: '/local/book.epub' })).toBe(true);
+      // URL shape and legacy status labels are candidates, not verification.
+      expect(hasOtherVerifiedFullText({ epub_url: 'https://example.com/book.epub' })).toBe(false);
+      expect(hasOtherVerifiedFullText({ epubUrl: '/local/book.epub' })).toBe(false);
+      expect(hasOtherVerifiedFullText({ accessStatus: 'carefully_edited' })).toBe(false);
+      expect(hasOtherVerifiedFullText({ accessStatus: 'official_reader' })).toBe(false);
+      expect(hasOtherVerifiedFullText({ pdf_url: 'https://standardebooks.org/opds/books/1' })).toBe(false);
       expect(
         hasOtherVerifiedFullText({
           assets: [{ format: 'epub', verified: true, downloadUrl: 'https://example.com/item.epub' }],
         })
       ).toBe(true);
-      expect(hasOtherVerifiedFullText({ accessStatus: 'carefully_edited' })).toBe(true);
-      expect(hasOtherVerifiedFullText({ accessStatus: 'official_reader' })).toBe(true);
-      expect(hasOtherVerifiedFullText({ pdf_url: 'https://standardebooks.org/opds/books/1' })).toBe(true);
+      expect(
+        hasOtherVerifiedFullText({
+          assets: [{ format: 'epub', downloadUrl: 'https://example.com/unverified.epub' }],
+        })
+      ).toBe(false);
+      expect(
+        hasOtherVerifiedFullText({
+          assets: [{ format: 'official_reader', verified: true, readerUrl: 'https://reader.example.com/book' }],
+        })
+      ).toBe(true);
     });
   });
 
