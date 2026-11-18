@@ -42,13 +42,13 @@ async function validatePdf(file: File) {
 }
 
 const statusLabel: Record<string, string> = {
-  uploaded: 'Uploaded — awaiting checks',
+  uploaded: 'Waiting for admin preview',
   queued: 'Queued for verification',
   scanning: 'Safety scan in progress',
   extracting: 'Reading book details',
   matching: 'Matching catalogue records',
   needs_review: 'Needs human review',
-  approved: 'Approved — awaiting publishing',
+  approved: 'Added to Library',
   rejected: 'Not approved',
   failed: 'Processing failed',
 };
@@ -81,7 +81,7 @@ function ContributeBookPdfDialogContent() {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [busy, setBusy] = useState(false);
-  const [busyStage, setBusyStage] = useState<'idle' | 'validating' | 'uploading' | 'verifying' | 'matching'>('idle');
+  const [busyStage, setBusyStage] = useState<'idle' | 'validating' | 'uploading' | 'matching'>('idle');
   const [selectedBook, setSelectedBook] = useState<CatalogueBook | null>(null);
   const [selectedBookIds, setSelectedBookIds] = useState<string[]>([]);
   const [matchedCandidates, setMatchedCandidates] = useState<CatalogueBook[]>([]);
@@ -250,7 +250,7 @@ function ContributeBookPdfDialogContent() {
             ? failure.message
             : 'The PDF could not be submitted. Please try again.';
         console.error('Book PDF contribution failed', {
-          stage: submissionCreated ? 'storage-upload-or-verification' : 'submission-record-or-validation',
+          stage: submissionCreated ? 'storage-upload' : 'submission-record-or-validation',
           code: typeof failure?.code === 'string' ? failure.code : undefined,
           details: typeof failure?.details === 'string' ? failure.details : undefined,
           hint: typeof failure?.hint === 'string' ? failure.hint : undefined,
@@ -285,8 +285,7 @@ function ContributeBookPdfDialogContent() {
     switch (busyStage) {
       case 'validating': return 'Validating PDF…';
       case 'uploading': return 'Uploading to secure storage…';
-      case 'verifying': return 'Starting AI verification…';
-      case 'matching': return 'Searching catalogue…';
+            case 'matching': return 'Searching catalogue…';
       default: return 'Submitting…';
     }
   };
@@ -295,7 +294,6 @@ function ContributeBookPdfDialogContent() {
     switch (busyStage) {
       case 'validating': return 20;
       case 'uploading': return 50;
-      case 'verifying': return 80;
       case 'matching': return 40;
       default: return 0;
     }
@@ -437,7 +435,7 @@ function ContributeBookPdfDialogContent() {
               <form onSubmit={submit} className="space-y-4 animate-in fade-in">
                 <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm">
                   <div className="flex items-center gap-2 font-medium"><ShieldCheck className="h-4 w-4" /> Private review process</div>
-                  <p className="mt-1 text-muted-foreground">Uploading does not publish the PDF. A valid book match does not by itself establish distribution rights.</p>
+                  <p className="mt-1 text-muted-foreground">Your PDF stays private until an administrator previews it and approves it for the Library.</p>
                 </div>
 
                 {selectedBook && (
