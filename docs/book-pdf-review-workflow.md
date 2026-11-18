@@ -3,7 +3,7 @@
 ## Components
 - User contributions are stored only in the private `book-pdf-quarantine` bucket.
 - `verify-book-pdf` authenticates the user, checks submission ownership (or admin role), validates the PDF signature/size, and asks Gemini for metadata/content-match signals. The report is advisory and the status remains `needs_review`.
-- `review-book-pdf` is the only admin decision/publishing endpoint. It supports private preview, approve, reject, request changes, and publish to an existing catalogue record.
+- `review-book-pdf` is the only admin decision/publishing endpoint. It supports private preview, approve, reject, request changes, and publish to an existing catalogue record or create a new catalogue record after all checks pass. New rows are compensated/deleted if public upload or catalogue-link persistence fails.
 - `/admin/book-pdf-reviews` is the review queue. The legacy `/admin/book-pdfs` route is intentionally unchanged.
 
 ## Required secrets
@@ -21,7 +21,7 @@ The configured scanner endpoint must:
 Publishing fails closed when the endpoint or token is missing, the request times out, the response is invalid, or `clean` is not exactly `true`. Do not configure an arbitrary user-controlled URL as the scanner endpoint.
 
 ## Rights and publishing
-Gemini never decides copyright status. Before publishing, an admin must approve the submission, select an existing catalogue book without an existing PDF, choose a rights basis, and provide an HTTPS licence/permission/source evidence URL. Publishing copies the quarantined PDF to the existing `book-pdfs` bucket and updates only the selected `books_library.pdf_url`. If the catalogue update fails, the public copy is removed. The workflow refuses to overwrite an existing PDF.
+Gemini never decides copyright status. Before publishing, an admin must approve the submission, choose an existing catalogue book without an existing PDF or explicitly create a new catalogue entry, select a rights basis, and provide an HTTPS licence/permission/source evidence URL. The backend validates the PDF and requires a clean Bouncer malware verdict before creating a new catalogue row or copying the quarantined PDF into `book-pdfs`. It then links the public URL to `books_library.pdf_url` and records publication on the submission. If upload, catalogue-link, or submission-metadata persistence fails, the public object and any newly created catalogue row are rolled back. Existing PDFs are never overwritten.
 
 ## Test-only rollout
 1. Apply migrations to a disposable/test Supabase project only.
