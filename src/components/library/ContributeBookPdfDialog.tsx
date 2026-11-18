@@ -144,7 +144,8 @@ function ContributeBookPdfDialogContent() {
     setSelectedBook(book);
     setShowExistingMatch(false);
     if (book.pdf_url) {
-      toast({ title: 'PDF already exists', description: 'This book already has a PDF linked. You can still contribute a new version for review.', variant: 'default' });
+      toast({ title: 'This book already has a PDF', description: 'Choose a different catalogue entry or submit this edition as a new book for review.', variant: 'destructive' });
+      return;
     }
     setStep('confirm');
   };
@@ -241,7 +242,7 @@ function ContributeBookPdfDialogContent() {
             variant: 'default',
           });
         } else {
-          toast({ title: 'PDF submitted privately', description: 'Your file is quarantined for verification. It is not publicly downloadable.' });
+          toast({ title: 'PDF submitted privately', description: 'Your file is quarantined for verification. After successful checks and administrator approval, it can be added to the public Library.' });
         }
         setFile(null);
         setTitle('');
@@ -327,7 +328,7 @@ function ContributeBookPdfDialogContent() {
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Contribute a book PDF</DialogTitle>
-          <DialogDescription>Help improve the catalogue. New files stay private while verification and rights review are pending.</DialogDescription>
+          <DialogDescription>Contribute a PDF to an existing book or propose a new Library entry. Every upload stays private until verification, rights checks, and administrator approval are complete.</DialogDescription>
         </DialogHeader>
 
         {!user ? (
@@ -363,7 +364,7 @@ function ContributeBookPdfDialogContent() {
               <div className="space-y-4 animate-in fade-in slide-in-from-left-2">
                 <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm">
                   <div className="flex items-center gap-2 font-medium"><Search className="h-4 w-4" /> Search catalogue first (optional)</div>
-                  <p className="mt-1 text-muted-foreground">Check if the book already exists in our catalogue. If it does, you can link your PDF to the existing record instead of creating a duplicate.</p>
+                  <p className="mt-1 text-muted-foreground">Search for the book first. If it is not listed, continue as a new book; an administrator can add the catalogue entry when the PDF passes review.</p>
                 </div>
 
                 <div className="space-y-2">
@@ -391,7 +392,7 @@ function ContributeBookPdfDialogContent() {
                     disabled={busy}
                     className="flex-1"
                   >
-                    Skip → Upload PDF
+                    Continue as New Book
                   </Button>
                 </div>
 
@@ -402,20 +403,20 @@ function ContributeBookPdfDialogContent() {
                       <CheckCircle2 className="h-4 w-4 text-green-600" />
                       Found {matchedCandidates.length} matching book{matchedCandidates.length !== 1 ? 's' : ''}
                     </h3>
-                    <p className="text-sm text-muted-foreground">Select a book to link your PDF, or continue to upload as a new entry.</p>
+                    <p className="text-sm text-muted-foreground">Select a book that does not already have a PDF, or continue to submit this as a new Library book.</p>
                     <div className="space-y-2 max-h-60 overflow-y-auto">
                       {matchedCandidates.map((candidate) => (
                         <button
                           key={candidate.id}
                           type="button"
                           onClick={() => handleSelectExistingBook(candidate)}
-                          disabled={busy}
-                          className="w-full rounded-lg border p-3 text-left transition hover:border-primary bg-card flex flex-col gap-1"
+                          disabled={busy || Boolean(candidate.pdf_url)}
+                          className="w-full rounded-lg border p-3 text-left transition hover:border-primary bg-card flex flex-col gap-1 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           <div className="flex items-start justify-between gap-2">
                             <span className="font-medium truncate">{candidate.title}</span>
                             <Badge variant={candidate.pdf_url ? 'secondary' : 'outline'}>
-                              {candidate.pdf_url ? 'Has PDF' : 'No PDF'}
+                              {candidate.pdf_url ? 'Already has PDF' : 'No PDF — can link'}
                             </Badge>
                           </div>
                           <p className="text-sm text-muted-foreground">
@@ -500,7 +501,7 @@ function ContributeBookPdfDialogContent() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="contribute-title-upload">Book title (optional if linked to catalogue)</Label>
+                  <Label htmlFor="contribute-title-upload">Book title {selectedBook ? '(from catalogue)' : '(required for a new Library entry)'}</Label>
                   <Input id="contribute-title-upload" value={title} maxLength={500} onChange={(e) => setTitle(e.target.value)} placeholder="Title printed in the book" disabled={busy || !!selectedBook} />
                   {selectedBook && <p className="text-xs text-muted-foreground">Title will be taken from the selected catalogue book.</p>}
                 </div>
@@ -537,7 +538,7 @@ function ContributeBookPdfDialogContent() {
 
                 <Button type="submit" className="w-full gap-2" disabled={busy || !file || !rightsAttested || (!selectedBook && !title.trim())}>
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileUp className="h-4 w-4" />}
-                  {busy ? 'Submitting privately…' : selectedBook ? 'Submit for verification (linked to catalogue)' : 'Submit for verification'}
+                  {busy ? 'Submitting privately…' : selectedBook ? 'Submit PDF for review' : 'Submit New Book for Review'}
                 </Button>
               </form>
             )}
