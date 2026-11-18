@@ -95,7 +95,8 @@ async function checkDuplicateBySHA256(admin: any, sha256: string, excludeId?: st
 
   if (error) {
     console.error("Duplicate check error:", error);
-    return { isDuplicate: false };
+    // A failed lookup is not proof that the PDF is unique. Fail closed.
+    throw new Error("Could not complete the duplicate PDF check. Please retry verification.");
   }
 
   return { isDuplicate: !!data, existingSubmission: data as Record<string, unknown> | undefined };
