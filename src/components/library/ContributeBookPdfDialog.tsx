@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
@@ -81,7 +80,6 @@ function ContributeBookPdfDialogContent() {
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
-  const [rightsAttested, setRightsAttested] = useState(false);
   const [busy, setBusy] = useState(false);
   const [busyStage, setBusyStage] = useState<'idle' | 'validating' | 'uploading' | 'verifying' | 'matching'>('idle');
   const [selectedBook, setSelectedBook] = useState<CatalogueBook | null>(null);
@@ -162,8 +160,8 @@ function ContributeBookPdfDialogContent() {
       toast({ title: 'Sign in required', description: 'Sign in before contributing a PDF.', variant: 'destructive' });
       return;
     }
-    if (!file || !rightsAttested) {
-      toast({ title: 'Complete the form', description: 'Choose a PDF and confirm that you are authorized to submit it.', variant: 'destructive' });
+    if (!file) {
+      toast({ title: 'Choose a PDF', description: 'Select a PDF file to submit for admin review.', variant: 'destructive' });
       return;
     }
 
@@ -205,8 +203,8 @@ function ContributeBookPdfDialogContent() {
             file_size_bytes: file.size,
             submitted_title: title.trim() || null,
             submitted_author: author.trim() || null,
-            rights_attested: true,
-            rights_statement: 'Contributor attests they are authorized to submit this file for review.',
+            rights_attested: false,
+            rights_statement: null,
             status: 'uploaded',
             target_book_id: selectedBook?.id || null,
           });
@@ -227,27 +225,10 @@ function ContributeBookPdfDialogContent() {
           if (!existingObject || existingObject.size !== file.size) throw uploadError;
         }
 
-        setBusyStage('verifying');
-        // Kick off AI verification after the private upload succeeds. Failure to
-        // start the worker must not turn a successful upload into a failed submission;
-        // the admin queue can retry verification later.
-        const { error: verificationError } = await supabase.functions.invoke('verify-book-pdf', {
-          body: { submissionId: id },
-        });
-        if (verificationError) {
-          console.warn('PDF was uploaded privately but automatic verification did not start.', verificationError);
-          toast({
-            title: 'PDF uploaded — verification pending',
-            description: 'Your file is safely stored in private quarantine, but automated checks could not start. It remains in your submissions for the review team.',
-            variant: 'default',
-          });
-        } else {
-          toast({ title: 'PDF submitted privately', description: 'Your file is quarantined for verification. After successful checks and administrator approval, it can be added to the public Library.' });
-        }
+        toast({ title: 'PDF submitted privately', description: 'Your PDF is now waiting for an administrator to preview it. It will appear in the public Library only if approved.' });
         setFile(null);
         setTitle('');
         setAuthor('');
-        setRightsAttested(false);
         setSelectedBook(null);
         setSelectedBookIds([]);
         setMatchedCandidates([]);
@@ -328,7 +309,7 @@ function ContributeBookPdfDialogContent() {
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Contribute a book PDF</DialogTitle>
-          <DialogDescription>Contribute a PDF to an existing book or propose a new Library entry. Every upload stays private until verification, rights checks, and administrator approval are complete.</DialogDescription>
+          <DialogDescription>Contribute a PDF to an existing book or propose a new Library entry. Every upload stays private until an administrator previews and approves it.</DialogDescription>
         </DialogHeader>
 
         {!user ? (
@@ -511,11 +492,6 @@ function ContributeBookPdfDialogContent() {
                   {selectedBook && <p className="text-xs text-muted-foreground">Author will be taken from the selected catalogue book.</p>}
                 </div>
 
-                <label className="flex items-start gap-3 text-sm leading-5">
-                  <Checkbox checked={rightsAttested} onCheckedChange={(checked) => setRightsAttested(checked === true)} disabled={busy} />
-                  <span>I confirm I am authorized to submit this file for review and have provided accurate information. I understand this does not automatically authorize public distribution.</span>
-                </label>
-
                 {busy && (
                   <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
                     <div className="flex items-center justify-between text-sm">
@@ -536,7 +512,7 @@ function ContributeBookPdfDialogContent() {
                   </div>
                 )}
 
-                <Button type="submit" className="w-full gap-2" disabled={busy || !file || !rightsAttested || (!selectedBook && !title.trim())}>
+                <Button type="submit" className="w-full gap-2" disabled={busy || !file || (!selectedBook && !title.trim())}>
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileUp className="h-4 w-4" />}
                   {busy ? 'Submitting privately…' : selectedBook ? 'Submit PDF for review' : 'Submit New Book for Review'}
                 </Button>
@@ -583,11 +559,6 @@ function ContributeBookPdfDialogContent() {
                   )}
                 </div>
 
-                <label className="flex items-start gap-3 text-sm leading-5">
-                  <Checkbox checked={rightsAttested} onCheckedChange={(checked) => setRightsAttested(checked === true)} disabled={busy} />
-                  <span>I confirm I am authorized to submit this file for review and have provided accurate information. I understand this does not automatically authorize public distribution.</span>
-                </label>
-
                 {busy && (
                   <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
                     <div className="flex items-center justify-between text-sm">
@@ -612,9 +583,9 @@ function ContributeBookPdfDialogContent() {
                   <Button variant="outline" onClick={handleBackToUpload} disabled={busy} className="flex-1">
                     <ArrowLeft className="mr-2 h-4 w-4" /> Change Book
                   </Button>
-                  <Button type="button" onClick={submit} className="w-full gap-2" disabled={busy || !file || !rightsAttested}>
+                  <Button type="button" onClick={submit} className="w-full gap-2" disabled={busy || !file}>
                     {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileUp className="h-4 w-4" />}
-                    {busy ? 'Submitting…' : 'Submit for verification'}
+                    {busy ? 'Submitting…' : 'Submit for admin review'}
                   </Button>
                 </div>
               </div>
