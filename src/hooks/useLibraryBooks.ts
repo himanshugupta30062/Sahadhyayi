@@ -301,7 +301,7 @@ export function isOnlineReader(book: any): boolean {
     const readerAsset = book.assets.find(
       (a: any) =>
         (a.format === 'official_reader' || a.format === 'web_reader' || a.format === 'google_preview') &&
-        a.verified !== false
+        a.verified === true
     );
     if (readerAsset) {
       const url = (readerAsset.readerUrl || readerAsset.downloadUrl || '').trim();
