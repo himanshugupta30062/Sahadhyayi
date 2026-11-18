@@ -242,7 +242,7 @@ async function fetchFilteredBooks(
             cover_image_url: normalizeCoverUrl(row.cover_image_url),
             description: row.description || row.subtitle || null,
             publication_year: row.created_at ? new Date(row.created_at).getFullYear() : undefined,
-            language: row.language || 'English',
+            language: row.language || undefined,
             pdf_url: row.pdf_url,
             epub_url: undefined,
             created_at: row.created_at || new Date().toISOString(),
@@ -250,12 +250,11 @@ async function fetchFilteredBooks(
             isbn: row.isbn,
             pages: row.pages,
             author_bio: null,
-            accessStatus: 'verified_full_text',
-            qualityScore: 85,
-            qualityReasons: ['Community approved publication'],
-            whyThisEdition: 'Approved community-submitted publication',
+            // Admin approval controls publication visibility; it does not prove
+            // that the attached file is readable or bibliographically correct.
+            whyThisEdition: 'Admin-approved community publication; file verification pending',
             isPreferredEdition: true,
-            assets: row.pdf_url ? [{ format: 'pdf', downloadUrl: row.pdf_url }] : [],
+            assets: row.pdf_url ? [{ format: 'pdf', downloadUrl: row.pdf_url, verified: false }] : [],
             status: 'approved',
             catalog_status: 'active',
           });
