@@ -60,12 +60,48 @@ export function useQuizGame() {
         body: { bookId, difficulty, count: selectedMode === 'speed' ? 15 : 10 },
       });
 
-      if (response.error) throw response.error;
+      if (response.error) {
+        console.error('Quiz generation request failed:', response.error);
+        throw response.error;
+      }
 
-      const generatedQuestions = response.data?.questions || [];
+      if (response.data?.error) throw new Error(response.data.error);
+
+      const rawQuestions = response.data?.questions;
+      if (!Array.isArray(rawQuestions) || rawQuestions.length === 0) {
+        throw new Error('The quiz service returned no questions. Please retry in a moment.');
+      }
+
+      // Normalize cached JSONB and freshly generated responses to one safe shape.
+      const generatedQuestions: QuizQuestion[] = rawQuestions
+        .map((raw: any) => {
+          let options = raw?.options;
+          if (typeof options === 'string') {
+            try { options = JSON.parse(options); } catch { return null; }
+          }
+          const correctAnswer = Number(raw?.correct_answer);
+          if (
+            typeof raw?.question !== 'string' || !raw.question.trim() ||
+            !Array.isArray(options) || options.length < 2 ||
+            !options.every((option: unknown) => typeof option === 'string' && option.trim()) ||
+            !Number.isInteger(correctAnswer) || correctAnswer < 0 || correctAnswer >= options.length
+          ) return null;
+
+          return {
+            ...raw,
+            book_id: raw.book_id || bookId,
+            options,
+            correct_answer: correctAnswer,
+            difficulty: raw.difficulty || difficulty,
+            points: Number.isFinite(Number(raw.points)) ? Number(raw.points) : 100,
+            hint: typeof raw.hint === 'string' ? raw.hint : '',
+            explanation: typeof raw.explanation === 'string' ? raw.explanation : '',
+          } as QuizQuestion;
+        })
+        .filter((question): question is QuizQuestion => question !== null);
+
       if (generatedQuestions.length === 0) {
-        toast.error('Could not generate questions for this book');
-        return false;
+        throw new Error('The generated questions had an invalid format. Please retry; no empty quiz was started.');
       }
 
       // Create game session
@@ -101,7 +137,7 @@ export function useQuizGame() {
       return true;
     } catch (err: any) {
       console.error('Error starting game:', err);
-      toast.error('Failed to start game');
+      toast.error(err?.message || 'Failed to start game');
       return false;
     } finally {
       setLoading(false);

@@ -72,12 +72,23 @@ serve(async (req) => {
       .eq('book_id', bookId)
       .eq('difficulty', difficulty);
 
-    if (!questionsError && existingQuestions && existingQuestions.length >= count) {
-      const shuffled = existingQuestions.sort(() => Math.random() - 0.5).slice(0, count);
-      return new Response(
-        JSON.stringify({ questions: shuffled, source: 'cached' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (!questionsError && existingQuestions?.length) {
+      const validCachedQuestions = existingQuestions.filter((q: any) => {
+        const options = Array.isArray(q.options) ? q.options : [];
+        return typeof q.question === 'string' && q.question.trim().length > 0 &&
+          options.length >= 2 &&
+          options.every((option: unknown) => typeof option === 'string' && option.trim().length > 0) &&
+          Number.isInteger(Number(q.correct_answer)) &&
+          Number(q.correct_answer) >= 0 && Number(q.correct_answer) < options.length;
+      });
+
+      if (validCachedQuestions.length >= count) {
+        const shuffled = [...validCachedQuestions].sort(() => Math.random() - 0.5).slice(0, count);
+        return new Response(
+          JSON.stringify({ questions: shuffled, source: 'cached' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     if (!geminiApiKey) {
@@ -140,15 +151,29 @@ Return ONLY a valid JSON array with this exact structure (no markdown, no code b
     const geminiData = await geminiResponse.json();
     const generatedText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-    let questions;
+    let questions: any[] = [];
     try {
       const cleanedText = generatedText
-        .replace(/```json\n?/g, '')
-        .replace(/```\n?/g, '')
+        .replace(/```(?:json)?\s*/gi, '')
+        .replace(/```/g, '')
         .trim();
-      questions = JSON.parse(cleanedText);
+      const parsed = JSON.parse(cleanedText);
+      questions = Array.isArray(parsed) ? parsed : parsed?.questions;
+      if (!Array.isArray(questions)) throw new Error('Gemini response was not a question array');
     } catch (parseError) {
-      console.error('JSON parse error:', parseError);
+      console.error('Quiz response parsing failed:', parseError);
+    }
+
+    // Never return malformed items that would leave the quiz renderer blank.
+    const validQuestions = questions.filter((q: any) =>
+      typeof q?.question === 'string' && q.question.trim().length > 0 &&
+      Array.isArray(q.options) && q.options.length >= 2 &&
+      q.options.every((option: unknown) => typeof option === 'string' && option.trim().length > 0) &&
+      Number.isInteger(Number(q.correct_answer)) &&
+      Number(q.correct_answer) >= 0 && Number(q.correct_answer) < q.options.length
+    );
+
+    if (validQuestions.length === 0) {
       const fallbackQuestions = generateFallbackQuestions(book, difficulty, count);
       return new Response(
         JSON.stringify({ questions: fallbackQuestions, source: 'fallback' }),
@@ -156,24 +181,24 @@ Return ONLY a valid JSON array with this exact structure (no markdown, no code b
       );
     }
 
-    const questionsToInsert = questions.map((q: any) => ({
+    const questionsToInsert = validQuestions.slice(0, count).map((q: any) => ({
       book_id: bookId,
-      question: q.question,
+      question: q.question.trim(),
       options: q.options,
-      correct_answer: q.correct_answer,
+      correct_answer: Number(q.correct_answer),
       difficulty,
       points,
-      hint: q.hint,
-      explanation: q.explanation,
+      hint: typeof q.hint === 'string' ? q.hint : '',
+      explanation: typeof q.explanation === 'string' ? q.explanation : '',
     }));
 
-    await supabase.from('book_quiz_questions').insert(questionsToInsert);
+    const { error: insertError } = await supabase.from('book_quiz_questions').insert(questionsToInsert);
+    if (insertError) console.error('Could not cache generated quiz questions:', insertError);
 
     return new Response(
       JSON.stringify({ questions: questionsToInsert, source: 'generated' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
-
   } catch (error) {
     console.error('Error in generate-quiz-questions:', error);
     return new Response(
