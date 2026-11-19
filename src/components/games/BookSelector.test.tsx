@@ -72,7 +72,7 @@ describe('BookSelector', () => {
     render(<BookSelector onSelect={vi.fn()} onBack={vi.fn()} />);
 
     expect(screen.getByText('Choose a Book')).toBeInTheDocument();
-    expect(document.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
+    expect(document.querySelectorAll('.animate-pulse').length).toBeGreaterThan(0);
   });
 
   it('loads public books and displays cover, author, and genre metadata', async () => {
@@ -139,7 +139,7 @@ describe('BookSelector', () => {
     expect(await screen.findByText('No books found')).toBeInTheDocument();
   });
 
-  it('stops loading and keeps the selector usable when Supabase returns an error', async () => {
+  it('stops loading and shows the empty state when Supabase returns an error', async () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     result = { data: books, error: new Error('catalog unavailable') };
     render(<BookSelector onSelect={vi.fn()} onBack={vi.fn()} />);
@@ -150,8 +150,8 @@ describe('BookSelector', () => {
         expect.objectContaining({ message: 'catalog unavailable' }),
       );
     });
-    expect(screen.queryByText('No books found')).not.toBeInTheDocument();
-    expect(document.querySelectorAll('[data-slot="skeleton"]').length).toBe(0);
+    expect(await screen.findByText('No books found')).toBeInTheDocument();
+    expect(document.querySelectorAll('.animate-pulse').length).toBe(0);
     consoleError.mockRestore();
   });
 
