@@ -13,8 +13,103 @@ const json = (body: Record<string, unknown>, status = 200) =>
 function decode(value: string) {
   return value.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
 }
-function stripTags(value: string) {
-  return decode(value.replace(/<script[\s\S]*?<\/script>/gi, "").replace(/<style[\s\S]*?<\/style>/gi, "").replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
+function stripTags(value: string): string {
+  const raw = String(value ?? "");
+  let result = "";
+  let inTag = false;
+  let inWhitespace = true;
+  for (let i = 0; i < raw.length; i++) {
+    const char = raw[i];
+    if (char === "<") {
+      const tail = raw.slice(i, i + 8).toLowerCase();
+      if (tail.startsWith("<script")) {
+        const closeIdx = raw.toLowerCase().indexOf("</script>", i);
+        if (closeIdx !== -1) {
+          i = closeIdx + 8;
+          continue;
+        }
+      } else if (tail.startsWith("<style")) {
+        const closeIdx = raw.toLowerCase().indexOf("</style>", i);
+        if (closeIdx !== -1) {
+          i = closeIdx + 7;
+          continue;
+        }
+      }
+      inTag = true;
+      if (!inWhitespace && result.length > 0) {
+        result += " ";
+        inWhitespace = true;
+      }
+    } else if (char === ">") {
+      inTag = false;
+      if (!inWhitespace && result.length > 0) {
+        result += " ";
+        inWhitespace = true;
+      }
+    } else if (!inTag) {
+      if (char <= " ") {
+        if (!inWhitespace && result.length > 0) {
+          result += " ";
+          inWhitespace = true;
+        }
+      } else {
+        result += char;
+        inWhitespace = false;
+      }
+    }
+  }
+  return decode(result.trim());
+}
+
+function extractTitle(html: string): string {
+  const lower = html.toLowerCase();
+  const startTag = lower.indexOf("<title");
+  if (startTag === -1) return "";
+  const endTag = lower.indexOf(">", startTag);
+  if (endTag === -1) return "";
+  const closeTag = lower.indexOf("</title>", endTag);
+  if (closeTag === -1) return "";
+  return stripTags(html.slice(endTag + 1, closeTag));
+}
+
+function extractAnchors(html: string, limit = 150): Array<{ href: string; label: string }> {
+  const anchors: Array<{ href: string; label: string }> = [];
+  const lower = html.toLowerCase();
+  let cursor = 0;
+
+  while (cursor < html.length && anchors.length < limit) {
+    const aStart = lower.indexOf("<a", cursor);
+    if (aStart === -1) break;
+    const nextChar = lower[aStart + 2];
+    if (nextChar && nextChar > " " && nextChar !== "/" && nextChar !== ">") {
+      cursor = aStart + 2;
+      continue;
+    }
+
+    const openTagEnd = lower.indexOf(">", aStart);
+    if (openTagEnd === -1) break;
+
+    const closeTag = lower.indexOf("</a>", openTagEnd);
+    if (closeTag === -1) break;
+
+    const nextA = lower.indexOf("<a", aStart + 2);
+    if (nextA !== -1 && nextA < closeTag) {
+      cursor = nextA;
+      continue;
+    }
+
+    const tagAttrs = html.slice(aStart, openTagEnd);
+    const innerContent = html.slice(openTagEnd + 1, closeTag);
+    cursor = closeTag + 4;
+
+    const hrefMatch = tagAttrs.match(/\bhref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
+    const rawHref = hrefMatch ? (hrefMatch[1] ?? hrefMatch[2] ?? hrefMatch[3] ?? "") : "";
+    if (rawHref) {
+      anchors.push({ href: rawHref, label: stripTags(innerContent) });
+    }
+  }
+
+  return anchors;
 }
 function allowedHost(host: string) {
   return host === "myherupa.com" || host === "www.myherupa.com";
@@ -66,15 +161,13 @@ serve(async req => {
     if (!response || !response.ok) return json({ error: `myHerupa returned HTTP ${response?.status || 502}.` }, 502);
     const finalUrl = requestUrl;
     const html = (await response.text()).slice(0, 1_500_000);
-    const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-    const pageTitle = titleMatch ? stripTags(titleMatch[1]) : source.pathname;
+    const pageTitle = extractTitle(html) || source.pathname;
     const resources: Array<{ title: string; url: string; kind: string }> = [];
     const seen = new Set<string>();
-    const anchorPattern = /<a\b[^>]*href\s*=\s*["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
-    let match: RegExpExecArray | null;
-    while ((match = anchorPattern.exec(html)) !== null && resources.length < 150) {
-      const href = decode(match[1].trim());
-      const label = stripTags(match[2]).slice(0, 240);
+    const anchors = extractAnchors(html, 150);
+    for (const anchor of anchors) {
+      const href = decode(anchor.href.trim());
+      const label = anchor.label.slice(0, 240);
       if (!href || href.startsWith("#") || /^javascript:/i.test(href) || !label) continue;
       let resolved: URL;
       try { resolved = new URL(href, finalUrl); } catch { continue; }
