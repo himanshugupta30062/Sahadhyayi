@@ -107,4 +107,30 @@ describe('Feedback', () => {
       );
     });
   });
+
+  it('trims whitespace from public feedback before saving', async () => {
+    const mockInsert = vi.fn().mockResolvedValue({ error: null });
+    vi.spyOn(supabase, 'from').mockReturnValue({ insert: mockInsert } as any);
+    vi.spyOn(supabase, 'functions', 'get').mockReturnValue({ invoke: vi.fn().mockResolvedValue({ data: { success: true }, error: null }) } as any);
+
+    render(
+      <MemoryRouter initialEntries={['/feedback?type=bug']}>
+        <Feedback />
+      </MemoryRouter>
+    );
+
+    fireEvent.change(screen.getByLabelText(/Name \*/i), { target: { value: '  Alice Reader  ' } });
+    fireEvent.change(screen.getByLabelText(/Email \*/i), { target: { value: ' alice@example.com ' } });
+    fireEvent.change(screen.getByLabelText(/Subject/i), { target: { value: '  Broken pagination  ' } });
+    fireEvent.change(screen.getByLabelText(/Message \*/i), { target: { value: '  Page 2 is not loading.  ' } });
+
+    fireEvent.submit(screen.getByRole('button', { name: /Send Feedback/i }).closest('form')!);
+
+    await waitFor(() => expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({
+      name: 'Alice Reader',
+      email: 'alice@example.com',
+      subject: 'Broken pagination',
+      message: 'Page 2 is not loading.',
+    })));
+  });
 });

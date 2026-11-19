@@ -40,7 +40,11 @@ const Feedback = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.type || !formData.message) {
+    const name = formData.name.trim();
+    const email = formData.email.trim();
+    const subject = formData.subject.trim();
+    const message = formData.message.trim();
+    if (!name || !email || !formData.type || !message) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields.",
@@ -53,11 +57,11 @@ const Feedback = () => {
 
     try {
       const { error } = await supabase.from('feedback').insert({
-        name: formData.name,
-        email: formData.email,
+        name,
+        email,
         type: formData.type,
-        subject: formData.subject,
-        message: formData.message,
+        subject: subject || null,
+        message,
         rating: formData.rating || null
       });
 
@@ -65,20 +69,20 @@ const Feedback = () => {
 
       // Email notification via the deployed edge function
       const emailMessage = [
-        formData.subject ? `Subject: ${formData.subject}` : null,
+        subject ? `Subject: ${subject}` : null,
         `Type: ${formData.type}`,
         '',
-        formData.message,
+        message,
       ].filter(Boolean).join('\n');
 
       let emailSent = false;
       try {
         const { data, error: emailError } = await supabase.functions.invoke('send-contact-email', {
           body: {
-            name: formData.name,
-            email: formData.email,
+            name,
+            email,
             message: emailMessage,
-            subject: `Feedback: ${formData.subject || formData.type}`,
+            subject: `Feedback: ${subject || formData.type}`,
           },
         });
         if (!emailError && data && typeof data === 'object' && data.success) {
@@ -175,6 +179,7 @@ const Feedback = () => {
                     <Input
                       id="feedback-name"
                       type="text"
+                      maxLength={120}
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                       placeholder="Your name"
@@ -188,6 +193,7 @@ const Feedback = () => {
                     <Input
                       id="feedback-email"
                       type="email"
+                      maxLength={320}
                       value={formData.email}
                       onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                       placeholder="your.email@example.com"
@@ -221,6 +227,7 @@ const Feedback = () => {
                   <Input
                     id="feedback-subject"
                     type="text"
+                    maxLength={160}
                     value={formData.subject}
                     onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
                     placeholder="Brief summary of your feedback"
@@ -254,6 +261,7 @@ const Feedback = () => {
                   </label>
                   <Textarea
                     id="feedback-message"
+                    maxLength={3000}
                     value={formData.message}
                     onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
                     placeholder="Please share your detailed feedback..."
