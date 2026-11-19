@@ -4826,6 +4826,158 @@ export type Database = {
           },
         ]
       }
+      science_experiment_attempts: {
+        Row: {
+          created_at: string
+          experiment_id: string
+          id: string
+          observations: string
+          share_public: boolean
+          status: string
+          updated_at: string
+          user_id: string
+          what_learned: string | null
+          worked: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          experiment_id: string
+          id?: string
+          observations: string
+          share_public?: boolean
+          status?: string
+          updated_at?: string
+          user_id: string
+          what_learned?: string | null
+          worked?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          experiment_id?: string
+          id?: string
+          observations?: string
+          share_public?: boolean
+          status?: string
+          updated_at?: string
+          user_id?: string
+          what_learned?: string | null
+          worked?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "science_experiment_attempts_experiment_id_fkey"
+            columns: ["experiment_id"]
+            isOneToOne: false
+            referencedRelation: "science_experiments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      science_experiment_requests: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string | null
+          status: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          status?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          status?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      science_experiments: {
+        Row: {
+          age_guidance: string
+          category: string
+          cleanup_notes: Json
+          created_at: string
+          difficulty: string
+          duration_minutes: number
+          expected_observations: Json
+          id: string
+          image_url: string | null
+          is_published: boolean
+          materials: Json
+          practical_tip: string | null
+          related_science_id: string | null
+          safety_notes: Json
+          science_explanation: string
+          slug: string
+          source_name: string | null
+          source_url: string | null
+          steps: Json
+          summary: string
+          title: string
+          updated_at: string
+          variables_to_test: Json
+        }
+        Insert: {
+          age_guidance: string
+          category: string
+          cleanup_notes?: Json
+          created_at?: string
+          difficulty?: string
+          duration_minutes?: number
+          expected_observations?: Json
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          materials?: Json
+          practical_tip?: string | null
+          related_science_id?: string | null
+          safety_notes?: Json
+          science_explanation: string
+          slug: string
+          source_name?: string | null
+          source_url?: string | null
+          steps?: Json
+          summary: string
+          title: string
+          updated_at?: string
+          variables_to_test?: Json
+        }
+        Update: {
+          age_guidance?: string
+          category?: string
+          cleanup_notes?: Json
+          created_at?: string
+          difficulty?: string
+          duration_minutes?: number
+          expected_observations?: Json
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          materials?: Json
+          practical_tip?: string | null
+          related_science_id?: string | null
+          safety_notes?: Json
+          science_explanation?: string
+          slug?: string
+          source_name?: string | null
+          source_url?: string | null
+          steps?: Json
+          summary?: string
+          title?: string
+          updated_at?: string
+          variables_to_test?: Json
+        }
+        Relationships: []
+      }
       scientist_archives: {
         Row: {
           created_at: string
