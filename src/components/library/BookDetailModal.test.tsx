@@ -139,7 +139,7 @@ describe('BookDetailModal', () => {
     expect(screen.getByText('English')).toBeInTheDocument();
     expect(screen.getByText('ISBN: 9780000000042')).toBeInTheDocument();
     expect(screen.getByText('4.5')).toBeInTheDocument();
-    expect(screen.getAllByTestId('book-genre')).toHaveTextContent('Literary Fiction');
+    expect(screen.getByTestId('book-genre')).toHaveTextContent('Literary Fiction');
     expect(screen.getByText('A practical guide to thoughtful reading.')).toBeInTheDocument();
     expect(screen.getByText('A writer and lifelong reader.')).toBeInTheDocument();
     expect(screen.getByTestId('page-summary')).toHaveAttribute('data-book-id', 'book-42');
@@ -148,7 +148,7 @@ describe('BookDetailModal', () => {
     expect(screen.getByTestId('book-continuation')).toHaveAttribute('data-genre', 'Literary Fiction');
     expect(screen.getByTestId('create-version')).toHaveAttribute('data-book-id', 'book-42');
     expect(screen.getByTestId('audio-summary')).toHaveAttribute('data-book-content', completeBook.description);
-    expect(screen.getAllByTestId('star')).toHaveLength(5);
+    expect(document.querySelectorAll('[data-icon="star"]')).toHaveLength(5);
   });
 
   it('uses a text cover fallback and omits optional metadata when absent', () => {
