@@ -49,7 +49,7 @@ const books = [
 ];
 
 describe('BookSelector', () => {
-  let result: { data: typeof books; error: null | Error };
+  let result: { data: typeof books | null; error: null | Error };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -89,6 +89,30 @@ describe('BookSelector', () => {
     expect(mocks.query.select).toHaveBeenCalledWith('id, title, author, cover_image_url, genre');
     expect(mocks.applyFilter).toHaveBeenCalled();
     expect(mocks.filterPublicBooks).toHaveBeenCalledWith(books);
+  });
+
+  it('includes optional status columns when the database schema supports them', async () => {
+    const capabilities = {
+      hasStatus: true,
+      hasCatalogStatus: true,
+      checked: true,
+    };
+    mocks.detectCapabilities.mockResolvedValue(capabilities);
+    render(<BookSelector onSelect={vi.fn()} onBack={vi.fn()} />);
+
+    expect(await screen.findByText('The Discovery of India')).toBeInTheDocument();
+    expect(mocks.query.select).toHaveBeenCalledWith(
+      'id, title, author, cover_image_url, genre, status, catalog_status',
+    );
+    expect(mocks.applyFilter).toHaveBeenCalledWith(mocks.query, capabilities);
+  });
+
+  it('normalizes a null catalog response to an empty list before public filtering', async () => {
+    result = { data: null, error: null };
+    render(<BookSelector onSelect={vi.fn()} onBack={vi.fn()} />);
+
+    expect(await screen.findByText('No books found')).toBeInTheDocument();
+    expect(mocks.filterPublicBooks).toHaveBeenCalledWith([]);
   });
 
   it('renders fallback author and cover when optional metadata is missing', async () => {
