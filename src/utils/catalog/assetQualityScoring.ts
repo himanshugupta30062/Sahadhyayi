@@ -88,7 +88,19 @@ export function calculateAssetQualityScores(evidence: AssetVerificationEvidence)
   const overall = mean(available);
   const checkedCount = Number(Boolean(evidence.cover?.checked)) + Number(Boolean(evidence.pdf?.checked));
   const failed = (cover === 0 && evidence.cover?.checked) || (pdf === 0 && evidence.pdf?.checked);
-  // A successful HTTP/parse check is not enough: verification also requires\n  // strong cover + PDF identity evidence and an independent metadata match.\n  const meetsVerificationThreshold =\n    cover !== null && cover >= 75 &&\n    pdf !== null && pdf >= 75 &&\n    metadataMatch !== null && metadataMatch >= 75;\n  const status = !checkedCount\n    ? 'pending'\n    : failed\n      ? 'failed'\n      : meetsVerificationThreshold\n        ? 'verified'\n        : 'needs_review';
+  // A successful HTTP/parse check is not enough: verification also requires
+  // strong cover + PDF identity evidence and an independent metadata match.
+  const meetsVerificationThreshold =
+    cover !== null && cover >= 75 &&
+    pdf !== null && pdf >= 75 &&
+    metadataMatch !== null && metadataMatch >= 75;
+  const status: AssetQualityScores['status'] = !checkedCount
+    ? 'pending'
+    : failed
+      ? 'failed'
+      : meetsVerificationThreshold
+        ? 'verified'
+        : 'needs_review';
   return { cover, pdf, metadataMatch, overall, status, evidence };
 }
 

@@ -1,4 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2.112.3";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.112.3";
 import { getBearerToken, hasDeleteConfirmation } from "./validation.ts";
 
 const allowedOrigins = new Set([
