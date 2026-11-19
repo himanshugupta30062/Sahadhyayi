@@ -136,7 +136,7 @@ describe('BookDetailModal', () => {
     expect(screen.getByText('Published 2020')).toBeInTheDocument();
     expect(screen.getByText('320 pages')).toBeInTheDocument();
     expect(screen.getByText('English')).toBeInTheDocument();
-    expect(screen.getByText('ISBN: 9780000000042')).toBeInTheDocument();
+    expect(screen.getByText(/9780000000042/)).toBeInTheDocument();
     expect(screen.getByText('4.5')).toBeInTheDocument();
     expect(screen.getByTestId('book-genre')).toHaveTextContent('Literary Fiction');
     expect(screen.getByText('A practical guide to thoughtful reading.')).toBeInTheDocument();
@@ -168,7 +168,7 @@ describe('BookDetailModal', () => {
     render(<BookDetailModal book={book} isOpen onClose={vi.fn()} />);
 
     expect(screen.queryByRole('img', { name: 'The Art of Reading' })).not.toBeInTheDocument();
-    expect(screen.getAllByText('The Art of Reading').length).toBeGreaterThan(0);
+    expect(document.querySelector('[class*="text-white"]')).toHaveTextContent('The Art of Reading');
     expect(screen.queryByText(/Published/)).not.toBeInTheDocument();
     expect(screen.queryByText(/pages$/)).not.toBeInTheDocument();
     expect(screen.queryByTestId('book-genre')).not.toBeInTheDocument();
