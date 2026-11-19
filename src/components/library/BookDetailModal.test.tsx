@@ -201,7 +201,7 @@ describe('BookDetailModal', () => {
     const onClose = vi.fn();
     render(<BookDetailModal book={completeBook} isOpen onClose={onClose} />);
 
-    fireEvent.click(screen.getByTitle('Learn more about the author'));
+    fireEvent.click(screen.getAllByTitle('Learn more about the author')[0]);
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(mocks.navigate).toHaveBeenCalledWith('/authors', {
       state: { searchAuthor: 'A. Reader' },
