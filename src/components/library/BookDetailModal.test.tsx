@@ -10,20 +10,19 @@ const mocks = vi.hoisted(() => ({
   isPending: false,
 }));
 
-const Icon = ({ name }: { name: string }) => <span data-icon={name} aria-hidden="true" />;
 
 vi.mock('lucide-react', () => ({
-  Star: () => <Icon name="star" />,
-  BookOpen: () => <Icon name="book-open" />,
-  Calendar: () => <Icon name="calendar" />,
-  Globe: () => <Icon name="globe" />,
-  Info: () => <Icon name="info" />,
-  Download: () => <Icon name="download" />,
-  Plus: () => <Icon name="plus" />,
+  Star: () => <span data-icon="star" aria-hidden="true" />,
+  BookOpen: () => <span data-icon="book-open" aria-hidden="true" />,
+  Calendar: () => <span data-icon="calendar" aria-hidden="true" />,
+  Globe: () => <span data-icon="globe" aria-hidden="true" />,
+  Info: () => <span data-icon="info" aria-hidden="true" />,
+  Download: () => <span data-icon="download" aria-hidden="true" />,
+  Plus: () => <span data-icon="plus" aria-hidden="true" />,
 }));
 
 vi.mock('react-router-dom', () => ({
-  Link: ({ to, children }: { to: string; children: React.ReactNode }) => <a href={to}>{children}</a>,
+  Link: ({ to, children }: { to: string; children: any }) => <a href={to}>{children}</a>,
   useNavigate: () => mocks.navigate,
 }));
 
