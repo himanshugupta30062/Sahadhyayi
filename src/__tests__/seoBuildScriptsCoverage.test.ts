@@ -121,6 +121,7 @@ describe('SEO build-script coverage', () => {
     expect(sitemap).not.toContain('/articles/../unsafe');
     expect(sitemap).not.toContain('/book/../unsafe');
     expect(sitemap).toContain('sahadhyayi-logo-digital-reading.png');
+    expect(sitemap).toContain('<image:loc>https://images.example/cover.jpg</image:loc>');
     expect(sitemap).toContain('<urlset');
     expect(mocks.writeFileSync).toHaveBeenCalled();
   });
