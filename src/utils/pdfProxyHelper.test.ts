@@ -18,8 +18,11 @@ describe('pdfProxyHelper', () => {
       expect(isWhitelistedProxyHost('https://hariomgroup.org.attacker.test/book.pdf')).toBe(false);
     });
 
-    it('accepts educational domains but rejects lookalike suffixes', () => {
+    it('accepts educational domains but rejects lookalike suffixes and arbitrary unlisted edu domains', () => {
       expect(isWhitelistedProxyHost('https://library.example.edu/book.pdf')).toBe(true);
+      expect(isWhitelistedProxyHost('https://library.harvard.edu/manuscript.pdf')).toBe(true);
+      expect(isWhitelistedProxyHost('https://open.umn.edu/textbooks/cs.pdf')).toBe(true);
+      expect(isWhitelistedProxyHost('https://arbitrary-untrusted-school.edu/evil.pdf')).toBe(false);
       expect(isWhitelistedProxyHost('https://archive.org.attacker.test/book.pdf')).toBe(false);
       expect(isWhitelistedProxyHost('https://gutenberg.org.attacker.test/book.pdf')).toBe(false);
       expect(isWhitelistedProxyHost('https://notgoogle.com/book.pdf')).toBe(false);

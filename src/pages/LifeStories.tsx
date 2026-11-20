@@ -190,7 +190,7 @@ const LifeStories = () => {
         );
       return matchesCategory && matchesSearch;
     });
-  }, [search, activeCategory, savedSlugs]);
+  }, [stories, search, activeCategory, savedSlugs]);
 
   const filteredCommunityStories = useMemo(() => {
     const term = search.trim().toLowerCase();

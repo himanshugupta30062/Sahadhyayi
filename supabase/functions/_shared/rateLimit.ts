@@ -24,16 +24,20 @@ export interface RateLimitResult {
 
 /**
  * Validates rate limit against public.check_rate_limit RPC.
- * Fails closed when the rate-limit service is unavailable. This prevents
- * infrastructure errors from silently disabling abuse controls.
+ * By default, fails open on RPC infrastructure errors to prevent transient database
+ * glitches from blocking legitimate content delivery (such as PDF streaming).
+ * Sensitive mutation endpoints may set options.failClosed = true to fail closed.
  */
 export async function checkRateLimit(
   supabaseClient: any,
   identifier: string,
   endpoint: string,
   maxRequests: number,
-  windowMinutes: number
+  windowMinutes: number,
+  options: { failClosed?: boolean } = {}
 ): Promise<RateLimitResult> {
+  const failClosed = options.failClosed ?? false;
+
   if (!identifier || !endpoint) {
     console.error('[rate-limit] Missing identifier or endpoint; denying request');
     return { allowed: false, status: 503, message: 'Rate-limit service unavailable. Please retry shortly.' };
@@ -49,7 +53,10 @@ export async function checkRateLimit(
 
     if (error || typeof allowed !== 'boolean') {
       console.warn(`[rate-limit] RPC error for endpoint ${endpoint}:`, error?.message || 'unknown error');
-      return { allowed: false, status: 503, message: 'Rate-limit service unavailable. Please retry shortly.' };
+      if (failClosed) {
+        return { allowed: false, status: 503, message: 'Rate-limit service unavailable. Please retry shortly.' };
+      }
+      return { allowed: true, status: 200 };
     }
 
     if (!allowed) {
@@ -63,7 +70,10 @@ export async function checkRateLimit(
     return { allowed: true, status: 200 };
   } catch (err) {
     console.warn(`[rate-limit] Exception checking rate limit for ${endpoint}:`, err);
-    return { allowed: false, status: 503, message: 'Rate-limit service unavailable. Please retry shortly.' };
+    if (failClosed) {
+      return { allowed: false, status: 503, message: 'Rate-limit service unavailable. Please retry shortly.' };
+    }
+    return { allowed: true, status: 200 };
   }
 }
 
