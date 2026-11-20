@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { HTMLAttributes } from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import CatalogueSelector, { type CatalogueBook, type CatalogueSelectorProps } from './CatalogueSelector';
@@ -31,7 +32,7 @@ vi.mock('@/hooks/use-toast', () => ({
 }));
 
 vi.mock('@/components/ui/scroll-area', () => ({
-  ScrollArea: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  ScrollArea: ({ children, ...props }: HTMLAttributes<HTMLDivElement>) => (
     <div {...props}>{children}</div>
   ),
 }));
@@ -287,7 +288,7 @@ describe('CatalogueSelector', () => {
     fireEvent.click(screen.getByRole('option', { name: /Book B/ }));
 
     expect(onSelectionChange).toHaveBeenLastCalledWith(['book-a', 'book-b']);
-    expect(screen.getByRole('textbox', { name: 'Catalogue Book' })).toHaveAttribute('value', '');
+    expect(screen.getByRole('textbox', { name: 'Catalogue Book' })).toHaveValue('');
     expect(screen.getByRole('textbox', { name: 'Catalogue Book' })).toBeEnabled();
     expect(containerHiddenValue()).toBe('book-a,book-b');
 
