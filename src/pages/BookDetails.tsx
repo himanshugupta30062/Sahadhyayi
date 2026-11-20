@@ -226,9 +226,9 @@ const BookDetails = () => {
   const userRating = ratingData?.userRating ?? 0;
   const canonicalUrl = `https://sahadhyayi.com/book/${id}`;
   
-  const seoTitle = `${book.title}${book.author ? ` by ${book.author}` : ''} - Read Online`;
+  const seoTitle = `${book.title}${book.author ? ` by ${book.author}` : ''} — Book Details & Reading Options | Sahadhyayi`;
   const seoDescription = toSeoDescription(
-    book.description || `Read ${book.title}${book.author ? ` by ${book.author}` : ''} online. Join Sahadhyayi's reading community for discussions and insights.`,
+    book.description || `Explore ${book.title}${book.author ? ` by ${book.author}` : ''}: book details, publication information, and the reading options currently available on Sahadhyayi.`,
   );
   
   const keywords = [
@@ -238,8 +238,8 @@ const BookDetails = () => {
     book.title,
     book.author,
     book.genre,
-    'reading community',
-    'book discussion',
+    'book details',
+    'book reading options',
     'sahadhyayi'
   ].filter(Boolean);
 
