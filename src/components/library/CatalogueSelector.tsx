@@ -188,7 +188,7 @@ export function CatalogueSelector({
   showISBN = true,
   showPDFAvailability = true,
   onlyMissingPDF = false,
-  selectedIds = [],
+  selectedIds: selectedIdsProp,
   onSelectionChange,
   searchPlaceholder = 'Search title, author, ISBN, or book ID…',
   maxHeight = '400px',
@@ -201,6 +201,7 @@ export function CatalogueSelector({
   includeArchived = false,
   highlightedId,
 }: CatalogueSelectorProps) {
+  const selectedIds = selectedIdsProp ?? [];
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
@@ -216,7 +217,10 @@ export function CatalogueSelector({
 
   // Sync selectedIds prop with internal state
   useEffect(() => {
-    const nextSelectedSet = new Set(selectedIds);
+    // `selectedIds` is an initial selection unless the parent explicitly supplies it.
+    // Do not reset user selections to [] on every render when the prop is omitted.
+    if (selectedIdsProp === undefined) return;
+    const nextSelectedSet = new Set(selectedIdsProp);
     setSelectedSet((current) => {
       // Parent callers may provide a fresh array on every render. Avoid
       // scheduling another render when the selected IDs have not changed.
@@ -228,7 +232,7 @@ export function CatalogueSelector({
       }
       return nextSelectedSet;
     });
-  }, [selectedIds]);
+  }, [selectedIdsProp]);
 
   // Debounce search query
   useEffect(() => {
