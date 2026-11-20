@@ -90,6 +90,7 @@ const BrainMatrixPractice = lazy(() => import('./pages/BrainMatrixPractice'));
 const PublishBook = lazy(() => import('./pages/PublishBook'));
 const MyPublications = lazy(() => import('./pages/MyPublications'));
 const Articles = lazy(() => import('./pages/Articles'));
+const FromPageToScreen = lazy(() => import('./pages/FromPageToScreen'));
 const Newsroom = lazy(() => import('./pages/Newsroom'));
 const AdminNews = lazy(() => import('./pages/AdminNews'));
 const AdminGrowthIntelligence = lazy(() => import('./pages/AdminGrowthIntelligence'));
@@ -692,6 +693,10 @@ const App = memo(() => {
                         <Route path="/news" element={<Suspense fallback={<LoadingFallback message="Loading newsroom..." />}><Newsroom /></Suspense>} />
                         <Route path="/news/:slug" element={<Suspense fallback={<LoadingFallback message="Loading news story..." />}><Newsroom /></Suspense>} />
 
+                        <Route
+                          path="/from-page-to-screen"
+                          element={<Suspense fallback={<LoadingFallback message="Opening From Page to Screen..." />}><FromPageToScreen /></Suspense>}
+                        />
                         <Route
                           path="/articles"
                           element={
