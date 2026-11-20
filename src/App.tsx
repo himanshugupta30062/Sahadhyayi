@@ -91,6 +91,8 @@ const PublishBook = lazy(() => import('./pages/PublishBook'));
 const MyPublications = lazy(() => import('./pages/MyPublications'));
 const Articles = lazy(() => import('./pages/Articles'));
 const FromPageToScreen = lazy(() => import('./pages/FromPageToScreen'));
+const AdaptationDetail = lazy(() => import('./pages/AdaptationDetail'));
+const AdminFromPageToScreen = lazy(() => import('./pages/AdminFromPageToScreen'));
 const Newsroom = lazy(() => import('./pages/Newsroom'));
 const AdminNews = lazy(() => import('./pages/AdminNews'));
 const AdminGrowthIntelligence = lazy(() => import('./pages/AdminGrowthIntelligence'));
@@ -696,6 +698,14 @@ const App = memo(() => {
                         <Route
                           path="/from-page-to-screen"
                           element={<Suspense fallback={<LoadingFallback message="Opening From Page to Screen..." />}><FromPageToScreen /></Suspense>}
+                        />
+                        <Route
+                          path="/from-page-to-screen/:id"
+                          element={<Suspense fallback={<LoadingFallback message="Loading adaptation..." />}><AdaptationDetail /></Suspense>}
+                        />
+                        <Route
+                          path="/admin/from-page-to-screen"
+                          element={<AdminRoute><Suspense fallback={<LoadingFallback message="Loading adaptation manager..." />}><AdminFromPageToScreen /></Suspense></AdminRoute>}
                         />
                         <Route
                           path="/articles"
