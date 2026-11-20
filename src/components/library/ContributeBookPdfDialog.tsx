@@ -48,7 +48,7 @@ const statusLabel: Record<string, string> = {
   extracting: 'Reading book details',
   matching: 'Matching catalogue records',
   needs_review: 'Needs human review',
-  approved: 'Added to Library',
+  approved: 'Approved · publication incomplete',
   rejected: 'Not approved',
   failed: 'Processing failed',
 };
@@ -140,9 +140,9 @@ function ContributeBookPdfDialogContent() {
   };
 
   const handleSelectExistingBook = (book: CatalogueBook) => {
-    setSelectedBook(book);
     setShowExistingMatch(false);
     if (book.pdf_url) {
+      setSelectedBook(null);
       toast({ title: 'This book already has a PDF', description: 'Choose a different catalogue entry or submit this edition as a new book for review.', variant: 'destructive' });
       return;
     }
@@ -495,6 +495,17 @@ function ContributeBookPdfDialogContent() {
                   <Input id="contribute-author-upload" value={author} maxLength={500} onChange={(e) => setAuthor(e.target.value)} placeholder="Author name" disabled={busy || !!selectedBook} />
                   {selectedBook && <p className="text-xs text-muted-foreground">Author will be taken from the selected catalogue book.</p>}
                 </div>
+
+                <label className="flex items-start gap-3 rounded-lg border p-3 text-sm leading-relaxed">
+                  <input
+                    type="checkbox"
+                    checked={rightsAttested}
+                    onChange={(event) => setRightsAttested(event.target.checked)}
+                    disabled={busy}
+                    className="mt-1 h-4 w-4 shrink-0 accent-primary"
+                  />
+                  <span>I confirm that I have the right to share this PDF, or that it is in the public domain or available under an open licence. I understand that an administrator will preview it before any Library publication.</span>
+                </label>
 
                 <label className="flex items-start gap-3 rounded-lg border p-3 text-sm leading-relaxed">
                   <input
