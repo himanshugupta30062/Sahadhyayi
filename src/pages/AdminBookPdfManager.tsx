@@ -344,7 +344,7 @@ export default function AdminBookPdfManager() {
             </div>
             <div className="rounded-xl border p-4 text-sm">
               <p className="font-medium">Admin actions temporarily restricted</p>
-              <p className="mt-1 text-muted-foreground">Replacement, deletion, and malware rescan are hidden here until their audited database operations are available. Existing PDF links and audit history remain viewable.</p>
+              <p className="mt-1 text-muted-foreground">Replacement and deletion are hidden here until their audited database operations are available. Existing PDF links and audit history remain viewable.</p>
             </div>
           </div>
         </section>
