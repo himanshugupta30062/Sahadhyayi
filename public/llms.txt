@@ -1,37 +1,27 @@
 # Sahadhyayi
 
-> Sahadhyayi (Sanskrit for "fellow reader") is a digital reading community and online book library. Readers discover books, track reading progress, join reading groups, write articles, and connect with fellow book lovers worldwide.
+> Sahadhyayi is an online reading and discovery platform for books, authors, stories, articles, research and reader connections.
 
-## Pages
+Sahadhyayi helps readers discover books, explore author profiles, read published articles, learn from research and biographies, and connect with other readers through reading groups.
 
-- [Home](/): Overview of the Sahadhyayi reading community and features.
-- [About](/about): Mission, values, and the meaning of Sahadhyayi.
-- [Library](/library): Browse thousands of books in the digital library.
-- [Authors](/authors): Verified authors directory with profiles and works.
-- [Articles](/articles): Community-written articles, essays, and reading insights.
-- [Blog](/blog): Editorial blog covering reading culture and book recommendations.
-- [Reading Groups](/groups): Book-specific discussion groups and clubs.
-- [Reader Map](/map): Discover readers and reading groups near you.
-- [Games](/games): Book quizzes, badges, and leaderboards.
-- [Discovery](/discovery): Personalized book and reader discovery feed.
-- [Social](/social): Social feed, friends, and groups for readers.
+## Main public sections
 
-## Articles & Authors (dynamic)
+- [Home](https://sahadhyayi.com/): Overview of Sahadhyayi and its reading and discovery features.
+- [Library](https://sahadhyayi.com/library): Discover books across genres and languages.
+- [Authors](https://sahadhyayi.com/authors): Explore author profiles and their books.
+- [Articles](https://sahadhyayi.com/articles): Read published articles and literary ideas.
+- [Research papers](https://sahadhyayi.com/research-papers): Explore academic research and subject areas.
+- [Scientists](https://sahadhyayi.com/scientists): Read profiles of scientists and their discoveries.
+- [Life stories](https://sahadhyayi.com/life-stories): Explore biographies and remarkable life journeys.
+- [Reading groups](https://sahadhyayi.com/groups): Find reading groups and discuss books.
+- [Blog](https://sahadhyayi.com/blog): Reading guides, book recommendations and literary topics.
+- [About](https://sahadhyayi.com/about): Learn about the platform.
 
-- [Article example](/articles/sahadhyayi-is-a-book-readers-social-media): Example community article.
-- [Author profile example](/author/rabindranath-tagore): Example author profile page.
-- [Book detail example](/book/): Individual book detail pages live under /book/:id.
+## Content guidance
 
-## Legal & Help
+Prefer individual public book, author, article, research-topic and profile pages as the primary sources for their respective subjects. Use each page's canonical URL. Content that requires an account, is private, or is not publicly published should not be treated as public source material.
 
-- [Help Center](/help-center): Help articles and FAQs.
-- [Community Guidelines](/community-guidelines): Posting and conduct rules.
-- [Privacy Policy](/privacy-policy): How we handle user data.
-- [Terms of Service](/terms-of-service): Terms governing use of the platform.
-- [Cookie Policy](/cookie-policy): Cookie usage and consent details.
-- [Feedback](/feedback): Submit feedback or contact the team.
+## Discovery
 
-## Optional
-
-- [Publish a Book](/publish): Submit your own book to the library (auth required).
-- [Write an Article](/articles/write): Compose and publish an article (auth required).
+- XML sitemap: https://sahadhyayi.com/sitemap.xml
+- Robots policy: https://sahadhyayi.com/robots.txt
