@@ -173,13 +173,22 @@ describe('Book Creator Studio - Phase 1 Full Implementation', () => {
     });
 
     it('renders book recommendation format', () => {
+      const recSlide: SlideData = {
+        ...sampleSlide,
+        recommendedBooks: [
+          { title: 'Go Set a Watchman', author: 'Harper Lee' },
+          { title: 'In Cold Blood', author: 'Truman Capote' },
+        ],
+      };
       const recState: CreatorPostState = {
         ...sampleState,
         postType: 'recommendation',
+        slides: [recSlide],
       };
-      render(<StudioCanvas state={recState} activeSlide={sampleSlide} />);
+      render(<StudioCanvas state={recState} activeSlide={recSlide} />);
       expect(screen.getByText(/If you loved "To Kill a Mockingbird"/)).toBeInTheDocument();
-      expect(screen.getByText(/The Secret History/)).toBeInTheDocument();
+      expect(screen.getByText(/Go Set a Watchman/)).toBeInTheDocument();
+      expect(screen.getByText(/In Cold Blood/)).toBeInTheDocument();
     });
 
     it('renders book versus format', () => {

@@ -54,6 +54,12 @@ import {
   generateGroundedCaption,
   generateSmartHashtags,
 } from '@/utils/creatorCaptionHelper';
+import {
+  saveAutoDraft,
+  loadAutoDraft,
+  clearAutoDraft,
+} from '@/utils/creatorDraftStorage';
+import { generateContextualAiCaption } from '@/utils/creatorAiHelper';
 
 const INITIAL_SLIDE: SlideData = {
   id: 'slide-1',
@@ -198,7 +204,43 @@ export const BookCreatorStudio: React.FC = () => {
   const [exportStatusText, setExportStatusText] = useState('');
   const [copiedCaption, setCopiedCaption] = useState(false);
   const [copiedImage, setCopiedImage] = useState(false);
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
+  const [autoSavedTime, setAutoSavedTime] = useState<string | null>(null);
+  const [hasPendingDraft, setHasPendingDraft] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
+
+  // Check for existing auto-draft on mount if not opened with specific book / post params
+  useEffect(() => {
+    if (!urlBookId && !searchParams.get('type') && !searchParams.get('quote')) {
+      const existing = loadAutoDraft();
+      if (existing?.state && existing.state.slides?.length > 0) {
+        setHasPendingDraft(true);
+      }
+    }
+  }, [urlBookId, searchParams]);
+
+  // Debounced auto-save draft to localStorage
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      saveAutoDraft(state);
+      setAutoSavedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [state]);
+
+  const handleRestoreDraft = () => {
+    const existing = loadAutoDraft();
+    if (existing?.state) {
+      setState(existing.state);
+      setHasPendingDraft(false);
+      toast.success('Restored your previous draft!');
+    }
+  };
+
+  const handleDiscardPendingDraft = () => {
+    clearAutoDraft();
+    setHasPendingDraft(false);
+  };
 
   // Sync initial book data if fetched via URL
   useEffect(() => {
@@ -273,21 +315,32 @@ export const BookCreatorStudio: React.FC = () => {
     });
   };
 
-  const handleRegenerateCaption = (tone: CaptionTone) => {
-    const freshCaption = generateGroundedCaption({
-      postType: state.postType,
-      tone,
-      slide: activeSlide,
-      brandHandle: state.brandWatermarkText,
-    });
-    const freshHashtags = generateSmartHashtags(activeSlide);
-    setState((prev) => ({
-      ...prev,
-      captionTone: tone,
-      caption: freshCaption,
-      hashtags: freshHashtags,
-    }));
-    toast.success(`Generated ${tone} caption`);
+  const handleRegenerateCaption = async (tone: CaptionTone) => {
+    setIsAiGenerating(true);
+    try {
+      const res = await generateContextualAiCaption({
+        postType: state.postType,
+        tone,
+        slide: activeSlide,
+        brandHandle: state.brandWatermarkText,
+      });
+      const freshHashtags = generateSmartHashtags(activeSlide);
+      setState((prev) => ({
+        ...prev,
+        captionTone: tone,
+        caption: res.caption,
+        hashtags: freshHashtags,
+      }));
+      if (res.isAiGenerated) {
+        toast.success('Generated contextual AI caption with Gemini!');
+      } else {
+        toast.success(`Generated ${tone} caption`);
+      }
+    } catch {
+      toast.error('Could not generate caption');
+    } finally {
+      setIsAiGenerating(false);
+    }
   };
 
   const handleAddSlide = () => {
@@ -458,6 +511,12 @@ export const BookCreatorStudio: React.FC = () => {
                 <span className="text-[10px] font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/20">
                   Creator Space
                 </span>
+                {autoSavedTime && (
+                  <span className="text-[10px] text-muted-foreground hidden md:inline-flex items-center gap-1 opacity-75">
+                    <Check className="w-3 h-3 text-emerald-500" />
+                    Auto-saved
+                  </span>
+                )}
               </div>
               <p className="text-[11px] text-muted-foreground hidden sm:block">
                 Your reading journey. Your creative space.
@@ -507,6 +566,36 @@ export const BookCreatorStudio: React.FC = () => {
           </div>
         </div>
       </header>
+
+      {/* Unsaved Draft Recovery Banner */}
+      {hasPendingDraft && (
+        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2">
+          <div className="max-w-7xl mx-auto text-xs flex flex-wrap items-center justify-between gap-2">
+            <span className="flex items-center gap-1.5 text-amber-800 dark:text-amber-200">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              You have an auto-saved draft from a previous session.
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs border-amber-500/40 text-amber-800 dark:text-amber-200"
+                onClick={handleRestoreDraft}
+              >
+                Resume Draft
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs text-muted-foreground"
+                onClick={handleDiscardPendingDraft}
+              >
+                Dismiss
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Studio Body */}
       <main className="max-w-7xl mx-auto px-4 sm:px-8 pt-6">
