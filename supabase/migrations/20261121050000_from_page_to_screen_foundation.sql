@@ -65,7 +65,7 @@ create policy "Published book movie adaptations are publicly readable"
     status = 'published'
     and exists (
       select 1 from public.adaptation_movies movie
-      where movie.id = movie_id and movie.status = 'published'
+      where movie.id = book_movie_adaptations.movie_id and movie.status = 'published'
     )
   );
 
