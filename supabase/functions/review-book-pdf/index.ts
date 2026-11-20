@@ -459,7 +459,6 @@ serve(async (req) => {
     const { error: submissionUpdateError } = await admin.from("book_pdf_submissions").update({
       published_book_id: targetBookId,
       status: "approved",
-      published_at: new Date().toISOString(),
       rights_basis: null,
       rights_evidence_url: null,
       reviewed_by: authData.user.id,
