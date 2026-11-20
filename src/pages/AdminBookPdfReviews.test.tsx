@@ -183,4 +183,78 @@ describe('AdminBookPdfReviews', () => {
       variant: 'destructive',
     })));
   });
+
+  it('filters submissions by search query and status', () => {
+    mocks.submissions = [
+      submission({ id: 'sub-1', submitted_title: 'Alice in Wonderland', status: 'uploaded' }),
+      submission({ id: 'sub-2', submitted_title: 'Frankenstein', status: 'rejected' }),
+      submission({ id: 'sub-3', submitted_title: 'Moby Dick', status: 'approved', published_book_id: 'book-moby' }),
+    ];
+    renderPage();
+
+    // Default shows all
+    expect(screen.getAllByText('Alice in Wonderland').length).toBeGreaterThan(0);
+    expect(screen.getByText('Frankenstein')).toBeInTheDocument();
+    expect(screen.getByText('Moby Dick')).toBeInTheDocument();
+
+    // Search filter
+    const searchInput = screen.getByPlaceholderText(/Search by title, author, user ID or filename/i);
+    fireEvent.change(searchInput, { target: { value: 'Frank' } });
+    expect(screen.getAllByText('Frankenstein').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Alice in Wonderland')).not.toBeInTheDocument();
+
+    // Clear search and test status filter button
+    fireEvent.change(searchInput, { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Rejected' }));
+    expect(screen.getAllByText('Frankenstein').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Alice in Wonderland')).not.toBeInTheDocument();
+  });
+
+  it('runs queue health audit and reconciliation', async () => {
+    mocks.invoke.mockImplementation((fn: string, options: any) => {
+      if (options?.body?.action === 'audit_queue') {
+        return Promise.resolve({
+          data: {
+            success: true,
+            totalAudited: 1,
+            issues: [
+              {
+                submissionId: 'sub-1',
+                title: 'Alice in Wonderland',
+                type: 'unlinked_published',
+                message: 'Submission approved but missing pdf_url',
+                autoFixable: true,
+              },
+            ],
+          },
+          error: null,
+        });
+      }
+      if (options?.body?.action === 'reconcile_queue') {
+        return Promise.resolve({
+          data: { success: true, fixedCount: 1 },
+          error: null,
+        });
+      }
+      return Promise.resolve({ data: { success: true }, error: null });
+    });
+
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: /Queue Health & Audit/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Queue Health & Reconciliation Report/i)).toBeInTheDocument();
+      expect(screen.getByText(/Submission approved but missing pdf_url/i)).toBeInTheDocument();
+    });
+
+    const reconcileBtn = screen.getByRole('button', { name: /Run Safe Reconciliation/i });
+    fireEvent.click(reconcileBtn);
+
+    await waitFor(() => {
+      expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
+        title: 'Reconciliation complete',
+        description: 'Successfully resolved 1 discrepancy records.',
+      }));
+    });
+  });
 });
