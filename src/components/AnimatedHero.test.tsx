@@ -20,6 +20,8 @@ describe('AnimatedHero', () => {
 
     // Check for hero content elements
     expect(screen.getByText(/A Reading Community/i)).toBeInTheDocument();
-    expect(screen.getByText(/reading journey/i)).toBeInTheDocument();
+    expect(screen.getByText('Reading')).toBeInTheDocument();
+    expect(screen.getByText('Journey.')).toBeInTheDocument();
+    expect(screen.getByText('Sahadhyayi')).toBeInTheDocument();
   });
 });

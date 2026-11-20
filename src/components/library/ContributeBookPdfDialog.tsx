@@ -146,6 +146,7 @@ function ContributeBookPdfDialogContent() {
       toast({ title: 'This book already has a PDF', description: 'Choose a different catalogue entry or submit this edition as a new book for review.', variant: 'destructive' });
       return;
     }
+    setSelectedBook(book);
     setStep('confirm');
   };
 
