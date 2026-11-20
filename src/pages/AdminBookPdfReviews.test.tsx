@@ -68,7 +68,7 @@ describe('AdminBookPdfReviews', () => {
     mocks.queueLoading = false;
     mocks.queueError = null;
     mocks.queryOptions = [];
-    mocks.invoke.mockReset().mockResolvedValue({ data: { success: true, status: 'approved', targetBookId: 'book-1' }, error: null });
+    mocks.invoke.mockReset().mockResolvedValue({ data: { success: true, status: 'approved', targetBookId: 'book-1', pdfUrl: 'https://storage.example/book.pdf' }, error: null });
     mocks.invalidateQueries.mockClear();
     mocks.toast.mockReset();
     mocks.from.mockReset();
@@ -106,6 +106,36 @@ describe('AdminBookPdfReviews', () => {
     if (queueQuery) await expect(queueQuery.queryFn()).resolves.toEqual(mocks.submissions);
     expect(mocks.from).toHaveBeenCalledWith('book_pdf_submissions');
     expect(mocks.limit).toHaveBeenCalledWith(200);
+  });
+
+  it('keeps approved-but-unpublished submissions in Pending and offers a publication retry', () => {
+    mocks.submissions = [submission({ status: 'approved', published_book_id: null })];
+    renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Pending', exact: true }));
+    expect(screen.getByText('approved · publication incomplete')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Retry Library publication/i })).toBeDisabled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Published', exact: true }));
+    expect(screen.getByText('No matching submissions')).toBeInTheDocument();
+  });
+
+  it('does not report approval as published unless the server returns a book ID and PDF URL', async () => {
+    vi.spyOn(window, 'open').mockImplementation(() => ({} as Window));
+    mocks.invoke
+      .mockResolvedValueOnce({ data: { url: 'https://signed.example/preview' }, error: null })
+      .mockResolvedValueOnce({ data: { success: true, status: 'approved' }, error: null });
+    renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: /View PDF/i }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /Approve & Add to Library/i })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: /Approve & Add to Library/i }));
+
+    await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Action failed',
+      description: expect.stringMatching(/publication could not be confirmed/i),
+      variant: 'destructive',
+    })));
   });
 
   it('requires a private preview before enabling approval', async () => {

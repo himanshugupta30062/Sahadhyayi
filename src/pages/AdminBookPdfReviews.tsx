@@ -75,7 +75,13 @@ const statusVariant = (status: string) => status === 'rejected' || status === 'f
   ? 'destructive' as const
   : status === 'approved' ? 'default' as const : 'secondary' as const;
 
-const PENDING_STATUSES = ['uploaded', 'queued', 'scanning', 'extracting', 'matching', 'needs_review', 'failed'];
+const PENDING_STATUSES = ['uploaded', 'queued', 'scanning', 'extracting', 'matching', 'needs_review', 'failed', 'approved'];
+
+const getSubmissionStatusLabel = (item: Submission) => item.published_book_id
+  ? 'published'
+  : item.status === 'approved'
+    ? 'approved · publication incomplete'
+    : item.status.replace(/_/g, ' ');
 
 function formatFileSize(bytes: number | null): string {
   if (!bytes) return 'Size unavailable';
@@ -125,7 +131,7 @@ export default function AdminBookPdfReviews() {
   const filteredSubmissions = useMemo(() => {
     return submissions.filter((item) => {
       if (statusFilter === 'pending' && (item.published_book_id || !PENDING_STATUSES.includes(item.status))) return false;
-      if (statusFilter === 'published' && !item.published_book_id && item.status !== 'approved') return false;
+      if (statusFilter === 'published' && !item.published_book_id) return false;
       if (statusFilter === 'rejected' && item.status !== 'rejected') return false;
 
       if (searchQuery.trim()) {
@@ -217,6 +223,9 @@ export default function AdminBookPdfReviews() {
         toast({ title: 'Private PDF preview opened', description: 'Inspect the document before approving it. The link expires in three minutes.' });
       } else {
         if (data?.success !== true) throw new Error(data?.error || 'The server did not confirm the action.');
+        if (action === 'approve' && (!data?.targetBookId || !data?.pdfUrl)) {
+          throw new Error('The reviewer approved this submission, but Library publication could not be confirmed. Refresh the queue and retry publication.');
+        }
         toast({
           title: action === 'approve' ? 'Added to Library' : 'Submission rejected',
           description: action === 'approve'
@@ -383,7 +392,7 @@ export default function AdminBookPdfReviews() {
                     >
                       <div className="flex items-start justify-between gap-2">
                         <span className="line-clamp-2 min-w-0 truncate font-medium">{item.submitted_title || item.original_filename}</span>
-                        <Badge variant={statusVariant(item.status)}>{item.published_book_id ? 'published' : item.status.replace(/_/g, ' ')}</Badge>
+                        <Badge variant={statusVariant(item.status)}>{getSubmissionStatusLabel(item)}</Badge>
                       </div>
                       <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><FileText className="h-3 w-3" /> {item.original_filename} · {item.submitted_author || 'Author not supplied'}</p>
                       <p className="mt-1 text-xs text-muted-foreground">{formatFileSize(item.file_size_bytes)} · {new Date(item.created_at).toLocaleDateString()}</p>
@@ -400,7 +409,7 @@ export default function AdminBookPdfReviews() {
                     <h2 className="text-xl font-semibold">{selected.submitted_title || selected.original_filename}</h2>
                     <p className="text-sm text-muted-foreground">{selected.submitted_author || 'Unknown author'} · {formatFileSize(selected.file_size_bytes)}</p>
                   </div>
-                  <Badge variant={statusVariant(selected.status)}>{selected.published_book_id ? 'published' : selected.status.replace(/_/g, ' ')}</Badge>
+                  <Badge variant={statusVariant(selected.status)}>{getSubmissionStatusLabel(selected)}</Badge>
                 </div>
 
                 {/* Contributor and Attestation Details */}
@@ -529,13 +538,16 @@ export default function AdminBookPdfReviews() {
                   </div>
                 ) : selected.status !== 'rejected' ? (
                   <div className="space-y-3 border-t pt-4">
-                    <h3 className="font-semibold">Admin decision</h3>
+                    <h3 className="font-semibold">{selected.status === 'approved' ? 'Publication needs attention' : 'Admin decision'}</h3>
+                    {selected.status === 'approved' && (
+                      <p className="text-sm text-amber-700 dark:text-amber-400">This submission was approved but has no published Library book linked yet. Retry publication after confirming the private PDF and scanner are available.</p>
+                    )}
                     <Label htmlFor="pdf-review-reason">Rejection reason (required only when rejecting)</Label>
                     <Textarea id="pdf-review-reason" value={reason} onChange={(event) => setReason(event.target.value)} maxLength={2000} placeholder="Optional note for the contributor; required when rejecting." />
                     <div className="flex flex-wrap gap-2">
                       <Button onClick={() => void invokeReview('approve')} disabled={Boolean(busyAction) || previewedId !== selected.id}>
                         {busyAction === 'approve' ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
-                        Approve & Add to Library
+                        {selected.status === 'approved' ? 'Retry Library publication' : 'Approve & Add to Library'}
                       </Button>
                       <Button variant="destructive" onClick={() => void invokeReview('reject')} disabled={Boolean(busyAction) || !reason.trim()}>
                         <XCircle className="mr-2 h-4 w-4" /> Reject

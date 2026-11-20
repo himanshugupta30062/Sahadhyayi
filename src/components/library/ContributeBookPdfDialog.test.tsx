@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
   limit: vi.fn(),
   upload: vi.fn(),
   download: vi.fn(),
+  invoke: vi.fn(),
   invalidateQueries: vi.fn(),
 }));
 
@@ -52,7 +53,7 @@ vi.mock('@/integrations/supabase/client-universal', () => ({
       from: () => ({ upload: mocks.upload, download: mocks.download }),
     },
     functions: {
-      invoke: vi.fn().mockResolvedValue({ data: { accepted: true }, error: null }),
+      invoke: mocks.invoke,
     },
   },
 }));
@@ -107,6 +108,7 @@ beforeEach(() => {
   mocks.limit.mockReset().mockResolvedValue({ data: [], error: null });
   mocks.upload.mockReset().mockResolvedValue({ error: null });
   mocks.download.mockReset().mockResolvedValue({ data: null, error: new Error('object not found') });
+  mocks.invoke.mockReset().mockResolvedValue({ data: { success: true, books: [] }, error: null });
   mocks.invalidateQueries.mockReset().mockResolvedValue(undefined);
   mocks.select.mockReturnValue({ eq: mocks.eq });
   mocks.eq.mockReturnValue({ order: mocks.order });
@@ -200,6 +202,64 @@ describe('ContributeBookPdfDialog', () => {
     expect(mocks.invalidateQueries).toHaveBeenCalledWith({
       queryKey: ['my-book-pdf-submissions', 'reader-1'],
     });
+  });
+
+  it('requires rights confirmation and submits existing-book contributions with the selected target ID', async () => {
+    const existingBook = {
+      id: 'catalogue-book-1',
+      title: 'Existing Catalogue Book',
+      author: 'Catalogue Author',
+      isbn: null,
+      publication_year: 1998,
+      language: 'English',
+      cover_image_url: null,
+      pdf_url: null,
+      pdf_sha256: null,
+      pdf_file_size: null,
+      pdf_page_count: null,
+      pdf_verification_status: null,
+      genre: 'Fiction',
+      description: null,
+      status: 'published',
+      catalog_status: 'published',
+      is_archived: false,
+      created_at: '2026-01-01T00:00:00Z',
+    };
+    mocks.invoke.mockResolvedValueOnce({
+      data: { success: true, books: [existingBook] },
+      error: null,
+    });
+    renderDialog();
+    fireEvent.change(screen.getByLabelText(/Book title/i), {
+      target: { value: 'Existing Catalogue Book' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Search Catalogue/i }));
+    await waitFor(() => expect(screen.getByText('Existing Catalogue Book')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /Existing Catalogue Book/i }));
+    await waitFor(() => expect(screen.getByText('Ready to submit')).toBeInTheDocument());
+
+    const rightsCheckbox = screen.getByRole('checkbox');
+    const submitButton = screen.getByRole('button', { name: /Submit for admin review/i });
+    expect(submitButton).toBeDisabled();
+    fireEvent.change(screen.getByLabelText(/PDF file/i), {
+      target: { files: [makePdf()] },
+    });
+    expect(submitButton).toBeDisabled();
+    fireEvent.click(rightsCheckbox);
+    await waitFor(() => expect(submitButton).toBeEnabled());
+    fireEvent.click(submitButton);
+
+    await waitFor(() => expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({
+      submission_source: 'user_upload',
+      target_book_id: 'catalogue-book-1',
+      rights_attested: true,
+      status: 'uploaded',
+    })));
+    await waitFor(() => expect(mocks.upload).toHaveBeenCalledWith(
+      'reader-1/submission-uuid/source.pdf',
+      expect.any(File),
+      expect.objectContaining({ contentType: 'application/pdf', upsert: false }),
+    ));
   });
 
   it('accepts a valid PDF when mobile browsers report application/octet-stream', async () => {

@@ -48,7 +48,7 @@ const statusLabel: Record<string, string> = {
   extracting: 'Reading book details',
   matching: 'Matching catalogue records',
   needs_review: 'Needs human review',
-  approved: 'Added to Library',
+  approved: 'Approved · publication incomplete',
   rejected: 'Not approved',
   failed: 'Processing failed',
 };
@@ -140,9 +140,9 @@ function ContributeBookPdfDialogContent() {
   };
 
   const handleSelectExistingBook = (book: CatalogueBook) => {
-    setSelectedBook(book);
     setShowExistingMatch(false);
     if (book.pdf_url) {
+      setSelectedBook(null);
       toast({ title: 'This book already has a PDF', description: 'Choose a different catalogue entry or submit this edition as a new book for review.', variant: 'destructive' });
       return;
     }
@@ -573,6 +573,17 @@ function ContributeBookPdfDialogContent() {
                     </div>
                   )}
                 </div>
+
+                <label className="flex items-start gap-3 rounded-lg border p-3 text-sm leading-relaxed">
+                  <input
+                    type="checkbox"
+                    checked={rightsAttested}
+                    onChange={(event) => setRightsAttested(event.target.checked)}
+                    disabled={busy}
+                    className="mt-1 h-4 w-4 shrink-0 accent-primary"
+                  />
+                  <span>I confirm that I have the right to share this PDF, or that it is in the public domain or available under an open licence. I understand that an administrator will preview it before any Library publication.</span>
+                </label>
 
                 {busy && (
                   <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
