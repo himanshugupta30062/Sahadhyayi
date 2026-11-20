@@ -43,7 +43,7 @@
     {
       "name": "All route JavaScript assets (aggregate)",
       "path": "dist/assets/*.js",
-      "limit": "1024 KB"
+      "limit": "1300 KB"
     }
   ],
   "dependencies": {

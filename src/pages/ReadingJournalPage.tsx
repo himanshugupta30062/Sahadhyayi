@@ -653,11 +653,25 @@ export default function ReadingJournalPage() {
                   Export Quotes (CSV)
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/creator-studio?type=wrapup" className="flex items-center gap-2 cursor-pointer text-amber-600 dark:text-amber-400 font-medium">
+                    <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                    Design Monthly Wrap-Up
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={exportFullJsonBackup}>
                   Full JSON Archive Backup
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Direct 1-Click Monthly Wrap-Up Generator */}
+            <Button asChild size="sm" className="bg-amber-600 hover:bg-amber-700 text-white gap-1.5 shadow-xs">
+              <Link to="/creator-studio?type=wrapup">
+                <Sparkles className="h-3.5 w-3.5 text-amber-200" />
+                Monthly Wrap-Up
+              </Link>
+            </Button>
           </div>
         </div>
         <p className="mt-2 max-w-2xl text-muted-foreground">
@@ -1292,6 +1306,16 @@ export default function ReadingJournalPage() {
                   Edit
                 </Button>
               )}
+              <Button asChild variant="ghost" size="sm" className="h-7 text-xs text-amber-700 dark:text-amber-400 hover:bg-amber-500/10" title="Design quote card for Instagram">
+                <Link
+                  to={`/creator-studio?type=quote&bookId=${entry.bookId}&quote=${encodeURIComponent(
+                    entry.text || entry.note || ''
+                  )}&quoteAttr=${encodeURIComponent(`p. ${entry.page}`)}`}
+                >
+                  <Sparkles className="mr-1 h-3 w-3 text-amber-500" />
+                  Card
+                </Link>
+              </Button>
               <Button asChild variant="ghost" size="sm" className="h-7 text-xs">
                 <Link
                   to={

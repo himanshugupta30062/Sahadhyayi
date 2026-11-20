@@ -33,6 +33,7 @@ import {
   ArrowUpDown,
   Play,
   X,
+  Sparkles,
   Upload,
   BookX,
   ListOrdered,
@@ -386,6 +387,13 @@ const Bookshelf = () => {
               >
                 <Share2 className="w-4 h-4 mr-1.5 text-muted-foreground" />
                 Share Shelf
+              </Button>
+
+              <Button asChild variant="outline" size="sm" className="border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 gap-1.5">
+                <Link to="/creator-studio?type=tbr">
+                  <Sparkles className="w-4 h-4 text-amber-500" />
+                  Share My TBR Stack
+                </Link>
               </Button>
 
               <Button
@@ -847,6 +855,13 @@ const Bookshelf = () => {
                                   Add to Up Next ({queuedItems.length}/5)
                                 </DropdownMenuItem>
                               )}
+
+                              <DropdownMenuItem asChild>
+                                <Link to={`/creator-studio?type=review&bookId=${item.book_id}`} className="cursor-pointer">
+                                  <Sparkles className="w-4 h-4 mr-2 text-amber-500" />
+                                  Design Bookstagram Post
+                                </Link>
+                              </DropdownMenuItem>
 
                               <DropdownMenuItem onClick={() => updateBookshelf.mutate({ id: item.id, updates: { is_owned: !item.is_owned } })}>
                                 <BookMarked className="w-4 h-4 mr-2" />

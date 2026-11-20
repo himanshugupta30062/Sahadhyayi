@@ -1,6 +1,3 @@
-import * as htmlToImage from 'html-to-image';
-import JSZip from 'jszip';
-
 export interface ExportProgressCallback {
   (current: number, total: number, message: string): void;
 }
@@ -20,12 +17,13 @@ export function downloadBlob(blob: Blob, fileName: string): void {
 }
 
 /**
- * Converts a DOM element to a high-DPI (2x retina) PNG data URL.
+ * Converts a DOM element to a high-DPI (2x retina) PNG data URL using dynamic import.
  */
 export async function renderElementToPngDataUrl(
   element: HTMLElement,
   pixelRatio: number = 2
 ): Promise<string> {
+  const htmlToImage = await import('html-to-image');
   return htmlToImage.toPng(element, {
     pixelRatio,
     cacheBust: true,
@@ -120,6 +118,8 @@ export async function exportCarouselToZip(
   baseFileName: string = 'sahadhyayi-carousel',
   onProgress?: ExportProgressCallback
 ): Promise<void> {
+  const JSZipModule = await import('jszip');
+  const JSZip = JSZipModule.default || JSZipModule;
   const zip = new JSZip();
 
   for (let i = 0; i < totalSlides; i++) {

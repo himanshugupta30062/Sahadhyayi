@@ -220,6 +220,166 @@ export const SlideEditorControls: React.FC<SlideEditorControlsProps> = ({
         </>
       )}
 
+      {/* Recommendation Companions */}
+      {postType === 'recommendation' && (
+        <div className="space-y-3 p-3 rounded-xl bg-accent/20 border border-border/50">
+          <Label className="text-xs font-semibold">Companion Recommendations</Label>
+          <div className="space-y-2">
+            <div className="space-y-1">
+              <span className="text-[11px] font-medium text-muted-foreground">Book 1</span>
+              <Input
+                value={activeSlide.recommendedBooks?.[0]?.title || ''}
+                onChange={(e) => {
+                  const current = activeSlide.recommendedBooks || [{ title: '', author: '' }, { title: '', author: '' }];
+                  const updated = [...current];
+                  updated[0] = { ...updated[0], title: e.target.value };
+                  onUpdateSlide({ recommendedBooks: updated });
+                }}
+                placeholder="Recommended Title 1"
+                className="text-xs h-8"
+              />
+              <Input
+                value={activeSlide.recommendedBooks?.[0]?.author || ''}
+                onChange={(e) => {
+                  const current = activeSlide.recommendedBooks || [{ title: '', author: '' }, { title: '', author: '' }];
+                  const updated = [...current];
+                  updated[0] = { ...updated[0], author: e.target.value };
+                  onUpdateSlide({ recommendedBooks: updated });
+                }}
+                placeholder="Author 1"
+                className="text-xs h-8"
+              />
+            </div>
+            <div className="space-y-1 pt-1">
+              <span className="text-[11px] font-medium text-muted-foreground">Book 2</span>
+              <Input
+                value={activeSlide.recommendedBooks?.[1]?.title || ''}
+                onChange={(e) => {
+                  const current = activeSlide.recommendedBooks || [{ title: '', author: '' }, { title: '', author: '' }];
+                  const updated = [...current];
+                  updated[1] = { ...updated[1], title: e.target.value };
+                  onUpdateSlide({ recommendedBooks: updated });
+                }}
+                placeholder="Recommended Title 2"
+                className="text-xs h-8"
+              />
+              <Input
+                value={activeSlide.recommendedBooks?.[1]?.author || ''}
+                onChange={(e) => {
+                  const current = activeSlide.recommendedBooks || [{ title: '', author: '' }, { title: '', author: '' }];
+                  const updated = [...current];
+                  updated[1] = { ...updated[1], author: e.target.value };
+                  onUpdateSlide({ recommendedBooks: updated });
+                }}
+                placeholder="Author 2"
+                className="text-xs h-8"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Book Battle / Versus Opponent Book */}
+      {postType === 'versus' && (
+        <div className="space-y-2 p-3 rounded-xl bg-accent/20 border border-border/50">
+          <Label className="text-xs font-semibold">Opponent Book (Book B)</Label>
+          <Input
+            value={activeSlide.versus?.bookB?.title || ''}
+            onChange={(e) => {
+              const currentVersus = activeSlide.versus || {
+                bookA: { title: activeSlide.bookTitle || '', author: activeSlide.author || '', score: 5, highlight: '' },
+                bookB: { title: '', author: '', score: 5, highlight: '' },
+                winner: 'tie',
+                verdictNote: '',
+              };
+              onUpdateSlide({
+                versus: {
+                  ...currentVersus,
+                  bookB: { ...currentVersus.bookB, title: e.target.value },
+                },
+              });
+            }}
+            placeholder="Opponent Book Title"
+            className="text-xs h-8"
+          />
+          <Input
+            value={activeSlide.versus?.bookB?.author || ''}
+            onChange={(e) => {
+              const currentVersus = activeSlide.versus || {
+                bookA: { title: activeSlide.bookTitle || '', author: activeSlide.author || '', score: 5, highlight: '' },
+                bookB: { title: '', author: '', score: 5, highlight: '' },
+                winner: 'tie',
+                verdictNote: '',
+              };
+              onUpdateSlide({
+                versus: {
+                  ...currentVersus,
+                  bookB: { ...currentVersus.bookB, author: e.target.value },
+                },
+              });
+            }}
+            placeholder="Opponent Author"
+            className="text-xs h-8"
+          />
+        </div>
+      )}
+
+      {/* Carousel Story Pillar Scores */}
+      {postType === 'carousel' && activeSlide.carouselStage === 'breakdown' && (
+        <div className="space-y-2 p-3 rounded-xl bg-accent/20 border border-border/50">
+          <Label className="text-xs font-semibold">Pillar Ratings (1-5)</Label>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { key: 'plot', label: 'Plot & Intrigue' },
+              { key: 'characters', label: 'Character Depth' },
+              { key: 'pacing', label: 'Pacing & Rhythm' },
+              { key: 'emotionalImpact', label: 'Emotional Resonance' },
+            ].map((pillar) => (
+              <div key={pillar.key} className="space-y-1">
+                <span className="text-[11px] text-muted-foreground block truncate">{pillar.label}</span>
+                <Input
+                  type="number"
+                  min="1"
+                  max="5"
+                  step="0.5"
+                  value={
+                    (activeSlide.ratingBreakdown as any)?.[pillar.key] ??
+                    activeSlide.rating ??
+                    5
+                  }
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value) || 5;
+                    onUpdateSlide({
+                      ratingBreakdown: {
+                        plot: activeSlide.ratingBreakdown?.plot ?? 5,
+                        characters: activeSlide.ratingBreakdown?.characters ?? 5,
+                        pacing: activeSlide.ratingBreakdown?.pacing ?? 4.5,
+                        emotionalImpact: activeSlide.ratingBreakdown?.emotionalImpact ?? 5,
+                        [pillar.key]: val,
+                      },
+                    });
+                  }}
+                  className="text-xs h-8"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Carousel Verdict Headline */}
+      {postType === 'carousel' && activeSlide.carouselStage === 'verdict' && (
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold">Verdict Headline</Label>
+          <Input
+            value={activeSlide.customHeadline || ''}
+            onChange={(e) => onUpdateSlide({ customHeadline: e.target.value })}
+            placeholder="e.g. Final Verdict: A 5-Star Favorite"
+            className="text-xs h-9"
+          />
+        </div>
+      )}
+
       {/* 5. Wrap-Up Specifics */}
       {postType === 'wrapup' && (
         <div className="grid grid-cols-2 gap-2">

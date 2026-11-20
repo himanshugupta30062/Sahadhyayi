@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/authHelpers';
 import { useBookById } from '@/hooks/useBookById';
+import { useUserBookshelf } from '@/hooks/useUserBookshelf';
 import { type BookSearchResult } from '@/hooks/useBookSearch';
 import SEO from '@/components/SEO';
 import { Button } from '@/components/ui/button';
@@ -53,6 +54,12 @@ import {
   generateGroundedCaption,
   generateSmartHashtags,
 } from '@/utils/creatorCaptionHelper';
+import {
+  saveAutoDraft,
+  loadAutoDraft,
+  clearAutoDraft,
+} from '@/utils/creatorDraftStorage';
+import { generateContextualAiCaption } from '@/utils/creatorAiHelper';
 
 const INITIAL_SLIDE: SlideData = {
   id: 'slide-1',
@@ -69,27 +76,127 @@ export const BookCreatorStudio: React.FC = () => {
   const { user } = useAuth();
   const urlBookId = searchParams.get('bookId') || undefined;
   const urlPostType = (searchParams.get('type') as PostType) || 'review';
+  const urlQuote = searchParams.get('quote') || undefined;
+  const urlQuoteAttr = searchParams.get('quoteAttr') || undefined;
+  const urlMonth = searchParams.get('month') || undefined;
+  const urlBooks = searchParams.get('books') ? parseInt(searchParams.get('books')!) : undefined;
+  const urlPages = searchParams.get('pages') ? parseInt(searchParams.get('pages')!) : undefined;
 
   // Book fetching if bookId is present in URL
   const { data: initialBookData } = useBookById(urlBookId);
+  const { data: bookshelfData } = useUserBookshelf();
 
   // Studio State
-  const [state, setState] = useState<CreatorPostState>({
-    postType: urlPostType,
-    aspectRatio: 'portrait',
-    templateId: 'minimalist_editorial',
-    backgroundTexture: 'clean',
-    fontPairing: 'editorial',
-    slides: [INITIAL_SLIDE],
-    activeSlideIndex: 0,
-    brandWatermarkEnabled: true,
-    brandWatermarkText: user?.user_metadata?.username
-      ? `@${user.user_metadata.username}`
-      : '@sahadhyayi_reader',
-    caption: '',
-    captionTone: 'thoughtful',
-    hashtags: ['#Bookstagram', '#BookReview', '#ReadingCommunity', '#Sahadhyayi'],
+  const [state, setState] = useState<CreatorPostState>(() => {
+    const initialSlide: SlideData = {
+      ...INITIAL_SLIDE,
+      quote: urlQuote || INITIAL_SLIDE.quote,
+      quoteAttribution: urlQuoteAttr || INITIAL_SLIDE.quoteAttribution,
+      wrapupMonth: urlMonth || new Date().toLocaleString('default', { month: 'long' }),
+      wrapupBooksCount: urlBooks,
+      wrapupPagesCount: urlPages,
+    };
+    return {
+      postType: urlPostType,
+      aspectRatio: 'portrait',
+      templateId: 'minimalist_editorial',
+      backgroundTexture: 'clean',
+      fontPairing: 'editorial',
+      slides: [initialSlide],
+      activeSlideIndex: 0,
+      brandWatermarkEnabled: true,
+      brandWatermarkText: user?.user_metadata?.username
+        ? `@${user.user_metadata.username}`
+        : '@sahadhyayi_reader',
+      caption: '',
+      captionTone: 'thoughtful',
+      hashtags: ['#Bookstagram', '#BookReview', '#ReadingCommunity', '#Sahadhyayi'],
+    };
   });
+
+  const hasAutoHydratedWrapupRef = useRef(false);
+  const hasAutoHydratedTbrRef = useRef(false);
+
+  // Automatically compute monthly wrap-up or TBR from bookshelf when available
+  useEffect(() => {
+    if (!bookshelfData || bookshelfData.length === 0) return;
+
+    if (state.postType === 'wrapup' && !hasAutoHydratedWrapupRef.current) {
+      hasAutoHydratedWrapupRef.current = true;
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      const monthName = new Date().toLocaleString('default', { month: 'long' });
+
+      const completedInMonth = bookshelfData.filter((item) => {
+        if (item.status !== 'completed' || !item.completed_at) return false;
+        const d = new Date(item.completed_at);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      });
+
+      const totalBooks = completedInMonth.length || urlBooks || 3;
+      const totalPages = completedInMonth.reduce(
+        (sum, item) => sum + (item.books_library?.pages || 320),
+        0
+      ) || urlPages || 1150;
+
+      // Find top rated book
+      const topBookItem = completedInMonth.sort((a, b) => (b.rating || 0) - (a.rating || 0))[0];
+      const topBook = topBookItem?.books_library;
+
+      setState((prev) => {
+        const updatedSlides = [...prev.slides];
+        updatedSlides[0] = {
+          ...updatedSlides[0],
+          wrapupMonth: urlMonth || monthName,
+          wrapupBooksCount: totalBooks,
+          wrapupPagesCount: totalPages,
+          bookId: topBook?.id || updatedSlides[0].bookId,
+          bookTitle: topBook?.title || updatedSlides[0].bookTitle,
+          author: topBook?.author || updatedSlides[0].author,
+          coverImageUrl: topBook?.cover_image_url || updatedSlides[0].coverImageUrl,
+        };
+        const generatedCaption = generateGroundedCaption({
+          postType: 'wrapup',
+          tone: prev.captionTone,
+          slide: updatedSlides[0],
+          brandHandle: prev.brandWatermarkText,
+        });
+        return {
+          ...prev,
+          slides: updatedSlides,
+          caption: generatedCaption,
+        };
+      });
+    } else if (state.postType === 'tbr' && !hasAutoHydratedTbrRef.current) {
+      hasAutoHydratedTbrRef.current = true;
+      const wantToRead = bookshelfData.filter((item) => item.status === 'want_to_read');
+      if (wantToRead.length > 0) {
+        const firstTbr = wantToRead[0].books_library;
+        if (firstTbr) {
+          setState((prev) => {
+            const updatedSlides = [...prev.slides];
+            updatedSlides[0] = {
+              ...updatedSlides[0],
+              bookId: firstTbr.id,
+              bookTitle: firstTbr.title,
+              author: firstTbr.author,
+              coverImageUrl: firstTbr.cover_image_url,
+            };
+            return {
+              ...prev,
+              slides: updatedSlides,
+              caption: generateGroundedCaption({
+                postType: 'tbr',
+                tone: prev.captionTone,
+                slide: updatedSlides[0],
+                brandHandle: prev.brandWatermarkText,
+              }),
+            };
+          });
+        }
+      }
+    }
+  }, [bookshelfData, state.postType, urlBooks, urlPages, urlMonth]);
 
   const [isBookPickerOpen, setIsBookPickerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'edit' | 'templates' | 'export'>('edit');
@@ -97,7 +204,43 @@ export const BookCreatorStudio: React.FC = () => {
   const [exportStatusText, setExportStatusText] = useState('');
   const [copiedCaption, setCopiedCaption] = useState(false);
   const [copiedImage, setCopiedImage] = useState(false);
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
+  const [autoSavedTime, setAutoSavedTime] = useState<string | null>(null);
+  const [hasPendingDraft, setHasPendingDraft] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
+
+  // Check for existing auto-draft on mount if not opened with specific book / post params
+  useEffect(() => {
+    if (!urlBookId && !searchParams.get('type') && !searchParams.get('quote')) {
+      const existing = loadAutoDraft();
+      if (existing?.state && existing.state.slides?.length > 0) {
+        setHasPendingDraft(true);
+      }
+    }
+  }, [urlBookId, searchParams]);
+
+  // Debounced auto-save draft to localStorage
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      saveAutoDraft(state);
+      setAutoSavedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [state]);
+
+  const handleRestoreDraft = () => {
+    const existing = loadAutoDraft();
+    if (existing?.state) {
+      setState(existing.state);
+      setHasPendingDraft(false);
+      toast.success('Restored your previous draft!');
+    }
+  };
+
+  const handleDiscardPendingDraft = () => {
+    clearAutoDraft();
+    setHasPendingDraft(false);
+  };
 
   // Sync initial book data if fetched via URL
   useEffect(() => {
@@ -172,21 +315,32 @@ export const BookCreatorStudio: React.FC = () => {
     });
   };
 
-  const handleRegenerateCaption = (tone: CaptionTone) => {
-    const freshCaption = generateGroundedCaption({
-      postType: state.postType,
-      tone,
-      slide: activeSlide,
-      brandHandle: state.brandWatermarkText,
-    });
-    const freshHashtags = generateSmartHashtags(activeSlide);
-    setState((prev) => ({
-      ...prev,
-      captionTone: tone,
-      caption: freshCaption,
-      hashtags: freshHashtags,
-    }));
-    toast.success(`Generated ${tone} caption`);
+  const handleRegenerateCaption = async (tone: CaptionTone) => {
+    setIsAiGenerating(true);
+    try {
+      const res = await generateContextualAiCaption({
+        postType: state.postType,
+        tone,
+        slide: activeSlide,
+        brandHandle: state.brandWatermarkText,
+      });
+      const freshHashtags = generateSmartHashtags(activeSlide);
+      setState((prev) => ({
+        ...prev,
+        captionTone: tone,
+        caption: res.caption,
+        hashtags: freshHashtags,
+      }));
+      if (res.isAiGenerated) {
+        toast.success('Generated contextual AI caption with Gemini!');
+      } else {
+        toast.success(`Generated ${tone} caption`);
+      }
+    } catch {
+      toast.error('Could not generate caption');
+    } finally {
+      setIsAiGenerating(false);
+    }
   };
 
   const handleAddSlide = () => {
@@ -357,6 +511,12 @@ export const BookCreatorStudio: React.FC = () => {
                 <span className="text-[10px] font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/20">
                   Creator Space
                 </span>
+                {autoSavedTime && (
+                  <span className="text-[10px] text-muted-foreground hidden md:inline-flex items-center gap-1 opacity-75">
+                    <Check className="w-3 h-3 text-emerald-500" />
+                    Auto-saved
+                  </span>
+                )}
               </div>
               <p className="text-[11px] text-muted-foreground hidden sm:block">
                 Your reading journey. Your creative space.
@@ -406,6 +566,36 @@ export const BookCreatorStudio: React.FC = () => {
           </div>
         </div>
       </header>
+
+      {/* Unsaved Draft Recovery Banner */}
+      {hasPendingDraft && (
+        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2">
+          <div className="max-w-7xl mx-auto text-xs flex flex-wrap items-center justify-between gap-2">
+            <span className="flex items-center gap-1.5 text-amber-800 dark:text-amber-200">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              You have an auto-saved draft from a previous session.
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs border-amber-500/40 text-amber-800 dark:text-amber-200"
+                onClick={handleRestoreDraft}
+              >
+                Resume Draft
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs text-muted-foreground"
+                onClick={handleDiscardPendingDraft}
+              >
+                Dismiss
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Studio Body */}
       <main className="max-w-7xl mx-auto px-4 sm:px-8 pt-6">

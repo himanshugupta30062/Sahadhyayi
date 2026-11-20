@@ -218,11 +218,11 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                   <QuoteIcon className="w-5 h-5 opacity-60 text-current" />
                 </div>
                 <blockquote className={`text-sm sm:text-base font-medium italic leading-relaxed max-w-xs sm:max-w-sm ${fonts.display}`}>
-                  &ldquo;{activeSlide.quote || 'There is no friend as loyal as a book.'}&rdquo;
+                  &ldquo;{activeSlide.quote || 'Enter a quote from your Reading Journal or notes...'}&rdquo;
                 </blockquote>
                 <div className="space-y-0.5 pt-2 border-t border-current/10 w-36 mx-auto">
                   <p className={`text-xs font-bold ${fonts.body}`}>
-                    {activeSlide.author || 'Ernest Hemingway'}
+                    {activeSlide.author || 'Author'}
                   </p>
                   <p className="text-[10px] opacity-75 truncate">
                     {activeSlide.bookTitle ? `${activeSlide.bookTitle}` : 'Literary Quote'}
@@ -251,12 +251,20 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                   </div>
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     <div className="p-2 rounded-lg bg-black/5 dark:bg-white/5 border border-current/5">
-                      <span className="text-[11px] font-bold block truncate">1. The Secret History</span>
-                      <span className="text-[9px] opacity-70 block">Dark academia & suspense</span>
+                      <span className="text-[11px] font-bold block truncate">
+                        {activeSlide.recommendedBooks?.[0]?.title || '1. Add companion book'}
+                      </span>
+                      <span className="text-[9px] opacity-70 block truncate">
+                        {activeSlide.recommendedBooks?.[0]?.author || 'Select from library or enter title'}
+                      </span>
                     </div>
                     <div className="p-2 rounded-lg bg-black/5 dark:bg-white/5 border border-current/5">
-                      <span className="text-[11px] font-bold block truncate">2. Babel</span>
-                      <span className="text-[9px] opacity-70 block">Linguistic fantasy</span>
+                      <span className="text-[11px] font-bold block truncate">
+                        {activeSlide.recommendedBooks?.[1]?.title || '2. Add companion book'}
+                      </span>
+                      <span className="text-[9px] opacity-70 block truncate">
+                        {activeSlide.recommendedBooks?.[1]?.author || 'Select from library or enter title'}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -275,17 +283,21 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                 <div className="grid grid-cols-2 gap-3 items-center">
                   <div className="p-3 rounded-xl bg-black/5 dark:bg-white/5 border border-current/10 text-center space-y-1">
                     <span className="text-[9px] font-bold uppercase text-amber-500 block">Book A</span>
-                    <h4 className="text-xs font-bold truncate">{activeSlide.bookTitle || 'Book A'}</h4>
-                    <span className="text-[10px] opacity-75">{activeSlide.author || 'Author A'}</span>
+                    <h4 className="text-xs font-bold truncate">{activeSlide.bookTitle || 'Select Book A'}</h4>
+                    <span className="text-[10px] opacity-75 truncate block">{activeSlide.author || 'Author A'}</span>
                   </div>
                   <div className="p-3 rounded-xl bg-black/5 dark:bg-white/5 border border-current/10 text-center space-y-1">
                     <span className="text-[9px] font-bold uppercase text-rose-500 block">Book B</span>
-                    <h4 className="text-xs font-bold truncate">A Little Life</h4>
-                    <span className="text-[10px] opacity-75">Hanya Yanagihara</span>
+                    <h4 className="text-xs font-bold truncate">
+                      {activeSlide.versus?.bookB?.title || 'Select Book B'}
+                    </h4>
+                    <span className="text-[10px] opacity-75 truncate block">
+                      {activeSlide.versus?.bookB?.author || 'Add opponent author'}
+                    </span>
                   </div>
                 </div>
                 <p className={`text-xs italic opacity-90 px-2 ${fonts.body}`}>
-                  &ldquo;Which of these modern epics had a stronger emotional resonance for you? Vote below!&rdquo;
+                  &ldquo;{activeSlide.hookLine || 'Which of these had a stronger resonance for you? Vote in the comments!'}&rdquo;
                 </p>
               </div>
             )}
@@ -345,13 +357,13 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                   <div className="p-2.5 rounded-lg bg-black/5 dark:bg-white/5 border border-current/5">
                     <span className="text-[10px] opacity-70 block">Books Read</span>
                     <span className="text-lg font-bold">
-                      {activeSlide.wrapupBooksCount || 4} Books
+                      {activeSlide.wrapupBooksCount ?? 0} Books
                     </span>
                   </div>
                   <div className="p-2.5 rounded-lg bg-black/5 dark:bg-white/5 border border-current/5">
                     <span className="text-[10px] opacity-70 block">Pages Turned</span>
                     <span className="text-lg font-bold">
-                      {activeSlide.wrapupPagesCount ? activeSlide.wrapupPagesCount.toLocaleString() : '1,420'}
+                      {activeSlide.wrapupPagesCount ? activeSlide.wrapupPagesCount.toLocaleString() : '0'}
                     </span>
                   </div>
                 </div>
@@ -387,9 +399,11 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                         className="w-20 h-32 object-cover rounded shadow ring-1 ring-black/10"
                       />
                     )}
-                    <h3 className={`text-base font-bold ${fonts.display}`}>{activeSlide.bookTitle}</h3>
-                    <p className="text-xs opacity-75">{activeSlide.author}</p>
-                    <p className="text-xs font-semibold italic mt-1">&ldquo;{activeSlide.hookLine || 'A story that will change the way you view the world.'}&rdquo;</p>
+                    <h3 className={`text-base font-bold ${fonts.display}`}>{activeSlide.bookTitle || 'Book Title'}</h3>
+                    <p className="text-xs opacity-75">{activeSlide.author || 'Author Name'}</p>
+                    {activeSlide.hookLine && (
+                      <p className="text-xs font-semibold italic mt-1">&ldquo;{activeSlide.hookLine}&rdquo;</p>
+                    )}
                   </div>
                 )}
 
@@ -398,7 +412,7 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                   <div className="p-3 rounded-xl bg-black/5 dark:bg-white/5 border border-current/10 space-y-2 text-left">
                     <h4 className="text-xs font-bold uppercase tracking-wider opacity-80">The Premise (Spoiler-Free)</h4>
                     <p className={`text-xs opacity-90 leading-relaxed ${fonts.body}`}>
-                      {activeSlide.synopsis || 'An evocative narrative following intersecting lives bound by memory, sacrifice, and secret truths.'}
+                      {activeSlide.synopsis || 'Enter your spoiler-free summary of the book premise...'}
                     </p>
                   </div>
                 )}
@@ -408,9 +422,9 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                   <div className="space-y-3">
                     <QuoteIcon className="w-6 h-6 opacity-40 mx-auto" />
                     <blockquote className={`text-xs sm:text-sm italic font-medium ${fonts.display}`}>
-                      &ldquo;{activeSlide.quote || 'We read to know that we are not alone.'}&rdquo;
+                      &ldquo;{activeSlide.quote || 'Add a standout quote from this book...'}&rdquo;
                     </blockquote>
-                    <p className="text-[10px] font-bold opacity-75">— {activeSlide.author}</p>
+                    <p className="text-[10px] font-bold opacity-75">— {activeSlide.author || 'Author'}</p>
                   </div>
                 )}
 
@@ -419,10 +433,22 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                   <div className="w-full space-y-1.5 text-left p-3 rounded-xl bg-black/5 dark:bg-white/5 border border-current/10">
                     <h4 className="text-xs font-bold uppercase tracking-wider mb-2">Pillars of the Story</h4>
                     {[
-                      { label: 'Plot & Intrigue', score: '5/5' },
-                      { label: 'Character Depth', score: '5/5' },
-                      { label: 'Pacing & Rhythm', score: '4.5/5' },
-                      { label: 'Emotional Resonance', score: '5/5' },
+                      {
+                        label: 'Plot & Intrigue',
+                        score: `${activeSlide.ratingBreakdown?.plot ?? activeSlide.rating ?? 5}/5`,
+                      },
+                      {
+                        label: 'Character Depth',
+                        score: `${activeSlide.ratingBreakdown?.characters ?? activeSlide.rating ?? 5}/5`,
+                      },
+                      {
+                        label: 'Pacing & Rhythm',
+                        score: `${activeSlide.ratingBreakdown?.pacing ?? activeSlide.rating ?? 4.5}/5`,
+                      },
+                      {
+                        label: 'Emotional Resonance',
+                        score: `${activeSlide.ratingBreakdown?.emotionalImpact ?? activeSlide.rating ?? 5}/5`,
+                      },
                     ].map((item, idx) => (
                       <div key={idx} className="flex justify-between text-xs py-0.5 border-b border-current/5">
                         <span className="opacity-80">{item.label}</span>
@@ -435,16 +461,32 @@ export const StudioCanvas: React.FC<StudioCanvasProps> = ({
                 {/* Stage 5: Verdict & CTA */}
                 {activeSlide.carouselStage === 'verdict' && (
                   <div className="space-y-3">
-                    <div className="flex items-center justify-center gap-1 text-amber-400">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                      ))}
-                    </div>
-                    <p className={`text-xs sm:text-sm font-bold ${fonts.display}`}>Final Verdict: A Must-Read Masterpiece</p>
+                    {activeSlide.rating > 0 && (
+                      <div className="flex items-center justify-center gap-1 text-amber-400">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${
+                              i < activeSlide.rating
+                                ? 'fill-amber-400 text-amber-400'
+                                : 'text-zinc-500'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    <p className={`text-xs sm:text-sm font-bold ${fonts.display}`}>
+                      {activeSlide.customHeadline ||
+                        (activeSlide.rating === 5
+                          ? 'Final Verdict: A 5-Star Favorite'
+                          : activeSlide.rating >= 4
+                          ? 'Final Verdict: Highly Recommended Read'
+                          : 'Final Verdict & Thoughts')}
+                    </p>
                     <div className="p-2.5 rounded-lg bg-black/5 dark:bg-white/5 border border-current/10 text-xs">
                       <p className="font-semibold">Join the discussion:</p>
                       <p className="opacity-80 text-[11px] mt-0.5">
-                        {activeSlide.discussionQuestion || 'Have you read this book? What did the ending make you feel?'}
+                        {activeSlide.discussionQuestion || 'Have you read this book? What did it make you feel?'}
                       </p>
                     </div>
                   </div>
