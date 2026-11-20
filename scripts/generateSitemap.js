@@ -41,7 +41,7 @@ const xmlEscape = value => String(value).replace(/[&<>"']/g, character => ({
 
 function addUrl(loc, changefreq = 'weekly', priority = '0.6', image, lastmod) {
   // Only absolute same-site HTTPS image URLs are eligible for sitemap images.
-  const safeImage = typeof image === 'string' && /^https:\/\//i.test(image) && !/[\\s<>]/.test(image)
+  const safeImage = typeof image === 'string' && /^https:\/\//i.test(image) && image.trim() === image && !image.includes('<') && !image.includes('>')
     ? image
     : undefined;
   const parsedLastmod = lastmod ? new Date(lastmod) : null;
