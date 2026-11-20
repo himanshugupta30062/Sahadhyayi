@@ -216,7 +216,18 @@ export function CatalogueSelector({
 
   // Sync selectedIds prop with internal state
   useEffect(() => {
-    setSelectedSet(new Set(selectedIds));
+    const nextSelectedSet = new Set(selectedIds);
+    setSelectedSet((current) => {
+      // Parent callers may provide a fresh array on every render. Avoid
+      // scheduling another render when the selected IDs have not changed.
+      if (
+        current.size === nextSelectedSet.size &&
+        Array.from(nextSelectedSet).every((id) => current.has(id))
+      ) {
+        return current;
+      }
+      return nextSelectedSet;
+    });
   }, [selectedIds]);
 
   // Debounce search query
