@@ -507,17 +507,6 @@ function ContributeBookPdfDialogContent() {
                   <span>I confirm that I have the right to share this PDF, or that it is in the public domain or available under an open licence. I understand that an administrator will preview it before any Library publication.</span>
                 </label>
 
-                <label className="flex items-start gap-3 rounded-lg border p-3 text-sm leading-relaxed">
-                  <input
-                    type="checkbox"
-                    checked={rightsAttested}
-                    onChange={(event) => setRightsAttested(event.target.checked)}
-                    disabled={busy}
-                    className="mt-1 h-4 w-4 shrink-0 accent-primary"
-                  />
-                  <span>I confirm that I have the right to share this PDF, or that it is in the public domain or available under an open licence. I understand that an administrator will preview it before any Library publication.</span>
-                </label>
-
                 {busy && (
                   <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
                     <div className="flex items-center justify-between text-sm">
@@ -584,6 +573,17 @@ function ContributeBookPdfDialogContent() {
                     </div>
                   )}
                 </div>
+
+                <label className="flex items-start gap-3 rounded-lg border p-3 text-sm leading-relaxed">
+                  <input
+                    type="checkbox"
+                    checked={rightsAttested}
+                    onChange={(event) => setRightsAttested(event.target.checked)}
+                    disabled={busy}
+                    className="mt-1 h-4 w-4 shrink-0 accent-primary"
+                  />
+                  <span>I confirm that I have the right to share this PDF, or that it is in the public domain or available under an open licence. I understand that an administrator will preview it before any Library publication.</span>
+                </label>
 
                 {busy && (
                   <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
