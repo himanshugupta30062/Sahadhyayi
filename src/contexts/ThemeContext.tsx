@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import {
   DailyThemeId,
   ThemeMode,
@@ -93,60 +93,98 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     };
 
-    window.addEventListener('visibilitychange', handleVisibility);
+    // visibilitychange is dispatched on document, not window.
+    document.addEventListener('visibilitychange', handleVisibility);
     window.addEventListener('focus', checkDayTransition);
+    window.addEventListener('pageshow', checkDayTransition);
 
     // Periodically re-check every minute
     const interval = window.setInterval(checkDayTransition, 60 * 1000);
 
     return () => {
-      window.removeEventListener('visibilitychange', handleVisibility);
+      document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('focus', checkDayTransition);
+      window.removeEventListener('pageshow', checkDayTransition);
       window.clearInterval(interval);
     };
   }, [checkDayTransition]);
 
-  // Sync with logged-in user's account metadata if available
+  // Keep the last non-dark mode so toggling out of dark mode restores the
+  // user's actual preference (daily, light, or custom), not an arbitrary mode.
+  const lastNonDarkModeRef = useRef<ThemeMode>(prefs.mode === 'dark' ? 'daily' : prefs.mode);
+
+  // Sync account preferences on initial load and every authentication change.
+  // The account metadata is the source of truth for signed-in users, allowing
+  // their selected mode to follow them across devices and sessions.
   useEffect(() => {
     let isSubscribed = true;
+    let requestVersion = 0;
 
-    async function loadUserPreference() {
+    const applyRemotePreference = (user: { user_metadata?: Record<string, unknown> } | null) => {
+      const version = ++requestVersion;
+      const remotePref = user?.user_metadata?.theme_preference as
+        | Partial<ThemePreferenceState>
+        | undefined;
+
+      if (!remotePref || !isSubscribed) return;
+
+      if (
+        remotePref.mode &&
+        ['daily', 'light', 'dark', 'custom'].includes(remotePref.mode)
+      ) {
+        const newMode = remotePref.mode as ThemeMode;
+        const newCustom =
+          remotePref.customTheme && DAILY_THEME_IDS.includes(remotePref.customTheme)
+            ? remotePref.customTheme
+            : getTodayDailyTheme();
+
+        if (newMode !== 'dark') {
+          lastNonDarkModeRef.current = newMode;
+        }
+
+        // Ignore stale responses if a newer auth event has already arrived.
+        if (isSubscribed && version === requestVersion) {
+          setPrefs((current) => {
+            if (current.mode === newMode && current.customTheme === newCustom) {
+              return current;
+            }
+            return { mode: newMode, customTheme: newCustom };
+          });
+        }
+      }
+    };
+
+    const loadInitialPreference = async () => {
       try {
-        const { data } = await supabase.auth.getSession();
-        const user = data?.session?.user;
-        const remotePref = user?.user_metadata?.theme_preference as Partial<ThemePreferenceState> | undefined;
-
-        if (remotePref && isSubscribed) {
-          if (
-            remotePref.mode &&
-            ['daily', 'light', 'dark', 'custom'].includes(remotePref.mode)
-          ) {
-            setPrefs((current) => {
-              const newMode = remotePref.mode as ThemeMode;
-              const newCustom =
-                remotePref.customTheme && DAILY_THEME_IDS.includes(remotePref.customTheme)
-                  ? remotePref.customTheme
-                  : current.customTheme;
-
-              if (current.mode === newMode && current.customTheme === newCustom) {
-                return current;
-              }
-              return { mode: newMode, customTheme: newCustom };
-            });
-          }
+        const { data, error } = await supabase.auth.getSession();
+        if (!error && isSubscribed) {
+          applyRemotePreference(data.session?.user ?? null);
         }
       } catch {
-        // Fallback to local storage
+        // Keep the local preference when the session cannot be loaded.
       }
-    }
+    };
 
-    void loadUserPreference();
+    void loadInitialPreference();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      // Defer state work until after the auth callback returns. This avoids
+      // re-entrant Supabase auth calls from inside onAuthStateChange.
+      window.setTimeout(() => {
+        if (!isSubscribed) return;
+        if (session?.user) {
+          applyRemotePreference(session.user);
+        }
+      }, 0);
+    });
 
     return () => {
       isSubscribed = false;
+      subscription.unsubscribe();
     };
   }, []);
-
   // Compute resolved themes
   const activeDailyTheme: DailyThemeId =
     prefs.mode === 'daily'
@@ -213,6 +251,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const setMode = useCallback(
     (newMode: ThemeMode) => {
+      if (newMode !== 'dark') {
+        lastNonDarkModeRef.current = newMode;
+      }
       setPrefs((prev) => {
         const updated = { ...prev, mode: newMode };
         void persistPreference(updated);
@@ -224,6 +265,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const setCustomTheme = useCallback(
     (themeId: DailyThemeId) => {
+      lastNonDarkModeRef.current = 'custom';
       setPrefs((prev) => {
         const updated: ThemePreferenceState = { mode: 'custom', customTheme: themeId };
         void persistPreference(updated);
@@ -252,7 +294,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const toggleTheme = useCallback(() => {
     if (isDark) {
-      setMode(prefs.customTheme ? 'custom' : 'daily');
+      setMode(lastNonDarkModeRef.current);
     } else {
       setMode('dark');
     }
