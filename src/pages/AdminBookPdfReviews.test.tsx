@@ -151,17 +151,20 @@ describe('AdminBookPdfReviews', () => {
     expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Private PDF preview opened' }));
   });
 
-  it('does not enable approval when the preview popup is blocked', async () => {
+  it('keeps approval available and exposes a secure link when the preview popup is blocked', async () => {
     vi.spyOn(window, 'open').mockImplementation(() => null);
     mocks.invoke.mockResolvedValueOnce({ data: { url: 'https://signed.example/preview' }, error: null });
     renderPage();
+    const approve = screen.getByRole('button', { name: /Approve & Add to Library/i });
+    expect(approve).toBeDisabled();
+
     fireEvent.click(screen.getByRole('button', { name: /View PDF/i }));
-    await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
-      title: 'Action failed',
-      description: 'The preview popup was blocked. Allow pop-ups and try again.',
-      variant: 'destructive',
-    })));
-    expect(screen.getByRole('button', { name: /Approve & Add to Library/i })).toBeDisabled();
+    await waitFor(() => expect(screen.getByRole('link', { name: /Open PDF preview/i })).toHaveAttribute('href', 'https://signed.example/preview'));
+    expect(approve).toBeEnabled();
+    expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Preview link ready',
+      description: expect.stringMatching(/browser blocked/i),
+    }));
   });
 
   it('publishes in one approval action after previewing', async () => {

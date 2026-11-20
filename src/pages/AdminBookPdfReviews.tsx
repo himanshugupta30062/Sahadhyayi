@@ -216,11 +216,17 @@ export default function AdminBookPdfReviews() {
       if (error) throw error;
       if (action === 'preview') {
         if (!data?.url) throw new Error(data?.error || 'The server did not return a preview link.');
-        const preview = window.open(data.url, '_blank', 'noopener,noreferrer');
-        if (!preview) throw new Error('The preview popup was blocked. Allow pop-ups and try again.');
+        // A browser popup blocker must not trap the admin in a disabled state.
+        // Keep the signed URL available as an explicit link in the review panel.
         setPreviewedId(selected.id);
         setPreviewUrl(data.url);
-        toast({ title: 'Private PDF preview opened', description: 'Inspect the document before approving it. The link expires in three minutes.' });
+        const preview = window.open(data.url, '_blank', 'noopener,noreferrer');
+        toast({
+          title: preview ? 'Private PDF preview opened' : 'Preview link ready',
+          description: preview
+            ? 'Inspect the document before approving it. The link expires in three minutes.'
+            : 'Your browser blocked the preview tab. Use the secure preview link shown below; approval is now available.',
+        });
       } else {
         if (data?.success !== true) throw new Error(data?.error || 'The server did not confirm the action.');
         if (action === 'approve' && (!data?.targetBookId || !data?.pdfUrl)) {
@@ -529,6 +535,20 @@ export default function AdminBookPdfReviews() {
                       <Download className="mr-2 h-4 w-4" /> Download PDF
                     </Button>
                   </div>
+                  {previewUrl && previewedId === selected.id && (
+                    <div className="mt-3 rounded-md border border-primary/20 bg-primary/5 p-3 text-sm">
+                      <p className="font-medium">Secure preview link ready</p>
+                      <p className="mt-1 text-xs text-muted-foreground">This private link expires in three minutes.</p>
+                      <a
+                        href={previewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 inline-flex items-center gap-1 font-medium text-primary underline"
+                      >
+                        Open PDF preview <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    </div>
+                  )}
                 </div>
 
                 {selected.published_book_id ? (
