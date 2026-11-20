@@ -29,6 +29,20 @@ BEGIN
       AND with_check ILIKE '%auth.uid%'
   ), 'owner INSERT policy must enforce ownership and rights attestation';
 
+  -- User-upload contributions may optionally target an existing catalogue
+  -- book. The target FK validates the selected book; RLS still enforces owner,
+  -- rights attestation, initial status, untouched review metadata and path.
+  ASSERT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'book_pdf_submissions'
+      AND policyname = 'Users can create own PDF submissions'
+      AND cmd = 'INSERT'
+      AND with_check ILIKE '%submission_source = ''user_upload''%'
+      AND with_check ILIKE '%target_book_id%'
+      AND with_check ILIKE '%ultimate_book_finder%'
+  ), 'owner INSERT policy must support user_upload submissions with optional target_book_id';
+
   ASSERT NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public'
