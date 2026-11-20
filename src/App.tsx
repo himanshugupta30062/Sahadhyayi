@@ -56,6 +56,7 @@ const Profile = lazy(() => import('./pages/Profile'));
 const NotificationsPage = lazy(() => import('./pages/Notifications'));
 const MessagesPage = lazy(() => import('./pages/Messages'));
 const SocialMedia = lazy(() => import('./pages/SocialMedia'));
+const BookCreatorStudio = lazy(() => import('./pages/BookCreatorStudio'));
 const BookReelSharePage = lazy(() => import('./pages/BookReelSharePage'));
 const BookReelInsights = lazy(() => import('./pages/BookReelInsights'));
 const BookReelDetailInsights = lazy(() => import('./pages/BookReelDetailInsights'));
@@ -477,6 +478,14 @@ const App = memo(() => {
                           }
                         />
                         <Route path="/social/reels/:userId" element={<Suspense fallback={<LoadingFallback message="Loading reader Reels..." />}><BookReelCreatorProfile /></Suspense>} />
+                        <Route
+                          path="/creator-studio"
+                          element={
+                            <Suspense fallback={<LoadingFallback message="Loading Book Creator Studio..." />}>
+                              <BookCreatorStudio />
+                            </Suspense>
+                          }
+                        />
                         <Route
                           path="/social"
                           element={

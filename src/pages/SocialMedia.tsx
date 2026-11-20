@@ -54,8 +54,9 @@ const SpoilerThreadsFeed = lazy(() => import('@/components/social/threads/Spoile
 const ReadingRoomsPanel = lazy(() => import('@/components/social/rooms/ReadingRoomsPanel'));
 const ReadingDnaPanel = lazy(() => import('@/components/social/dna/ReadingDnaPanel'));
 const BookReviewsFeed = lazy(() => import('@/components/social/BookReviewsFeed'));
+const BookCreatorStudio = lazy(() => import('@/pages/BookCreatorStudio'));
 
-const VALID_SOCIAL_TABS = ['feed', 'reviews', 'rooms', 'threads', 'margins', 'dna', 'friends', 'map', 'groups'] as const;
+const VALID_SOCIAL_TABS = ['feed', 'reviews', 'rooms', 'threads', 'margins', 'dna', 'friends', 'map', 'groups', 'creator-studio'] as const;
 const SOCIAL_TAB_LABELS: Record<string, string> = {
   feed: 'Community Feed',
   reviews: 'Book Reviews',
@@ -66,6 +67,7 @@ const SOCIAL_TAB_LABELS: Record<string, string> = {
   friends: 'Friends',
   map: 'Reader Map',
   groups: 'Reading Groups',
+  'creator-studio': 'Book Creator Studio',
 };
 
 // Reusable lazy-load fallback
@@ -589,6 +591,19 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                   <Dna className="h-4 w-4" aria-hidden="true" />
                   Reading DNA
                 </button>
+                <button
+                  type="button"
+                  aria-pressed={activeTab === 'creator-studio'}
+                  onClick={() => handleTabChange('creator-studio')}
+                  className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D] ${
+                    activeTab === 'creator-studio'
+                      ? 'bg-[#1C442D] text-white shadow-xs dark:bg-[#D5B16D] dark:text-[#0B0D0C]'
+                      : 'text-[#636B65] hover:bg-[#F4F3EF] hover:text-[#1C201D] dark:text-[#A5ADA6] dark:hover:bg-[#1B241E] dark:hover:text-[#F3F0E7]'
+                  }`}
+                >
+                  <Sparkles className="h-4 w-4 text-amber-500" aria-hidden="true" />
+                  Creator Studio
+                </button>
               </div>
 
               <div className="ml-auto flex items-center gap-2 shrink-0">
@@ -857,6 +872,15 @@ const AuthenticatedSocialMedia: React.FC<{ user: NonNullable<ReturnType<typeof u
                   <ErrorBoundary fallback={<TabErrorFallback title="Unable to load reading groups" message="A temporary issue occurred while loading reading groups." />}>
                     <Suspense fallback={<TabLoader />}>
                       <ReadingGroups />
+                    </Suspense>
+                  </ErrorBoundary>
+                </TabsContent>
+
+                {/* ── Book Creator Studio Tab ── */}
+                <TabsContent value="creator-studio" className="mt-0">
+                  <ErrorBoundary fallback={<TabErrorFallback title="Unable to load Book Creator Studio" message="A temporary issue occurred while loading the studio." />}>
+                    <Suspense fallback={<TabLoader />}>
+                      <BookCreatorStudio />
                     </Suspense>
                   </ErrorBoundary>
                 </TabsContent>
