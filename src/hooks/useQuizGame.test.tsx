@@ -87,7 +87,7 @@ describe('useQuizGame', () => {
     expect(started).toBe(false);
     expect(result.current.loading).toBe(false);
     expect(result.current.gameStatus).toBe('idle');
-    expect(mocks.toastError).toHaveBeenCalledWith('Could not generate questions for this book');
+    expect(mocks.toastError).toHaveBeenCalledWith('The quiz service returned no questions. Please retry in a moment.');
     expect(mocks.from).not.toHaveBeenCalled();
   });
 
@@ -103,14 +103,14 @@ describe('useQuizGame', () => {
     });
     expect(mocks.from).toHaveBeenCalledWith('game_sessions');
     expect(result.current.mode).toBe('speed');
-    expect(result.current.currentQuestion).toEqual(question());
+    expect(result.current.currentQuestion).toEqual({ ...question(), explanation: '' });
     expect(result.current.totalQuestions).toBe(2);
     expect(result.current.gameStatus).toBe('playing');
     expect(result.current.lives).toBe(3);
     expect(mocks.toastSuccess).toHaveBeenCalledWith('Game started! Good luck! 🎮');
   });
 
-  it('handles generation and session-creation failures without leaving loading active', async () => {
+  it('preserves generation errors and clears loading state', async () => {
     mocks.invoke.mockResolvedValue({ data: null, error: new Error('generation failed') });
     vi.spyOn(console, 'error').mockImplementation(() => {});
     const { result } = renderHook(() => useQuizGame());
@@ -120,7 +120,20 @@ describe('useQuizGame', () => {
 
     expect(started).toBe(false);
     expect(result.current.loading).toBe(false);
-    expect(mocks.toastError).toHaveBeenCalledWith('Failed to start game');
+    expect(mocks.toastError).toHaveBeenCalledWith('generation failed');
+  });
+
+  it('handles session creation failures without leaving loading active', async () => {
+    mocks.single.mockResolvedValue({ data: null, error: { message: 'session creation failed' } });
+    const { result } = renderHook(() => useQuizGame());
+
+    let started;
+    await act(async () => { started = await result.current.startGame('book-1'); });
+
+    expect(started).toBe(false);
+    expect(result.current.loading).toBe(false);
+    expect(result.current.gameStatus).toBe('idle');
+    expect(mocks.toastError).toHaveBeenCalledWith('session creation failed');
   });
 
   it('awards doubled speed points for a correct answer and advances the session', async () => {
