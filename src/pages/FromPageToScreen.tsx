@@ -106,8 +106,8 @@ const FromPageToScreen = () => {
       <SEO
         title="From Page to Screen | Books Adapted into Movies – Sahadhyayi"
         description="Discover the books behind your favourite films. Explore literary adaptations and compare original stories with their screen versions on Sahadhyayi."
-        canonical="https://www.sahadhyayi.com/from-page-to-screen"
-        url="https://www.sahadhyayi.com/from-page-to-screen"
+        canonical="https://sahadhyayi.com/from-page-to-screen"
+        url="https://sahadhyayi.com/from-page-to-screen"
       />
       <main className="min-h-screen bg-background text-foreground">
         <section className="relative isolate overflow-hidden border-b border-[#344438] bg-[#101711] text-white">
