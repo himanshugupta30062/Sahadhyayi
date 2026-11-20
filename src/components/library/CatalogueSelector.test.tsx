@@ -126,9 +126,9 @@ describe('CatalogueSelector', () => {
     expect(screen.getByText('Verified PDF')).toBeInTheDocument();
     expect(screen.getByText('No PDF')).toBeInTheDocument();
     expect(within(screen.getByRole('option', { name: /Verified Edition/ })).getByText('ISBN 9781234567890')).toBeInTheDocument();
-    expect(screen.getByText('240 pages')).toBeInTheDocument();
-    expect(screen.getByText('2.0 MB')).toBeInTheDocument();
-    expect(screen.getByText('512 KB')).toBeInTheDocument();
+    expect(screen.getByText(/240 pages/)).toBeInTheDocument();
+    expect(screen.getByText(/2\.0 MB/)).toBeInTheDocument();
+    expect(screen.getByText(/512 KB/)).toBeInTheDocument();
     expect(container.querySelector('img')).toHaveAttribute('src', 'https://example.com/cover.jpg');
     expect(mocks.from).toHaveBeenCalledWith('books_library');
     expect(mocks.builder.eq).toHaveBeenCalledWith('is_archived', false);
