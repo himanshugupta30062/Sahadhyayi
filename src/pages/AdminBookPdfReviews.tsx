@@ -22,6 +22,7 @@ import {
   CheckCircle2,
   Download,
   ExternalLink,
+  Eye,
   FileSearch,
   FileText,
   LoaderCircle,
@@ -220,7 +221,12 @@ export default function AdminBookPdfReviews() {
         // Keep the signed URL available as an explicit link in the review panel.
         setPreviewedId(selected.id);
         setPreviewUrl(data.url);
-        const preview = window.open(data.url, '_blank', 'noopener,noreferrer');
+        let preview: Window | null = null;
+        try {
+          preview = window.open(data.url, '_blank', 'noopener,noreferrer');
+        } catch {
+          preview = null;
+        }
         toast({
           title: preview ? 'Private PDF preview opened' : 'Preview link ready',
           description: preview
@@ -250,7 +256,14 @@ export default function AdminBookPdfReviews() {
 
   const handleDownload = async () => {
     if (previewUrl) {
-      window.open(previewUrl, '_blank');
+      const link = document.createElement('a');
+      link.href = previewUrl;
+      link.download = selected?.original_filename || 'document.pdf';
+      link.target = '_blank';
+      link.rel = 'noopener,noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
       return;
     }
     await invokeReview('preview');
@@ -524,29 +537,66 @@ export default function AdminBookPdfReviews() {
                   )}
                 </div>
 
-                <div className="rounded-lg border p-4">
-                  <h3 className="font-semibold">PDF preview</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">The uploaded file remains private until you approve it. Open the temporary preview and inspect the pages before making your decision.</p>
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    <Button variant="outline" onClick={() => void invokeReview('preview')} disabled={Boolean(busyAction)}>
-                      <ExternalLink className="mr-2 h-4 w-4" /> {busyAction === 'preview' ? 'Opening preview…' : 'View PDF'}
-                    </Button>
-                    <Button variant="outline" onClick={() => void handleDownload()} disabled={Boolean(busyAction)}>
-                      <Download className="mr-2 h-4 w-4" /> Download PDF
-                    </Button>
+                <div className="rounded-lg border p-4 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <h3 className="font-semibold">PDF preview</h3>
+                      <p className="mt-1 text-xs text-muted-foreground">The uploaded file remains private until you approve it. Inspect the document before making your decision.</p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button variant="outline" size="sm" onClick={() => void invokeReview('preview')} disabled={Boolean(busyAction)}>
+                        <ExternalLink className="mr-1.5 h-3.5 w-3.5" /> {busyAction === 'preview' ? 'Generating preview…' : previewUrl && previewedId === selected.id ? 'Refresh Preview' : 'View PDF'}
+                      </Button>
+                      {previewUrl && previewedId === selected.id ? (
+                        <>
+                          <a
+                            href={previewUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium shadow-sm hover:bg-accent hover:text-accent-foreground"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" /> Open in New Tab
+                          </a>
+                          <a
+                            href={previewUrl}
+                            download={selected.original_filename || 'document.pdf'}
+                            className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium shadow-sm hover:bg-accent hover:text-accent-foreground"
+                          >
+                            <Download className="h-3.5 w-3.5" /> Download PDF
+                          </a>
+                        </>
+                      ) : (
+                        <Button variant="outline" size="sm" onClick={() => void handleDownload()} disabled={Boolean(busyAction)}>
+                          <Download className="mr-1.5 h-3.5 w-3.5" /> Download PDF
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   {previewUrl && previewedId === selected.id && (
-                    <div className="mt-3 rounded-md border border-primary/20 bg-primary/5 p-3 text-sm">
-                      <p className="font-medium">Secure preview link ready</p>
-                      <p className="mt-1 text-xs text-muted-foreground">This private link expires in three minutes.</p>
-                      <a
-                        href={previewUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-2 inline-flex items-center gap-1 font-medium text-primary underline"
-                      >
-                        Open PDF preview <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
+                    <div className="mt-3 rounded-lg border bg-muted/20 p-3 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2 border-border/50 text-xs">
+                        <div>
+                          <p className="font-medium text-foreground flex items-center gap-1.5">
+                            <Eye className="h-3.5 w-3.5 text-primary" /> Secure preview link ready (Expires in 3 minutes)
+                          </p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5 truncate max-w-[280px]">File: {selected.original_filename}</p>
+                        </div>
+                        <a
+                          href={previewUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 font-medium text-primary hover:underline text-xs"
+                        >
+                          Open PDF preview <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                      </div>
+                      <div className="w-full h-96 sm:h-[480px] rounded border bg-background overflow-hidden">
+                        <iframe
+                          src={previewUrl}
+                          title={`Private PDF Preview: ${selected.submitted_title || selected.original_filename}`}
+                          className="w-full h-full border-0"
+                        />
+                      </div>
                     </div>
                   )}
                 </div>
