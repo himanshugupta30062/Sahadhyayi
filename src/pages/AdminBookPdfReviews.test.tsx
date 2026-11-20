@@ -113,7 +113,7 @@ describe('AdminBookPdfReviews', () => {
     renderPage();
 
     fireEvent.click(screen.getByRole('button', { name: 'Pending', exact: true }));
-    expect(screen.getByText('approved · publication incomplete')).toBeInTheDocument();
+    expect(screen.getAllByText('approved · publication incomplete')[0]).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Retry Library publication/i })).toBeDisabled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Published', exact: true }));
@@ -151,7 +151,7 @@ describe('AdminBookPdfReviews', () => {
     expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Private PDF preview opened' }));
   });
 
-  it('keeps approval available and exposes a secure link when the preview popup is blocked', async () => {
+  it('keeps approval available and exposes a secure link and inline preview when the preview popup is blocked', async () => {
     vi.spyOn(window, 'open').mockImplementation(() => null);
     mocks.invoke.mockResolvedValueOnce({ data: { url: 'https://signed.example/preview' }, error: null });
     renderPage();
@@ -161,6 +161,7 @@ describe('AdminBookPdfReviews', () => {
     fireEvent.click(screen.getByRole('button', { name: /View PDF/i }));
     await waitFor(() => expect(screen.getByRole('link', { name: /Open PDF preview/i })).toHaveAttribute('href', 'https://signed.example/preview'));
     expect(approve).toBeEnabled();
+    expect(screen.getByTitle(/Private PDF Preview/i)).toBeInTheDocument();
     expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
       title: 'Preview link ready',
       description: expect.stringMatching(/browser blocked/i),
