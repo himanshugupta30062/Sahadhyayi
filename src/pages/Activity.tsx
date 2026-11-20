@@ -38,19 +38,23 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 type ActivityCategory = 'all' | 'clubs-events' | 'challenges' | 'games' | 'brain-science';
 
+// Normalize old links into the consolidated Activity destinations.
+const legacyTabMap: Record<string, ActivityCategory> = {
+  events: 'clubs-events',
+  meetups: 'clubs-events',
+  groups: 'clubs-events',
+  'iq-test': 'brain-science',
+};
+
 export default function Activity() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTab = searchParams.get('tab');
-  // Normalize old links into the consolidated Activity destinations.
-  const legacyTabMap: Record<string, ActivityCategory> = { events: 'clubs-events', meetups: 'clubs-events', groups: 'clubs-events', 'iq-test': 'brain-science' };
   const initialTab = requestedTab ? legacyTabMap[requestedTab] || requestedTab : null;
   const [activeCategory, setActiveCategory] = useState<ActivityCategory>(
     initialTab === 'groups' ? 'all' : (initialTab as ActivityCategory) || 'all'
   );
   const [searchQuery, setSearchQuery] = useState('');
-
-
 
   // Sync tab state when URL changes (e.g. from nav clicks)
   useEffect(() => {
@@ -61,7 +65,7 @@ export default function Activity() {
     } else if (rawTab && rawTab !== activeCategory && ['clubs-events', 'challenges', 'games', 'brain-science'].includes(rawTab)) {
       setActiveCategory(rawTab as ActivityCategory);
     }
-  }, [searchParams, activeCategory]);
+  }, [searchParams, activeCategory, setSearchParams]);
 
   // 1. Reading Challenges
   const { data: challenges = [], isLoading: isLoadingChallenges } = useChallenges();

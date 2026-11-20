@@ -298,7 +298,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } else {
       setMode('dark');
     }
-  }, [isDark, setMode, prefs.customTheme]);
+  }, [isDark, setMode]);
 
   return (
     <ThemeContext.Provider

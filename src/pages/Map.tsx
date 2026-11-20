@@ -417,7 +417,7 @@ const MapPage = () => {
         });
       });
     return points;
-  }, [readers, locationSharingEnabled, currentLocation, selectedBook, selfAvatarUrl, searchQuery]);
+  }, [readers, locationSharingEnabled, currentLocation, selectedBook, selfAvatarUrl, searchQuery, user?.id]);
 
   const friendPoints = useMemo<MapplsPoint[]>(() => {
     const points: MapplsPoint[] = [];
@@ -470,7 +470,7 @@ const MapPage = () => {
       });
     });
     return points;
-  }, [friendsQuery.data, locationSharingEnabled, currentLocation, selfAvatarUrl, searchQuery]);
+  }, [friendsQuery.data, locationSharingEnabled, currentLocation, selfAvatarUrl, searchQuery, user?.id]);
 
   const explorePoints = useMemo<MapplsPoint[]>(() => {
     const points: MapplsPoint[] = [];

@@ -346,7 +346,7 @@ export const usePaginatedLibraryBooks = (params: UsePaginatedLibraryBooksParams 
       hasNextPage: page < totalPages,
       hasPrevPage: page > 1,
     };
-  }, [allBooksQuery.data, page, pageSize, selectedAuthor]);
+  }, [allBooksQuery.data, page, pageSize]);
 
   // Preload first 8 cover images for instant rendering
   React.useEffect(() => {

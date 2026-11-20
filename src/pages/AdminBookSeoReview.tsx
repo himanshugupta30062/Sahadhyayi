@@ -43,6 +43,7 @@ const validUrl = (value: string) => {
   catch { return false; }
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function parseBookSeoReviewQueue(value: unknown): QueueFile {
   if (!value || typeof value !== "object") throw new Error("The selected file is not a valid review queue.");
   const candidate = value as Partial<QueueFile>;

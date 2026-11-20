@@ -30,6 +30,7 @@ import { useAddToPersonalLibrary } from '@/hooks/usePersonalLibrary';
 import { useBookSearch, type BookSearchResult, type BookSaveResult, type AccessType } from '@/hooks/useBookSearch';
 import { useAuth } from '@/contexts/authHelpers';
 import { toast } from '@/components/ui/use-toast';
+import { isWhitelistedProxyHost, getProxiedPdfUrl } from '@/utils/pdfProxyHelper';
 import {
   Select,
   SelectContent,
@@ -55,14 +56,19 @@ const startBookFileDownload = (fileUrl: string, title: string, format: 'pdf' | '
       .replace(/[^a-zA-Z0-9]+/g, '-')
       .replace(/^-|-$/g, '')
       .slice(0, 100) || 'sahadhyayi-book';
-    const proxyUrl = new URL('https://rknxtatvlzunatpyqxro.supabase.co/functions/v1/pdf-proxy');
-    proxyUrl.searchParams.set('url', parsedFileUrl.toString());
-    proxyUrl.searchParams.set('download', '1');
-    proxyUrl.searchParams.set('format', format);
-    proxyUrl.searchParams.set('filename', `${safeTitle}.${format}`);
+    const filename = `${safeTitle}.${format}`;
+
+    let targetUrl: string;
+    if (isWhitelistedProxyHost(fileUrl)) {
+      targetUrl = getProxiedPdfUrl(fileUrl, true, filename);
+    } else {
+      // Non-whitelisted hosts must download directly from the origin
+      targetUrl = parsedFileUrl.toString();
+    }
 
     const link = document.createElement('a');
-    link.href = proxyUrl.toString();
+    link.href = targetUrl;
+    link.download = filename;
     link.rel = 'noopener noreferrer';
     link.style.display = 'none';
     document.body.appendChild(link);

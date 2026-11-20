@@ -21,6 +21,10 @@ const ALLOWED_PROXY_HOST_PATTERNS = [
   'ncert.nic.in',
   'gitapress.org',
   'umn.edu',
+  'harvard.edu',
+  'columbia.edu',
+  'geneseo.edu',
+  'example.edu',
   'github.io',
   'githubusercontent.com',
   'hariomgroup.org',
@@ -34,7 +38,6 @@ export function isWhitelistedProxyHost(url: string): boolean {
   try {
     const parsed = new URL(url);
     const hostname = parsed.hostname.toLowerCase();
-    if (hostname.endsWith('.edu')) return true;
     return ALLOWED_PROXY_HOST_PATTERNS.some(
       (suffix) => hostname === suffix || hostname.endsWith(`.${suffix}`)
     );
