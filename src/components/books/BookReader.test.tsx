@@ -314,4 +314,37 @@ describe('BookReader', () => {
       'noopener,noreferrer'
     );
   });
+
+  it('does not prematurely mark slow PDFs in canvas mode as restricted after 6.5s', async () => {
+    renderReader('https://example.com/slow-loading.pdf');
+
+    // Wait past any immediate renders
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Read Book' })).toBeInTheDocument();
+    });
+
+    // Verify restricted preview message is not shown
+    expect(screen.queryByText(/Inline PDF Preview Restricted/i)).not.toBeInTheDocument();
+  });
+
+  it('allows switching from browser PDF viewer back to in-page canvas viewer', async () => {
+    renderReader('https://publisher.example/toggle.pdf');
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Preview blocked\?/i })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Preview blocked\?/i }));
+
+    const nativeViewer = screen.getByRole('button', { name: /Try Browser PDF Viewer/i });
+    fireEvent.click(nativeViewer);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Preview blocked\?/i })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Preview blocked\?/i }));
+
+    const canvasViewerBtn = screen.getByRole('button', { name: /Try In-Page Canvas Viewer/i });
+    expect(canvasViewerBtn).toBeInTheDocument();
+    fireEvent.click(canvasViewerBtn);
+  });
 });

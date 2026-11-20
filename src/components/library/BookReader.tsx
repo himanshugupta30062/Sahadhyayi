@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,6 +24,7 @@ import {
   buildSafeGoogleBooksEmbedUrl,
   buildSafePdfEmbedUrl,
 } from '@/utils/bookReaderPreview';
+import { isWhitelistedProxyHost, getProxiedPdfUrl } from '@/utils/pdfProxyHelper';
 
 interface BookReaderProps {
   book: Book | null;
@@ -135,21 +136,30 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
 
   const [pdfLoadFailed, setPdfLoadFailed] = useState(false);
   const [iframeLoaded, setIframeLoaded] = useState(false);
+  const iframeLoadedRef = useRef(false);
+  iframeLoadedRef.current = iframeLoaded;
 
   // Reset load state when book changes
   useEffect(() => {
     setPdfLoadFailed(false);
     setIframeLoaded(false);
+    iframeLoadedRef.current = false;
 
     if (!book?.pdf_url) return;
 
-    // Timeout: if preview doesn't confirm loaded in 7s, offer fallback
+    // Timeout: if preview doesn't confirm loaded in 15s, offer fallback
+    let isCancelled = false;
     const timer = setTimeout(() => {
-      setPdfLoadFailed((prev) => !iframeLoaded || prev);
-    }, 7000);
+      if (!isCancelled && !iframeLoadedRef.current) {
+        setPdfLoadFailed(true);
+      }
+    }, 15000);
 
-    return () => clearTimeout(timer);
-  }, [book?.pdf_url, iframeLoaded]);
+    return () => {
+      isCancelled = true;
+      clearTimeout(timer);
+    };
+  }, [book?.pdf_url]);
 
   // PDF viewer component
   const renderPdfViewer = () => {
@@ -157,9 +167,11 @@ const BookReader = ({ book, isOpen, onClose }: BookReaderProps) => {
 
     const analysis = validateReaderUrl(book.pdf_url);
     const isGBooks = analysis.isGoogleBooks;
+    const isProxyEligible = !isGBooks && isWhitelistedProxyHost(book.pdf_url);
+    const candidatePdfUrl = isProxyEligible ? getProxiedPdfUrl(book.pdf_url) : book.pdf_url;
     const embedUrl = isGBooks && analysis.googleBooksId
       ? buildSafeGoogleBooksEmbedUrl(analysis.googleBooksId)
-      : buildSafePdfEmbedUrl(book.pdf_url, currentPage);
+      : buildSafePdfEmbedUrl(candidatePdfUrl, currentPage);
 
     return (
       <div 

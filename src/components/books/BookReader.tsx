@@ -240,17 +240,27 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     setPdfIframeLoaded(false);
     setPdfManualFallback(false);
 
-    const timer = setTimeout(() => {
-      if (!isCancelled) {
-        setPdfStatus((prev) => (prev === 'loaded' ? 'loaded' : 'blocked'));
-      }
-    }, 6500);
+    // In canvas mode, PdfCanvasViewer manages document fetching, range requests,
+    // proxy fallbacks, and error reporting via onBlocked(). An arbitrary 6.5s iframe
+    // timer must NEVER prematurely mark canvas mode as 'blocked'.
+    // In native embed mode ('embed'), a generous 15s timer provides a graceful fallback.
+    if (pdfViewMode === 'embed') {
+      const timer = setTimeout(() => {
+        if (!isCancelled) {
+          setPdfStatus((prev) => (prev === 'loaded' ? 'loaded' : 'blocked'));
+        }
+      }, 15000);
+
+      return () => {
+        isCancelled = true;
+        clearTimeout(timer);
+      };
+    }
 
     return () => {
       isCancelled = true;
-      clearTimeout(timer);
     };
-  }, [isPdf, activeReadUrl, currentPage, pdfRetryCount]);
+  }, [isPdf, activeReadUrl, currentPage, pdfRetryCount, pdfViewMode]);
 
   const handleReaderLoadError = () => {
     if (activeReadUrlIndex >= readUrls.length - 1) return;
@@ -1297,6 +1307,22 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                           Try Browser PDF Viewer
                         </Button>
                       )}
+                      {activeReadUrl && pdfViewMode === 'embed' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setPdfViewMode('canvas');
+                            setPdfStatus('loading');
+                            setPdfIframeLoaded(false);
+                            setPdfManualFallback(false);
+                          }}
+                          className="gap-2 text-xs"
+                        >
+                          <BookOpen className="w-4 h-4" />
+                          Try In-Page Canvas Viewer
+                        </Button>
+                      )}
                       {activeReadUrl && (
                         <Button
                           variant="default"
@@ -1379,7 +1405,13 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                         currentPage={currentPage}
                         readerTheme={readerTheme}
                         isFullscreen={isFullscreen}
-                        onTotalPagesDetected={(total) => setTotalPages(total)}
+                        onTotalPagesDetected={(total) => {
+                          setTotalPages(total);
+                          setPdfStatus('loaded');
+                        }}
+                        onLoaded={() => {
+                          setPdfStatus('loaded');
+                        }}
                         onPageChange={(nextPage) => {
                           setCurrentPage(nextPage);
                           saveProgressLocally(

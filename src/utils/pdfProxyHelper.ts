@@ -23,6 +23,7 @@ const ALLOWED_PROXY_HOST_PATTERNS = [
   'umn.edu',
   'github.io',
   'githubusercontent.com',
+  'hariomgroup.org',
 ];
 
 /**
