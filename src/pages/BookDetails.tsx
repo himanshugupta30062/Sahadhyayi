@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import './BookDetails.css';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Calendar, BookOpen, Globe, User, LogIn, UserPlus } from 'lucide-react';
+import { ArrowLeft, Calendar, BookOpen, Globe, User, LogIn, UserPlus, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -435,9 +435,19 @@ const BookDetails = () => {
                   )}
                 </div>
 
-                {/* Edition Selector Shortcut */}
-                <div className="flex items-center gap-3 mb-6">
+                {/* Edition Selector & Creator Studio Shortcut */}
+                <div className="flex flex-wrap items-center gap-3 mb-6">
                   <BookEditionPicker book={book} triggerVariant="outline" triggerSize="sm" />
+                  <Link to={`/creator-studio?bookId=${book.id}`}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 gap-1.5 text-xs text-amber-700 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/10"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                      Design Bookstagram Post
+                    </Button>
+                  </Link>
                 </div>
               </div>
 
