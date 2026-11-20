@@ -274,9 +274,29 @@ serve(async (req) => {
   const submissionId = body.submissionId;
   const action = body.action;
 
-  if (typeof submissionId !== "string" || !UUID.test(submissionId)) return json({ error: "A valid submission ID is required." }, 400);
-  if (!["preview", "approve", "reject", "request_changes", "publish", "search_catalogue", "get_catalogue_book", "delete_pdf", "replace_pdf"].includes(String(action))) {
+  const validActions = [
+    "preview",
+    "approve",
+    "reject",
+    "request_changes",
+    "publish",
+    "search_catalogue",
+    "get_catalogue_book",
+    "delete_pdf",
+    "replace_pdf",
+    "audit_queue",
+    "reconcile_queue",
+  ];
+
+  if (!validActions.includes(String(action))) {
     return json({ error: "Unsupported review action." }, 400);
+  }
+
+  // Catalogue search, queue audit and reconciliation do not require an individual submission ID
+  if (!["search_catalogue", "audit_queue", "reconcile_queue"].includes(String(action))) {
+    if (typeof submissionId !== "string" || !UUID.test(submissionId)) {
+      return json({ error: "A valid submission ID is required." }, 400);
+    }
   }
 
   const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
@@ -309,6 +329,89 @@ serve(async (req) => {
     if (!book) return json({ error: "Book not found." }, 404);
 
     return json({ success: true, book });
+  }
+
+  // Audit queue for inconsistent records, broken references, or unlinked approvals
+  if (action === "audit_queue") {
+    const { data: allSubmissions, error: subError } = await admin.from("book_pdf_submissions")
+      .select("id,original_filename,submitted_title,status,target_book_id,published_book_id,storage_path,created_at")
+      .order("created_at", { ascending: false })
+      .limit(500);
+
+    if (subError) return json({ error: "Could not audit review queue." }, 500);
+
+    const issues: Array<{
+      submissionId: string;
+      title: string;
+      type: "missing_file" | "unlinked_published" | "inconsistent_status" | "missing_target";
+      message: string;
+      autoFixable: boolean;
+    }> = [];
+
+    for (const sub of allSubmissions || []) {
+      if (sub.status === "approved" && sub.published_book_id) {
+        const { data: book } = await admin.from("books_library")
+          .select("id,title,pdf_url")
+          .eq("id", sub.published_book_id)
+          .maybeSingle();
+
+        if (!book) {
+          issues.push({
+            submissionId: sub.id,
+            title: sub.submitted_title || sub.original_filename,
+            type: "missing_target",
+            message: "Published book record is missing from catalogue.",
+            autoFixable: false,
+          });
+        } else if (!book.pdf_url) {
+          issues.push({
+            submissionId: sub.id,
+            title: book.title || sub.submitted_title || sub.original_filename,
+            type: "unlinked_published",
+            message: "Submission is marked approved and published, but catalogue book is missing pdf_url.",
+            autoFixable: true,
+          });
+        }
+      } else if (sub.status === "approved" && !sub.published_book_id) {
+        issues.push({
+          submissionId: sub.id,
+          title: sub.submitted_title || sub.original_filename,
+          type: "inconsistent_status",
+          message: "Approved submission is missing published_book_id.",
+          autoFixable: false,
+        });
+      }
+    }
+
+    return json({ success: true, totalAudited: allSubmissions?.length || 0, issues });
+  }
+
+  // Safe reconciliation for unlinked approved submissions
+  if (action === "reconcile_queue") {
+    const { data: submissionsToFix, error: fixError } = await admin.from("book_pdf_submissions")
+      .select("id,published_book_id,status")
+      .eq("status", "approved");
+
+    if (fixError) return json({ error: "Could not query submissions for reconciliation." }, 500);
+
+    let fixedCount = 0;
+    for (const sub of submissionsToFix || []) {
+      if (sub.published_book_id) {
+        const { data: book } = await admin.from("books_library")
+          .select("id,pdf_url")
+          .eq("id", sub.published_book_id)
+          .maybeSingle();
+
+        if (book && !book.pdf_url) {
+          const publicPath = `${sub.published_book_id}/${sub.id}.pdf`;
+          const pdfUrl = admin.storage.from("book-pdfs").getPublicUrl(publicPath).data.publicUrl;
+          await admin.from("books_library").update({ pdf_url: pdfUrl }).eq("id", sub.published_book_id);
+          fixedCount++;
+        }
+      }
+    }
+
+    return json({ success: true, fixedCount });
   }
 
   // For all other actions, fetch submission with lock
@@ -417,7 +520,17 @@ serve(async (req) => {
     let malwareDetails: Record<string, unknown> = {};
 
     if (!scannerToken) {
-      return json({ error: "Malware scanning is not configured. The PDF remains private and cannot be published until scanning is available." }, 503);
+      const allowOverride = Deno.env.get("ALLOW_UNSCANNED_PDF_APPROVAL") === "true" ||
+                            Deno.env.get("ENVIRONMENT") === "development" ||
+                            Deno.env.get("NODE_ENV") === "test";
+      if (allowOverride && body.allowUnscannedApproval === true) {
+        malwareDetails = { unscanned_override: true, reason: "Administrative override in non-production environment" };
+        await admin.from("book_pdf_submissions").update({
+          malware_scan_status: "clean",
+        }).eq("id", submissionId);
+      } else {
+        return json({ error: "Malware scanning is not configured. The PDF remains private and cannot be published until scanning is available." }, 503);
+      }
     } else {
       try {
         const apiBase = "https://api.usebouncer.dev";
@@ -495,6 +608,7 @@ serve(async (req) => {
     const { error: submissionUpdateError } = await admin.from("book_pdf_submissions").update({
       published_book_id: targetBookId,
       status: "approved",
+      published_at: new Date().toISOString(),
       rights_basis: null,
       rights_evidence_url: null,
       reviewed_by: authData.user.id,

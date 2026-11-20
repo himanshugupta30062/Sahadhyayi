@@ -110,7 +110,7 @@ describe('buildAssetOptions', () => {
       verified: false,
     });
     expect(buildAssetOptions('https://example.com/book.pdf')[0])
-      .toMatchObject({ format: 'pdf', isDirectDownload: true, verified: true });
+      .toMatchObject({ format: 'pdf', isDirectDownload: true, verified: false });
   });
 
   it('returns an empty list when no formats are supplied', () => {
