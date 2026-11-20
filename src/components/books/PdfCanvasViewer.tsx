@@ -12,6 +12,7 @@ interface PdfCanvasViewerProps {
   onTotalPagesDetected: (total: number) => void;
   onPageChange: (newPage: number) => void;
   onBlocked: () => void;
+  onLoaded?: (docInfo: { numPages: number }) => void;
   onTextSelected?: (text: string) => void;
 }
 
@@ -23,6 +24,7 @@ export const PdfCanvasViewer: React.FC<PdfCanvasViewerProps> = ({
   onTotalPagesDetected,
   onPageChange,
   onBlocked,
+  onLoaded,
   onTextSelected,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -66,23 +68,19 @@ export const PdfCanvasViewer: React.FC<PdfCanvasViewerProps> = ({
           loadedDoc = await loadingTask.promise;
         } catch (directErr) {
           console.warn('Direct PDF load failed, attempting via Supabase proxy:', directErr);
-          if (isCorsRestrictedPdf(url)) {
-            const proxiedUrl = getProxiedPdfUrl(url);
-            if (proxiedUrl && proxiedUrl !== url) {
-              setTriedProxy(true);
-              setStatusMessage('Streaming PDF via secure proxy...');
-              const proxyTask = pdfjs.getDocument({
-                url: proxiedUrl,
-                withCredentials: false,
-                // The proxy preserves 206 + Content-Range for progressive reading.
-                disableStream: true,
-                disableAutoFetch: true,
-                rangeChunkSize: 64 * 1024,
-              });
-              loadedDoc = await proxyTask.promise;
-            } else {
-              throw directErr;
-            }
+          const proxiedUrl = getProxiedPdfUrl(url);
+          if (proxiedUrl && proxiedUrl !== url) {
+            setTriedProxy(true);
+            setStatusMessage('Streaming PDF via secure proxy...');
+            const proxyTask = pdfjs.getDocument({
+              url: proxiedUrl,
+              withCredentials: false,
+              // The proxy preserves 206 + Content-Range for progressive reading.
+              disableStream: true,
+              disableAutoFetch: true,
+              rangeChunkSize: 64 * 1024,
+            });
+            loadedDoc = await proxyTask.promise;
           } else {
             throw directErr;
           }
@@ -94,6 +92,7 @@ export const PdfCanvasViewer: React.FC<PdfCanvasViewerProps> = ({
           setPdfDoc(loadedDoc);
           if (typeof loadedDoc.numPages === 'number') {
             onTotalPagesDetected(loadedDoc.numPages);
+            onLoaded?.({ numPages: loadedDoc.numPages });
           }
           setRenderStatus('ready');
         }
@@ -118,7 +117,7 @@ export const PdfCanvasViewer: React.FC<PdfCanvasViewerProps> = ({
         }
       }
     };
-  }, [url, onTotalPagesDetected, onBlocked]);
+  }, [url, onTotalPagesDetected, onBlocked, onLoaded]);
 
   // Render active page onto Canvas
   const renderCurrentPage = useCallback(async () => {

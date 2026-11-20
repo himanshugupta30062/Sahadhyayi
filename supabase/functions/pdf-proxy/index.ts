@@ -29,6 +29,7 @@ const ALLOWED_HOST_SUFFIXES = [
   "umn.edu",
   "github.io",
   "githubusercontent.com",
+  "hariomgroup.org",
 ] as const;
 
 // Explicitly blocked TLDs and patterns that are commonly abused for SSRF
@@ -90,6 +91,7 @@ function isHostBlocked(hostname: string): boolean {
 function isHostAllowed(hostname: string): boolean {
   const h = hostname.toLowerCase();
   if (isHostBlocked(h)) return false;
+  if (h.endsWith(".edu")) return true;
   return ALLOWED_HOST_SUFFIXES.some((suffix) => h === suffix || h.endsWith("." + suffix));
 }
 
@@ -215,14 +217,22 @@ serve(async (req) => {
     }
 
     if (!response) return jsonError("PDF source did not respond", 502);
-    if (!response.ok) {
+    if (!response.ok && response.status !== 416) {
       return jsonError(`Failed to fetch PDF: ${response.status}`, response.status >= 500 ? 502 : response.status);
     }
 
-    // If a host ignores a byte-range request, never stream the entire large book
-    // through the function by accident. A normal full response remains capped.
-    if (requestedRange && response.status !== 206) {
-      return jsonError("The PDF source does not support byte-range streaming.", 502);
+    const contentLength = response.headers.get("content-length");
+    const parsedLength = contentLength ? Number.parseInt(contentLength, 10) : 0;
+
+    // If an upstream host ignores a byte-range request and returns 200 OK,
+    // allow streaming if the file is within MAX_RESPONSE_SIZE.
+    // If it exceeds MAX_RESPONSE_SIZE and does not support range requests, reject safely.
+    if (requestedRange && response.status === 200 && parsedLength > MAX_RESPONSE_SIZE) {
+      return jsonError("The PDF source does not support byte-range streaming and exceeds size limits.", 413);
+    }
+
+    if (contentLength && !Number.isNaN(parsedLength) && parsedLength > MAX_RESPONSE_SIZE && response.status !== 206) {
+      return jsonError("Response chunk too large", 413);
     }
 
     const requestedFormat = (requestUrl.searchParams.get("format") || "").toLowerCase();
@@ -235,12 +245,6 @@ serve(async (req) => {
     const isEpub = upstreamType.includes("epub") || upstreamType.includes("zip") || upstreamType.includes("octet-stream");
     if (fileFormat === "pdf" && !isPdf) return jsonError("Upstream is not a valid PDF file", 415);
     if (fileFormat === "epub" && !isEpub) return jsonError("Upstream is not a valid EPUB file", 415);
-
-    const contentLength = response.headers.get("content-length");
-    if (contentLength) {
-      const size = Number.parseInt(contentLength, 10);
-      if (!Number.isNaN(size) && size > MAX_RESPONSE_SIZE) return jsonError("Response chunk too large", 413);
-    }
 
     const requestedFilename = requestUrl.searchParams.get("filename") || `sahadhyayi-book.${fileFormat}`;
     const safeFilename = requestedFilename.replace(/[^a-zA-Z0-9._-]/g, "_").replace(/^\.+/, "").slice(0, 120);

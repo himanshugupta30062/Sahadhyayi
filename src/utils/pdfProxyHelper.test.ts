@@ -13,6 +13,9 @@ describe('pdfProxyHelper', () => {
       expect(isWhitelistedProxyHost('https://www.gutenberg.org/ebooks/1')).toBe(true);
       expect(isWhitelistedProxyHost('https://cdn.archive.org/book.pdf')).toBe(true);
       expect(isWhitelistedProxyHost('https://files.sahadhyayi.com/book.pdf')).toBe(true);
+      expect(isWhitelistedProxyHost('https://hariomgroup.org/data/ashtavakra_gita.pdf')).toBe(true);
+      expect(isWhitelistedProxyHost('https://www.hariomgroup.org/data/book.pdf')).toBe(true);
+      expect(isWhitelistedProxyHost('https://hariomgroup.org.attacker.test/book.pdf')).toBe(false);
     });
 
     it('accepts educational domains but rejects lookalike suffixes', () => {
