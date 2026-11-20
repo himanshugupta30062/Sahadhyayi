@@ -118,10 +118,9 @@ serve(async (req) => {
 
   const action = body.action;
 
-  // These legacy admin operations are not safe against the currently deployed
-  // production schema. Replacement has a non-atomic fallback path and rescan
-  // writes metadata columns that do not exist in production. Keep both closed
-  // until their schema migration and end-to-end workflow are deployed.
+  // Legacy replacement is not safe against the currently deployed production
+  // schema. Keep it closed until its schema migration and end-to-end workflow
+  // are deployed. Malware rescan has been removed from this PDF workflow.
   if (action === "replace_pdf") {
     return json({
       error: "This PDF management operation is temporarily unavailable while the production-safe workflow is completed. No PDF or catalogue record was changed.",
