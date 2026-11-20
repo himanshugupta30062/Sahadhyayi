@@ -8,12 +8,72 @@ import {
 } from "lucide-react";
 import { useHomeEngagement } from '@/hooks/useHomeEngagement';
 
-// Base pillar definitions
+// Base pillar definitions with curated editorial visuals and distinctive color identities
 const basePillars = [
-  { title: "Discover", eyebrow: "Find your next idea", description: "Explore books, authors, research and recommendations.", icon: Compass, tone: "bg-[#F2F6F0] dark:bg-[#142018]", ink: "text-[#315A3D] dark:text-[#B8D7B7]", links: [{ label: "Digital Library", to: "/library" }, { label: "Book Finder", to: "/discovery" }, { label: "Authors", to: "/authors" }, { label: "Research Papers", to: "/research-papers" }] },
-  { title: "Connect", eyebrow: "Read together", description: "Meet fellow readers, exchange thoughts and find your people.", icon: Users, tone: "bg-[#F2F4F9] dark:bg-[#151926]", ink: "text-[#485A9A] dark:text-[#BFCBF7]", links: [{ label: "Friends Feed", to: "/social" }, { label: "Reading Groups", to: "/groups" }, { label: "Readers Map", to: "/reader-map" }, { label: "Activity & Rooms", to: "/activity" }] },
-  { title: "Create", eyebrow: "Share what moves you", description: "Publish reflections, stories, reviews and original writing.", icon: Feather, tone: "bg-[#FBF4EC] dark:bg-[#241C15]", ink: "text-[#94652C] dark:text-[#E6C79A]", links: [{ label: "Articles", to: "/articles" }, { label: "Short Stories", to: "/stories" }, { label: "Write an article", to: "/articles" }, { label: "Publish a book", to: "/publish" }] },
-  { title: "Grow", eyebrow: "Learn beyond the page", description: "Ask questions, challenge yourself and build a reading habit.", icon: BrainCircuit, tone: "bg-[#F7F2F8] dark:bg-[#221724]", ink: "text-[#86528D] dark:text-[#D9B7E0]", links: [{ label: "Book Expert AI", to: "/library" }, { label: "Reading Challenges", to: "/games" }, { label: "Events", to: "/events" }, { label: "Reading Journal", to: "/journal" }] },
+  {
+    title: "Discover",
+    eyebrow: "Find your next idea",
+    description: "Explore books, authors, research and recommendations.",
+    icon: Compass,
+    image: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=600&q=80",
+    imageAlt: "Warm library bookshelves filled with books and reading collections",
+    tone: "bg-gradient-to-br from-[#FFFDF9] via-[#FDF7ED] to-[#FAF0E1] dark:from-[#1D1711] dark:via-[#18130E] dark:to-[#140F0B] border-[#F0DFBE] dark:border-[#3E2D1A]",
+    ink: "text-[#9E5D18] dark:text-[#E8AA58]",
+    links: [
+      { label: "Digital Library", to: "/library" },
+      { label: "Book Finder", to: "/discovery" },
+      { label: "Authors", to: "/authors" },
+      { label: "Research Papers", to: "/research-papers" },
+    ],
+  },
+  {
+    title: "Connect",
+    eyebrow: "Read together",
+    description: "Meet fellow readers, exchange thoughts and find your people.",
+    icon: Users,
+    image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80",
+    imageAlt: "Reader enjoying a book with journal, coffee and reader community",
+    tone: "bg-gradient-to-br from-[#FFF9F6] via-[#FDF3EE] to-[#FAECE5] dark:from-[#211614] dark:via-[#1B1110] dark:to-[#160E0D] border-[#FAD8CD] dark:border-[#4B2720]",
+    ink: "text-[#B84E38] dark:text-[#F39A86]",
+    links: [
+      { label: "Friends Feed", to: "/social" },
+      { label: "Reading Groups", to: "/groups" },
+      { label: "Readers Map", to: "/reader-map" },
+      { label: "Activity & Rooms", to: "/activity" },
+    ],
+  },
+  {
+    title: "Create",
+    eyebrow: "Share what moves you",
+    description: "Publish reflections, stories, reviews and original writing.",
+    icon: Feather,
+    image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=600&q=80",
+    imageAlt: "Fountain pen and notebook open on literary writing desk",
+    tone: "bg-gradient-to-br from-[#F6FAF6] via-[#EEF5EF] to-[#E5EFE7] dark:from-[#121E15] dark:via-[#0F1811] dark:to-[#0C140E] border-[#CCE0CF] dark:border-[#253D2A]",
+    ink: "text-[#2B683C] dark:text-[#88C697]",
+    links: [
+      { label: "Articles", to: "/articles" },
+      { label: "Short Stories", to: "/stories" },
+      { label: "Write an article", to: "/articles" },
+      { label: "Publish a book", to: "/publish" },
+    ],
+  },
+  {
+    title: "Grow",
+    eyebrow: "Learn beyond the page",
+    description: "Ask questions, challenge yourself and build a reading habit.",
+    icon: BrainCircuit,
+    image: "https://images.unsplash.com/photo-1532012164546-f432f2e3edd4?auto=format&fit=crop&w=600&q=80",
+    imageAlt: "Open book illuminated with ideas, wisdom and AI reading insights",
+    tone: "bg-gradient-to-br from-[#F8F5FB] via-[#F2EDF8] to-[#ECE3F4] dark:from-[#1D1424] dark:via-[#17101D] dark:to-[#130D18] border-[#DFC9E6] dark:border-[#422549]",
+    ink: "text-[#7B3D84] dark:text-[#CE94D7]",
+    links: [
+      { label: "Book Expert AI", to: "/library" },
+      { label: "Reading Challenges", to: "/games" },
+      { label: "Events", to: "/events" },
+      { label: "Reading Journal", to: "/journal" },
+    ],
+  },
 ];
 
 // Usage-aware enhancements per tier
@@ -24,7 +84,6 @@ const tierEnhancements: Record<string, Record<string, { badge?: string; badgeIco
     Create: { badge: 'Share your first thought', badgeIcon: <Feather className="w-3 h-3" />, description: 'Write a margin note or short review — no pressure.', highlightLink: '/articles' },
     Grow: { badge: 'Build a habit', badgeIcon: <TrendingUp className="w-3 h-3" />, description: 'Try a 7-day reading challenge to get started.', highlightLink: '/games' },
   },
-
   engaged: {
     Discover: { badge: 'Your picks await', badgeIcon: <Zap className="w-3 h-3" />, description: 'Book Expert AI learns from your reading history.', highlightLink: '/library' },
     Connect: { badge: 'Your people are here', badgeIcon: <Users className="w-3 h-3" />, description: 'Reading DNA matches you with compatible readers.', highlightLink: '/social?tab=dna' },
@@ -48,10 +107,46 @@ const moods = [
 ];
 
 const quickLinks = [
-  { title: "The Library", text: "A world of books to explore", to: "/library", icon: LibraryBig },
-  { title: "Reader community", text: "Conversations with fellow readers", to: "/social", icon: MessagesSquare },
-  { title: "Research & ideas", text: "Discover papers and knowledge", to: "/research-papers", icon: Network },
-  { title: "Literary stories", text: "News, events and new voices", to: "/news", icon: Newspaper },
+  {
+    title: "The Library",
+    text: "A world of books to explore",
+    to: "/library",
+    icon: LibraryBig,
+    image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=400&q=80",
+    imageAlt: "Illuminated library shelves",
+    tone: "bg-gradient-to-br from-[#FFFDF9] via-[#FDF7ED] to-[#FAF0E1] dark:from-[#1D1711] dark:via-[#18130E] dark:to-[#140F0B] border-[#F0DFBE] dark:border-[#3E2D1A]",
+    ink: "text-[#9E5D18] dark:text-[#E8AA58]",
+  },
+  {
+    title: "Reader community",
+    text: "Conversations with fellow readers",
+    to: "/social",
+    icon: MessagesSquare,
+    image: "https://images.unsplash.com/photo-1529148482759-b35b2825750f?auto=format&fit=crop&w=400&q=80",
+    imageAlt: "Readers gathering for conversation",
+    tone: "bg-gradient-to-br from-[#FFF9F6] via-[#FDF3EE] to-[#FAECE5] dark:from-[#211614] dark:via-[#1B1110] dark:to-[#160E0D] border-[#FAD8CD] dark:border-[#4B2720]",
+    ink: "text-[#B84E38] dark:text-[#F39A86]",
+  },
+  {
+    title: "Research & ideas",
+    text: "Discover papers and knowledge",
+    to: "/research-papers",
+    icon: Network,
+    image: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=400&q=80",
+    imageAlt: "Academic manuscripts and knowledge discovery",
+    tone: "bg-gradient-to-br from-[#F5F8FA] via-[#EDF3F7] to-[#E3EEF4] dark:from-[#111A21] dark:via-[#0D151B] dark:to-[#0A1015] border-[#C9DFED] dark:border-[#1E3444]",
+    ink: "text-[#2C6288] dark:text-[#7EB5DD]",
+  },
+  {
+    title: "Literary stories",
+    text: "News, events and new voices",
+    to: "/news",
+    icon: Newspaper,
+    image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=400&q=80",
+    imageAlt: "Literary fiction and inspiring stories",
+    tone: "bg-gradient-to-br from-[#F6FAF6] via-[#EEF5EF] to-[#E5EFE7] dark:from-[#121E15] dark:via-[#0F1811] dark:to-[#0C140E] border-[#CCE0CF] dark:border-[#253D2A]",
+    ink: "text-[#2B683C] dark:text-[#88C697]",
+  },
 ];
 
 export default function HomeFeatureUniverse() {
@@ -81,7 +176,6 @@ export default function HomeFeatureUniverse() {
     const elements = Array.from(el.querySelectorAll<HTMLElement>("[data-home-reveal]"));
     const revealAll = () => elements.forEach((element) => element.classList.add("home-revealed"));
 
-    // Never leave content hidden when IntersectionObserver is unavailable or reduced motion is preferred.
     if (
       typeof window === "undefined" ||
       !("IntersectionObserver" in window) ||
@@ -105,6 +199,7 @@ export default function HomeFeatureUniverse() {
     elements.forEach((element) => observer.observe(element));
     return () => observer.disconnect();
   }, []);
+
   const moodMessage = useMemo(() => {
     const selected = moods.find((item) => item.label === mood);
     const copy: Record<string, string> = {
@@ -122,9 +217,15 @@ export default function HomeFeatureUniverse() {
       <style>{`.home-feature-universe [data-home-reveal]{opacity:0;transform:translate3d(0,16px,0);transition:opacity 560ms ease,transform 560ms cubic-bezier(.2,.7,.2,1)}.home-feature-universe [data-home-reveal].home-revealed{opacity:1;transform:translate3d(0,0,0)}.home-feature-universe .home-feature-card{transition:transform 280ms ease,box-shadow 280ms ease,border-color 280ms ease}.home-feature-universe .home-feature-card:hover{transform:translateY(-4px);box-shadow:0 14px 32px rgba(20,35,24,.07)}.home-feature-universe .home-feature-link{transition:background-color 180ms ease,padding 180ms ease}.home-feature-universe .home-feature-link:hover{padding-left:14px}@media(prefers-reduced-motion:reduce){.home-feature-universe [data-home-reveal]{opacity:1!important;transition:none!important;transform:none!important}.home-feature-universe .home-feature-card,.home-feature-universe .home-feature-link{transition:none!important;transform:none!important}}`}</style>
       <div className="mx-auto max-w-7xl px-4 pt-8 pb-14 sm:px-6 sm:pt-10 sm:pb-16 lg:px-8">
         <div data-home-reveal className="mb-10 max-w-3xl">
-          <p className="mb-3 flex items-center gap-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-[.24em] text-[#8F681C] dark:text-[#D5B16D]"><span className="h-px w-7 bg-[#8F681C] dark:bg-[#D5B16D]"/>Beyond the book</p>
-          <h2 className="font-serif text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl text-[#1C201D] dark:text-[#F3F0E7]">A reading universe, <span className="text-[#1C442D] dark:text-[#D5B16D]">made for you.</span></h2>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-[#636B65] dark:text-[#A5ADA6] sm:text-base">Discover a book. Meet someone reading it. Share an idea. Follow your curiosity. Every part of Sahadhyayi connects back to the joy of reading.</p>
+          <p className="mb-3 flex items-center gap-2 text-[10px] sm:text-[11px] font-bold uppercase tracking-[.24em] text-[#8F681C] dark:text-[#D5B16D]">
+            <span className="h-px w-7 bg-[#8F681C] dark:bg-[#D5B16D]"/>Beyond the book
+          </p>
+          <h2 className="font-serif text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl text-[#1C201D] dark:text-[#F3F0E7]">
+            A reading universe, <span className="text-[#1C442D] dark:text-[#D5B16D]">made for you.</span>
+          </h2>
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-[#636B65] dark:text-[#A5ADA6] sm:text-base">
+            Discover a book. Meet someone reading it. Share an idea. Follow your curiosity. Every part of Sahadhyayi connects back to the joy of reading.
+          </p>
           {/* Tier indicator - subtle */}
           {tier !== 'new' && (
             <div className="mt-4 flex items-center gap-2 text-xs text-[#8F681C] dark:text-[#D5B16D]" data-home-reveal>
@@ -143,36 +244,57 @@ export default function HomeFeatureUniverse() {
           )}
         </div>
 
+        {/* 4 Pillars with Distinct Color Identifiers, Images & Smooth Hover Transitions */}
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-          {basePillars.map(({ title, eyebrow, description, icon: Icon, tone, ink, links }) => {
+          {basePillars.map(({ title, eyebrow, description, icon: Icon, image, imageAlt, tone, ink, links }) => {
             const enhancement = tierEnhancements[tier]?.[title];
             const displayDescription = enhancement?.description ?? description;
             const highlightLink = enhancement?.highlightLink;
 
             return (
-              <article key={title} data-home-reveal className={`home-feature-card group flex min-w-0 flex-col rounded-3xl border border-[#E5E0D8]/90 p-6 sm:p-7 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl dark:border-white/[.08] shadow-xs ${tone}`}>
-                <div className="mb-5 flex items-start justify-between">
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-white/90 dark:bg-black/30 shadow-2xs ${ink}`}>
-                    <Icon size={22} />
+              <article
+                key={title}
+                data-home-reveal
+                className={`home-feature-card group flex min-w-0 flex-col justify-between rounded-3xl border p-5 sm:p-6 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl dark:border-white/[.08] shadow-xs ${tone} overflow-hidden`}
+              >
+                <div>
+                  {/* Card Visual Image Banner with Subtle Zoom on Hover */}
+                  <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden mb-5 bg-muted/40 border border-black/5 dark:border-white/5">
+                    <img
+                      src={image}
+                      alt={imageAlt}
+                      className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+
+                    {/* Floating Icon & Optional Enhancement Badge */}
+                    <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2">
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-xl backdrop-blur-md bg-white/90 dark:bg-black/80 shadow-xs border border-white/20 dark:border-white/10 ${ink}`}>
+                        <Icon size={20} />
+                      </div>
+                      {enhancement?.badge && (
+                        <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[.1em] backdrop-blur-md bg-white/95 dark:bg-black/80 text-[#8F681C] dark:text-[#D5B16D] border border-black/5 dark:border-white/10 shadow-2xs">
+                          {enhancement.badgeIcon}
+                          {enhancement.badge}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  {enhancement?.badge && (
-                    <span className="shrink-0 ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[.1em] bg-[#8F681C]/10 dark:bg-[#D5B16D]/10 text-[#8F681C] dark:text-[#D5B16D] border border-[#8F681C]/20 dark:border-[#D5B16D]/20">
-                      {enhancement.badgeIcon}
-                      {enhancement.badge}
-                    </span>
-                  )}
+
+                  <p className={`text-[10px] font-bold uppercase tracking-[.18em] ${ink}`}>{eyebrow}</p>
+                  <h3 className="mt-1 font-serif text-2xl font-bold tracking-tight text-foreground group-hover:text-[#1C442D] dark:group-hover:text-[#D5B16D] transition-colors">{title}</h3>
+                  <p className="mt-2 min-h-[48px] text-xs sm:text-sm leading-relaxed text-[#5D665F] dark:text-[#B0B7B1]">{displayDescription}</p>
                 </div>
-                <p className={`text-[10px] font-bold uppercase tracking-[.18em] ${ink}`}>{eyebrow}</p>
-                <h3 className="mt-1 font-serif text-2xl font-bold tracking-tight text-foreground">{title}</h3>
-                <p className="mt-2 min-h-[48px] text-xs sm:text-sm leading-6 text-[#5D665F] dark:text-[#B0B7B1]">{displayDescription}</p>
-                <div className="mt-6 grid gap-2">
+
+                <div className="mt-6 pt-4 border-t border-black/[0.08] dark:border-white/[0.08] grid gap-1.5">
                   {links.map((link) => {
                     const isHighlighted = highlightLink && link.to === highlightLink;
                     return (
                       <Link
                         key={link.label}
                         to={link.to}
-                        className={`home-feature-link group/link flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-medium transition-all ${
+                        className={`home-feature-link group/link flex items-center justify-between rounded-xl px-3.5 py-2 text-xs sm:text-sm font-medium transition-all ${
                           isHighlighted
                             ? 'bg-[#8F681C]/10 dark:bg-[#D5B16D]/10 text-[#1C442D] dark:text-[#D5B16D] border border-[#8F681C]/30 dark:border-[#D5B16D]/30 hover:bg-[#8F681C]/20 dark:hover:bg-[#D5B16D]/20'
                             : 'hover:bg-white/90 dark:hover:bg-white/[.12] hover:pl-4 text-foreground/90 hover:text-foreground border border-transparent hover:border-black/5 dark:hover:border-white/5'
@@ -193,30 +315,72 @@ export default function HomeFeatureUniverse() {
           })}
         </div>
 
+        {/* Reading Radar & One Book Many Journeys */}
         <div data-home-reveal className="mt-12 grid gap-6 lg:grid-cols-[1.15fr_.85fr]">
           <div className="rounded-3xl border border-[#E5E0D8] bg-white p-6 sm:p-8 dark:border-[#242E28] dark:bg-[#131715] shadow-xs">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-[#8F681C] dark:text-[#D5B16D]"><Sparkles size={15}/> Reading Radar</div>
-            <h3 className="mt-3 font-serif text-2xl font-bold sm:text-3xl text-[#1C201D] dark:text-[#F3F0E7]">What are you in the mood to read?</h3>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-[#636B65] dark:text-[#A5ADA6]">Choose a feeling to guide your next discovery. Your selection updates the reading prompt below.</p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {moods.map((item) => <button key={item.label} type="button" aria-pressed={mood === item.label} onClick={() => setMood(item.label)} className={`rounded-full border px-4 py-2 text-xs sm:text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C] ${mood === item.label ? "border-[#1C442D] bg-[#1C442D] text-white shadow-xs dark:border-[#D5B16D] dark:bg-[#D5B16D] dark:text-stone-950 font-semibold" : "border-[#E5E0D8] bg-[#FAF9F5] text-[#1C201D] hover:bg-[#F0EDE6] dark:border-[#242E28] dark:bg-[#171C19] dark:text-[#A5ADA6] dark:hover:bg-[#202820] dark:hover:text-[#F3F0E7]"}`}>{item.emoji} {item.label}</button>)}
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-[#8F681C] dark:text-[#D5B16D]">
+              <Sparkles size={15}/> Reading Radar
             </div>
-            <div className="mt-5 rounded-2xl bg-[#F5F2EB] p-4 text-sm leading-relaxed text-[#35483B] dark:bg-[#18221B] dark:text-[#C7D5C8] border border-[#EBE4D8] dark:border-[#26312B]" aria-live="polite">{moodMessage}</div>
-            <Link to={discoveryUrl} className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#1C442D] px-5 py-3 text-sm font-semibold text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-stone-950 dark:hover:bg-[#E4C688] transition-all shadow-xs hover:shadow-md">
+            <h3 className="mt-3 font-serif text-2xl font-bold sm:text-3xl text-[#1C201D] dark:text-[#F3F0E7]">
+              What are you in the mood to read?
+            </h3>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-[#636B65] dark:text-[#A5ADA6]">
+              Choose a feeling to guide your next discovery. Your selection updates the reading prompt below.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {moods.map((item) => (
+                <button
+                  key={item.label}
+                  type="button"
+                  aria-pressed={mood === item.label}
+                  onClick={() => setMood(item.label)}
+                  className={`rounded-full border px-4 py-2 text-xs sm:text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8F681C] ${
+                    mood === item.label
+                      ? "border-[#1C442D] bg-[#1C442D] text-white shadow-xs dark:border-[#D5B16D] dark:bg-[#D5B16D] dark:text-stone-950 font-semibold"
+                      : "border-[#E5E0D8] bg-[#FAF9F5] text-[#1C201D] hover:bg-[#F0EDE6] dark:border-[#242E28] dark:bg-[#171C19] dark:text-[#A5ADA6] dark:hover:bg-[#202820] dark:hover:text-[#F3F0E7]"
+                  }`}
+                >
+                  {item.emoji} {item.label}
+                </button>
+              ))}
+            </div>
+            <div className="mt-5 rounded-2xl bg-[#F5F2EB] p-4 text-sm leading-relaxed text-[#35483B] dark:bg-[#18221B] dark:text-[#C7D5C8] border border-[#EBE4D8] dark:border-[#26312B]" aria-live="polite">
+              {moodMessage}
+            </div>
+            <Link
+              to={discoveryUrl}
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#1C442D] px-5 py-3 text-sm font-semibold text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-stone-950 dark:hover:bg-[#E4C688] transition-all shadow-xs hover:shadow-md"
+            >
               <Search className="w-4 h-4" aria-hidden="true" />
               <span>Explore "{mood}" recommendations</span>
               <ArrowUpRight size={16} />
             </Link>
           </div>
+
           <div className="rounded-3xl bg-[#142318] p-6 sm:p-8 text-[#F3F0E7] dark:bg-[#111A14] border border-[#233827] shadow-md flex flex-col justify-between">
             <div>
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-[#D5B16D]"><BookMarked size={15}/> One book. Many journeys.</div>
-              <h3 className="mt-3 font-serif text-2xl font-bold sm:text-3xl text-white">Reading is only the beginning.</h3>
-              <p className="mt-3 text-sm leading-6 text-white/75">A book can open a conversation, a new friendship, a question for AI or an idea worth writing down.</p>
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.18em] text-[#D5B16D]">
+                <BookMarked size={15}/> One book. Many journeys.
+              </div>
+              <h3 className="mt-3 font-serif text-2xl font-bold sm:text-3xl text-white">
+                Reading is only the beginning.
+              </h3>
+              <p className="mt-3 text-sm leading-6 text-white/75">
+                A book can open a conversation, a new friendship, a question for AI or an idea worth writing down.
+              </p>
             </div>
             <div className="mt-6 grid grid-cols-2 gap-2.5">
-              {[["Read",BookOpen,"/library"],["Meet readers",Users,"/reader-map"],["Explore AI & books",BrainCircuit,"/library"],["Share ideas",PenLine,"/articles"]].map(([label, Icon, to]: any) => (
-                <Link key={label} to={to} className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[.07] px-3.5 py-3 text-xs sm:text-sm font-medium hover:bg-white/[.14] transition-colors">
+              {[
+                ["Read", BookOpen, "/library"],
+                ["Meet readers", Users, "/reader-map"],
+                ["Explore AI & books", BrainCircuit, "/library"],
+                ["Share ideas", PenLine, "/articles"]
+              ].map(([label, Icon, to]: any) => (
+                <Link
+                  key={label}
+                  to={to}
+                  className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[.07] px-3.5 py-3 text-xs sm:text-sm font-medium hover:bg-white/[.14] transition-colors"
+                >
                   <Icon size={16} className="text-[#D5B16D] shrink-0"/>
                   <span className="truncate">{label}</span>
                 </Link>
@@ -225,36 +389,62 @@ export default function HomeFeatureUniverse() {
           </div>
         </div>
 
+        {/* 4 Feature Cards: Explore the whole experience with images and color themes */}
         <div className="mt-14">
           <div className="mb-6 flex items-end justify-between gap-4">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[.22em] text-[#8F681C] dark:text-[#D5B16D]">Your map to Sahadhyayi</p>
-              <h3 className="mt-1 font-serif text-2xl sm:text-3xl font-bold text-[#1C201D] dark:text-[#F3F0E7]">Explore the whole experience</h3>
+              <p className="text-[10px] font-bold uppercase tracking-[.22em] text-[#8F681C] dark:text-[#D5B16D]">
+                Your map to Sahadhyayi
+              </p>
+              <h3 className="mt-1 font-serif text-2xl sm:text-3xl font-bold text-[#1C201D] dark:text-[#F3F0E7]">
+                Explore the whole experience
+              </h3>
             </div>
             <Link to="/about" className="hidden items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#1C442D] hover:underline dark:text-[#D5B16D] sm:inline-flex">
               About Sahadhyayi <ArrowUpRight size={15}/>
             </Link>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {quickLinks.map(({title,text,to,icon:Icon}) => (
+            {quickLinks.map(({ title, text, to, icon: Icon, image, imageAlt, tone, ink }) => (
               <Link
                 key={title}
                 to={to}
-                className="group rounded-3xl border border-[#E5E0D8] bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#8F681C]/50 hover:shadow-lg dark:border-[#242E28] dark:bg-[#131715] dark:hover:border-[#D5B16D]/40 shadow-xs"
+                className={`group rounded-3xl border ${tone} p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-black/50 shadow-xs flex flex-col justify-between overflow-hidden`}
               >
-                <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-xl bg-[hsl(var(--brand-primary)/0.08)] dark:bg-[hsl(var(--brand-primary)/0.15)] flex items-center justify-center text-[#1C442D] dark:text-[#D5B16D]">
-                    <Icon size={20}/>
+                <div>
+                  <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden mb-4 bg-muted/40 border border-black/5 dark:border-white/5">
+                    <img
+                      src={image}
+                      alt={imageAlt}
+                      className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+                    <div className="absolute top-2.5 left-2.5">
+                      <div className={`w-9 h-9 rounded-xl backdrop-blur-md bg-white/90 dark:bg-black/80 flex items-center justify-center border border-white/20 dark:border-white/10 ${ink} shadow-2xs`}>
+                        <Icon size={18}/>
+                      </div>
+                    </div>
+                    <div className="absolute top-2.5 right-2.5">
+                      <div className="w-7 h-7 rounded-full backdrop-blur-md bg-white/90 dark:bg-black/80 flex items-center justify-center border border-black/5 dark:border-white/10 text-[#1C201D] dark:text-[#F3F0E7]">
+                        <ArrowUpRight size={14} className="opacity-60 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"/>
+                      </div>
+                    </div>
                   </div>
-                  <ArrowUpRight size={15} className="opacity-40 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"/>
+
+                  <h4 className="font-serif font-bold text-base text-[#1C201D] dark:text-[#F3F0E7] group-hover:text-[#1C442D] dark:group-hover:text-[#D5B16D] transition-colors">
+                    {title}
+                  </h4>
+                  <p className="mt-1 text-xs leading-relaxed text-[#636B65] dark:text-[#A5ADA6]">
+                    {text}
+                  </p>
                 </div>
-                <h4 className="mt-4 font-serif font-bold text-base text-[#1C201D] dark:text-[#F3F0E7] group-hover:text-[#1C442D] dark:group-hover:text-[#D5B16D] transition-colors">{title}</h4>
-                <p className="mt-1 text-xs leading-relaxed text-[#636B65] dark:text-[#A5ADA6]">{text}</p>
               </Link>
             ))}
           </div>
         </div>
 
+        {/* Bottom Banner */}
         <div data-home-reveal className="mt-14 flex flex-col gap-4 rounded-3xl border border-[#E5E0D8] bg-[#F5F2EB] p-6 sm:p-8 dark:border-[#242E28] dark:bg-[#131715] sm:flex-row sm:items-center sm:justify-between shadow-xs">
           <div>
             <p className="font-serif font-bold text-lg text-[#1C201D] dark:text-[#F3F0E7]">Stay curious, together.</p>
