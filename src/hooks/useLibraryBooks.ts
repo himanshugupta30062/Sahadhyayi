@@ -29,6 +29,7 @@ export interface Book {
   epub_url?: string;
   external_url?: string;
   preview_url?: string;
+  external_read_url?: string;
   isBrokenLink?: boolean;
   isGooglePreview?: boolean;
   reader_link_status?: string;
@@ -1034,6 +1035,7 @@ const mapBook = (book: any): Book => ({
   epub_url: book.epub_url,
   external_url: book.external_url,
   preview_url: book.preview_url,
+  external_read_url: book.external_read_url,
   created_at: book.created_at,
   price: 0,
   isbn: book.isbn,
