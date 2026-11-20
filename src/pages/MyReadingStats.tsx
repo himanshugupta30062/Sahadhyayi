@@ -7,6 +7,7 @@ import {
   TrendingUp,
   BarChart3,
   FileSpreadsheet,
+  Sparkles,
 } from 'lucide-react';
 import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client-universal';
@@ -522,9 +523,17 @@ Reading with Sahadhyayi https://sahadhyayi.com`;
                 <p className="text-2xl font-bold text-foreground">{avg}/5</p>
               </div>
             </div>
-            <Button className="mt-4" variant="outline" onClick={copyRecap}>
-              {recapCopied ? 'Recap copied!' : 'Copy recap to share'}
-            </Button>
+            <div className="flex flex-wrap items-center gap-2 mt-4">
+              <Button variant="outline" onClick={copyRecap}>
+                {recapCopied ? 'Recap copied!' : 'Copy recap to share'}
+              </Button>
+              <Button asChild className="bg-amber-600 hover:bg-amber-700 text-white gap-1.5 shadow-xs">
+                <Link to={`/creator-studio?type=wrapup&books=${completedThisYear}&pages=${yearPages}`}>
+                  <Sparkles className="w-4 h-4 text-amber-200" />
+                  Design Visual Recap Graphic
+                </Link>
+              </Button>
+            </div>
             <p className="mt-2 text-xs text-muted-foreground">
               Copy a ready-to-share summary of your reading year.
             </p>

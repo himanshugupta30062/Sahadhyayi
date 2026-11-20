@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/authHelpers';
 import { useBookById } from '@/hooks/useBookById';
+import { useUserBookshelf } from '@/hooks/useUserBookshelf';
 import { type BookSearchResult } from '@/hooks/useBookSearch';
 import SEO from '@/components/SEO';
 import { Button } from '@/components/ui/button';
@@ -69,27 +70,127 @@ export const BookCreatorStudio: React.FC = () => {
   const { user } = useAuth();
   const urlBookId = searchParams.get('bookId') || undefined;
   const urlPostType = (searchParams.get('type') as PostType) || 'review';
+  const urlQuote = searchParams.get('quote') || undefined;
+  const urlQuoteAttr = searchParams.get('quoteAttr') || undefined;
+  const urlMonth = searchParams.get('month') || undefined;
+  const urlBooks = searchParams.get('books') ? parseInt(searchParams.get('books')!) : undefined;
+  const urlPages = searchParams.get('pages') ? parseInt(searchParams.get('pages')!) : undefined;
 
   // Book fetching if bookId is present in URL
   const { data: initialBookData } = useBookById(urlBookId);
+  const { data: bookshelfData } = useUserBookshelf();
 
   // Studio State
-  const [state, setState] = useState<CreatorPostState>({
-    postType: urlPostType,
-    aspectRatio: 'portrait',
-    templateId: 'minimalist_editorial',
-    backgroundTexture: 'clean',
-    fontPairing: 'editorial',
-    slides: [INITIAL_SLIDE],
-    activeSlideIndex: 0,
-    brandWatermarkEnabled: true,
-    brandWatermarkText: user?.user_metadata?.username
-      ? `@${user.user_metadata.username}`
-      : '@sahadhyayi_reader',
-    caption: '',
-    captionTone: 'thoughtful',
-    hashtags: ['#Bookstagram', '#BookReview', '#ReadingCommunity', '#Sahadhyayi'],
+  const [state, setState] = useState<CreatorPostState>(() => {
+    const initialSlide: SlideData = {
+      ...INITIAL_SLIDE,
+      quote: urlQuote || INITIAL_SLIDE.quote,
+      quoteAttribution: urlQuoteAttr || INITIAL_SLIDE.quoteAttribution,
+      wrapupMonth: urlMonth || new Date().toLocaleString('default', { month: 'long' }),
+      wrapupBooksCount: urlBooks,
+      wrapupPagesCount: urlPages,
+    };
+    return {
+      postType: urlPostType,
+      aspectRatio: 'portrait',
+      templateId: 'minimalist_editorial',
+      backgroundTexture: 'clean',
+      fontPairing: 'editorial',
+      slides: [initialSlide],
+      activeSlideIndex: 0,
+      brandWatermarkEnabled: true,
+      brandWatermarkText: user?.user_metadata?.username
+        ? `@${user.user_metadata.username}`
+        : '@sahadhyayi_reader',
+      caption: '',
+      captionTone: 'thoughtful',
+      hashtags: ['#Bookstagram', '#BookReview', '#ReadingCommunity', '#Sahadhyayi'],
+    };
   });
+
+  const hasAutoHydratedWrapupRef = useRef(false);
+  const hasAutoHydratedTbrRef = useRef(false);
+
+  // Automatically compute monthly wrap-up or TBR from bookshelf when available
+  useEffect(() => {
+    if (!bookshelfData || bookshelfData.length === 0) return;
+
+    if (state.postType === 'wrapup' && !hasAutoHydratedWrapupRef.current) {
+      hasAutoHydratedWrapupRef.current = true;
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      const monthName = new Date().toLocaleString('default', { month: 'long' });
+
+      const completedInMonth = bookshelfData.filter((item) => {
+        if (item.status !== 'completed' || !item.completed_at) return false;
+        const d = new Date(item.completed_at);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      });
+
+      const totalBooks = completedInMonth.length || urlBooks || 3;
+      const totalPages = completedInMonth.reduce(
+        (sum, item) => sum + (item.books_library?.pages || 320),
+        0
+      ) || urlPages || 1150;
+
+      // Find top rated book
+      const topBookItem = completedInMonth.sort((a, b) => (b.rating || 0) - (a.rating || 0))[0];
+      const topBook = topBookItem?.books_library;
+
+      setState((prev) => {
+        const updatedSlides = [...prev.slides];
+        updatedSlides[0] = {
+          ...updatedSlides[0],
+          wrapupMonth: urlMonth || monthName,
+          wrapupBooksCount: totalBooks,
+          wrapupPagesCount: totalPages,
+          bookId: topBook?.id || updatedSlides[0].bookId,
+          bookTitle: topBook?.title || updatedSlides[0].bookTitle,
+          author: topBook?.author || updatedSlides[0].author,
+          coverImageUrl: topBook?.cover_image_url || updatedSlides[0].coverImageUrl,
+        };
+        const generatedCaption = generateGroundedCaption({
+          postType: 'wrapup',
+          tone: prev.captionTone,
+          slide: updatedSlides[0],
+          brandHandle: prev.brandWatermarkText,
+        });
+        return {
+          ...prev,
+          slides: updatedSlides,
+          caption: generatedCaption,
+        };
+      });
+    } else if (state.postType === 'tbr' && !hasAutoHydratedTbrRef.current) {
+      hasAutoHydratedTbrRef.current = true;
+      const wantToRead = bookshelfData.filter((item) => item.status === 'want_to_read');
+      if (wantToRead.length > 0) {
+        const firstTbr = wantToRead[0].books_library;
+        if (firstTbr) {
+          setState((prev) => {
+            const updatedSlides = [...prev.slides];
+            updatedSlides[0] = {
+              ...updatedSlides[0],
+              bookId: firstTbr.id,
+              bookTitle: firstTbr.title,
+              author: firstTbr.author,
+              coverImageUrl: firstTbr.cover_image_url,
+            };
+            return {
+              ...prev,
+              slides: updatedSlides,
+              caption: generateGroundedCaption({
+                postType: 'tbr',
+                tone: prev.captionTone,
+                slide: updatedSlides[0],
+                brandHandle: prev.brandWatermarkText,
+              }),
+            };
+          });
+        }
+      }
+    }
+  }, [bookshelfData, state.postType, urlBooks, urlPages, urlMonth]);
 
   const [isBookPickerOpen, setIsBookPickerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'edit' | 'templates' | 'export'>('edit');

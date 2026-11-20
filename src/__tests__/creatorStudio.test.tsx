@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StudioCanvas } from '@/components/creator/StudioCanvas';
 import { TemplateSelector } from '@/components/creator/TemplateSelector';
@@ -64,14 +64,52 @@ vi.mock('@/hooks/useBookById', () => ({
   }),
 }));
 
+const mockShelfData = [
+  {
+    id: 'shelf-1',
+    user_id: 'test-user',
+    book_id: 'book-1',
+    status: 'completed',
+    completed_at: new Date().toISOString(),
+    rating: 5,
+    books_library: {
+      id: 'book-1',
+      title: 'The Great Gatsby',
+      author: 'F. Scott Fitzgerald',
+      pages: 180,
+      genre: 'Classic',
+    },
+  },
+  {
+    id: 'shelf-2',
+    user_id: 'test-user',
+    book_id: 'book-2',
+    status: 'want_to_read',
+    books_library: {
+      id: 'book-2',
+      title: 'Brave New World',
+      author: 'Aldous Huxley',
+      pages: 268,
+    },
+  },
+];
+
+// Mock useUserBookshelf hook
+vi.mock('@/hooks/useUserBookshelf', () => ({
+  useUserBookshelf: () => ({
+    data: mockShelfData,
+    isLoading: false,
+  }),
+}));
+
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false } },
 });
 
-const renderWithProviders = (ui: React.ReactElement) => {
+const renderWithProviders = (ui: React.ReactElement, initialEntries = ['/']) => {
   return render(
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>{ui}</BrowserRouter>
+      <MemoryRouter initialEntries={initialEntries}>{ui}</MemoryRouter>
     </QueryClientProvider>
   );
 };
@@ -288,6 +326,25 @@ describe('Book Creator Studio - Phase 1 Full Implementation', () => {
       // Now shows slide button 2 and ZIP Carousel export button
       expect(screen.getByRole('button', { name: '2' })).toBeInTheDocument();
       expect(screen.getByText('ZIP Carousel')).toBeInTheDocument();
+    });
+
+    it('auto-hydrates wrap-up data from personal reading journal and bookshelf', async () => {
+      renderWithProviders(<BookCreatorStudio />, ['/creator-studio?type=wrapup']);
+
+      // Check that it switches to wrap-up mode and populates books count
+      expect(screen.getByText(/Reading Wrap-Up/)).toBeInTheDocument();
+      expect(screen.getAllByText(/Books Read/)[0]).toBeInTheDocument();
+    });
+
+    it('populates quote card from journal URL parameters', async () => {
+      renderWithProviders(<BookCreatorStudio />, [
+        '/creator-studio?type=quote&quote=A%20room%20without%20books%20is%20like%20a%20body%20without%20a%20soul.&quoteAttr=Cicero',
+      ]);
+
+      expect(
+        screen.getAllByText(/A room without books is like a body without a soul/)[0]
+      ).toBeInTheDocument();
+      expect(screen.getAllByText(/Cicero/)[0]).toBeInTheDocument();
     });
   });
 });
