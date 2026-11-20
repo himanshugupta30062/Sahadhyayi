@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { HTMLAttributes } from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import CatalogueSelector, { type CatalogueBook, type CatalogueSelectorProps } from './CatalogueSelector';
 
@@ -125,7 +125,7 @@ describe('CatalogueSelector', () => {
     expect(await screen.findByRole('option', { name: /Verified Edition by A\. Author, PDF available/ })).toBeInTheDocument();
     expect(screen.getByText('Verified PDF')).toBeInTheDocument();
     expect(screen.getByText('No PDF')).toBeInTheDocument();
-    expect(screen.getByText('ISBN 9781234567890')).toBeInTheDocument();
+    expect(within(screen.getByRole('option', { name: /Verified Edition/ })).getByText('ISBN 9781234567890')).toBeInTheDocument();
     expect(screen.getByText('240 pages')).toBeInTheDocument();
     expect(screen.getByText('2.0 MB')).toBeInTheDocument();
     expect(screen.getByText('512 KB')).toBeInTheDocument();
@@ -158,6 +158,7 @@ describe('CatalogueSelector', () => {
   });
 
   it('extracts a 13-digit ISBN from the search term', async () => {
+    renderSelector();
     searchFor('9781234567890');
 
     await waitFor(() => {
@@ -292,7 +293,7 @@ describe('CatalogueSelector', () => {
     expect(screen.getByRole('textbox', { name: 'Catalogue Book' })).toBeEnabled();
     expect(containerHiddenValue()).toBe('book-a,book-b');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Deselect Book A' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Book A' }));
     expect(onSelectionChange).toHaveBeenLastCalledWith(['book-b']);
     fireEvent.click(screen.getByRole('button', { name: 'Clear selection' }));
     expect(onSelectionChange).toHaveBeenLastCalledWith([]);
