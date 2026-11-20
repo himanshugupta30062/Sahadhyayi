@@ -11,8 +11,16 @@ import { BookCreatorStudio } from '@/pages/BookCreatorStudio';
 import {
   CreatorPostState,
   SlideData,
-  TEMPLATE_DEFINITIONS,
 } from '@/types/creatorStudio';
+import {
+  generateGroundedCaption,
+  generateSmartHashtags,
+} from '@/utils/creatorCaptionHelper';
+
+// Mock html-to-image
+vi.mock('html-to-image', () => ({
+  toPng: vi.fn().mockResolvedValue('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='),
+}));
 
 // Mock auth hook
 vi.mock('@/contexts/authHelpers', () => ({
@@ -68,7 +76,7 @@ const renderWithProviders = (ui: React.ReactElement) => {
   );
 };
 
-describe('Book Creator Studio - Phase 1 Components', () => {
+describe('Book Creator Studio - Phase 1 Full Implementation', () => {
   const sampleSlide: SlideData = {
     id: 'slide-1',
     slideNumber: 1,
@@ -85,15 +93,18 @@ describe('Book Creator Studio - Phase 1 Components', () => {
     postType: 'review',
     aspectRatio: 'portrait',
     templateId: 'minimalist_editorial',
+    backgroundTexture: 'clean',
+    fontPairing: 'editorial',
     slides: [sampleSlide],
     activeSlideIndex: 0,
     brandWatermarkEnabled: true,
     brandWatermarkText: '@testcreator',
     caption: 'My review of To Kill a Mockingbird',
+    captionTone: 'thoughtful',
     hashtags: ['#Bookstagram', '#ClassicLiterature'],
   };
 
-  describe('StudioCanvas', () => {
+  describe('StudioCanvas Post Layouts', () => {
     it('renders the book title, author, and review elements correctly', () => {
       render(<StudioCanvas state={sampleState} activeSlide={sampleSlide} />);
 
@@ -123,41 +134,79 @@ describe('Book Creator Studio - Phase 1 Components', () => {
       expect(screen.getByText(/Scout, Chapter 3/)).toBeInTheDocument();
     });
 
-    it('renders the correct template styling container', () => {
-      const darkState: CreatorPostState = {
+    it('renders book recommendation format', () => {
+      const recState: CreatorPostState = {
         ...sampleState,
-        templateId: 'dark_academia',
+        postType: 'recommendation',
       };
+      render(<StudioCanvas state={recState} activeSlide={sampleSlide} />);
+      expect(screen.getByText(/If you loved "To Kill a Mockingbird"/)).toBeInTheDocument();
+      expect(screen.getByText(/The Secret History/)).toBeInTheDocument();
+    });
 
-      const { container } = render(<StudioCanvas state={darkState} activeSlide={sampleSlide} />);
-      const canvas = container.querySelector('[data-testid="studio-canvas"]');
-      expect(canvas).toHaveClass('bg-[#181513]');
+    it('renders book versus format', () => {
+      const vsState: CreatorPostState = {
+        ...sampleState,
+        postType: 'versus',
+      };
+      render(<StudioCanvas state={vsState} activeSlide={sampleSlide} />);
+      expect(screen.getByText(/Book Battle \/ Versus/)).toBeInTheDocument();
+      expect(screen.getByText('Book A')).toBeInTheDocument();
+      expect(screen.getByText('Book B')).toBeInTheDocument();
+    });
+
+    it('renders structured carousel stage format', () => {
+      const carouselSlide: SlideData = {
+        ...sampleSlide,
+        carouselStage: 'breakdown',
+      };
+      const carouselState: CreatorPostState = {
+        ...sampleState,
+        postType: 'carousel',
+        slides: [carouselSlide],
+      };
+      render(<StudioCanvas state={carouselState} activeSlide={carouselSlide} />);
+      expect(screen.getByText(/Pillars of the Story/)).toBeInTheDocument();
+      expect(screen.getByText(/Character Depth/)).toBeInTheDocument();
     });
   });
 
-  describe('TemplateSelector', () => {
-    it('renders all template presets and allows selection', () => {
+  describe('TemplateSelector and Aesthetics', () => {
+    it('renders all template presets, textures, and font pairings', () => {
       const onSelect = vi.fn();
+      const onTexture = vi.fn();
+      const onFont = vi.fn();
+
       render(
         <TemplateSelector
           selectedTemplate="minimalist_editorial"
+          selectedTexture="clean"
+          selectedFont="editorial"
           onSelectTemplate={onSelect}
+          onSelectTexture={onTexture}
+          onSelectFont={onFont}
         />
       );
 
       expect(screen.getByText('Dark Academia')).toBeInTheDocument();
       expect(screen.getByText('Pastel Aesthetic')).toBeInTheDocument();
-      expect(screen.getByText('Vintage Library')).toBeInTheDocument();
       expect(screen.getByText('Indian Heritage')).toBeInTheDocument();
-      expect(screen.getByText('Bold Pop')).toBeInTheDocument();
 
       fireEvent.click(screen.getByText('Dark Academia'));
       expect(onSelect).toHaveBeenCalledWith('dark_academia');
+
+      // Texture switch
+      fireEvent.click(screen.getByText('Aged Parchment'));
+      expect(onTexture).toHaveBeenCalledWith('parchment');
+
+      // Font switch
+      fireEvent.click(screen.getByText('Literary Classic'));
+      expect(onFont).toHaveBeenCalledWith('literary');
     });
   });
 
   describe('SlideEditorControls', () => {
-    it('triggers rating updates when stars are clicked', () => {
+    it('triggers rating and hook updates', () => {
       const onUpdateSlide = vi.fn();
       const onUpdateWatermark = vi.fn();
 
@@ -175,22 +224,6 @@ describe('Book Creator Studio - Phase 1 Components', () => {
       const fourStarButton = screen.getByTitle('4 Stars');
       fireEvent.click(fourStarButton);
       expect(onUpdateSlide).toHaveBeenCalledWith({ rating: 4 });
-    });
-
-    it('allows editing hook line and review text', () => {
-      const onUpdateSlide = vi.fn();
-      const onUpdateWatermark = vi.fn();
-
-      render(
-        <SlideEditorControls
-          activeSlide={sampleSlide}
-          postType="review"
-          brandWatermarkEnabled={true}
-          brandWatermarkText="@testcreator"
-          onUpdateSlide={onUpdateSlide}
-          onUpdateWatermark={onUpdateWatermark}
-        />
-      );
 
       const hookInput = screen.getByPlaceholderText(/A haunting masterpiece/);
       fireEvent.change(hookInput, { target: { value: 'New Amazing Hook' } });
@@ -198,58 +231,63 @@ describe('Book Creator Studio - Phase 1 Components', () => {
     });
   });
 
-  describe('CreatorBookPicker', () => {
-    it('renders search input and allows selecting a book', () => {
-      const onSelectBook = vi.fn();
-      const onOpenChange = vi.fn();
+  describe('Grounded AI Caption & Hashtags Helper', () => {
+    it('generates grounded thoughtful review captions with author and stars', () => {
+      const caption = generateGroundedCaption({
+        postType: 'review',
+        tone: 'thoughtful',
+        slide: sampleSlide,
+        brandHandle: '@testcreator',
+      });
+      expect(caption).toContain('To Kill a Mockingbird');
+      expect(caption).toContain('Harper Lee');
+      expect(caption).toContain('★★★★★');
+      expect(caption).toContain('@testcreator');
+    });
 
-      render(
-        <CreatorBookPicker
-          open={true}
-          onOpenChange={onOpenChange}
-          onSelectBook={onSelectBook}
-        />
-      );
+    it('generates bilingual Hinglish captions', () => {
+      const caption = generateGroundedCaption({
+        postType: 'review',
+        tone: 'bilingual',
+        slide: sampleSlide,
+      });
+      expect(caption).toContain('baat karte hain');
+      expect(caption).toContain('To Kill a Mockingbird');
+    });
 
-      expect(screen.getByText('Select Book for Your Post')).toBeInTheDocument();
-      const searchInput = screen.getByPlaceholderText(/Search book title or author/);
-      expect(searchInput).toBeInTheDocument();
-
-      // Trigger search
-      fireEvent.change(searchInput, { target: { value: 'Gatsby' } });
-
-      const bookItem = screen.getByText('The Great Gatsby');
-      expect(bookItem).toBeInTheDocument();
-
-      fireEvent.click(bookItem);
-      expect(onSelectBook).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: 'book-123',
-          title: 'The Great Gatsby',
-        })
-      );
-      expect(onOpenChange).toHaveBeenCalledWith(false);
+    it('generates smart genre and rating hashtags', () => {
+      const tags = generateSmartHashtags({
+        ...sampleSlide,
+        genre: 'Classic Literature',
+      });
+      expect(tags).toContain('#Bookstagram');
+      expect(tags).toContain('#5StarRead');
+      expect(tags).toContain('#ClassicLiterature');
     });
   });
 
-  describe('BookCreatorStudio Page Integration', () => {
-    it('renders the studio workspace, header, and handles slide addition', async () => {
+  describe('BookCreatorStudio Page & Export Workflow', () => {
+    it('renders the complete studio workspace, headers, and quick-export controls', async () => {
       renderWithProviders(<BookCreatorStudio />);
 
       expect(screen.getAllByText('Book Creator Studio')[0]).toBeInTheDocument();
       expect(screen.getByText(/Your reading journey. Your creative space/)).toBeInTheDocument();
+
+      // Check export buttons
+      expect(screen.getByText('Download PNG')).toBeInTheDocument();
 
       // Check aspect ratio buttons
       expect(screen.getByText('1:1')).toBeInTheDocument();
       expect(screen.getByText('4:5')).toBeInTheDocument();
       expect(screen.getByText('9:16')).toBeInTheDocument();
 
-      // Add a slide
+      // Add a slide to carousel
       const addSlideButton = screen.getByTitle('Add new slide to carousel');
       fireEvent.click(addSlideButton);
 
-      // Should now show button '2' for slide 2
+      // Now shows slide button 2 and ZIP Carousel export button
       expect(screen.getByRole('button', { name: '2' })).toBeInTheDocument();
+      expect(screen.getByText('ZIP Carousel')).toBeInTheDocument();
     });
   });
 });

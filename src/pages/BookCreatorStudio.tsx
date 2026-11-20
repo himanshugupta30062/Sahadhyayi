@@ -10,13 +10,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import {
   Sparkles,
   BookOpen,
-  Layers,
   Palette,
   Edit3,
   Share2,
   Copy,
   ChevronLeft,
-  ChevronRight,
   Plus,
   Trash2,
   Download,
@@ -24,6 +22,11 @@ import {
   Smartphone,
   Square,
   Monitor,
+  Archive,
+  Share,
+  Clipboard,
+  Loader2,
+  Wand2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -33,12 +36,23 @@ import {
   PostType,
   CreatorPostState,
   SlideData,
+  CaptionTone,
   ASPECT_RATIO_CONFIG,
 } from '@/types/creatorStudio';
 import { StudioCanvas } from '@/components/creator/StudioCanvas';
 import { CreatorBookPicker } from '@/components/creator/CreatorBookPicker';
 import { TemplateSelector } from '@/components/creator/TemplateSelector';
 import { SlideEditorControls } from '@/components/creator/SlideEditorControls';
+import {
+  exportSlideToPng,
+  exportCarouselToZip,
+  copySlideToClipboard,
+  shareSlideViaWebShare,
+} from '@/utils/creatorExportHelper';
+import {
+  generateGroundedCaption,
+  generateSmartHashtags,
+} from '@/utils/creatorCaptionHelper';
 
 const INITIAL_SLIDE: SlideData = {
   id: 'slide-1',
@@ -47,6 +61,7 @@ const INITIAL_SLIDE: SlideData = {
   hookLine: 'A mesmerizing literary journey that captivated me completely.',
   reviewBody: 'The prose is evocative, the character dynamics are rich, and the emotional payoff is profound. A standout read this year.',
   tags: ['5 Stars', 'Must Read', 'Book Club Pick'],
+  carouselStage: 'hook',
 };
 
 export const BookCreatorStudio: React.FC = () => {
@@ -63,6 +78,8 @@ export const BookCreatorStudio: React.FC = () => {
     postType: urlPostType,
     aspectRatio: 'portrait',
     templateId: 'minimalist_editorial',
+    backgroundTexture: 'clean',
+    fontPairing: 'editorial',
     slides: [INITIAL_SLIDE],
     activeSlideIndex: 0,
     brandWatermarkEnabled: true,
@@ -70,12 +87,16 @@ export const BookCreatorStudio: React.FC = () => {
       ? `@${user.user_metadata.username}`
       : '@sahadhyayi_reader',
     caption: '',
+    captionTone: 'thoughtful',
     hashtags: ['#Bookstagram', '#BookReview', '#ReadingCommunity', '#Sahadhyayi'],
   });
 
   const [isBookPickerOpen, setIsBookPickerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'edit' | 'templates' | 'export'>('edit');
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportStatusText, setExportStatusText] = useState('');
   const [copiedCaption, setCopiedCaption] = useState(false);
+  const [copiedImage, setCopiedImage] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   // Sync initial book data if fetched via URL
@@ -91,10 +112,18 @@ export const BookCreatorStudio: React.FC = () => {
           coverImageUrl: initialBookData.cover_image_url,
           genre: initialBookData.genre,
         };
+        const initialCaption = generateGroundedCaption({
+          postType: prev.postType,
+          tone: prev.captionTone,
+          slide: updatedSlides[0],
+          brandHandle: prev.brandWatermarkText,
+        });
+        const initialHashtags = generateSmartHashtags(updatedSlides[0]);
         return {
           ...prev,
           slides: updatedSlides,
-          caption: `Reviewing "${initialBookData.title}" by ${initialBookData.author}.\n\nWhat are your thoughts on this one? Let me know in the comments! 📖✨`,
+          caption: initialCaption,
+          hashtags: initialHashtags,
         };
       });
     }
@@ -115,12 +144,18 @@ export const BookCreatorStudio: React.FC = () => {
         genre: book.genre,
         publicationYear: book.publication_year,
       };
+      const newCaption = generateGroundedCaption({
+        postType: prev.postType,
+        tone: prev.captionTone,
+        slide: updatedSlides[prev.activeSlideIndex],
+        brandHandle: prev.brandWatermarkText,
+      });
+      const newHashtags = generateSmartHashtags(updatedSlides[prev.activeSlideIndex]);
       return {
         ...prev,
         slides: updatedSlides,
-        caption: `My review of "${book.title}" by ${book.author || 'Unknown'}.\n\nRating: ${'★'.repeat(
-          updatedSlides[prev.activeSlideIndex].rating || 5
-        )}\n\nHave you read this book? Drop your review below! 📚`,
+        caption: newCaption,
+        hashtags: newHashtags,
       };
     });
     toast.success(`Loaded "${book.title}" into your design`);
@@ -137,14 +172,35 @@ export const BookCreatorStudio: React.FC = () => {
     });
   };
 
+  const handleRegenerateCaption = (tone: CaptionTone) => {
+    const freshCaption = generateGroundedCaption({
+      postType: state.postType,
+      tone,
+      slide: activeSlide,
+      brandHandle: state.brandWatermarkText,
+    });
+    const freshHashtags = generateSmartHashtags(activeSlide);
+    setState((prev) => ({
+      ...prev,
+      captionTone: tone,
+      caption: freshCaption,
+      hashtags: freshHashtags,
+    }));
+    toast.success(`Generated ${tone} caption`);
+  };
+
   const handleAddSlide = () => {
     if (state.slides.length >= 10) {
       toast.error('Instagram carousels support up to 10 slides');
       return;
     }
+    const nextIdx = state.slides.length + 1;
+    const stages: Array<SlideData['carouselStage']> = ['hook', 'premise', 'quotes', 'breakdown', 'verdict'];
+    const assignedStage = stages[Math.min(state.slides.length, stages.length - 1)];
+
     const newSlide: SlideData = {
       id: `slide-${Date.now()}`,
-      slideNumber: state.slides.length + 1,
+      slideNumber: nextIdx,
       bookId: activeSlide.bookId,
       bookTitle: activeSlide.bookTitle,
       author: activeSlide.author,
@@ -153,13 +209,14 @@ export const BookCreatorStudio: React.FC = () => {
       hookLine: '',
       reviewBody: '',
       tags: [],
+      carouselStage: assignedStage,
     };
     setState((prev) => ({
       ...prev,
       slides: [...prev.slides, newSlide],
       activeSlideIndex: prev.slides.length,
     }));
-    toast.success(`Slide ${state.slides.length + 1} added`);
+    toast.success(`Slide ${nextIdx} added`);
   };
 
   const handleDeleteSlide = (indexToDelete: number) => {
@@ -178,6 +235,91 @@ export const BookCreatorStudio: React.FC = () => {
       };
     });
     toast.info('Slide removed');
+  };
+
+  // Export actions
+  const handleExportSinglePng = async () => {
+    if (!canvasRef.current) return;
+    try {
+      setIsExporting(true);
+      setExportStatusText('Rendering 2x high-resolution PNG...');
+      const fileName = `${(activeSlide.bookTitle || 'sahadhyayi-post').toLowerCase().replace(/[^a-z0-9]+/g, '-')}-slide-${state.activeSlideIndex + 1}.png`;
+      await exportSlideToPng(canvasRef.current, fileName);
+      toast.success('Downloaded high-res post image!');
+    } catch (err) {
+      console.error(err);
+      toast.error('Could not export image. Please try again.');
+    } finally {
+      setIsExporting(false);
+      setExportStatusText('');
+    }
+  };
+
+  const handleExportZip = async () => {
+    if (!canvasRef.current) return;
+    try {
+      setIsExporting(true);
+      const fullCaptionText = `${state.caption}\n\n${state.hashtags.join(' ')}`;
+      const baseName = (activeSlide.bookTitle || 'sahadhyayi-carousel').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+      // We render the slides sequentially
+      const total = state.slides.length;
+      await exportCarouselToZip(
+        async (idx) => {
+          setState((prev) => ({ ...prev, activeSlideIndex: idx }));
+          await new Promise((r) => setTimeout(r, 120));
+          return canvasRef.current;
+        },
+        total,
+        fullCaptionText,
+        baseName,
+        (_curr, _tot, msg) => setExportStatusText(msg)
+      );
+
+      toast.success('Downloaded complete carousel ZIP bundle!');
+    } catch (err) {
+      console.error(err);
+      toast.error('Could not bundle carousel ZIP.');
+    } finally {
+      setIsExporting(false);
+      setExportStatusText('');
+    }
+  };
+
+  const handleWebShare = async () => {
+    if (!canvasRef.current) return;
+    try {
+      setIsExporting(true);
+      const title = activeSlide.bookTitle || 'Book Review';
+      const text = `${state.caption}\n\n${state.hashtags.join(' ')}`;
+      const shared = await shareSlideViaWebShare(canvasRef.current, title, text);
+      if (shared) {
+        toast.success('Shared successfully!');
+      } else {
+        // Fallback to PNG download
+        await handleExportSinglePng();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleCopyImage = async () => {
+    if (!canvasRef.current) return;
+    try {
+      const copied = await copySlideToClipboard(canvasRef.current);
+      if (copied) {
+        setCopiedImage(true);
+        toast.success('Image copied to clipboard! You can paste it directly.');
+        setTimeout(() => setCopiedImage(false), 2500);
+      } else {
+        await handleExportSinglePng();
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleCopyCaption = () => {
@@ -272,8 +414,11 @@ export const BookCreatorStudio: React.FC = () => {
           {[
             { id: 'review', label: 'Book Review' },
             { id: 'quote', label: 'Quote Card' },
-            { id: 'wrapup', label: 'Monthly Wrap-Up' },
+            { id: 'carousel', label: '5-Slide Carousel' },
+            { id: 'recommendation', label: 'Recommendation' },
+            { id: 'versus', label: 'Book Battle' },
             { id: 'tbr', label: 'TBR Stack' },
+            { id: 'wrapup', label: 'Monthly Wrap-Up' },
             { id: 'custom', label: 'Custom Note' },
           ].map((type) => {
             const isActive = state.postType === type.id;
@@ -345,6 +490,57 @@ export const BookCreatorStudio: React.FC = () => {
                 </Button>
               )}
             </div>
+
+            {/* Quick Export Action Bar beneath Canvas */}
+            <div className="w-full max-w-[420px] sm:max-w-[460px] flex items-center gap-2 mt-4 px-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportSinglePng}
+                disabled={isExporting}
+                className="flex-1 h-9 text-xs font-semibold gap-1.5"
+              >
+                {isExporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+                Download PNG
+              </Button>
+              {state.slides.length > 1 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportZip}
+                  disabled={isExporting}
+                  className="flex-1 h-9 text-xs font-semibold gap-1.5"
+                >
+                  <Archive className="w-3.5 h-3.5 text-amber-500" />
+                  ZIP Carousel
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleWebShare}
+                disabled={isExporting}
+                className="h-9 px-3 text-xs"
+                title="Share to Instagram or mobile apps"
+              >
+                <Share className="w-3.5 h-3.5" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopyImage}
+                disabled={isExporting}
+                className="h-9 px-3 text-xs"
+                title="Copy image to clipboard"
+              >
+                {copiedImage ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Clipboard className="w-3.5 h-3.5" />}
+              </Button>
+            </div>
+            {exportStatusText && (
+              <p className="text-[11px] text-muted-foreground mt-2 animate-pulse">
+                {exportStatusText}
+              </p>
+            )}
           </div>
 
           {/* Right Column: Customization Controls & Export Panel */}
@@ -363,7 +559,7 @@ export const BookCreatorStudio: React.FC = () => {
                     </TabsTrigger>
                     <TabsTrigger value="export" className="text-xs flex items-center gap-1.5">
                       <Share2 className="w-3.5 h-3.5" />
-                      Export
+                      Captions & AI
                     </TabsTrigger>
                   </TabsList>
 
@@ -389,14 +585,54 @@ export const BookCreatorStudio: React.FC = () => {
                   <TabsContent value="templates" className="mt-0">
                     <TemplateSelector
                       selectedTemplate={state.templateId}
+                      selectedTexture={state.backgroundTexture}
+                      selectedFont={state.fontPairing}
                       onSelectTemplate={(tpl) =>
                         setState((prev) => ({ ...prev, templateId: tpl }))
+                      }
+                      onSelectTexture={(tex) =>
+                        setState((prev) => ({ ...prev, backgroundTexture: tex }))
+                      }
+                      onSelectFont={(f) =>
+                        setState((prev) => ({ ...prev, fontPairing: f }))
                       }
                     />
                   </TabsContent>
 
-                  {/* Tab 3: Export & Caption */}
+                  {/* Tab 3: Caption & Grounded AI Assistant */}
                   <TabsContent value="export" className="mt-0 space-y-4">
+                    {/* Tone Switcher */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <Wand2 className="w-3.5 h-3.5 text-amber-500" />
+                          Grounded Caption Tone
+                        </span>
+                      </label>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {[
+                          { id: 'thoughtful', label: 'Thoughtful / Literary' },
+                          { id: 'casual', label: 'Casual & Chatty' },
+                          { id: 'poetic', label: 'Lyrical / Poetic' },
+                          { id: 'bilingual', label: 'Bilingual (Hinglish)' },
+                        ].map((t) => (
+                          <button
+                            key={t.id}
+                            type="button"
+                            onClick={() => handleRegenerateCaption(t.id as CaptionTone)}
+                            className={`p-2 rounded-lg border text-xs text-left transition-all ${
+                              state.captionTone === t.id
+                                ? 'bg-amber-500/10 border-amber-500 text-amber-900 dark:text-amber-200 font-semibold'
+                                : 'border-border/70 hover:bg-accent/20 text-muted-foreground'
+                            }`}
+                          >
+                            {t.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Caption Field */}
                     <div className="space-y-2">
                       <label className="text-xs font-semibold flex items-center justify-between">
                         <span>Generated Caption</span>
@@ -423,13 +659,14 @@ export const BookCreatorStudio: React.FC = () => {
                         value={state.caption}
                         onChange={(e) => setState((prev) => ({ ...prev, caption: e.target.value }))}
                         rows={4}
-                        className="w-full text-xs p-2.5 rounded-lg border bg-background resize-none focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="w-full text-xs p-2.5 rounded-lg border bg-background resize-none focus:outline-none focus:ring-1 focus:ring-primary leading-relaxed"
                         placeholder="Your review caption for Instagram..."
                       />
                     </div>
 
+                    {/* Hashtags */}
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold">Hashtags</label>
+                      <label className="text-xs font-semibold">Grounded Bookstagram Hashtags</label>
                       <div className="flex flex-wrap gap-1">
                         {state.hashtags.map((ht) => (
                           <span
@@ -442,22 +679,35 @@ export const BookCreatorStudio: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-200">
-                      <div className="flex items-center gap-1.5 font-bold mb-1">
+                    {/* Download & Share Actions */}
+                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-200 space-y-2">
+                      <div className="flex items-center gap-1.5 font-bold">
                         <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                        Export & Share
+                        Ready to Publish
                       </div>
                       <p className="text-[11px] opacity-90 leading-relaxed">
-                        Copy your caption above to pair with your post. High-resolution multi-slide PNG & ZIP export is enabled for direct sharing to Instagram.
+                        Export your 1080p high-res slides and copy your caption to publish directly to Instagram, Threads, or WhatsApp.
                       </p>
-                      <Button
-                        size="sm"
-                        onClick={handleCopyCaption}
-                        className="w-full mt-3 h-8 text-xs bg-amber-500 hover:bg-amber-600 text-white font-semibold"
-                      >
-                        <Copy className="w-3.5 h-3.5 mr-1.5" />
-                        Copy Caption & Hashtags
-                      </Button>
+                      <div className="grid grid-cols-2 gap-2 pt-1">
+                        <Button
+                          size="sm"
+                          onClick={handleExportSinglePng}
+                          disabled={isExporting}
+                          className="h-8 text-xs bg-amber-500 hover:bg-amber-600 text-white font-semibold"
+                        >
+                          <Download className="w-3.5 h-3.5 mr-1" />
+                          Download PNG
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleCopyCaption}
+                          className="h-8 text-xs border-amber-500/40 font-semibold"
+                        >
+                          <Copy className="w-3.5 h-3.5 mr-1" />
+                          Copy Caption
+                        </Button>
+                      </div>
                     </div>
                   </TabsContent>
                 </Tabs>
