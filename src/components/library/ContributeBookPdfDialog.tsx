@@ -43,14 +43,14 @@ async function validatePdf(file: File) {
 
 const statusLabel: Record<string, string> = {
   uploaded: 'Waiting for admin preview',
-  queued: 'Queued for verification',
-  scanning: 'Safety scan in progress',
-  extracting: 'Reading book details',
-  matching: 'Matching catalogue records',
+  queued: 'Waiting for admin review',
+  scanning: 'Waiting for admin review',
+  extracting: 'Waiting for admin review',
+  matching: 'Waiting for admin review',
   needs_review: 'Needs human review',
   approved: 'Approved · publication incomplete',
   rejected: 'Not approved',
-  failed: 'Processing failed',
+  failed: 'Submission needs attention',
 };
 
 const statusIcon: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -530,7 +530,7 @@ function ContributeBookPdfDialogContent() {
 
                 <Button type="submit" className="w-full gap-2" disabled={busy || !file || !rightsAttested || (!selectedBook && !title.trim())}>
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileUp className="h-4 w-4" />}
-                  {busy ? 'Submitting privately…' : selectedBook ? 'Submit PDF for verification' : 'Submit for verification'}
+                  {busy ? 'Submitting privately…' : selectedBook ? 'Submit PDF for admin review' : 'Submit for admin review'}
                 </Button>
               </form>
             )}
