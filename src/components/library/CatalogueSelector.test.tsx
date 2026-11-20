@@ -316,6 +316,43 @@ describe('CatalogueSelector', () => {
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
+  it('syncs the selected chips when selectedIds changes from the parent', async () => {
+    mocks.builder.range.mockResolvedValue({
+      data: [
+        makeBook({ id: 'book-a', title: 'Book A' }),
+        makeBook({ id: 'book-b', title: 'Book B' }),
+      ],
+      error: null,
+    });
+    const onSelectionChange = vi.fn();
+    const { rerender, client } = renderSelector({
+      multiple: true,
+      selectedIds: ['book-a'],
+      onSelectionChange,
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Remove Book A' })).toBeInTheDocument();
+    });
+
+    rerender(
+      <QueryClientProvider client={client}>
+        <CatalogueSelector
+          multiple
+          selectedIds={['book-b']}
+          onSelectionChange={onSelectionChange}
+          debounceMs={0}
+        />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Remove Book B' })).toBeInTheDocument();
+    });
+    expect(screen.queryByRole('button', { name: 'Remove Book A' })).not.toBeInTheDocument();
+    expect(containerHiddenValue()).toBe('book-b');
+  });
+
   it('hides covers, ISBN and PDF badges when their display options are disabled', async () => {
     mocks.builder.range.mockResolvedValue({ data: [makeBook()], error: null });
     const { container } = renderSelector({
