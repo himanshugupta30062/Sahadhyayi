@@ -172,7 +172,7 @@ describe('BookDetailModal', () => {
     expect(screen.queryByText(/Published/)).not.toBeInTheDocument();
     expect(screen.queryByText(/pages$/)).not.toBeInTheDocument();
     expect(screen.queryByTestId('book-genre')).not.toBeInTheDocument();
-    expect(screen.getAllByTestId('star')).toHaveLength(5);
+    expect(document.querySelectorAll('[data-icon="star"]')).toHaveLength(5);
   });
 
   it('allows an authenticated reader to add the book to their personal library', () => {
