@@ -885,6 +885,32 @@ export function MapplsMap({
     }
   }, [points, status, markerRetryCount]);
 
+  useEffect(() => {
+    const el = mapElement.current;
+    if (!el || !mapActions) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        mapActions.zoomIn();
+      } else if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        mapActions.zoomOut();
+      } else if (e.key === '3') {
+        e.preventDefault();
+        mapActions.toggle3D();
+      } else if (e.key.toLowerCase() === 'r') {
+        e.preventDefault();
+        mapActions.resetView();
+      }
+    };
+
+    el.addEventListener('keydown', handleKeyDown);
+    return () => {
+      el.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [mapActions]);
+
   if (status === 'missing-key') {
     return (
       <div className="flex h-[500px] items-center justify-center rounded-xl border bg-muted/30 p-6 text-center">
@@ -943,24 +969,7 @@ export function MapplsMap({
       <div
         id={containerId}
         ref={mapElement}
-        role="application"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (!mapActions) return;
-          if (e.key === '+' || e.key === '=') {
-            e.preventDefault();
-            mapActions.zoomIn();
-          } else if (e.key === '-' || e.key === '_') {
-            e.preventDefault();
-            mapActions.zoomOut();
-          } else if (e.key === '3') {
-            e.preventDefault();
-            mapActions.toggle3D();
-          } else if (e.key.toLowerCase() === 'r') {
-            e.preventDefault();
-            mapActions.resetView();
-          }
-        }}
+        role="region"
         className={className || "h-[500px] w-full overflow-hidden rounded-xl border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1C442D] dark:focus-visible:ring-[#D5B16D]"}
         aria-label="Interactive Mappls map"
         title="Interactive Mappls map. Use plus (+) and minus (-) or underscore (_) keys to zoom, 3 to toggle 3D view, or r to reset view."

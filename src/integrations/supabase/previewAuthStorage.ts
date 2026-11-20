@@ -69,7 +69,21 @@ export function brokeredPreviewStorage(): PreviewAuthStorage | undefined {
     ? [ancestor]
     : (dev ? ['https://lovable.dev', 'http://localhost:3000'] : ['https://lovable.dev']);
   const TIMEOUT = 2000;
-  const newId = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+  let requestIdCounter = 0;
+  const newId = (): string => {
+    if (typeof crypto !== 'undefined') {
+      if (typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+      }
+      if (typeof crypto.getRandomValues === 'function') {
+        const buffer = new Uint32Array(2);
+        crypto.getRandomValues(buffer);
+        return `${buffer[0].toString(36)}${buffer[1].toString(36)}${Date.now().toString(36)}`;
+      }
+    }
+    requestIdCounter = (requestIdCounter + 1) % 1000000;
+    return `${Date.now().toString(36)}-${requestIdCounter}`;
+  };
 
   const request = (type: BrokerRequestType, key: string, value?: string): Promise<BrokerReply | null> =>
     new Promise((resolve) => {

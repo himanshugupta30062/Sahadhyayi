@@ -76,7 +76,14 @@ function applyBestEffortRateLimit(identifier: string): boolean {
 }
 
 function parseModelJson(text: string): unknown {
-  const trimmed = text.trim().replace(/^\x60{3}(?:json)?\s*/i, "").replace(/\s*\x60{3}$/i, "");
+  let trimmed = text.replace(/^\uFEFF/, "").trim();
+  if (trimmed.startsWith("```")) {
+    trimmed = trimmed.replace(/^```(?:json)?\s*/i, "");
+  }
+  if (trimmed.endsWith("```")) {
+    trimmed = trimmed.slice(0, -3).trimEnd();
+  }
+  trimmed = trimmed.trim();
   return JSON.parse(trimmed);
 }
 
