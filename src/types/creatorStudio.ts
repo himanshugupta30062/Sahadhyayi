@@ -11,10 +11,52 @@ export type TemplateStyle =
 export type PostType =
   | 'review'
   | 'quote'
-  | 'wrapup'
-  | 'tbr'
+  | 'recommendation'
   | 'versus'
+  | 'tbr'
+  | 'wrapup'
+  | 'carousel'
   | 'custom';
+
+export type BackgroundTexture = 'clean' | 'parchment' | 'dots' | 'linen' | 'gradient';
+
+export type FontPairing = 'editorial' | 'literary' | 'modern' | 'heritage' | 'bold';
+
+export type CaptionTone = 'thoughtful' | 'casual' | 'poetic' | 'bilingual';
+
+export interface RatingBreakdown {
+  plot: number; // 1-5
+  characters: number; // 1-5
+  pacing: number; // 1-5
+  writing: number; // 1-5
+  emotionalImpact: number; // 1-5
+}
+
+export interface RecommendationBook {
+  title: string;
+  author: string;
+  coverUrl?: string;
+  reason?: string;
+}
+
+export interface VersusComparison {
+  bookA: {
+    title: string;
+    author: string;
+    coverUrl?: string;
+    score: number;
+    highlight: string;
+  };
+  bookB: {
+    title: string;
+    author: string;
+    coverUrl?: string;
+    score: number;
+    highlight: string;
+  };
+  winner: 'bookA' | 'bookB' | 'tie';
+  verdictNote: string;
+}
 
 export interface SlideData {
   id: string;
@@ -30,17 +72,38 @@ export interface SlideData {
   
   // Content specifics
   rating: number; // 0 - 5
-  hookLine?: string; // E.g. "The book that redefined historical fiction."
+  hookLine?: string;
   reviewBody?: string;
   quote?: string;
-  quoteAttribution?: string; // Chapter, page, or character
-  vibe?: string; // E.g. "Melancholic, Atmospheric, Poetic"
-  tags: string[]; // E.g. ["Must Read", "5 Stars", "Book Club Pick"]
+  quoteAttribution?: string;
+  vibe?: string;
+  tags: string[];
+
+  // Structured Carousel specifics
+  carouselStage?: 'hook' | 'premise' | 'quotes' | 'breakdown' | 'verdict';
+  synopsis?: string;
+  discussionQuestion?: string;
+  ratingBreakdown?: RatingBreakdown;
+
+  // Recommendation specifics
+  recommendationPrompt?: string; // e.g. "If you loved The Silent Patient..."
+  recommendedBooks?: RecommendationBook[];
+
+  // Versus specifics
+  versus?: VersusComparison;
+
+  // Wrap-up specifics
+  wrapupMonth?: string;
+  wrapupBooksCount?: number;
+  wrapupPagesCount?: number;
+  wrapupTopFavorite?: string;
   
-  // Custom styling overrides if any
+  // Custom styling overrides
   customHeadline?: string;
   customSubtitle?: string;
   customBody?: string;
+  backgroundTexture?: BackgroundTexture;
+  fontPairing?: FontPairing;
 }
 
 export interface CreatorPostState {
@@ -48,11 +111,14 @@ export interface CreatorPostState {
   postType: PostType;
   aspectRatio: AspectRatio;
   templateId: TemplateStyle;
+  backgroundTexture: BackgroundTexture;
+  fontPairing: FontPairing;
   slides: SlideData[];
   activeSlideIndex: number;
   brandWatermarkEnabled: boolean;
   brandWatermarkText: string;
   caption: string;
+  captionTone: CaptionTone;
   hashtags: string[];
 }
 

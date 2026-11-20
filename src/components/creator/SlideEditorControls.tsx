@@ -1,10 +1,28 @@
 import React, { useState } from 'react';
-import { Star, Plus, X, AtSign, Tag, MessageSquare, Quote as QuoteIcon } from 'lucide-react';
+import {
+  Star,
+  Plus,
+  X,
+  AtSign,
+  Tag,
+  MessageSquare,
+  Quote as QuoteIcon,
+  HelpCircle,
+  BarChart2,
+  Calendar,
+} from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { SlideData, PostType } from '@/types/creatorStudio';
 
 interface SlideEditorControlsProps {
@@ -51,8 +69,34 @@ export const SlideEditorControls: React.FC<SlideEditorControlsProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* 1. Rating Selector (if review or wrapup) */}
-      {(postType === 'review' || postType === 'wrapup') && (
+      {/* Structured Carousel Stage Selector */}
+      {postType === 'carousel' && (
+        <div className="space-y-1.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+          <Label className="text-xs font-semibold text-amber-900 dark:text-amber-200">
+            Slide Carousel Stage
+          </Label>
+          <Select
+            value={activeSlide.carouselStage || 'hook'}
+            onValueChange={(val) => onUpdateSlide({ carouselStage: val as any })}
+          >
+            <SelectTrigger className="h-8 text-xs bg-background">
+              <SelectValue placeholder="Select slide stage" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="hook">1. Hook & Cover</SelectItem>
+              <SelectItem value="premise">2. Premise / Synopsis</SelectItem>
+              <SelectItem value="quotes">3. Key Quote</SelectItem>
+              <SelectItem value="breakdown">4. Story Pillar Breakdown</SelectItem>
+              <SelectItem value="verdict">5. Final Verdict & Discussion CTA</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {/* 1. Rating Selector (if review, wrapup, or verdict) */}
+      {(postType === 'review' ||
+        postType === 'wrapup' ||
+        (postType === 'carousel' && activeSlide.carouselStage === 'verdict')) && (
         <div className="space-y-1.5">
           <Label className="text-xs font-semibold flex items-center justify-between">
             <span>Your Rating</span>
@@ -87,7 +131,8 @@ export const SlideEditorControls: React.FC<SlideEditorControlsProps> = ({
       )}
 
       {/* 2. Review Hook / Headline */}
-      {postType === 'review' && (
+      {(postType === 'review' ||
+        (postType === 'carousel' && activeSlide.carouselStage === 'hook')) && (
         <div className="space-y-1.5">
           <Label className="text-xs font-semibold">Catchy Review Hook</Label>
           <Input
@@ -116,8 +161,39 @@ export const SlideEditorControls: React.FC<SlideEditorControlsProps> = ({
         </div>
       )}
 
+      {/* Carousel Premise / Synopsis */}
+      {postType === 'carousel' && activeSlide.carouselStage === 'premise' && (
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold">Spoiler-Free Premise</Label>
+          <Textarea
+            value={activeSlide.synopsis || ''}
+            onChange={(e) => onUpdateSlide({ synopsis: e.target.value })}
+            placeholder="Set up the inciting incident and protagonist dilemma..."
+            rows={3}
+            className="text-xs resize-none"
+          />
+        </div>
+      )}
+
+      {/* Carousel Verdict Discussion Prompt */}
+      {postType === 'carousel' && activeSlide.carouselStage === 'verdict' && (
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold flex items-center gap-1">
+            <HelpCircle className="w-3.5 h-3.5" />
+            Discussion Prompt for Comments
+          </Label>
+          <Input
+            value={activeSlide.discussionQuestion || ''}
+            onChange={(e) => onUpdateSlide({ discussionQuestion: e.target.value })}
+            placeholder="e.g. Did the ending satisfy you or break your heart?"
+            className="text-xs h-9"
+          />
+        </div>
+      )}
+
       {/* 4. Quote Card Controls */}
-      {postType === 'quote' && (
+      {(postType === 'quote' ||
+        (postType === 'carousel' && activeSlide.carouselStage === 'quotes')) && (
         <>
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold flex items-center gap-1">
@@ -144,38 +220,33 @@ export const SlideEditorControls: React.FC<SlideEditorControlsProps> = ({
         </>
       )}
 
-      {/* 5. Custom Card Controls */}
-      {postType === 'custom' && (
-        <>
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">Headline</Label>
+      {/* 5. Wrap-Up Specifics */}
+      {postType === 'wrapup' && (
+        <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5" />
+              Month
+            </Label>
             <Input
-              value={activeSlide.customHeadline || ''}
-              onChange={(e) => onUpdateSlide({ customHeadline: e.target.value })}
-              placeholder="Main Title"
-              className="text-xs h-9"
+              value={activeSlide.wrapupMonth || 'November'}
+              onChange={(e) => onUpdateSlide({ wrapupMonth: e.target.value })}
+              className="text-xs h-8"
             />
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">Subtitle</Label>
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold flex items-center gap-1">
+              <BarChart2 className="w-3.5 h-3.5" />
+              Books Read
+            </Label>
             <Input
-              value={activeSlide.customSubtitle || ''}
-              onChange={(e) => onUpdateSlide({ customSubtitle: e.target.value })}
-              placeholder="Subtitle or Context"
-              className="text-xs h-9"
+              type="number"
+              value={activeSlide.wrapupBooksCount || 4}
+              onChange={(e) => onUpdateSlide({ wrapupBooksCount: parseInt(e.target.value) || 0 })}
+              className="text-xs h-8"
             />
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">Body Content</Label>
-            <Textarea
-              value={activeSlide.customBody || ''}
-              onChange={(e) => onUpdateSlide({ customBody: e.target.value })}
-              placeholder="Enter custom content..."
-              rows={3}
-              className="text-xs resize-none"
-            />
-          </div>
-        </>
+        </div>
       )}
 
       {/* 6. Tags & Tropes */}
@@ -185,7 +256,6 @@ export const SlideEditorControls: React.FC<SlideEditorControlsProps> = ({
           Tags & Tropes
         </Label>
 
-        {/* Selected tags */}
         {activeSlide.tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {activeSlide.tags.map((tag) => (
@@ -206,21 +276,21 @@ export const SlideEditorControls: React.FC<SlideEditorControlsProps> = ({
           </div>
         )}
 
-        {/* Preset quick picks */}
         <div className="flex flex-wrap gap-1">
-          {PRESET_TAGS.filter((t) => !activeSlide.tags.includes(t)).slice(0, 5).map((preset) => (
-            <button
-              key={preset}
-              type="button"
-              onClick={() => handleAddTag(preset)}
-              className="text-[10px] px-2 py-0.5 rounded-full border border-border/70 hover:bg-accent/40 text-muted-foreground transition-colors"
-            >
-              + {preset}
-            </button>
-          ))}
+          {PRESET_TAGS.filter((t) => !activeSlide.tags.includes(t))
+            .slice(0, 5)
+            .map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => handleAddTag(preset)}
+                className="text-[10px] px-2 py-0.5 rounded-full border border-border/70 hover:bg-accent/40 text-muted-foreground transition-colors"
+              >
+                + {preset}
+              </button>
+            ))}
         </div>
 
-        {/* Custom tag input */}
         <div className="flex items-center gap-1.5 pt-1">
           <Input
             value={newTagInput}
