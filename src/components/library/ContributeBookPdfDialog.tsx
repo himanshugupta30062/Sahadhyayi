@@ -80,6 +80,7 @@ function ContributeBookPdfDialogContent() {
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
+  const [rightsAttested, setRightsAttested] = useState(false);
   const [busy, setBusy] = useState(false);
   const [busyStage, setBusyStage] = useState<'idle' | 'validating' | 'uploading' | 'matching'>('idle');
   const [selectedBook, setSelectedBook] = useState<CatalogueBook | null>(null);
@@ -164,6 +165,10 @@ function ContributeBookPdfDialogContent() {
       toast({ title: 'Choose a PDF', description: 'Select a PDF file to submit for admin review.', variant: 'destructive' });
       return;
     }
+    if (!rightsAttested) {
+      toast({ title: 'Confirm upload rights', description: 'Please confirm that you have permission to share this PDF or that it is public domain/openly licensed.', variant: 'destructive' });
+      return;
+    }
 
     setBusy(true);
     setBusyStage('validating');
@@ -203,8 +208,8 @@ function ContributeBookPdfDialogContent() {
             file_size_bytes: file.size,
             submitted_title: title.trim() || null,
             submitted_author: author.trim() || null,
-            rights_attested: false,
-            rights_statement: null,
+            rights_attested: true,
+            rights_statement: 'Contributor confirms they have permission to share this PDF or that it is public domain/openly licensed.',
             status: 'uploaded',
             target_book_id: selectedBook?.id || null,
           });
@@ -229,6 +234,7 @@ function ContributeBookPdfDialogContent() {
         setFile(null);
         setTitle('');
         setAuthor('');
+        setRightsAttested(false);
         setSelectedBook(null);
         setSelectedBookIds([]);
         setMatchedCandidates([]);
@@ -490,6 +496,28 @@ function ContributeBookPdfDialogContent() {
                   {selectedBook && <p className="text-xs text-muted-foreground">Author will be taken from the selected catalogue book.</p>}
                 </div>
 
+                <label className="flex items-start gap-3 rounded-lg border p-3 text-sm leading-relaxed">
+                  <input
+                    type="checkbox"
+                    checked={rightsAttested}
+                    onChange={(event) => setRightsAttested(event.target.checked)}
+                    disabled={busy}
+                    className="mt-1 h-4 w-4 shrink-0 accent-primary"
+                  />
+                  <span>I confirm that I have the right to share this PDF, or that it is in the public domain or available under an open licence. I understand that an administrator will preview it before any Library publication.</span>
+                </label>
+
+                <label className="flex items-start gap-3 rounded-lg border p-3 text-sm leading-relaxed">
+                  <input
+                    type="checkbox"
+                    checked={rightsAttested}
+                    onChange={(event) => setRightsAttested(event.target.checked)}
+                    disabled={busy}
+                    className="mt-1 h-4 w-4 shrink-0 accent-primary"
+                  />
+                  <span>I confirm that I have the right to share this PDF, or that it is in the public domain or available under an open licence. I understand that an administrator will preview it before any Library publication.</span>
+                </label>
+
                 {busy && (
                   <div className="space-y-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
                     <div className="flex items-center justify-between text-sm">
@@ -510,7 +538,7 @@ function ContributeBookPdfDialogContent() {
                   </div>
                 )}
 
-                <Button type="submit" className="w-full gap-2" disabled={busy || !file || (!selectedBook && !title.trim())}>
+                <Button type="submit" className="w-full gap-2" disabled={busy || !file || !rightsAttested || (!selectedBook && !title.trim())}>
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileUp className="h-4 w-4" />}
                   {busy ? 'Submitting privately…' : selectedBook ? 'Submit PDF for review' : 'Submit New Book for Review'}
                 </Button>
@@ -581,7 +609,7 @@ function ContributeBookPdfDialogContent() {
                   <Button variant="outline" onClick={handleBackToUpload} disabled={busy} className="flex-1">
                     <ArrowLeft className="mr-2 h-4 w-4" /> Change Book
                   </Button>
-                  <Button type="button" onClick={submit} className="w-full gap-2" disabled={busy || !file}>
+                  <Button type="button" onClick={submit} className="w-full gap-2" disabled={busy || !file || !rightsAttested}>
                     {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileUp className="h-4 w-4" />}
                     {busy ? 'Submitting…' : 'Submit for admin review'}
                   </Button>
