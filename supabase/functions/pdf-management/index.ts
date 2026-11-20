@@ -80,90 +80,6 @@ async function validatePDFStructure(blob: Blob): Promise<{ valid: boolean; pageC
   }
 }
 
-/**
- * Run Bouncer malware scan
- */
-async function runMalwareScan(source: Blob, scannerToken: string, apiBase: string): Promise<{ clean: boolean; verdict: string; details: Record<string, unknown> }> {
-  const timeoutMs = 60000;
-  const deadline = Date.now() + timeoutMs;
-  let scanId = "";
-  let pollPath = "";
-
-  try {
-    if (source.size <= 4_500_000) {
-      const form = new FormData();
-      form.append("file", source, "submission.pdf");
-      const response = await fetch(`${apiBase}/v1/scan`, {
-        method: "POST",
-        headers: { "X-API-Key": scannerToken },
-        body: form,
-        signal: AbortSignal.timeout(15000),
-      });
-      if (!response.ok) throw new Error(`Bouncer v1 scan creation failed (${response.status})`);
-      const payload = await response.json();
-      scanId = payload?.data?.scan_id;
-      pollPath = payload?.data?.poll_url || (scanId ? `/v1/scan/${encodeURIComponent(scanId)}` : "");
-    } else {
-      const createResponse = await fetch(`${apiBase}/v2/scan`, {
-        method: "POST",
-        headers: { "X-API-Key": scannerToken, "Content-Type": "application/json" },
-        body: JSON.stringify({ file_name: "submission.pdf", mime_type: "application/pdf" }),
-        signal: AbortSignal.timeout(15000),
-      });
-      if (!createResponse.ok) throw new Error(`Bouncer v2 scan creation failed (${createResponse.status})`);
-      const payload = await createResponse.json();
-      scanId = payload?.data?.scan_id;
-      pollPath = payload?.data?.poll_url || (scanId ? `/v2/scan/${encodeURIComponent(scanId)}` : "");
-      const upload = payload?.data?.upload;
-      if (!scanId || !pollPath || !upload?.url || !upload?.fields || source.size > Number(payload?.data?.max_file_size || 0)) {
-        throw new Error("Bouncer returned an invalid or insufficient upload target");
-      }
-      const uploadForm = new FormData();
-      for (const [key, value] of Object.entries(upload.fields as Record<string, string>)) {
-        uploadForm.append(key, value);
-      }
-      uploadForm.append("file", source, "submission.pdf");
-      const uploadResponse = await fetch(upload.url, {
-        method: "POST",
-        body: uploadForm,
-        signal: AbortSignal.timeout(20000),
-      });
-      if (!uploadResponse.ok) throw new Error("PDF upload to Bouncer failed");
-    }
-
-    if (!scanId || !pollPath || (!pollPath.startsWith("/v1/scan/") && !pollPath.startsWith("/v2/scan/"))) {
-      throw new Error("Bouncer did not return a valid scan identifier");
-    }
-
-    let verdict = "";
-    let scanDetails: Record<string, unknown> = {};
-    const pollInterval = 2000;
-
-    while (Date.now() < deadline) {
-      await new Promise((resolve) => setTimeout(resolve, pollInterval));
-      const pollResponse = await fetch(new URL(pollPath, apiBase), {
-        headers: { "X-API-Key": scannerToken },
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!pollResponse.ok) throw new Error("Bouncer polling failed");
-      const result = await pollResponse.json();
-      const status = result?.data?.status;
-      scanDetails = result?.data || {};
-      if (status === "failed") return { clean: false, verdict: "failed", details: scanDetails };
-      if (status === "completed") {
-        verdict = result?.data?.verdict || "";
-        break;
-      }
-    }
-
-    if (!verdict) return { clean: false, verdict: "timeout", details: { ...scanDetails, error: "Scan timed out" } };
-    return { clean: verdict === "clean", verdict, details: scanDetails };
-  } catch (error) {
-    console.error("Bouncer scan error:", error instanceof Error ? error.message : "unknown");
-    throw error;
-  }
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
   if (!["POST", "GET"].includes(req.method)) return json({ error: "Method not allowed." }, 405);
@@ -206,12 +122,12 @@ serve(async (req) => {
   // production schema. Replacement has a non-atomic fallback path and rescan
   // writes metadata columns that do not exist in production. Keep both closed
   // until their schema migration and end-to-end workflow are deployed.
-  if (action === "replace_pdf" || action === "rescan_malware") {
+  if (action === "replace_pdf") {
     return json({
       error: "This PDF management operation is temporarily unavailable while the production-safe workflow is completed. No PDF or catalogue record was changed.",
     }, 503);
   }
-  if (!["delete_pdf", "replace_pdf", "reverify_pdf", "rescan_malware", "get_pdf_audit", "get_submission_details"].includes(String(action))) {
+  if (!["delete_pdf", "replace_pdf", "reverify_pdf", "get_pdf_audit", "get_submission_details"].includes(String(action))) {
     return json({ error: "Unsupported action." }, 400);
   }
 
@@ -281,18 +197,7 @@ serve(async (req) => {
       return json({ error: "Encrypted PDFs are not accepted. Please provide an unencrypted PDF." }, 422);
     }
 
-    // Run malware scan on new PDF
-    const scannerToken = Deno.env.get("BOUNCER_API_KEY");
-    if (scannerToken) {
-      try {
-        const scanResult = await runMalwareScan(source, scannerToken, "https://api.usebouncer.dev");
-        if (!scanResult.clean) {
-          return json({ error: "Replacement PDF failed malware scan.", malware_verdict: scanResult.verdict }, 422);
-        }
-      } catch {
-        return json({ error: "Malware scan failed for replacement PDF." }, 503);
-      }
-    }
+    // Malware scanning is disabled; PDF signature and structure checks remain.
 
     // Upload new PDF to public bucket
     const newPublicPath = `${bookId}/${newSubmissionId}.pdf`;
@@ -398,94 +303,6 @@ serve(async (req) => {
       submissionId,
       nextStep: "Call verify-book-pdf with this submissionId",
     });
-  }
-
-  // RESCAN MALWARE - Re-run malware scan on a submission
-  if (action === "rescan_malware") {
-    const submissionId = typeof body.submissionId === "string" ? body.submissionId.trim() : "";
-
-    if (!UUID.test(submissionId)) return json({ error: "Valid submission ID required." }, 400);
-
-    const { data: submission, error: subError } = await admin.from("book_pdf_submissions")
-      .select("id,status,storage_path,malware_scan_status")
-      .eq("id", submissionId)
-      .maybeSingle();
-
-    if (subError || !submission) return json({ error: "Submission not found." }, 404);
-    if (!["approved", "published"].includes(submission.status)) {
-      return json({ error: `Can only rescan malware for approved/published submissions, current: ${submission.status}` }, 400);
-    }
-
-    const scannerToken = Deno.env.get("BOUNCER_API_KEY");
-    if (!scannerToken) return json({ error: "Malware scanning not configured (BOUNCER_API_KEY missing)." }, 503);
-
-    // Get the PDF - could be in quarantine or public bucket
-    let source: Blob | null = null;
-    if (submission.status === "approved" && !submission.published_book_id) {
-      // Still in quarantine
-      const { data, error } = await admin.storage.from("book-pdf-quarantine").download(submission.storage_path);
-      if (error || !data) return json({ error: "Could not retrieve PDF from quarantine." }, 503);
-      source = data;
-    } else if (submission.published_book_id) {
-      // In public bucket
-      const { data: book } = await admin.from("books_library")
-        .select("pdf_url")
-        .eq("id", submission.published_book_id)
-        .maybeSingle();
-      if (book?.pdf_url) {
-        const response = await fetch(book.pdf_url);
-        if (response.ok) source = await response.blob();
-      }
-    }
-
-    if (!source) return json({ error: "Could not retrieve PDF for scanning." }, 503);
-
-    // Update status to scanning
-    await admin.from("book_pdf_submissions").update({
-      malware_scan_status: "scanning"
-    }).eq("id", submissionId);
-
-    try {
-      const scanResult = await runMalwareScan(source, scannerToken, "https://api.usebouncer.dev");
-
-      const newStatus = scanResult.clean ? "clean" : scanResult.verdict;
-      await admin.from("book_pdf_submissions").update({
-        malware_scan_status: newStatus,
-        malware_scan_completed_at: new Date().toISOString(),
-        malware_scan_details: scanResult.details,
-      }).eq("id", submissionId);
-
-      await admin.from("book_pdf_review_audit").insert({
-        submission_id: submissionId,
-        reviewer_id: authData.user.id,
-        action: "malware_rescan",
-        details: { verdict: scanResult.verdict, clean: scanResult.clean, details: scanResult.details },
-      });
-
-      if (!scanResult.clean) {
-        // If malware found on published book, flag it
-        if (submission.published_book_id) {
-          await admin.from("books_library").update({
-            pdf_verification_status: "malware_detected",
-          }).eq("id", submission.published_book_id);
-        }
-      }
-
-      return json({
-        success: true,
-        clean: scanResult.clean,
-        verdict: scanResult.verdict,
-        details: scanResult.details
-      });
-    } catch (error) {
-      await admin.from("book_pdf_submissions").update({
-        malware_scan_status: "failed",
-        malware_scan_completed_at: new Date().toISOString(),
-        malware_scan_details: { error: error instanceof Error ? error.message : "Scan failed" },
-      }).eq("id", submissionId);
-
-      return json({ error: "Malware scan failed." }, 503);
-    }
   }
 
   // GET PDF AUDIT - Get complete audit trail for a book
