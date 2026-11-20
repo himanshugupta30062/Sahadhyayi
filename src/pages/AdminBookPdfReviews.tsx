@@ -447,12 +447,6 @@ export default function AdminBookPdfReviews() {
                       {selected.rights_attested ? 'Confirmed by contributor' : 'Not confirmed'}
                     </span>
                   </div>
-                  <div>
-                    <span className="font-medium text-muted-foreground">Malware Scan:</span>{' '}
-                    <Badge variant={selected.malware_scan_status === 'clean' ? 'default' : 'outline'} className="text-[10px] h-4">
-                      {selected.malware_scan_status || 'Pending scan'}
-                    </Badge>
-                  </div>
                 </div>
 
                 {/* Target Catalogue Book or New Book Creation Info */}
