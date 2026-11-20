@@ -171,7 +171,7 @@ const FromPageToScreen = () => {
             </div>
           ) : isError ? (
             <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-8 text-center">
-              <p className="font-semibold">We couldn't load the adaptation catalogue.</p>
+              <p className="font-semibold">We couldn&apos;t load the adaptation catalogue.</p>
               <p className="mt-2 text-sm text-muted-foreground">Please try again in a moment.</p>
               <Button className="mt-4" onClick={() => void refetch()}>Try again</Button>
             </div>
@@ -180,7 +180,7 @@ const FromPageToScreen = () => {
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted"><Clapperboard className="h-6 w-6 text-muted-foreground" /></div>
               <h3 className="font-serif text-xl font-semibold">The catalogue is being curated</h3>
               <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
-                We're verifying book-to-screen connections before publishing them. Check back soon for researched adaptations and comparisons.
+                We&apos;re verifying book-to-screen connections before publishing them. Check back soon for researched adaptations and comparisons.
               </p>
             </div>
           ) : (
