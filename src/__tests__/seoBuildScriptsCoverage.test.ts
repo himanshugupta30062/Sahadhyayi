@@ -66,7 +66,7 @@ describe('SEO build-script coverage', () => {
     mocks.createClient.mockClear();
     mocks.rows = {
       books_library: [
-        { id: 'book-1', title: 'A <script>alert(1)</script> Book', description: '<p>A &amp; B story</p>', cover_image_url: 'https://images.example/cover.jpg', author_id: 'author-1', author: 'Munshi Premchand', isbn: '9780000000001', genre: 'Literary fiction', language: 'en', pages: 240, publication_year: 1936 },
+        { id: 'book-1', title: 'A <script>alert(1)</script> Book', description: '<p>A &amp; B story</p>', cover_image_url: 'https://images.example/cover.jpg', pdf_url: 'https://archive.org/download/example/book.pdf', author_id: 'author-1', author: 'Munshi Premchand', isbn: '9780000000001', genre: 'Literary fiction', language: 'en', pages: 240, publication_year: 1936 },
         { id: 'book-2', title: 'A Related Literary Work', description: 'A Related Literary Work', cover_image_url: null, author: 'Another Author', genre: 'Literary fiction', language: 'en', publication_year: 1940 },
         { id: 'book-3', title: 'Placeholder Example', description: 'Coming soon', cover_image_url: null, author: 'Another Author', genre: 'History' },
         { id: '../unsafe', title: 'Unsafe route', description: null, cover_image_url: null },
@@ -121,6 +121,7 @@ describe('SEO build-script coverage', () => {
     expect(sitemap).not.toContain('/articles/../unsafe');
     expect(sitemap).not.toContain('/book/../unsafe');
     expect(sitemap).toContain('sahadhyayi-logo-digital-reading.png');
+    expect(sitemap).toContain('<image:loc>https://images.example/cover.jpg</image:loc>');
     expect(sitemap).toContain('<urlset');
     expect(mocks.writeFileSync).toHaveBeenCalled();
   });
@@ -171,6 +172,9 @@ describe('SEO build-script coverage', () => {
     expect(book).toContain('"inLanguage":"en"');
     expect(book).toContain('"numberOfPages":240');
     expect(book).toContain('"datePublished":"1936"');
+    expect(book).toContain('"encodingFormat":"application/pdf"');
+    expect(book).toContain('"url":"https://archive.org/download/example/book.pdf"');
+    expect(book).toContain('<a href="https://archive.org/download/example/book.pdf">Read available PDF edition</a>');
     expect(book).toContain('"mainEntityOfPage":{"@type":"WebPage","@id":"https://sahadhyayi.com/book/book-1"}');
     expect(book).toContain('<p>By <a href="/authors/munshi-premchand">Munshi Premchand</a></p>');
     expect(book).toContain('<section aria-label="Book details"><h2>About this book</h2>');
