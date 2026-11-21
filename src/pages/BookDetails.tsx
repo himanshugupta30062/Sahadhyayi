@@ -465,23 +465,6 @@ const BookDetails = () => {
                 </div>
               </div>
 
-              {/* Defer AI tools until the reader approaches this section. */}
-              <div ref={aiSectionsRef}>
-                {shouldLoadAISections ? (
-                  <ErrorBoundary fallback={<BookTabErrorFallback title="Unable to load AI reading tools" message="The AI tools are temporarily unavailable. The rest of the book page is still usable." />}>
-                    <React.Suspense fallback={<div className="space-y-4" role="status" aria-label="Loading AI reading tools"><div className="h-40 animate-pulse rounded-xl bg-muted" /><div className="h-48 animate-pulse rounded-xl bg-muted" /></div>}>
-                      <BookAIReader book={{ id: book.id, title: book.title, author: book.author, description: book.description, language: book.language }} />
-                      <AIReadingToolkit book={{ id: book.id, title: book.title, author: book.author, description: book.description, language: book.language }} />
-                    </React.Suspense>
-                  </ErrorBoundary>
-                ) : (
-                  <div className="space-y-4" aria-hidden="true">
-                    <div className="h-40 rounded-xl bg-muted/40" />
-                    <div className="h-48 rounded-xl bg-muted/40" />
-                  </div>
-                )}
-              </div>
-
               {/* Quality & Edition Transparency */}
               <BookEditionTransparency book={book} />
 
@@ -512,6 +495,21 @@ const BookDetails = () => {
               )}
             </div>
           </div>
+
+          {/* AI Reading Studio: deferred until the reader reaches this section. */}
+          <section ref={aiSectionsRef} className="mb-8" aria-label="AI Reading Studio">
+            {shouldLoadAISections ? (
+              <ErrorBoundary fallback={<BookTabErrorFallback title="Unable to load AI reading tools" message="The AI tools are temporarily unavailable. The rest of the book page is still usable." />}>
+                <React.Suspense fallback={<div className="space-y-4" role="status" aria-label="Loading AI reading tools"><div className="h-40 animate-pulse rounded-xl bg-muted" /><div className="h-48 animate-pulse rounded-xl bg-muted" /></div>}>
+                  <BookAIReader book={{ id: book.id, title: book.title, author: book.author, description: book.description, language: book.language }} />
+                  <AIReadingToolkit book={{ id: book.id, title: book.title, author: book.author, description: book.description, language: book.language }} />
+                </React.Suspense>
+              </ErrorBoundary>
+            ) : (
+              // A one-pixel observer target avoids reserving blank space before lazy loading.
+              <div className="h-px" aria-hidden="true" />
+            )}
+          </section>
 
           {/* Series Navigation (if book is part of a series) */}
           <BookSeriesSection book={book} className="mb-8" />
