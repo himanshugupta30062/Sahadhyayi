@@ -247,6 +247,9 @@ const AdaptationCard = ({ item }: { item: BookMovieAdaptation }) => (
           <span className="text-xs text-muted-foreground">Book link pending</span>
         )}
       </div>
+      <Link to={`/from-page-to-screen/${item.id}`} className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90">
+        Explore comparison <ArrowRight className="h-4 w-4" />
+      </Link>
     </div>
   </article>
 );
