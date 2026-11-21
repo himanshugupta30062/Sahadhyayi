@@ -10,6 +10,22 @@ const mockCreatePart = vi.fn().mockResolvedValue({ id: 'new-part-2' });
 const mockUpdateStory = vi.fn().mockResolvedValue({});
 const mockUpdatePart = vi.fn().mockResolvedValue({});
 
+
+vi.mock('@/contexts/authHelpers', () => ({
+  useAuth: () => ({ user: { id: 'test-user' } }),
+}));
+
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: {
+    storage: {
+      from: () => ({
+        upload: vi.fn().mockResolvedValue({ error: null }),
+        getPublicUrl: () => ({ data: { publicUrl: 'https://example.com/story-cover.jpg' } }),
+      }),
+    },
+  },
+}));
+
 vi.mock('@/hooks/useStories', () => ({
   useCreateStory: () => ({
     mutateAsync: mockCreateStory,
