@@ -34,6 +34,7 @@ const ALLOWED_PROXY_SUFFIXES = [
   'googleusercontent.com',
   'ncert.nic.in',
   'gitapress.org',
+  'campbellmgold.co.uk',
   'umn.edu',
   'edu',
 ];
@@ -62,23 +63,40 @@ function isProxyable(url) {
 
 async function fetchLibraryBooks() {
   const safeSupabaseUrl = String(SUPABASE_URL).replace(/[\r\n]/g, '').slice(0, 300);
-  console.log(`[audit] Fetching library books with pdf_url from ${safeSupabaseUrl}...`);
-  const endpoint = `${SUPABASE_URL}/rest/v1/books_library?pdf_url=not.is.null&select=id,title,author,pdf_url,publication_year&limit=100`;
-  const res = await fetch(endpoint, {
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      Accept: 'application/json',
-    },
-  });
+  console.log(`[audit] Fetching every library book with a pdf_url from ${safeSupabaseUrl}...`);
+  const pageSize = 100;
+  const books = [];
+  let offset = 0;
 
-  if (!res.ok) {
-    throw new Error(`Failed to query books_library: ${res.status} ${res.statusText}`);
+  // PostgREST returns at most one page by default. Continue until the final
+  // partial page so large catalogues are never silently truncated at 100 rows.
+  while (true) {
+    const endpoint = `${SUPABASE_URL}/rest/v1/books_library?pdf_url=not.is.null&select=id,title,author,pdf_url,publication_year&order=id.asc`;
+    const res = await fetch(endpoint, {
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        Accept: 'application/json',
+        Range: `${offset}-${offset + pageSize - 1}`,
+        'Range-Unit': 'items',
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to query books_library at offset ${offset}: ${res.status} ${res.statusText}`);
+    }
+
+    const page = await res.json();
+    if (!Array.isArray(page)) {
+      throw new Error('Unexpected books_library response while paging PDF audit.');
+    }
+    books.push(...page);
+    console.log(`[audit] Retrieved ${books.length} books with PDF URLs...`);
+    if (page.length < pageSize) break;
+    offset += pageSize;
   }
 
-  const books = await res.json();
-  const count = Array.isArray(books) ? books.length : 0;
-  const safeCount = String(count).replace(/[\r\n]/g, '');
+  const safeCount = String(books.length).replace(/[\r\n]/g, '');
   console.log(`[audit] Found ${safeCount} library books to audit.`);
   return books;
 }
