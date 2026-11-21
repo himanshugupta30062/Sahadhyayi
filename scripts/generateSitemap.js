@@ -42,7 +42,7 @@ const xmlEscape = value => String(value).replace(/[&<>"']/g, character => ({
 })[character]);
 
 function addUrl(loc, changefreq = 'weekly', priority = '0.6', image, lastmod) {
-  const normalizedPath = loc === '/' ? '/' : String(loc || '').replace(/\\/+$/, '');
+  const normalizedPath = loc === '/' ? '/' : String(loc || '').replace(/\/+$/, '');
   if (!normalizedPath.startsWith('/') || normalizedPath.includes('?') || normalizedPath.includes('#')) return;
   const canonicalLoc = SITE_URL + normalizedPath;
   if (seenCanonicalUrls.has(canonicalLoc)) return;
