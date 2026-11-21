@@ -18,28 +18,24 @@ export function buildAdaptationSeoMetadata(input: AdaptationSeoInput) {
   const image = absoluteHttpUrl(input.bookCoverUrl) || absoluteHttpUrl(input.moviePosterUrl);
   const bookId = `${canonical}#book`;
   const movieId = `${canonical}#movie`;
+  const bookSchema: Record<string, unknown> = {
+    '@type': 'Book', '@id': bookId, name: input.bookTitle,
+    url: input.bookLibraryId ? `https://sahadhyayi.com/book/${encodeURIComponent(input.bookLibraryId)}` : canonical,
+    ...(input.bookAuthor ? { author: { '@type': 'Person', name: input.bookAuthor } } : {}),
+    ...(input.bookPublicationYear ? { datePublished: String(input.bookPublicationYear) } : {}),
+    ...(absoluteHttpUrl(input.bookCoverUrl) ? { image: input.bookCoverUrl } : {}),
+  };
+  const movieSchema: Record<string, unknown> = {
+    '@type': 'Movie', '@id': movieId, name: input.movieTitle, url: canonical,
+    isBasedOn: bookSchema,
+    ...(input.movieReleaseYear ? { datePublished: String(input.movieReleaseYear) } : {}),
+    ...(absoluteHttpUrl(input.moviePosterUrl) ? { image: input.moviePosterUrl } : {}),
+  };
   const schema: Record<string, unknown> = {
     '@context': 'https://schema.org',
-    '@graph': [
-      {
-        '@type': 'Book', '@id': bookId, name: input.bookTitle,
-        url: input.bookLibraryId ? `https://sahadhyayi.com/book/${encodeURIComponent(input.bookLibraryId)}` : canonical,
-        ...(input.bookAuthor ? { author: { '@type': 'Person', name: input.bookAuthor } } : {}),
-        ...(input.bookPublicationYear ? { datePublished: String(input.bookPublicationYear) } : {}),
-        ...(absoluteHttpUrl(input.bookCoverUrl) ? { image: input.bookCoverUrl } : {}),
-      },
-      {
-        '@type': 'Movie', '@id': movieId, name: input.movieTitle, url: canonical,
-        isBasedOn: { '@id': bookId },
-        ...(input.movieReleaseYear ? { datePublished: String(input.movieReleaseYear) } : {}),
-        ...(absoluteHttpUrl(input.moviePosterUrl) ? { image: input.moviePosterUrl } : {}),
-      },
-      {
-        '@type': 'WebPage', '@id': canonical, url: canonical, name: title, description,
-        ...(image ? { primaryImageOfPage: { '@type': 'ImageObject', url: image } } : {}),
-        mainEntity: { '@id': movieId },
-      },
-    ],
+    '@type': 'WebPage', '@id': canonical, url: canonical, name: title, description,
+    ...(image ? { primaryImageOfPage: { '@type': 'ImageObject', url: image } } : {}),
+    mainEntity: movieSchema,
   };
   return {
     title, description, canonical, image, schema,
