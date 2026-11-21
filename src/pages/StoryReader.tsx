@@ -42,6 +42,7 @@ import {
 } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
 import SEO from '@/components/SEO';
+import { toSeoDescription } from '@/utils/seoText';
 import {
   StoryPart,
   useAddStoryComment,
@@ -324,12 +325,54 @@ export default function StoryReader() {
     xl: 'text-xl sm:text-2xl leading-loose',
   }[fontSize];
 
+  const storyUrl = \`https://sahadhyayi.com/stories/\${story.id}/part/\${currentPartNum}\`;
+  const storyDescription = toSeoDescription(part.content || story.description || \`Read \${story.title} by \${authorName} on Sahadhyayi.\`);
+  const storyImage = story.cover_image_url && /^https?:\/\//i.test(story.cover_image_url)
+    ? story.cover_image_url
+    : undefined;
+  const storyPublishedAt = story.published_at || story.created_at;
+  const storyModifiedAt = story.updated_at || storyPublishedAt;
+  const storySchema = {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: part.title || story.title,
+    headline: part.title || story.title,
+    description: storyDescription,
+    url: storyUrl,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': storyUrl },
+    author: { '@type': 'Person', name: authorName },
+    isPartOf: {
+      '@type': 'CreativeWorkSeries',
+      name: story.title,
+      url: \`https://sahadhyayi.com/stories/\${story.id}\`,
+    },
+    datePublished: part.published_at || storyPublishedAt || undefined,
+    dateModified: part.updated_at || storyModifiedAt || undefined,
+    image: storyImage,
+    inLanguage: story.format || undefined,
+    genre: story.genre || undefined,
+  };
+
   return (
     <>
       <SEO
-        title={`${part.title} · ${story.title} | Sahadhyayi Stories`}
-        description={story.description || `Read ${story.title} by ${authorName} on Sahadhyayi.`}
-        canonical={`https://sahadhyayi.com/stories/${story.id}/part/${currentPartNum}`}
+        title={\`\${part.title} · \${story.title} | Sahadhyayi Stories\`}
+        description={storyDescription}
+        canonical={storyUrl}
+        url={storyUrl}
+        type="article"
+        image={storyImage}
+        author={authorName}
+        publishedTime={part.published_at || storyPublishedAt || undefined}
+        modifiedTime={part.updated_at || storyModifiedAt || undefined}
+        noIndex={story.status !== 'published' || part.status !== 'published'}
+        schema={storySchema}
+        breadcrumbs={[
+          { name: 'Home', url: 'https://sahadhyayi.com' },
+          { name: 'Stories', url: 'https://sahadhyayi.com/stories' },
+          { name: story.title, url: \`https://sahadhyayi.com/stories/\${story.id}\` },
+          { name: part.title || \`Part \${currentPartNum}\`, url: storyUrl },
+        ]}
       />
 
       {/* Top sticky reading progress bar */}
