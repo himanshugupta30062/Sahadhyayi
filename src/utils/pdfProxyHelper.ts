@@ -35,6 +35,7 @@ const ALLOWED_PROXY_HOST_PATTERNS = [
   'ignca.gov.in',
   'dli.ernet.in',
   'hindisamay.com',
+  'campbellmgold.co.uk',
 ];
 
 /**
