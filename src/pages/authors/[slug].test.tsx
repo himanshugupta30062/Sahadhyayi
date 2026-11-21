@@ -11,9 +11,10 @@ import * as authorPostsHook from '@/hooks/useAuthorPosts';
 import * as authorQuestionsHook from '@/hooks/useAuthorQuestions';
 import * as authorEventsHook from '@/hooks/useAuthorEvents';
 import { useAuth } from '@/contexts/authHelpers';
+import SEO from '@/components/SEO';
 
 vi.mock('@/components/SEO', () => ({
-  default: () => null,
+  default: vi.fn(() => null),
 }));
 
 vi.mock('@/components/Breadcrumb', () => ({
@@ -88,7 +89,7 @@ describe('AuthorSlugPage', () => {
     expect(screen.getByText('Author Not Found Component')).toBeInTheDocument();
   });
 
-  it('renders author profile when author is found', () => {
+  it('renders author profile with canonical metadata and verified public social links', () => {
     vi.spyOn(authorSlugHook, 'useAuthorBySlug').mockReturnValue({
       data: {
         id: 'auth-1',
@@ -97,6 +98,7 @@ describe('AuthorSlugPage', () => {
         location: 'Kolkata, India',
         books_count: 50,
         followers_count: 5000,
+        social_links: { website: 'https://example.com/tagore', unsafe: 'javascript:alert(1)' },
       },
       isLoading: false,
     } as any);
@@ -112,6 +114,10 @@ describe('AuthorSlugPage', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Rabindranath Tagore' })).toBeInTheDocument();
     expect(screen.getByText('Polymath, poet, musician, and artist.')).toBeInTheDocument();
     expect(screen.getByText('Kolkata, India')).toBeInTheDocument();
+    const seoProps = vi.mocked(SEO).mock.calls.at(-1)?.[0] as any;
+    expect(seoProps.canonical).toBe('https://sahadhyayi.com/authors/rabindranath-tagore');
+    expect(seoProps.description).toContain('Rabindranath Tagore');
+    expect(seoProps.schema[0].sameAs).toEqual(['https://example.com/tagore']);
   });
 });
 
