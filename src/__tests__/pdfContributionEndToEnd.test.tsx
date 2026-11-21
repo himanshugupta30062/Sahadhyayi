@@ -110,4 +110,29 @@ describe('PDF Contribution & Publication End-to-End Workflow', () => {
     expect(readerAnalysis.isValid).toBe(true);
     expect(readerAnalysis.isPdf).toBe(true);
   });
+
+  it('verifies that books like Gunaho Ka Devta with compressed streams and version metadata pass structure validation', async () => {
+    const { validatePDFStructure } = await import('../../supabase/functions/_shared/pdfVerification');
+
+    // Simulate an uploaded book like Gunaho Ka Devta:
+    // Has %PDF-1.5 header, /Filter /FlateDecode, /Version /1.5, Hindi title metadata, and proper EOF trailer.
+    const gunahoKaDevtaHeader = `%PDF-1.5\n%âãÏÓ\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R /Version /1.5 >>\nendobj\n` +
+      `2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n` +
+      `3 0 obj\n<< /Type /Page /Parent 2 0 R /Contents 4 0 R >>\nendobj\n` +
+      `4 0 obj\n<< /Filter /FlateDecode /Length 120 >>\nstream`;
+    const gunahoKaDevtaBody = `x^+\\O\\...hindi book content stream...endstream\nendobj\n` +
+      `5 0 obj\n<< /Title (Gunaho Ka Devta) /Author (Dharamvir Bharati) >>\nendobj`;
+    const gunahoKaDevtaTrailer = `xref\n0 6\n0000000000 65535 f \n` +
+      `trailer\n<< /Size 6 /Root 1 0 R /Info 5 0 R >>\nstartxref\n520\n%%EOF`;
+
+    const blob = new Blob([`${gunahoKaDevtaHeader}\n${gunahoKaDevtaBody}\n${gunahoKaDevtaTrailer}`], {
+      type: 'application/pdf',
+    });
+
+    const validation = await validatePDFStructure(blob);
+
+    expect(validation.valid).toBe(true);
+    expect(validation.encrypted).toBe(false);
+    expect(validation.error).toBeUndefined();
+  });
 });
