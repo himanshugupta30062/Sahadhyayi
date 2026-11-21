@@ -34,6 +34,7 @@ const ALLOWED_PROXY_SUFFIXES = [
   'googleusercontent.com',
   'ncert.nic.in',
   'gitapress.org',
+  'campbellmgold.co.uk',
   'umn.edu',
   'edu',
 ];
