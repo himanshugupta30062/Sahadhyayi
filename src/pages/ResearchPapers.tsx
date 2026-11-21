@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
+import { generateBreadcrumbSchema } from '@/utils/schema';
 
 type OpenAlexAuthor = { author?: { id?: string | null; display_name?: string | null } | null } | null;
 type OpenAlexLocation = {
@@ -335,13 +336,34 @@ const ResearchPapers = () => {
     setPage(1);
   };
 
-  return (
+  const breadcrumbItems = [
+        { name: 'Home', url: 'https://sahadhyayi.com/' },
+        { name: 'Research Papers', url: 'https://sahadhyayi.com/research-papers' }
+      ];
+
+      const collectionSchema = {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": routeTopic ? `${routeTopic.label} Research Papers` : "Research Papers & Open Access Studies",
+        "description": routeTopic?.description || "Discover influential research papers, academic studies and open-access publications from across the world's scholarly literature.",
+        "url": routeTopic ? `https://sahadhyayi.com/research-papers/topic/${routeTopic.slug}` : "https://sahadhyayi.com/research-papers",
+        "mainEntity": {
+          "@type": "ItemList",
+          "name": routeTopic ? `${routeTopic.label} Research Papers` : "Research Papers Collection",
+          "description": "Curated research papers and scholarly articles",
+          "numberOfItems": totalCount
+        },
+        "breadcrumb": generateBreadcrumbSchema(breadcrumbItems)
+      };
+
+      return (
     <>
       <SEO
         title={routeTopic ? `${routeTopic.label} Research Papers & Studies | Sahadhyayi` : "Research Papers & Open Access Studies | Sahadhyayi"}
         description={routeTopic?.description || "Discover influential research papers, academic studies and open-access publications from across the world's scholarly literature."}
         canonical={routeTopic ? `https://sahadhyayi.com/research-papers/topic/${routeTopic.slug}` : "https://sahadhyayi.com/research-papers"}
         keywords={routeTopic ? [routeTopic.label, `${routeTopic.label} research`, 'research papers', 'academic studies'] : ['research papers', 'open access research', 'academic papers', 'scientific studies', 'scholarly articles']}
+        schema={collectionSchema}
       />
       <main className="min-h-screen bg-[#FAFAF8] text-[#1C201D] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
         <section className="relative isolate overflow-hidden border-b border-[#E8E8E3] bg-[#F4F3EF] dark:border-[#29332D] dark:bg-[#101711]">

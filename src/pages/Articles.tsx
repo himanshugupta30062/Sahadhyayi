@@ -23,6 +23,7 @@ import BookFlipLoader from '@/components/ui/BookFlipLoader';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import LibraryPagination from '@/components/library/LibraryPagination';
+import { generateBreadcrumbSchema } from '@/utils/schema';
 
 type SortMode = 'latest' | 'popular';
 
@@ -92,6 +93,26 @@ const Articles = () => {
     return rest.slice(start, start + pageSize);
   }, [rest, page, pageSize]);
 
+  const breadcrumbItems = [
+    { name: 'Home', url: 'https://sahadhyayi.com/' },
+    { name: 'Articles', url: 'https://sahadhyayi.com/articles' }
+  ];
+
+  const collectionSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Essays, Stories & Book Reflections",
+    "description": "Explore thoughtful essays, book reflections, and stories from the Sahadhyayi reading community. Find an idea worth carrying into your next chapter.",
+    "url": "https://sahadhyayi.com/articles",
+    "mainEntity": {
+      "@type": "ItemList",
+      "name": "Article Collection",
+      "description": "Published articles, essays, and stories on Sahadhyayi",
+      "numberOfItems": (articles || []).length
+    },
+    "breadcrumb": generateBreadcrumbSchema(breadcrumbItems)
+  };
+
   return (
     <>
       <SEO
@@ -99,6 +120,7 @@ const Articles = () => {
         description="Explore thoughtful essays, book reflections, and stories from the Sahadhyayi reading community. Find an idea worth carrying into your next chapter."
         canonical="https://sahadhyayi.com/articles"
         url="https://sahadhyayi.com/articles"
+        schema={collectionSchema}
       />
       <div className="min-h-screen bg-background">
         {/* Editorial article hero */}

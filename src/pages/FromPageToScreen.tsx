@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
+import { generateBreadcrumbSchema } from '@/utils/schema';
 
 type AdaptationMovie = {
   id: string;
@@ -46,6 +47,26 @@ type BookMovieAdaptation = {
 };
 
 const GENRES = ['All adaptations', 'Drama', 'Mystery', 'Thriller', 'Fantasy', 'Romance', 'Historical', 'Literary fiction'];
+
+const breadcrumbItems = [
+  { name: 'Home', url: 'https://sahadhyayi.com/' },
+  { name: 'Book to Movie Comparisons', url: 'https://sahadhyayi.com/from-page-to-screen' }
+];
+
+const collectionSchema = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "From Page to Screen — Books Adapted into Movies",
+  "description": "Discover the books behind your favourite films. Explore literary adaptations and compare original stories with their screen versions on Sahadhyayi.",
+  "url": "https://sahadhyayi.com/from-page-to-screen",
+  "mainEntity": {
+    "@type": "ItemList",
+    "name": "Book-to-Movie Adaptations",
+    "description": "Curated book and movie adaptations with comparisons",
+    "numberOfItems": 60
+  },
+  "breadcrumb": generateBreadcrumbSchema(breadcrumbItems)
+};
 
 const fetchAdaptations = async (): Promise<BookMovieAdaptation[]> => {
   const { data, error } = await (supabase as any)
@@ -112,6 +133,7 @@ const FromPageToScreen = () => {
         description="Discover the books behind your favourite films. Explore literary adaptations and compare original stories with their screen versions on Sahadhyayi."
         canonical="https://sahadhyayi.com/from-page-to-screen"
         url="https://sahadhyayi.com/from-page-to-screen"
+        schema={collectionSchema}
       />
       <main className="min-h-screen bg-background text-foreground">
         <section className="relative isolate overflow-hidden border-b border-[#344438] bg-[#101711] text-white">

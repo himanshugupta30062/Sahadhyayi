@@ -33,7 +33,7 @@ const Index = () => {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Sahadhyayi",
-    "alternateName": ["Sahadhyayi Reading Community", "Sahadhyayi Digital Library", "Fellow Reader Platform"],
+    "alternateName": ["Sahadhyayi Reading Community", "Sahadhyayi Digital Library", "Fellow Reader Platform", "Books Reading Knowledge Discovery Platform"],
     "url": "https://sahadhyayi.com",
     "description": "Discover books, read ebooks, explore authors and stories, share your reading journey, compare books with movies, and learn through science and research on Sahadhyayi.",
     "potentialAction": {
@@ -46,7 +46,8 @@ const Index = () => {
       "name": "Sahadhyayi",
       "url": "https://sahadhyayi.com",
       "logo": "https://sahadhyayi.com/lovable-uploads/sahadhyayi-logo-digital-reading.png",
-      "foundingDate": "2024"
+      "foundingDate": "2024",
+      "description": "Books, Reading, Knowledge & Discovery Platform"
     }
   };
 
