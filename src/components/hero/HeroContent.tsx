@@ -22,17 +22,17 @@ export const HeroContent: React.FC = () => {
       {/* Brand Pill matching reference design */}
       <div className="hero-reveal hero-reveal-1 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#131715] border border-[#E5E0D8] dark:border-[#242E28] text-xs font-semibold uppercase tracking-[0.2em] text-[#8F681C] dark:text-[#D5B16D] mb-6 shadow-2xs dark:shadow-xs">
         <Sparkles className="w-3.5 h-3.5 text-[#8F681C] dark:text-[#D5B16D]" />
-        <span>A Reading Community</span>
+        <span>Books, Reading, Knowledge & Discovery Platform</span>
       </div>
 
-      {/* Main Headline */}
+      {/* Main Headline - SEO Optimized */}
       <h1 className="hero-reveal hero-reveal-2 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] tracking-tight leading-[1.12] mb-5">
-        Capture your <span className="text-[#8F681C] dark:text-[#D5B16D]"><span className="hero-title-word hero-title-word-1">Reading</span>{' '}<span className="hero-title-word hero-title-word-2">Journey.</span></span>
+        Discover <span className="text-[#8F681C] dark:text-[#D5B16D]"><span className="hero-title-word hero-title-word-1">Books</span>{' '}<span className="hero-title-word hero-title-word-2">Stories</span></span>
         <br />
-        Share it with friends.
+        & Ideas Worth Exploring.
       </h1>
 
-      {/* Supporting Description */}
+      {/* Supporting Description - SEO Optimized */}
       <p className="hero-reveal hero-reveal-3 text-sm sm:text-base md:text-lg text-[#636B65] dark:text-[#A5ADA6] leading-relaxed mb-8 max-w-lg">
         Discover books and ebooks, explore authors and stories, read articles and research, compare books with movies, and learn through everyday science—all while sharing your reading journey with fellow readers.
       </p>

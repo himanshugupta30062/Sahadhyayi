@@ -8,6 +8,7 @@ import Breadcrumb from '@/components/Breadcrumb';
 import SEO from '@/components/SEO';
 import { scientists as fallbackScientists, type ScientistRegion } from '@/data/scientists';
 import { fetchScientistProfiles } from '@/lib/scientistsRepository';
+import { generateBreadcrumbSchema } from '@/utils/schema';
 
 const Scientists = () => {
   const [collection, setCollection] = useState<ScientistRegion>('india');
@@ -52,6 +53,26 @@ const Scientists = () => {
   const indianCount = scientistProfiles.filter((scientist) => scientist.region === 'india').length;
   const globalCount = scientistProfiles.filter((scientist) => scientist.region === 'world').length;
 
+  const breadcrumbItems = [
+    { name: 'Home', url: 'https://sahadhyayi.com/' },
+    { name: 'Scientists', url: 'https://sahadhyayi.com/scientists' }
+  ];
+
+  const collectionSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Scientists & Their Discoveries",
+    "description": "Explore the lives, ideas and discoveries of Indian scientists and remarkable researchers from around the world. Read their stories and follow the evidence behind their work.",
+    "url": "https://sahadhyayi.com/scientists",
+    "mainEntity": {
+      "@type": "ItemList",
+      "name": "Scientist Profiles",
+      "description": "Profiles of scientists and their discoveries on Sahadhyayi",
+      "numberOfItems": scientistProfiles.length
+    },
+    "breadcrumb": generateBreadcrumbSchema(breadcrumbItems)
+  };
+
   return (
     <>
       <SEO
@@ -59,6 +80,7 @@ const Scientists = () => {
         description="Explore the lives, ideas and discoveries of Indian scientists and remarkable researchers from around the world. Read their stories and follow the evidence behind their work."
         canonical="https://sahadhyayi.com/scientists"
         url="https://sahadhyayi.com/scientists"
+        schema={collectionSchema}
       />
 
       <div className="min-h-screen bg-[#FAF7F2] text-[#1C201D] transition-colors duration-200 dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">

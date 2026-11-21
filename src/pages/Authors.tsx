@@ -28,6 +28,7 @@ import { useAuthors, type Author } from '@/hooks/useAuthors';
 import { useAllLibraryBooks, type Book } from '@/hooks/useLibraryBooks';
 import { slugify } from '@/utils/slugify';
 import BookFlipLoader from '@/components/ui/BookFlipLoader';
+import { generateBreadcrumbSchema } from '@/utils/schema';
 
 type SortMode = 'books' | 'name' | 'newest';
 
@@ -122,6 +123,26 @@ const Authors = () => {
     );
   }
 
+  const breadcrumbSchemaItems = [
+    { name: 'Home', url: 'https://sahadhyayi.com/' },
+    { name: 'Authors', url: 'https://sahadhyayi.com/authors' }
+  ];
+
+  const collectionSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Authors & Writers Directory",
+    "description": "Explore author profiles, browse genres, discover their work, and follow the voices that inspire you.",
+    "url": "https://sahadhyayi.com/authors",
+    "mainEntity": {
+      "@type": "ItemList",
+      "name": "Author Directory",
+      "description": "Comprehensive directory of authors and writers on Sahadhyayi",
+      "numberOfItems": authors.length
+    },
+    "breadcrumb": generateBreadcrumbSchema(breadcrumbSchemaItems)
+  };
+
   return (
     <>
       <SEO
@@ -129,6 +150,7 @@ const Authors = () => {
         description="Meet the writers behind the books. Explore author profiles, browse genres, discover their work, and follow the voices that inspire you."
         canonical="https://sahadhyayi.com/authors"
         url="https://sahadhyayi.com/authors"
+        schema={collectionSchema}
       />
 
       <div className="min-h-screen bg-[#FAFAF8] text-[#1C201D] transition-colors duration-200 dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">

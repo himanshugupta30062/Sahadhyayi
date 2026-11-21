@@ -86,7 +86,7 @@ if (SUPABASE_URL && SUPABASE_KEY) {
   });
   const [booksResult, authorsResult, articlesResult] = await Promise.all([
     fetchPaginatedRows(
-      supabase.from('books_library').select('id,title,description,author,cover_image_url,created_at').not('id', 'is', null),
+supabase.from('books_library').select('id,title,description,author,cover_image_url,created_at').not('id', 'is', null),
       'books', 100000, label => console.warn(`[sitemap] Stopped ${label} pagination at 100,000 rows.`)
     ),
     fetchPaginatedRows(
@@ -105,6 +105,8 @@ if (SUPABASE_URL && SUPABASE_KEY) {
     const excludedBooks = (booksResult.data || []).length - eligibleBooks.length;
     eligibleBooks.forEach(book => {
       const id = String(book.id ?? '').trim();
+      if (!id || id.includes('/') || id === '.' || id === '..') return;
+      // Use updated_at if available, fall back to created_at (updated_at column may not exist in books_library)
       addUrl('/book/' + encodeURIComponent(id), 'monthly', '0.7', book.cover_image_url, book.updated_at || book.created_at);
     });
     console.log(`[sitemap] Books: ${eligibleBooks.length} eligible, ${excludedBooks} excluded by minimum content-quality rules.`);

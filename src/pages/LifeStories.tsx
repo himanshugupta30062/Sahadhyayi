@@ -28,6 +28,7 @@ import { WriteLifeStoryDialog } from '@/components/stories/WriteLifeStoryDialog'
 import { useStories } from '@/hooks/useStories';
 import { toast } from 'sonner';
 import type { LifeStory } from '@/data/lifeStories';
+import { generateBreadcrumbSchema } from '@/utils/schema';
 
 
 const categories = [
@@ -463,7 +464,27 @@ const LifeStories = () => {
     );
   }
 
-  return (
+  const breadcrumbItems = [
+        { name: 'Home', url: 'https://sahadhyayi.com/' },
+        { name: 'Life Stories', url: 'https://sahadhyayi.com/life-stories' }
+      ];
+
+      const collectionSchema = {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "Inspiring Life Stories & Biographies",
+        "description": "Discover true stories of remarkable people from India and around the world: their lives, challenges, achievements, and the lessons they leave behind.",
+        "url": "https://sahadhyayi.com/life-stories",
+        "mainEntity": {
+          "@type": "ItemList",
+          "name": "Life Stories Collection",
+          "description": "Curated biographies and life stories of remarkable individuals",
+          "numberOfItems": stories.length
+        },
+        "breadcrumb": generateBreadcrumbSchema(breadcrumbItems)
+      };
+
+      return (
     <>
       <SEO
         title="Life Stories — Real People, Remarkable Journeys | Sahadhyayi"
@@ -480,6 +501,7 @@ const LifeStories = () => {
           'Ramanujan',
           'Dr Ambedkar',
         ]}
+        schema={collectionSchema}
       />
       <div className="min-h-screen bg-[#FAF7F2] text-[#202820] dark:bg-[#0B0D0C] dark:text-[#F3F0E7]">
         <section className="relative isolate overflow-hidden border-b border-[#29332D] bg-[#101711] text-white">
