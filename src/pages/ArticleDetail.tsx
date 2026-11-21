@@ -106,6 +106,9 @@ const ArticleDetail = () => {
         url={fullArticleUrl}
         type="article"
         image={article.cover_image_url || undefined}
+        author={(article as any).author?.full_name || article.author_name || undefined}
+        publishedTime={(article as any).published_at || (article as any).created_at || undefined}
+        modifiedTime={(article as any).updated_at || (article as any).published_at || (article as any).created_at || undefined}
         schema={articleSchema}
         breadcrumbs={[
           { name: "Home", url: "https://sahadhyayi.com" },
