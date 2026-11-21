@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  Activity, BookOpen, ChevronRight, FileCheck2, FlaskConical,
+  Activity, BookOpen, ChevronRight, FileCheck2, Film, FlaskConical,
   LayoutDashboard, LogOut, Menu, MessageSquare, PanelLeftClose, PanelLeftOpen, BookMarked,
   ShieldCheck, Users, X, UserRoundCog, WandSparkles, Globe2, Newspaper,
 } from "lucide-react";
@@ -24,6 +24,7 @@ const sections = [
       { label: "Library archive", href: "/admin/library-archive", icon: BookOpen },
       { label: "Author enrichment", href: "/admin/author-enrichment", icon: WandSparkles },
       { label: "Newsroom manager", href: "/admin/news", icon: Newspaper },
+      { label: "From Page to Screen", href: "/admin/from-page-to-screen", icon: Film },
       { label: "Reviewers & critics", href: "/admin/literary-voices", icon: BookMarked },
       { label: "Book Expert RAG", href: "/admin/book-expert-rag", icon: FlaskConical },
     ],

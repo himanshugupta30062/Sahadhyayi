@@ -53,6 +53,7 @@ const ALLOWED_HOST_SUFFIXES = [
   "github.io",
   "githubusercontent.com",
   "hariomgroup.org",
+  "campbellmgold.co.uk",
 ] as const;
 
 // Explicitly blocked TLDs and patterns that are commonly abused for SSRF

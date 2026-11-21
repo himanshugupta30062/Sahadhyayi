@@ -101,111 +101,6 @@ function validateEvidenceUrl(url: string): { valid: boolean; host?: string; erro
   }
 }
 
-/**
- * Run Bouncer malware scan with proper timeout handling
- */
-async function runMalwareScan(source: Blob, scannerToken: string, apiBase: string): Promise<{ clean: boolean; verdict: string; details: Record<string, unknown> }> {
-  const timeoutMs = 60000; // 60 second total timeout
-  const deadline = Date.now() + timeoutMs;
-  let scanId = "";
-  let pollPath = "";
-
-  try {
-    // Bouncer v1 accepts files up to ~4.5 MB. Use v2 direct upload for larger PDFs.
-    if (source.size <= 4_500_000) {
-      const form = new FormData();
-      form.append("file", source, "submission.pdf");
-      const response = await fetch(`${apiBase}/v1/scan`, {
-        method: "POST",
-        headers: { "X-API-Key": scannerToken },
-        body: form,
-        signal: AbortSignal.timeout(15000),
-      });
-      if (!response.ok) {
-        const errText = await response.text().catch(() => "");
-        console.error("Bouncer v1 scan creation failed", response.status, errText);
-        throw new Error(`Bouncer v1 scan creation failed (${response.status})`);
-      }
-      const payload = await response.json();
-      scanId = payload?.data?.scan_id;
-      pollPath = payload?.data?.poll_url || (scanId ? `/v1/scan/${encodeURIComponent(scanId)}` : "");
-    } else {
-      const createResponse = await fetch(`${apiBase}/v2/scan`, {
-        method: "POST",
-        headers: { "X-API-Key": scannerToken, "Content-Type": "application/json" },
-        body: JSON.stringify({ file_name: "submission.pdf", mime_type: "application/pdf" }),
-        signal: AbortSignal.timeout(15000),
-      });
-      if (!createResponse.ok) {
-        const errText = await createResponse.text().catch(() => "");
-        console.error("Bouncer v2 scan creation failed", createResponse.status, errText);
-        throw new Error(`Bouncer v2 scan creation failed (${createResponse.status})`);
-      }
-      const payload = await createResponse.json();
-      scanId = payload?.data?.scan_id;
-      pollPath = payload?.data?.poll_url || (scanId ? `/v2/scan/${encodeURIComponent(scanId)}` : "");
-      const upload = payload?.data?.upload;
-      if (!scanId || !pollPath || !upload?.url || !upload?.fields || source.size > Number(payload?.data?.max_file_size || 0)) {
-        throw new Error("Bouncer returned an invalid or insufficient upload target");
-      }
-      const uploadForm = new FormData();
-      for (const [key, value] of Object.entries(upload.fields as Record<string, string>)) {
-        uploadForm.append(key, value);
-      }
-      uploadForm.append("file", source, "submission.pdf");
-      const uploadResponse = await fetch(upload.url, {
-        method: "POST",
-        body: uploadForm,
-        signal: AbortSignal.timeout(20000),
-      });
-      if (!uploadResponse.ok) {
-        const errText = await uploadResponse.text().catch(() => "");
-        console.error("Bouncer direct upload failed", uploadResponse.status, errText);
-        throw new Error("PDF upload to Bouncer failed");
-      }
-    }
-
-    if (!scanId || !pollPath || (!pollPath.startsWith("/v1/scan/") && !pollPath.startsWith("/v2/scan/"))) {
-      throw new Error("Bouncer did not return a valid scan identifier");
-    }
-
-    let verdict = "";
-    let scanDetails: Record<string, unknown> = {};
-    const pollInterval = 2000;
-
-    while (Date.now() < deadline) {
-      await new Promise((resolve) => setTimeout(resolve, pollInterval));
-      const pollResponse = await fetch(new URL(pollPath, apiBase), {
-        headers: { "X-API-Key": scannerToken },
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!pollResponse.ok) {
-        console.error("Bouncer scan polling failed", pollResponse.status);
-        throw new Error("Bouncer polling failed");
-      }
-      const result = await pollResponse.json();
-      const status = result?.data?.status;
-      scanDetails = result?.data || {};
-      if (status === "failed") {
-        return { clean: false, verdict: "failed", details: scanDetails };
-      }
-      if (status === "completed") {
-        verdict = result?.data?.verdict || "";
-        break;
-      }
-    }
-
-    if (!verdict) {
-      return { clean: false, verdict: "timeout", details: { ...scanDetails, error: "Scan timed out" } };
-    }
-
-    return { clean: verdict === "clean", verdict, details: scanDetails };
-  } catch (error) {
-    console.error("Bouncer scan error:", error instanceof Error ? error.message : "unknown");
-    throw error;
-  }
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed." }, 405);
@@ -370,7 +265,7 @@ serve(async (req) => {
 
   // For all other actions, fetch submission with lock
   const { data: submission, error: readError } = await admin.from("book_pdf_submissions")
-    .select("id,user_id,storage_path,original_filename,file_size_bytes,submitted_title,submitted_author,status,rights_attested,verification_completed_at,malware_scan_status,detected_metadata,validation_findings,published_book_id,author_publication_id,pdf_sha256,pdf_page_count,catalogue_match_status,target_book_id")
+    .select("id,user_id,storage_path,original_filename,file_size_bytes,submitted_title,submitted_author,status,rights_attested,verification_completed_at,detected_metadata,validation_findings,published_book_id,author_publication_id,pdf_sha256,pdf_page_count,catalogue_match_status,target_book_id")
     .eq("id", submissionId).maybeSingle();
   if (readError || !submission) return json({ error: "Submission was not found." }, 404);
 
@@ -426,16 +321,14 @@ serve(async (req) => {
     let targetBookId = typeof body.targetBookId === "string" ? body.targetBookId : (typeof submission.target_book_id === "string" ? submission.target_book_id : "");
     const createNewBook = Boolean(body.createNewBook) || !targetBookId;
 
-    // Validate the destination before scanning. New catalogue rows are deferred
-    // until after all file and malware checks have passed.
+    // Validate the destination before creating any new catalogue row.
     let createdNewBook = false;
     if (createNewBook) {
       const newTitle = typeof body.newBookTitle === "string" ? body.newBookTitle.trim() : (submission.submitted_title || "");
       if (!newTitle) return json({ error: "Book title is required to create a new catalogue entry." }, 400);
     }
 
-    // Validate an existing target now; defer new-book insertion until the PDF
-    // passes its checks so failed scans cannot leave empty catalogue rows.
+    // Validate an existing target before publication.
     if (!createNewBook) {
       if (typeof targetBookId !== "string" || !UUID.test(targetBookId)) return json({ error: "Select a valid existing library book." }, 400);
       const { data: book, error: bookError } = await admin.from("books_library")
@@ -452,7 +345,7 @@ serve(async (req) => {
       }
     }
 
-    // Download source PDF for malware scan and upload
+    // Download source PDF for integrity validation and upload
     const { data: source, error: downloadError } = await admin.storage.from("book-pdf-quarantine").download(submission.storage_path);
     if (downloadError || !source) return json({ error: "Private source PDF could not be retrieved." }, 503);
 
@@ -469,50 +362,8 @@ serve(async (req) => {
       return json({ error: "Encrypted PDFs are not accepted. Please provide an unencrypted PDF." }, 422);
     }
 
-    // Run malware scan
-    const scannerToken = Deno.env.get("BOUNCER_API_KEY");
-    let malwareDetails: Record<string, unknown> = {};
-
-    if (!scannerToken) {
-      const allowOverride = Deno.env.get("ALLOW_UNSCANNED_PDF_APPROVAL") === "true" ||
-                            Deno.env.get("ENVIRONMENT") === "development" ||
-                            Deno.env.get("NODE_ENV") === "test";
-      if (allowOverride && body.allowUnscannedApproval === true) {
-        malwareDetails = { unscanned_override: true, reason: "Administrative override in non-production environment" };
-        await admin.from("book_pdf_submissions").update({
-          malware_scan_status: "clean",
-        }).eq("id", submissionId);
-      } else {
-        return json({ error: "Malware scanning is not configured. The PDF remains private and cannot be published until scanning is available." }, 503);
-      }
-    } else {
-      try {
-        const apiBase = "https://api.usebouncer.dev";
-        const scanResult = await runMalwareScan(source, scannerToken, apiBase);
-        malwareDetails = scanResult.details;
-
-        if (!scanResult.clean) {
-          // Update submission with malware scan failure
-          await admin.from("book_pdf_submissions").update({
-            malware_scan_status: scanResult.verdict,
-          }).eq("id", submissionId);
-
-          return json({
-            error: scanResult.verdict === "timeout"
-              ? "Bouncer's scan timed out. Try again later; the PDF was not published."
-              : "Bouncer did not classify this PDF as clean. Suspicious or malicious files cannot be published.",
-            malware_verdict: scanResult.verdict,
-          }, 422);
-        }
-
-        await admin.from("book_pdf_submissions").update({
-          malware_scan_status: "clean",
-        }).eq("id", submissionId);
-      } catch (error) {
-        console.error("Bouncer scan request failed", error instanceof Error ? error.message : "unknown error");
-        return json({ error: "The Bouncer scan failed or timed out. The PDF was not published." }, 503);
-      }
-    }
+    // Malware scanning is intentionally disabled. The admin reviews the private PDF preview
+    // and makes the publication decision; basic PDF signature and structure checks remain.
 
     // Create the new catalogue entry only after admin review and file-safety checks.
     if (createNewBook) {
@@ -562,7 +413,6 @@ serve(async (req) => {
     const { error: submissionUpdateError } = await admin.from("book_pdf_submissions").update({
       published_book_id: targetBookId,
       status: "approved",
-      published_at: new Date().toISOString(),
       rights_basis: null,
       rights_evidence_url: null,
       reviewed_by: authData.user.id,
@@ -592,7 +442,6 @@ serve(async (req) => {
       details: {
         target_book_id: targetBookId,
         created_new_book: createNewBook,
-        malware_details: malwareDetails,
       },
     });
 
@@ -668,22 +517,7 @@ serve(async (req) => {
       return json({ error: "Encrypted PDFs are not accepted. Please provide an unencrypted PDF." }, 422);
     }
 
-    // Run malware scan on new PDF
-    const scannerToken = Deno.env.get("BOUNCER_API_KEY");
-    if (!scannerToken) return json({ error: "Malware scanning is not configured. The replacement PDF was not published." }, 503);
-    if (scannerToken) {
-      try {
-        const scanResult = await runMalwareScan(source, scannerToken, "https://api.usebouncer.dev");
-        if (!scanResult.clean) {
-          return json({
-            error: "Replacement PDF failed malware scan.",
-            malware_verdict: scanResult.verdict
-          }, 422);
-        }
-      } catch {
-        return json({ error: "Malware scan failed for replacement PDF." }, 503);
-      }
-    }
+    // Malware scanning is disabled; retain the PDF signature and structure validation above.
 
     // Upload new PDF to public bucket
     const newPublicPath = `${bookId}/${newSubmissionId}.pdf`;

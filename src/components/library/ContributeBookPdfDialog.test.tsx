@@ -139,11 +139,11 @@ describe('ContributeBookPdfDialog', () => {
     renderDialog();
     await goToUploadStep();
 
-    expect(screen.getByRole('button', { name: /Submit for verification/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Submit for admin review/i })).toBeDisabled();
     fireEvent.change(screen.getByLabelText(/PDF file/i), {
       target: { files: [makePdf()] },
     });
-    expect(screen.getByRole('button', { name: /Submit for verification/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Submit for admin review/i })).toBeDisabled();
   });
 
   it('rejects a file without a PDF signature before writing or uploading', async () => {
@@ -154,7 +154,7 @@ describe('ContributeBookPdfDialog', () => {
     });
     fireEvent.click(screen.getByRole('checkbox'));
     await waitFor(() => expect(screen.getByRole('checkbox')).toBeChecked());
-    await waitFor(() => expect(screen.getByRole('button', { name: /Submit for verification/i })).toBeEnabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: /Submit for admin review/i })).toBeEnabled());
     fireEvent.submit(screen.getByLabelText(/PDF file/i).closest('form')!);
 
     await waitFor(() => expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({
@@ -178,7 +178,7 @@ describe('ContributeBookPdfDialog', () => {
     });
     fireEvent.click(screen.getByRole('checkbox'));
     await waitFor(() => expect(screen.getByRole('checkbox')).toBeChecked());
-    const submitButton = screen.getByRole('button', { name: /Submit for verification/i });
+    const submitButton = screen.getByRole('button', { name: /Submit for admin review/i });
     await waitFor(() => expect(submitButton).toBeEnabled());
     fireEvent.submit(submitButton.closest('form')!);
 
@@ -273,7 +273,7 @@ describe('ContributeBookPdfDialog', () => {
     });
     fireEvent.click(screen.getByRole('checkbox'));
     await waitFor(() => expect(screen.getByRole('checkbox')).toBeChecked());
-    const submitButton = screen.getByRole('button', { name: /Submit for verification/i });
+    const submitButton = screen.getByRole('button', { name: /Submit for admin review/i });
     await waitFor(() => expect(submitButton).toBeEnabled());
     fireEvent.submit(submitButton.closest('form')!);
 
@@ -299,7 +299,7 @@ describe('ContributeBookPdfDialog', () => {
     });
     fireEvent.click(screen.getByRole('checkbox'));
     await waitFor(() => expect(screen.getByRole('checkbox')).toBeChecked());
-    const submitButton = screen.getByRole('button', { name: /Submit for verification/i });
+    const submitButton = screen.getByRole('button', { name: /Submit for admin review/i });
     await waitFor(() => expect(submitButton).toBeEnabled());
     fireEvent.submit(submitButton.closest('form')!);
 
@@ -322,7 +322,7 @@ describe('ContributeBookPdfDialog', () => {
     });
     fireEvent.click(screen.getByRole('checkbox'));
     await waitFor(() => expect(screen.getByRole('checkbox')).toBeChecked());
-    const submitButton = screen.getByRole('button', { name: /Submit for verification/i });
+    const submitButton = screen.getByRole('button', { name: /Submit for admin review/i });
     await waitFor(() => expect(submitButton).toBeEnabled());
     fireEvent.submit(submitButton.closest('form')!);
 

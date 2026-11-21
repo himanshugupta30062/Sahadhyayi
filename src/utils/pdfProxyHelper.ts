@@ -28,6 +28,14 @@ const ALLOWED_PROXY_HOST_PATTERNS = [
   'github.io',
   'githubusercontent.com',
   'hariomgroup.org',
+  'r2.dev',
+  'cloudflare.com',
+  'amazonaws.com',
+  'pratham.org',
+  'ignca.gov.in',
+  'dli.ernet.in',
+  'hindisamay.com',
+  'campbellmgold.co.uk',
 ];
 
 /**

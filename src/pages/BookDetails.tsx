@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import './BookDetails.css';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Calendar, BookOpen, Globe, User, LogIn, UserPlus, Sparkles } from 'lucide-react';
+import { ArrowLeft, Calendar, BookOpen, Globe, User, LogIn, UserPlus, Sparkles, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -97,8 +97,14 @@ const BookDetails = () => {
     if (!book?.pdf_url) return false;
     const validation = validateReaderUrl(book.pdf_url);
     // Only consider it valid if it's a proper URL that can be rendered
-    // (Google Books, PDF, or EPUB)
-    return validation.isValid && (validation.isGoogleBooks || validation.isPdf || validation.isEpub);
+    // (Google Books, PDF, EPUB, or Archive.org item)
+    return (
+      validation.isValid &&
+      (validation.isGoogleBooks ||
+        validation.isPdf ||
+        validation.isEpub ||
+        Boolean(validation.isArchiveDetails))
+    );
   }, [book?.pdf_url]);
 
   // Valid tabs include 'read' only if PDF URL is valid
@@ -226,9 +232,9 @@ const BookDetails = () => {
   const userRating = ratingData?.userRating ?? 0;
   const canonicalUrl = `https://sahadhyayi.com/book/${id}`;
   
-  const seoTitle = `${book.title}${book.author ? ` by ${book.author}` : ''} - Read Online`;
+  const seoTitle = `${book.title}${book.author ? ` by ${book.author}` : ''} — Book Details & Reading Options | Sahadhyayi`;
   const seoDescription = toSeoDescription(
-    book.description || `Read ${book.title}${book.author ? ` by ${book.author}` : ''} online. Join Sahadhyayi's reading community for discussions and insights.`,
+    book.description || `Explore ${book.title}${book.author ? ` by ${book.author}` : ''}: book details, publication information, and the reading options currently available on Sahadhyayi.`,
   );
   
   const keywords = [
@@ -238,8 +244,8 @@ const BookDetails = () => {
     book.title,
     book.author,
     book.genre,
-    'reading community',
-    'book discussion',
+    'book details',
+    'book reading options',
     'sahadhyayi'
   ].filter(Boolean);
 
@@ -448,24 +454,15 @@ const BookDetails = () => {
                       Design Bookstagram Post
                     </Button>
                   </Link>
+                  {book.external_read_url && (
+                    <a href={book.external_read_url} target="_blank" rel="noopener noreferrer">
+                      <Button variant="outline" size="sm" className="h-9 gap-1.5 text-xs">
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        Official ebook options
+                      </Button>
+                    </a>
+                  )}
                 </div>
-              </div>
-
-              {/* Defer AI tools until the reader approaches this section. */}
-              <div ref={aiSectionsRef}>
-                {shouldLoadAISections ? (
-                  <ErrorBoundary fallback={<BookTabErrorFallback title="Unable to load AI reading tools" message="The AI tools are temporarily unavailable. The rest of the book page is still usable." />}>
-                    <React.Suspense fallback={<div className="space-y-4" role="status" aria-label="Loading AI reading tools"><div className="h-40 animate-pulse rounded-xl bg-muted" /><div className="h-48 animate-pulse rounded-xl bg-muted" /></div>}>
-                      <BookAIReader book={{ id: book.id, title: book.title, author: book.author, description: book.description, language: book.language }} />
-                      <AIReadingToolkit book={{ id: book.id, title: book.title, author: book.author, description: book.description, language: book.language }} />
-                    </React.Suspense>
-                  </ErrorBoundary>
-                ) : (
-                  <div className="space-y-4" aria-hidden="true">
-                    <div className="h-40 rounded-xl bg-muted/40" />
-                    <div className="h-48 rounded-xl bg-muted/40" />
-                  </div>
-                )}
               </div>
 
               {/* Quality & Edition Transparency */}
@@ -498,6 +495,21 @@ const BookDetails = () => {
               )}
             </div>
           </div>
+
+          {/* AI Reading Studio: deferred until the reader reaches this section. */}
+          <section ref={aiSectionsRef} className="mb-8" aria-label="AI Reading Studio">
+            {shouldLoadAISections ? (
+              <ErrorBoundary fallback={<BookTabErrorFallback title="Unable to load AI reading tools" message="The AI tools are temporarily unavailable. The rest of the book page is still usable." />}>
+                <React.Suspense fallback={<div className="space-y-4" role="status" aria-label="Loading AI reading tools"><div className="h-40 animate-pulse rounded-xl bg-muted" /><div className="h-48 animate-pulse rounded-xl bg-muted" /></div>}>
+                  <BookAIReader book={{ id: book.id, title: book.title, author: book.author, description: book.description, language: book.language }} />
+                  <AIReadingToolkit book={{ id: book.id, title: book.title, author: book.author, description: book.description, language: book.language }} />
+                </React.Suspense>
+              </ErrorBoundary>
+            ) : (
+              // A one-pixel observer target avoids reserving blank space before lazy loading.
+              <div className="h-px" aria-hidden="true" />
+            )}
+          </section>
 
           {/* Series Navigation (if book is part of a series) */}
           <BookSeriesSection book={book} className="mb-8" />

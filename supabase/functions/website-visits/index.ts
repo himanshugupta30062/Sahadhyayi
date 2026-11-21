@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.112.3'
+import { isAutomatedCrawler } from '../_shared/botDetection.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -90,6 +91,11 @@ Deno.serve(async(req:Request)=>{
   if(req.method==='OPTIONS')return new Response(null,{status:204,headers:corsHeaders});
   if(req.method!=='POST')return new Response(JSON.stringify({error:'Method not allowed'}),{status:405,headers:corsHeaders});
   try {
+    // Trust the HTTP header supplied by the edge, not a client-controlled body field.
+    const requestUserAgent=req.headers.get('user-agent')||'';
+    if(isAutomatedCrawler(requestUserAgent)){
+      return new Response(JSON.stringify({success:true,ignored:true,reason:'automated_crawler'}),{status:200,headers:corsHeaders});
+    }
     const supabaseUrl=Deno.env.get('SUPABASE_URL'), serviceRoleKey=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     if(!supabaseUrl||!serviceRoleKey){console.error('Analytics ingest missing environment configuration');return new Response(JSON.stringify({error:'Analytics ingestion unavailable'}),{status:503,headers:corsHeaders});}
     const body=await req.json().catch(()=>null) as VisitData|null;
@@ -119,7 +125,7 @@ Deno.serve(async(req:Request)=>{
     const eventType=clean(body.event_type,40)||'pageview';
     if(!['pageview','page_view','activity','event','engagement'].includes(eventType))return new Response(JSON.stringify({error:'Unsupported event_type'}),{status:400,headers:corsHeaders});
     const page=(clean(body.page,300)?.split(/[?#]/,1)[0]||'/').slice(0,300);
-    const referrer=clean(body.referrer,300), userAgent=clean(body.userAgent||req.headers.get('user-agent')||'',500)||'';
+    const referrer=clean(body.referrer,300), userAgent=clean(req.headers.get('user-agent')||body.userAgent||'',500)||'';
     const ua=parseUserAgent(userAgent), visitorId=clean(body.visitor_id,100), sessionId=clean(body.session_id,100);
     const visitorUuid=isUuid(visitorId)?visitorId:null, sessionUuid=isUuid(sessionId)?sessionId:null;
     const eventName=clean(body.event_name,100), screenResolution=clean(body.screenResolution,32);

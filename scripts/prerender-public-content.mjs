@@ -53,7 +53,7 @@ function setMeta(html, attribute, key, content) {
   return pattern.test(html) ? html.replace(pattern, tag) : html.replace("</head>", `  ${tag}\n</head>`);
 }
 
-function createPage({ title, description, route, image, type, entityType, entityName, bodyText, publishedAt, modifiedAt, authorName, wordCount, schemaType, about, breadcrumbs, relatedBooks, relatedArticles, sameAs, personDetails, itemList, bookAuthor, bookAuthorBio, bookIsbn, bookGenre, bookLanguage, bookPages, bookPublicationYear, relatedBooksTitle, bookGenreRoute }) {
+function createPage({ title, description, route, image, type, entityType, entityName, bodyText, publishedAt, modifiedAt, authorName, wordCount, schemaType, about, breadcrumbs, relatedBooks, relatedArticles, sameAs, personDetails, itemList, bookAuthor, bookAuthorBio, bookIsbn, bookGenre, bookLanguage, bookPages, bookPublicationYear, relatedBooksTitle, bookGenreRoute, bookPdfUrl }) {
   const canonical = `${SITE_URL}${route}`;
   let html = template.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
   html = setMeta(html, "name", "description", description);
@@ -81,6 +81,7 @@ function createPage({ title, description, route, image, type, entityType, entity
         ...(bookLanguage ? { inLanguage: bookLanguage } : {}),
         ...(Number.isFinite(bookPages) && bookPages > 0 ? { numberOfPages: bookPages } : {}),
         ...(bookPublicationYear ? { datePublished: String(bookPublicationYear) } : {}),
+        ...(bookPdfUrl && /^https:\/\//i.test(bookPdfUrl) ? { workExample: { "@type": "Book", bookFormat: "https://schema.org/EBook", url: bookPdfUrl, encodingFormat: "application/pdf" } } : {}),
       }
     : entityType === "Person"
       ? {
@@ -153,7 +154,7 @@ function createPage({ title, description, route, image, type, entityType, entity
     ${safeBodyText ? `<p>${escapeHtml(safeBodyText)}</p>` : ""}
     ${bookAuthor?.url ? `<p>By <a href="${escapeHtml(bookAuthor.url)}">${escapeHtml(bookAuthor.name)}</a></p>` : bookAuthor?.name ? `<p>By ${escapeHtml(bookAuthor.name)}</p>` : ""}
     ${entityType === "Book" && bookAuthorBio ? `<section aria-label="About the author"><h2>About the author</h2><p>${escapeHtml(plainText(bookAuthorBio, 700))}</p></section>` : ""}
-    ${entityType === "Book" ? "<section aria-label=\"Book details\"><h2>About this book</h2><dl>" + (bookGenre ? "<dt>Genre</dt><dd>" + (bookGenreRoute ? '<a href="' + escapeHtml(bookGenreRoute) + '">' + escapeHtml(bookGenre) + "</a>" : escapeHtml(bookGenre)) + "</dd>" : "") + (bookPublicationYear ? "<dt>Publication year</dt><dd>" + escapeHtml(bookPublicationYear) + "</dd>" : "") + (bookLanguage ? "<dt>Language</dt><dd>" + escapeHtml(bookLanguage) + "</dd>" : "") + (bookIsbn ? "<dt>ISBN</dt><dd>" + escapeHtml(bookIsbn) + "</dd>" : "") + (bookPages ? "<dt>Pages</dt><dd>" + escapeHtml(bookPages) + "</dd>" : "") + "</dl></section>" : ""}
+    ${entityType === "Book" ? "<section aria-label=\"Book details\"><h2>About this book</h2><dl>" + (bookGenre ? "<dt>Genre</dt><dd>" + (bookGenreRoute ? '<a href="' + escapeHtml(bookGenreRoute) + '">' + escapeHtml(bookGenre) + "</a>" : escapeHtml(bookGenre)) + "</dd>" : "") + (bookPublicationYear ? "<dt>Publication year</dt><dd>" + escapeHtml(bookPublicationYear) + "</dd>" : "") + (bookLanguage ? "<dt>Language</dt><dd>" + escapeHtml(bookLanguage) + "</dd>" : "") + (bookIsbn ? "<dt>ISBN</dt><dd>" + escapeHtml(bookIsbn) + "</dd>" : "") + (bookPages ? "<dt>Pages</dt><dd>" + escapeHtml(bookPages) + "</dd>" : "") + "</dl>" + (bookPdfUrl && /^https:\/\//i.test(bookPdfUrl) ? '<p><a href="' + escapeHtml(bookPdfUrl) + '">Read available PDF edition</a></p>' : '<p>Check this page for the reading options currently available for this title.</p>') + "</section>" : ""}
     ${Array.isArray(relatedBooks) && relatedBooks.length ? `<section aria-label="Related books"><h2>${escapeHtml(relatedBooksTitle || `Books by ${entityName || "this author"}`)}</h2><ul>${relatedBooks.map((book) => `<li><a href="${escapeHtml(book.route)}">${escapeHtml(book.title)}</a></li>`).join("")}</ul></section>` : ""}
     ${Array.isArray(relatedArticles) && relatedArticles.length ? `<nav aria-label="Related articles"><h2>More articles by this reader</h2><ul>${relatedArticles.map((article) => `<li><a href="${escapeHtml(article.route)}">${escapeHtml(article.title)}</a></li>`).join("")}</ul></nav>` : ""}
     ${Array.isArray(itemList) && itemList.length ? `<nav aria-label="People in this collection"><h2>Profiles in this collection</h2><ul>${itemList.map((entry) => `<li><a href="${escapeHtml(route)}#profile-${escapeHtml(entry.slug)}">${escapeHtml(entry.name)}</a></li>`).join("")}</ul></nav>` : ""}
@@ -176,7 +177,7 @@ function writeRoute(route, html) {
 // deployment does not provide Supabase credentials. This ensures each URL
 // returns a unique title, description, canonical URL, and useful initial HTML.
 const publicPages = [
-  { route: "/", title: "Sahadhyayi — Discover Books, Read & Connect with Readers", description: "Discover books, read stories and articles, explore authors, and connect with readers on Sahadhyayi—a welcoming online reading community built to make reading a shared habit." },
+  { route: "/", title: "Sahadhyayi — Discover Books, Read & Connect with Readers", description: "Discover books, read stories and articles, explore authors, and connect with readers on Sahadhyayi—a welcoming online reading platform built to make reading a shared habit.", bodyText: "Sahadhyayi brings an online book library, author discovery, reading groups, articles, short stories and research resources into one place. Explore books across genres and languages, find information about the people who wrote them, and discover your next read. Read and publish thoughtful articles, explore stories and biographies, and follow ideas across science, literature and society. Join reading groups to discuss books, share reading experiences with other readers, and build a reading habit together. Whether you are looking for classic literature, Indian writing, psychology, philosophy, science or contemporary books, start with the library and explore connected authors, subjects and reading recommendations. Sahadhyayi is designed for readers who want to read deeper, discover new ideas and connect meaningfully through books." },
   { route: "/library", title: "Online Book Library - Discover Books to Read | Sahadhyayi", description: "Discover books across genres, explore your next read, and build a consistent reading habit with Sahadhyayi's online book library." },
   { route: "/research-papers", title: "Research Papers & Academic Studies | Sahadhyayi", description: "Discover research papers, academic studies, preprints and technical reports across disciplines.", schemaType: "CollectionPage", about: ["Artificial intelligence", "Machine learning", "Climate science", "Psychology", "Medicine", "Physics"], breadcrumbs: [{ name: "Home", route: "/" }, { name: "Research Papers", route: "/research-papers" }] },
   { route: "/articles", title: "Reading Articles, Book Ideas & Literary Insights | Sahadhyayi", description: "Explore thoughtful articles about books, reading habits, literature, and ideas from the Sahadhyayi reading community." },
@@ -550,7 +551,7 @@ if (articlesError) {
 
 const { data: books, error: booksError } = await fetchPaginatedRows(
   supabase.from("books_library")
-    .select("id,title,description,cover_image_url,author_id,author,isbn,genre,language,pages,publication_year")
+    .select("id,title,description,cover_image_url,author_id,author,isbn,genre,language,pages,publication_year,pdf_url")
     .not("id", "is", null)
     .not("title", "is", null),
   "books",
@@ -656,6 +657,7 @@ if (booksError) {
       bookLanguage: book.language,
       bookPages: Number(book.pages),
       bookPublicationYear: book.publication_year,
+      bookPdfUrl: typeof book.pdf_url === "string" && /^https:\/\//i.test(book.pdf_url) ? book.pdf_url : undefined,
       relatedBooks,
       relatedBooksTitle: authorName && book.genre ? `Related books by ${authorName} or in this genre` : (authorName ? `More books by ${authorName}` : (book.genre ? `More ${book.genre} books` : "Related books")),
       breadcrumbs: [{ name: "Home", route: "/" }, { name: "Library", route: "/library" }, { name: title, route }],

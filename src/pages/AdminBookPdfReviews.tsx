@@ -47,7 +47,6 @@ type Submission = {
   target_book_id?: string | null;
   rights_attested?: boolean | null;
   rights_statement?: string | null;
-  malware_scan_status?: string | null;
   catalogue_match_status?: string | null;
 };
 
@@ -119,7 +118,7 @@ export default function AdminBookPdfReviews() {
     queryKey: ['admin-book-pdf-review-queue'],
     queryFn: async () => {
       const { data, error } = await supabase.from('book_pdf_submissions' as any)
-        .select('id,original_filename,file_size_bytes,submitted_title,submitted_author,status,rejection_reason,created_at,published_book_id,user_id,target_book_id,rights_attested,rights_statement,malware_scan_status,catalogue_match_status')
+        .select('id,original_filename,file_size_bytes,submitted_title,submitted_author,status,rejection_reason,created_at,published_book_id,user_id,target_book_id,rights_attested,rights_statement,catalogue_match_status')
         .order('created_at', { ascending: false }).limit(200);
       if (error) throw error;
       return (data || []) as Submission[];
@@ -446,12 +445,6 @@ export default function AdminBookPdfReviews() {
                     <span className={selected.rights_attested ? 'text-green-600 font-medium' : 'text-amber-600'}>
                       {selected.rights_attested ? 'Confirmed by contributor' : 'Not confirmed'}
                     </span>
-                  </div>
-                  <div>
-                    <span className="font-medium text-muted-foreground">Malware Scan:</span>{' '}
-                    <Badge variant={selected.malware_scan_status === 'clean' ? 'default' : 'outline'} className="text-[10px] h-4">
-                      {selected.malware_scan_status || 'Pending scan'}
-                    </Badge>
                   </div>
                 </div>
 
