@@ -258,10 +258,18 @@ export async function fetchOpenLibraryCoverBySearch(
     if (!res.ok) return null;
 
     const data = await res.json();
-    const docWithCover = data.docs?.find((d: any) => d.cover_i && isTitleMatch(cleanTitle, d.title) && isAuthorMatch(normAuthor, d.author_name));
+    let docWithCover = data.docs?.find((d: any) => d.cover_i && isTitleMatch(cleanTitle, d.title) && isAuthorMatch(normAuthor, d.author_name));
 
-    // Do not fall back to title-only matching when an author is known: a plausible
-    // title match by a different author can silently put the wrong book jacket on a card.
+    // Fall back to title-only search if author-constrained search returned no matching cover,
+    // accommodating cases where Open Library records omit structured author_name.
+    if (!docWithCover && authorParam) {
+      const fallbackUrl = `https://openlibrary.org/search.json?title=${encodeURIComponent(cleanTitle)}&limit=5&fields=title,author_name,cover_i`;
+      const fallbackRes = await fetch(fallbackUrl);
+      if (fallbackRes.ok) {
+        const fallbackData = await fallbackRes.json();
+        docWithCover = fallbackData.docs?.find((d: any) => d.cover_i && isTitleMatch(cleanTitle, d.title) && (!d.author_name || isAuthorMatch(normAuthor, d.author_name)));
+      }
+    }
 
     if (docWithCover && docWithCover.cover_i) {
       return `https://covers.openlibrary.org/b/id/${docWithCover.cover_i}-L.jpg`;
@@ -289,8 +297,14 @@ export async function resolveGenuineBookCover(book: BookCoverTarget): Promise<st
     return cached;
   }
 
-  // 3. Search catalogue records first: unlike the ISBN CDN endpoint, this returns
-  // a matched work/edition with a concrete cover ID and avoids default placeholders.
+  // 3. Try direct Open Library ISBN CDN URL first: instant, deterministic, and requires no external search call.
+  const olCover = getOpenLibraryCoverUrl(book.isbn, 'M');
+  if (olCover) {
+    setCachedCover(book, olCover);
+    if (book.id) void persistVerifiedCoverToDatabase(book.id, olCover);
+    return olCover;
+  }
+
   // 4. Try Open Library search by Title and Author
   const olSearchCover = await fetchOpenLibraryCoverBySearch(book.title, book.author);
   if (olSearchCover) {
@@ -301,16 +315,7 @@ export async function resolveGenuineBookCover(book: BookCoverTarget): Promise<st
     return olSearchCover;
   }
 
-  // 5. Try Open Library ISBN CDN only after title/author search. default=false
-  // ensures a missing cover is a 404 rather than a generated blank placeholder.
-  const olCover = getOpenLibraryCoverUrl(book.isbn, 'M');
-  if (olCover) {
-    setCachedCover(book, olCover);
-    if (book.id) void persistVerifiedCoverToDatabase(book.id, olCover);
-    return olCover;
-  }
-
-  // 6. Try Google Books API metadata lookup
+  // 5. Try Google Books API metadata lookup
   const gbCover = await fetchGoogleBooksCover(book.title, book.author, book.isbn);
   if (gbCover) {
     setCachedCover(book, gbCover);

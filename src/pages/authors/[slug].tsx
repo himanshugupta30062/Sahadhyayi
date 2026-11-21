@@ -59,9 +59,10 @@ const AuthorSlugPage = () => {
 
   const canonicalSlug = slugify(author.name);
   const authorUrl = `https://sahadhyayi.com/authors/${canonicalSlug}`;
-  const authorDescription = toSeoDescription(
-    author.bio || `Explore ${author.name}'s author profile, biography, published books, and reading work on Sahadhyayi.`,
-  );
+  const rawDescription = author.bio
+    ? (author.bio.toLowerCase().includes(author.name.toLowerCase()) ? author.bio : `${author.name} — ${author.bio}`)
+    : `Explore ${author.name}'s author profile, biography, published books, and reading work on Sahadhyayi.`;
+  const authorDescription = toSeoDescription(rawDescription);
   const sameAs = Object.values(social).filter(
     (value): value is string => typeof value === 'string' && /^https:\/\//i.test(value.trim()),
   );
