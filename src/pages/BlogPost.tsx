@@ -92,13 +92,50 @@ const BlogPost = () => {
     );
   }
 
+  const canonicalUrl = `https://sahadhyayi.com/blog/${slug}`;
+  const pageDescription = toSeoDescription(
+    post.description || (slug === 'best-indian-books-to-read'
+      ? 'Discover 25 remarkable Indian books across English and Indian-language literary traditions, including classics, regional fiction, mythology, and social thought.'
+      : post.content),
+  );
+  const publishedDate = Number.isNaN(Date.parse(post.date)) ? undefined : new Date(post.date).toISOString();
+  const socialImage = /^https?:\/\//i.test(post.image) ? post.image : undefined;
+  const blogPostSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: pageDescription,
+    url: canonicalUrl,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
+    author: { '@type': 'Person', name: post.author },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Sahadhyayi',
+      logo: { '@type': 'ImageObject', url: 'https://sahadhyayi.com/lovable-uploads/sahadhyayi-logo-digital-reading.png' },
+    },
+    datePublished: publishedDate,
+    image: socialImage ? [socialImage] : undefined,
+    articleSection: post.category,
+  };
+
   return (
     <>
       <SEO
-        title={`${post.title} | Sahadhyayi Blog`}
-        description={slug === 'best-indian-books-to-read' ? 'Discover 25 remarkable Indian books across English and Indian-language literary traditions, including classics, regional fiction, mythology, and social thought.' : toSeoDescription(post.content)}
-        canonical={`https://sahadhyayi.com/blog/${slug}`}
-        keywords={slug === 'best-indian-books-to-read' ? ['Indian books to read', 'Indian literature', 'regional Indian literature', 'Sahadhyayi', 'book recommendations'] : ['Sahadhyayi', 'reading community', 'digital library', 'book lovers']}
+        title={`${post.title} | Sahadhyayi Journal`}
+        description={pageDescription}
+        canonical={canonicalUrl}
+        url={canonicalUrl}
+        type="article"
+        image={socialImage}
+        author={post.author}
+        publishedTime={publishedDate}
+        schema={blogPostSchema}
+        breadcrumbs={[
+          { name: 'Home', url: 'https://sahadhyayi.com' },
+          { name: 'Journal', url: 'https://sahadhyayi.com/blog' },
+          { name: post.title, url: canonicalUrl },
+        ]}
+        keywords={slug === 'best-indian-books-to-read' ? ['Indian books to read', 'Indian literature', 'regional Indian literature', 'Sahadhyayi', 'book recommendations'] : ['Sahadhyayi', 'reading culture', 'digital library', 'book lovers']}
       />
       
       <main className="min-h-screen bg-[#F7F5EF] text-[#202820]">
