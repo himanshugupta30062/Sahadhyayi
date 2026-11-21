@@ -59,7 +59,7 @@ export const HomeNewsletterSection: React.FC = () => {
             <div className="lg:col-span-7 space-y-5">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 dark:bg-[#1A221D] border border-[#E8E2D9] dark:border-[#2A372E] text-[11px] font-bold uppercase tracking-[0.22em] text-[#8F681C] dark:text-[#D5B16D] shadow-2xs">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>The Sahadhyayi Dispatch</span>
+                <span>The Sahadhyayi Dispatch • 15,000+ Readers</span>
               </div>
 
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-[#1C201D] dark:text-[#F3F0E7] tracking-tight leading-[1.15]">
