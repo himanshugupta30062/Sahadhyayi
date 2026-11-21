@@ -74,6 +74,7 @@ export const useBookById = (id?: string) => {
         price: undefined, // Remove price since it doesn't exist
         amazon_url: undefined,
         google_books_url: undefined,
+        external_read_url: data.external_read_url,
         isbn: data.isbn,
         publication_year: data.publication_year,
         pages: data.pages,

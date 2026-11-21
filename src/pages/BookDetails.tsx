@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import './BookDetails.css';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Calendar, BookOpen, Globe, User, LogIn, UserPlus, Sparkles } from 'lucide-react';
+import { ArrowLeft, Calendar, BookOpen, Globe, User, LogIn, UserPlus, Sparkles, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -448,6 +448,14 @@ const BookDetails = () => {
                       Design Bookstagram Post
                     </Button>
                   </Link>
+                  {book.external_read_url && (
+                    <a href={book.external_read_url} target="_blank" rel="noopener noreferrer">
+                      <Button variant="outline" size="sm" className="h-9 gap-1.5 text-xs">
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        Official ebook options
+                      </Button>
+                    </a>
+                  )}
                 </div>
               </div>
 
