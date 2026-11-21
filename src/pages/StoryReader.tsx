@@ -325,8 +325,8 @@ export default function StoryReader() {
     xl: 'text-xl sm:text-2xl leading-loose',
   }[fontSize];
 
-  const storyUrl = \`https://sahadhyayi.com/stories/\${story.id}/part/\${currentPartNum}\`;
-  const storyDescription = toSeoDescription(part.content || story.description || \`Read \${story.title} by \${authorName} on Sahadhyayi.\`);
+  const storyUrl = `https://sahadhyayi.com/stories/${story.id}/part/${currentPartNum}`;
+  const storyDescription = toSeoDescription(part.content || story.description || `Read ${story.title} by ${authorName} on Sahadhyayi.`);
   const storyImage = story.cover_image_url && /^https?:\/\//i.test(story.cover_image_url)
     ? story.cover_image_url
     : undefined;
@@ -341,11 +341,11 @@ export default function StoryReader() {
     url: storyUrl,
     mainEntityOfPage: { '@type': 'WebPage', '@id': storyUrl },
     author: { '@type': 'Person', name: authorName },
-    isPartOf: {
+    isPartOf: story.story_type === 'series' ? {
       '@type': 'CreativeWorkSeries',
       name: story.title,
-      url: \`https://sahadhyayi.com/stories/\${story.id}\`,
-    },
+      url: `https://sahadhyayi.com/stories/${story.id}`,
+    } : undefined,
     datePublished: part.published_at || storyPublishedAt || undefined,
     dateModified: part.updated_at || storyModifiedAt || undefined,
     image: storyImage,
@@ -355,7 +355,7 @@ export default function StoryReader() {
   return (
     <>
       <SEO
-        title={\`\${part.title} · \${story.title} | Sahadhyayi Stories\`}
+        title={`${part.title} · ${story.title} | Sahadhyayi Stories`}
         description={storyDescription}
         canonical={storyUrl}
         url={storyUrl}
@@ -369,8 +369,8 @@ export default function StoryReader() {
         breadcrumbs={[
           { name: 'Home', url: 'https://sahadhyayi.com' },
           { name: 'Stories', url: 'https://sahadhyayi.com/stories' },
-          { name: story.title, url: \`https://sahadhyayi.com/stories/\${story.id}\` },
-          { name: part.title || \`Part \${currentPartNum}\`, url: storyUrl },
+          { name: story.title, url: `https://sahadhyayi.com/stories/${story.id}` },
+          { name: part.title || `Part ${currentPartNum}`, url: storyUrl },
         ]}
       />
 
