@@ -144,7 +144,7 @@ const AuthorProfile = () => {
 
   const shortBio = author.bio.length > 300 ? author.bio.substring(0, 300) + '...' : author.bio;
 
-  const authorUrl = `https://sahadhyayi.com/author/${authorName}`;
+  const authorUrl = `https://sahadhyayi.com/authors/${authorName}`;
   const breadcrumbItems = [
     { name: 'Home', url: 'https://sahadhyayi.com/' },
     { name: 'Authors', url: 'https://sahadhyayi.com/authors' },
@@ -166,8 +166,8 @@ const AuthorProfile = () => {
       <SEO
         title={`About ${author.name} | Sahadhyayi`}
         description={`Discover ${author.name}'s biography, books, and upcoming events. Connect with this talented author on Sahadhyayi.`}
-        canonical={`https://sahadhyayi.com/author/${authorName}`}
-        url={`https://sahadhyayi.com/author/${authorName}`}
+        canonical={`https://sahadhyayi.com/authors/${authorName}`}
+        url={`https://sahadhyayi.com/authors/${authorName}`}
         type="profile"
         author={author.name}
         schema={combinedSchema}

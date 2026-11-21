@@ -56,7 +56,15 @@ const AuthorSlugPage = () => {
 
   const social = (author as any).social_links || {};
 
-  const authorUrl = `https://sahadhyayi.com/authors/${slug}`;
+  const canonicalSlug = slugify(author.name);
+  const authorUrl = `https://sahadhyayi.com/authors/${canonicalSlug}`;
+  const rawDescription = author.bio
+    ? (author.bio.toLowerCase().includes(author.name.toLowerCase()) ? author.bio : `${author.name} — ${author.bio}`)
+    : `Explore ${author.name}'s author profile, biography, published books, and reading work on Sahadhyayi.`;
+  const authorDescription = toSeoDescription(rawDescription);
+  const sameAs = Object.values(social).filter(
+    (value): value is string => typeof value === 'string' && /^https:\/\//i.test(value.trim()),
+  );
   const breadcrumbItems = [
     { name: 'Home', url: 'https://sahadhyayi.com/' },
     { name: 'Authors', url: 'https://sahadhyayi.com/authors' },

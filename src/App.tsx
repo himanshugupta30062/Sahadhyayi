@@ -617,11 +617,9 @@ const App = memo(() => {
                         <Route
                           path="/map"
                           element={
-                            <ProtectedRoute>
-                              <Suspense fallback={<LoadingFallback />}>
-                                <MapPage />
-                              </Suspense>
-                            </ProtectedRoute>
+                            <Suspense fallback={<LoadingFallback />}>
+                              <MapPage />
+                            </Suspense>
                           }
                         />
                         <Route
@@ -955,21 +953,17 @@ const App = memo(() => {
                         <Route
                           path="/reader-map"
                           element={
-                            <ProtectedRoute>
-                              <Suspense fallback={<LoadingFallback message="Loading reader map..." />}>
-                                <ReaderMap />
-                              </Suspense>
-                            </ProtectedRoute>
+                            <Suspense fallback={<LoadingFallback message="Loading reader map..." />}>
+                              <ReaderMap />
+                            </Suspense>
                           }
                         />
                         <Route
                           path="/reader-map/:bookId?"
                           element={
-                            <ProtectedRoute>
-                              <Suspense fallback={<LoadingFallback />}>
-                                <ReaderMap />
-                              </Suspense>
-                            </ProtectedRoute>
+                            <Suspense fallback={<LoadingFallback />}>
+                              <ReaderMap />
+                            </Suspense>
                           }
                         />
                         <Route path="/investors" element={<Suspense fallback={<LoadingFallback />}><Investors /></Suspense>} />
