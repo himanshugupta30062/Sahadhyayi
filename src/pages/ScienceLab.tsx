@@ -31,6 +31,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client-universal";
 import { toast } from "sonner";
@@ -672,6 +673,14 @@ const difficultyTone: Record<string, string> = {
   Advanced: "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/30",
 };
 
+const categoryVisuals: Record<string, { bg: string; text: string }> = {
+  Physics: { bg: "from-violet-500/15 via-indigo-500/10 to-background", text: "text-violet-600/80 dark:text-violet-400/80" },
+  Chemistry: { bg: "from-amber-500/15 via-orange-500/10 to-background", text: "text-amber-600/80 dark:text-amber-400/80" },
+  Biology: { bg: "from-emerald-500/15 via-teal-500/10 to-background", text: "text-emerald-600/80 dark:text-emerald-400/80" },
+  "Earth Science": { bg: "from-sky-500/15 via-blue-500/10 to-background", text: "text-sky-600/80 dark:text-sky-400/80" },
+  Engineering: { bg: "from-teal-500/15 via-cyan-500/10 to-background", text: "text-teal-600/80 dark:text-teal-400/80" },
+};
+
 export default function ScienceLab() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [experiments, setExperiments] = useState<Experiment[]>(FALLBACK_EXPERIMENTS);
@@ -1057,53 +1066,59 @@ export default function ScienceLab() {
 
             {/* Experiment Cards Grid */}
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredExperiments.map((experiment) => (
-                <Card
-                  key={experiment.id}
-                  className="group flex h-full flex-col overflow-hidden border-border/80 transition-all hover:border-emerald-500/40 hover:shadow-lg"
-                >
-                  <div className="relative flex h-36 items-center justify-center bg-gradient-to-br from-emerald-500/10 via-cyan-500/10 to-background">
-                    <FlaskConical className="h-14 w-14 text-emerald-600/70 dark:text-emerald-400/70 transition-transform group-hover:scale-110" />
-                    <span className="absolute top-3 right-3 text-xs font-semibold px-2.5 py-0.5 rounded-full border bg-background/90 backdrop-blur">
-                      {experiment.category}
-                    </span>
-                  </div>
-
-                  <CardHeader className="pb-2">
-                    <div className="mb-2 flex flex-wrap items-center gap-1.5">
-                      <span className={"rounded-full border px-2 py-0.5 text-xs font-medium " + (difficultyTone[experiment.difficulty] || "")}>
-                        {experiment.difficulty}
-                      </span>
-                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock3 className="h-3 w-3" /> {experiment.duration_minutes} min
+              {filteredExperiments.map((experiment) => {
+                const visual = categoryVisuals[experiment.category] || {
+                  bg: "from-emerald-500/10 via-cyan-500/10 to-background",
+                  text: "text-emerald-600/70 dark:text-emerald-400/70",
+                };
+                return (
+                  <Card
+                    key={experiment.id}
+                    className="group flex h-full flex-col overflow-hidden border-border/80 transition-all hover:border-emerald-500/40 hover:shadow-lg"
+                  >
+                    <div className={`relative flex h-36 items-center justify-center bg-gradient-to-br ${visual.bg}`}>
+                      <FlaskConical className={`h-14 w-14 transition-transform group-hover:scale-110 ${visual.text}`} />
+                      <span className="absolute top-3 right-3 text-xs font-semibold px-2.5 py-0.5 rounded-full border bg-background/90 backdrop-blur shadow-2xs">
+                        {experiment.category}
                       </span>
                     </div>
-                    <CardTitle className="text-lg leading-snug group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
-                      {experiment.title}
-                    </CardTitle>
-                    <CardDescription className="line-clamp-2 text-xs leading-5">
-                      {experiment.summary}
-                    </CardDescription>
-                  </CardHeader>
 
-                  <CardContent className="mt-auto space-y-3 pt-2">
-                    <div className="rounded-lg bg-muted/40 p-2.5 text-xs text-muted-foreground leading-5">
-                      <strong className="text-foreground font-medium">Materials: </strong>
-                      {experiment.materials.slice(0, 3).join(", ")}
-                      {experiment.materials.length > 3 && ` +${experiment.materials.length - 3} more`}
-                    </div>
+                    <CardHeader className="pb-2">
+                      <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                        <span className={"rounded-full border px-2 py-0.5 text-xs font-medium " + (difficultyTone[experiment.difficulty] || "")}>
+                          {experiment.difficulty}
+                        </span>
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Clock3 className="h-3 w-3" /> {experiment.duration_minutes} min
+                        </span>
+                      </div>
+                      <CardTitle className="text-lg leading-snug group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+                        {experiment.title}
+                      </CardTitle>
+                      <CardDescription className="line-clamp-2 text-xs leading-5">
+                        {experiment.summary}
+                      </CardDescription>
+                    </CardHeader>
 
-                    <Button
-                      className="w-full gap-1.5"
-                      variant="outline"
-                      onClick={() => handleOpenExperiment(experiment)}
-                    >
-                      <Sparkles className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                      View experiment & steps
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+                    <CardContent className="mt-auto space-y-3 pt-2">
+                      <div className="rounded-lg bg-muted/40 p-2.5 text-xs text-muted-foreground leading-5">
+                        <strong className="text-foreground font-medium">Materials: </strong>
+                        {experiment.materials.slice(0, 3).join(", ")}
+                        {experiment.materials.length > 3 && ` +${experiment.materials.length - 3} more`}
+                      </div>
+
+                      <Button
+                        className="w-full gap-1.5"
+                        variant="outline"
+                        onClick={() => handleOpenExperiment(experiment)}
+                      >
+                        <Sparkles className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                        View experiment & steps
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </section>
         )}
@@ -1344,12 +1359,16 @@ export default function ScienceLab() {
 
               {/* Interactive Step-by-Step Instructions */}
               <div>
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-2">
                   <h3 className="font-semibold text-base">
                     Step-by-step instructions ({stepsDoneCount}/{selected.steps.length} done)
                   </h3>
                   <span className="text-xs text-muted-foreground">Check each step as you do it</span>
                 </div>
+                <Progress
+                  value={selected.steps.length ? (stepsDoneCount / selected.steps.length) * 100 : 0}
+                  className="mb-3.5 h-1.5"
+                />
                 <ol className="space-y-3">
                   {selected.steps.map((step, index) => {
                     const isDone = Boolean(checkedSteps[index]);

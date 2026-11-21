@@ -102,87 +102,94 @@ function AnswerResultCard({
   const relatedExperiment = QUESTION_TO_EXPERIMENT[question.id];
 
   return (
-    <Card className="overflow-hidden border-border/80">
+    <Card className="overflow-hidden border-border/80 bg-card shadow-2xs transition-all hover:border-border">
       <button
         type="button"
         onClick={() => setExpanded((value) => !value)}
-        className="flex w-full items-center justify-between gap-4 p-4 text-left sm:p-5"
+        className="flex w-full items-center justify-between gap-4 p-4 text-left sm:p-5 hover:bg-muted/30 transition-colors"
         aria-expanded={expanded}
       >
-        <span className="flex min-w-0 items-start gap-3">
-          <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+        <span className="flex min-w-0 items-start gap-3.5">
+          <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary ring-1 ring-primary/20">
             {index + 1}
           </span>
           <span className="min-w-0">
-            <span className="block text-sm font-semibold text-foreground sm:text-base">{question.title}</span>
-            <span className="mt-1 block text-xs text-muted-foreground">{question.domain}</span>
+            <span className="block text-sm font-semibold tracking-tight text-foreground sm:text-base">{question.title}</span>
+            <span className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="font-medium">{question.domain}</span>
+            </span>
           </span>
         </span>
-        <span className="flex shrink-0 items-center gap-2">
-          <Badge variant={result.score >= 70 ? "default" : "secondary"}>{result.score}%</Badge>
+        <span className="flex shrink-0 items-center gap-2.5">
+          <Badge
+            variant={result.score >= 70 ? "default" : "secondary"}
+            className={result.score >= 70 ? "bg-emerald-600 hover:bg-emerald-600 text-white" : ""}
+          >
+            {result.score}%
+          </Badge>
           {expanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
         </span>
       </button>
 
       {expanded && (
-        <CardContent className="space-y-5 border-t border-border/70 px-4 pb-5 pt-4 sm:px-5">
-          <div>
+        <CardContent className="space-y-5 border-t border-border/70 bg-card/60 px-4 pb-6 pt-5 sm:px-6">
+          <div className="rounded-xl border border-border/60 bg-muted/30 p-4">
             <div className="mb-2 flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold">Your understanding</p>
-              <span className="text-sm font-bold tabular-nums">{result.score}%</span>
+              <p className="text-sm font-semibold text-foreground">Your understanding</p>
+              <span className="text-sm font-bold tabular-nums text-foreground">{result.score}%</span>
             </div>
             <Progress value={result.score} className="h-2" />
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             {DIMENSION_LABELS.map(({ key, label }) => (
-              <div key={key} className="space-y-1.5">
+              <div key={key} className="space-y-1.5 rounded-lg border border-border/50 bg-background/50 p-2.5">
                 <div className="flex justify-between gap-2 text-xs">
                   <span className="text-muted-foreground">{label}</span>
-                  <span className="font-semibold tabular-nums">{result.dimensions[key]}%</span>
+                  <span className="font-semibold tabular-nums text-foreground">{result.dimensions[key]}%</span>
                 </div>
                 <Progress value={result.dimensions[key]} className="h-1.5" />
               </div>
             ))}
           </div>
 
-          <div className="rounded-xl bg-muted/60 p-3.5">
-            <p className="text-sm font-semibold">AI feedback</p>
-            <p className="mt-1.5 text-sm leading-6 text-muted-foreground">{result.feedback}</p>
+          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+            <p className="text-sm font-semibold text-primary">AI feedback</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{result.feedback}</p>
           </div>
 
           {result.strengths.length > 0 && (
-            <div>
+            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
               <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
                 <CheckCircle2 className="h-4 w-4" /> What you understood
               </p>
-              <ul className="space-y-1.5 pl-5 text-sm leading-6 text-muted-foreground">
+              <ul className="space-y-1.5 pl-5 text-sm leading-relaxed text-muted-foreground">
                 {result.strengths.map((item, itemIndex) => <li key={itemIndex} className="list-disc">{item}</li>)}
               </ul>
             </div>
           )}
 
           {result.improvements.length > 0 && (
-            <div>
+            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
               <p className="mb-2 flex items-center gap-2 text-sm font-semibold text-amber-700 dark:text-amber-400">
                 <Lightbulb className="h-4 w-4" /> What to improve
               </p>
-              <ul className="space-y-1.5 pl-5 text-sm leading-6 text-muted-foreground">
+              <ul className="space-y-1.5 pl-5 text-sm leading-relaxed text-muted-foreground">
                 {result.improvements.map((item, itemIndex) => <li key={itemIndex} className="list-disc">{item}</li>)}
               </ul>
             </div>
           )}
 
           {result.misconceptionCorrection && (
-            <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3.5">
-              <p className="text-sm font-semibold">A misconception to correct</p>
-              <p className="mt-1.5 text-sm leading-6 text-muted-foreground">{result.misconceptionCorrection}</p>
+            <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4">
+              <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">A misconception to correct</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{result.misconceptionCorrection}</p>
             </div>
           )}
 
-          <div className="border-t border-border/70 pt-4">
-            <p className="text-sm font-semibold">The science, explained</p>
-            <p className="mt-1.5 text-sm leading-7 text-muted-foreground">{result.correctExplanation}</p>
+          <div className="rounded-2xl border border-border/80 bg-muted/20 p-4">
+            <p className="text-sm font-semibold text-foreground">The science, explained</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{result.correctExplanation}</p>
           </div>
 
           {/* Hands-on Experiment Companion */}

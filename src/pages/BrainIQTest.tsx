@@ -1,6 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, BrainCircuit, CheckCircle2, Clock3, RotateCcw, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Award,
+  BrainCircuit,
+  CheckCircle2,
+  Clock3,
+  Flag,
+  RotateCcw,
+  Sparkles,
+  Zap,
+} from "lucide-react";
 import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +23,31 @@ import { listBrainAssessmentAttempts, saveBrainAssessmentAttempt } from "@/lib/b
 import { EXPANDED_QUESTIONS, EXPANDED_DIFFICULTY_BY_ID } from "@/lib/brain/questionBank";
 
 type Domain = "Visual patterns" | "Logic" | "Number patterns" | "Verbal reasoning" | "Spatial reasoning";
-type Question = { id: string; domain: Domain; prompt: string; options: string[]; answer: number; explanation: string; visual?: string[]; visualOptions?: string[]; matrixPuzzle?: MatrixPuzzle; skill?: string; difficulty?: Difficulty };
+type Difficulty = "Easy" | "Medium" | "Hard";
+type PracticeDomain = "All areas" | Domain;
+
+type Question = {
+  id: string;
+  domain: Domain;
+  prompt: string;
+  options: string[];
+  answer: number;
+  explanation: string;
+  visual?: string[];
+  visualOptions?: string[];
+  matrixPuzzle?: MatrixPuzzle;
+  skill?: string;
+  difficulty?: Difficulty;
+};
+
+type AttemptHistoryEntry = {
+  date: string;
+  score: number;
+  total: number;
+  mode: string;
+  domains?: Record<string, { correct: number; total: number }>;
+  durationSeconds?: number;
+};
 
 const QUESTIONS: Question[] = [
   { id: "m1", domain: "Visual patterns", prompt: "Which symbol completes the sequence?", visual: ["○", "△", "□", "△", "□", "◇", "□", "◇", "?"], options: ["○", "△", "□", "◇"], answer: 3, explanation: "Each row shifts the sequence forward; the final symbol is a diamond." },
@@ -101,12 +136,8 @@ const QUESTIONS: Question[] = [
   { id: "v9", domain: "Verbal reasoning", prompt: "Which pair has the same relationship as 'generous : selfish'?", options: ["Ancient : old", "Expand : contract", "Quiet : silent", "Rapid : quick"], answer: 1, explanation: "Generous and selfish are opposites, as are expand and contract." },
 ];
 
-
 const QUESTION_BANK: Question[] = [...QUESTIONS, ...EXPANDED_QUESTIONS];
 
-type Difficulty = "Easy" | "Medium" | "Hard";
-type PracticeDomain = "All areas" | Domain;
-type AttemptHistoryEntry = { date: string; score: number; total: number; mode: string; domains?: Record<string, { correct: number; total: number }>; durationSeconds?: number };
 const DIFFICULTY_BY_ID: Record<string, Difficulty> = {
   ...EXPANDED_DIFFICULTY_BY_ID,
   m1: "Easy", m2: "Easy", m4: "Easy", n2: "Easy", l2: "Easy", v1: "Easy", v2: "Easy",
@@ -150,52 +181,195 @@ function createAttempt(source: Question[], difficulty: Difficulty, matrixCount: 
     };
   });
 }
-const formatTime = (seconds: number) => `${Math.floor(seconds / 60).toString().padStart(2, "0")}:${(seconds % 60).toString().padStart(2, "0")}`;
-const localDayKey = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+const formatTime = (seconds: number) =>
+  `${Math.floor(seconds / 60).toString().padStart(2, "0")}:${(seconds % 60).toString().padStart(2, "0")}`;
+
+const localDayKey = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+function getMasteryTier(pct: number): { label: string; badgeClass: string; description: string } {
+  if (pct >= 90) {
+    return {
+      label: "Exceptional Mastery",
+      badgeClass: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
+      description: "Remarkable accuracy and high-speed cognitive adaptability across visual, logical, and numerical paradigms.",
+    };
+  }
+  if (pct >= 75) {
+    return {
+      label: "High Proficiency",
+      badgeClass: "bg-violet-500/15 text-violet-700 dark:text-violet-400 border-violet-500/30",
+      description: "Strong structural reasoning with consistent analytical problem solving across varied reasoning challenges.",
+    };
+  }
+  if (pct >= 50) {
+    return {
+      label: "Solid Foundation",
+      badgeClass: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30",
+      description: "Consistent core logic with opportunities to sharpen edge-case rotation and multi-step series.",
+    };
+  }
+  return {
+    label: "Developing Thinker",
+    badgeClass: "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30",
+    description: "Good start! Repeated deliberate practice on one domain at a time helps recognize pattern grammars quickly.",
+  };
+}
 
 export default function BrainIQTest() {
   const [searchParams] = useSearchParams();
   const practiceMode = searchParams.get("mode") === "practice";
   const dailyMode = searchParams.get("mode") === "daily";
+
   const [started, setStarted] = useState(false);
   const [finished, setFinished] = useState(false);
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [flaggedIds, setFlaggedIds] = useState<Set<string>>(new Set());
+  const [reviewFilter, setReviewFilter] = useState<"all" | "incorrect" | "flagged">("all");
   const [seconds, setSeconds] = useState(TEST_SECONDS);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>("Medium");
   const [selectedDomain, setSelectedDomain] = useState<PracticeDomain>("All areas");
   const [attemptHistory, setAttemptHistory] = useState<AttemptHistoryEntry[]>([]);
   const [historySyncStatus, setHistorySyncStatus] = useState<"loading" | "synced" | "local">("loading");
-  const baseQuestions = useMemo(() => dailyMode ? [QUESTIONS[0], QUESTIONS[4], QUESTIONS[8]] : QUESTION_BANK.filter((question) => DIFFICULTY_BY_ID[question.id] === selectedDifficulty && (!practiceMode || selectedDomain === "All areas" || question.domain === selectedDomain)), [dailyMode, practiceMode, selectedDifficulty, selectedDomain]);
+
+  const baseQuestions = useMemo(() => {
+    if (dailyMode) return [QUESTIONS[0], QUESTIONS[4], QUESTIONS[8]];
+    return QUESTION_BANK.filter(
+      (question) =>
+        DIFFICULTY_BY_ID[question.id] === selectedDifficulty &&
+        (!practiceMode || selectedDomain === "All areas" || question.domain === selectedDomain),
+    );
+  }, [dailyMode, practiceMode, selectedDifficulty, selectedDomain]);
+
   const [attemptQuestions, setAttemptQuestions] = useState<Question[] | null>(null);
-  const plannedMatrixCount = !dailyMode && (!practiceMode || selectedDomain === "All areas" || selectedDomain === "Visual patterns") ? 3 : 0;
+  const plannedMatrixCount =
+    !dailyMode && (!practiceMode || selectedDomain === "All areas" || selectedDomain === "Visual patterns") ? 3 : 0;
   const questions = attemptQuestions ?? baseQuestions;
   const current = questions[index];
   const score = questions.reduce((sum, question) => sum + (answers[question.id] === question.answer ? 1 : 0), 0);
-  const activityDays = useMemo(() => new Set(attemptHistory.filter((attempt) => Number.isFinite(new Date(attempt.date).getTime())).map((attempt) => localDayKey(new Date(attempt.date)))), [attemptHistory]);
-  const activityCalendar = useMemo(() => Array.from({ length: 28 }, (_, offset) => {
-    const day = new Date();
-    day.setHours(12, 0, 0, 0);
-    day.setDate(day.getDate() - (27 - offset));
-    const key = localDayKey(day);
-    return { key, label: day.toLocaleDateString(undefined, { weekday: "short" }), dayNumber: day.getDate(), isToday: offset === 27, completed: activityDays.has(key) };
-  }), [activityDays]);
+
+  const toggleFlag = useCallback((id: string) => {
+    setFlaggedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
+  const selectOption = useCallback(
+    (optionIndex: number) => {
+      if (!current) return;
+      setAnswers((prev) => ({ ...prev, [current.id]: optionIndex }));
+    },
+    [current],
+  );
+
+  // Keyboard navigation when test is active
+  useEffect(() => {
+    if (!started || finished || !current) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is inside an input or editable element
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+        return;
+      }
+
+      if (e.key === "1" || e.key.toLowerCase() === "a") {
+        if (current.options[0]) {
+          e.preventDefault();
+          selectOption(0);
+        }
+      } else if (e.key === "2" || e.key.toLowerCase() === "b") {
+        if (current.options[1]) {
+          e.preventDefault();
+          selectOption(1);
+        }
+      } else if (e.key === "3" || e.key.toLowerCase() === "c") {
+        if (current.options[2]) {
+          e.preventDefault();
+          selectOption(2);
+        }
+      } else if (e.key === "4" || e.key.toLowerCase() === "d") {
+        if (current.options[3]) {
+          e.preventDefault();
+          selectOption(3);
+        }
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        setIndex((i) => Math.max(0, i - 1));
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        setIndex((i) => (i < questions.length - 1 ? i + 1 : i));
+      } else if (e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        toggleFlag(current.id);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [started, finished, current, questions.length, selectOption, toggleFlag]);
+
+  const activityDays = useMemo(
+    () =>
+      new Set(
+        attemptHistory
+          .filter((attempt) => Number.isFinite(new Date(attempt.date).getTime()))
+          .map((attempt) => localDayKey(new Date(attempt.date))),
+      ),
+    [attemptHistory],
+  );
+
+  const activityCalendar = useMemo(
+    () =>
+      Array.from({ length: 28 }, (_, offset) => {
+        const day = new Date();
+        day.setHours(12, 0, 0, 0);
+        day.setDate(day.getDate() - (27 - offset));
+        const key = localDayKey(day);
+        return {
+          key,
+          label: day.toLocaleDateString(undefined, { weekday: "short" }),
+          dayNumber: day.getDate(),
+          isToday: offset === 27,
+          completed: activityDays.has(key),
+        };
+      }),
+    [activityDays],
+  );
+
   const activeDaysInWindow = activityCalendar.filter((day) => day.completed).length;
+
   const currentStreak = useMemo(() => {
     const cursor = new Date();
     cursor.setHours(12, 0, 0, 0);
     if (!activityDays.has(localDayKey(cursor))) cursor.setDate(cursor.getDate() - 1);
     let streak = 0;
-    while (activityDays.has(localDayKey(cursor))) { streak += 1; cursor.setDate(cursor.getDate() - 1); }
+    while (activityDays.has(localDayKey(cursor))) {
+      streak += 1;
+      cursor.setDate(cursor.getDate() - 1);
+    }
     return streak;
   }, [activityDays]);
-  const domainScores = useMemo(() => questions.reduce<Record<string, { correct: number; total: number }>>((acc, q) => {
-    const item = acc[q.domain] ?? { correct: 0, total: 0 };
-    item.total += 1;
-    if (answers[q.id] === q.answer) item.correct += 1;
-    acc[q.domain] = item;
-    return acc;
-  }, {}), [questions, answers]);
+
+  const domainScores = useMemo(
+    () =>
+      questions.reduce<Record<string, { correct: number; total: number }>>((acc, q) => {
+        const item = acc[q.domain] ?? { correct: 0, total: 0 };
+        item.total += 1;
+        if (answers[q.id] === q.answer) item.correct += 1;
+        acc[q.domain] = item;
+        return acc;
+      }, {}),
+    [questions, answers],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -204,38 +378,80 @@ export default function BrainIQTest() {
       const saved = window.localStorage.getItem("sahadhyayi-iq-test-history");
       if (saved) {
         const parsed: unknown = JSON.parse(saved);
-        if (Array.isArray(parsed)) localEntries = parsed.filter((item): item is AttemptHistoryEntry => item && typeof item.date === "string" && Number.isFinite(item.score) && Number.isFinite(item.total) && item.total > 0 && typeof item.mode === "string").slice(0, 90);
+        if (Array.isArray(parsed)) {
+          localEntries = parsed
+            .filter(
+              (item): item is AttemptHistoryEntry =>
+                item &&
+                typeof item.date === "string" &&
+                Number.isFinite(item.score) &&
+                Number.isFinite(item.total) &&
+                item.total > 0 &&
+                typeof item.mode === "string",
+            )
+            .slice(0, 90);
+        }
       }
-    } catch { localEntries = []; }
+    } catch {
+      localEntries = [];
+    }
     setAttemptHistory(localEntries);
-    void listBrainAssessmentAttempts(90).then((cloudEntries) => {
-      if (cancelled) return;
-      if (cloudEntries === null) {
-        setHistorySyncStatus("local");
-        return;
-      }
-      const unique = new Map<string, AttemptHistoryEntry>();
-      [...cloudEntries, ...localEntries].forEach((entry) => {
-        unique.set(`${entry.date}|${entry.score}|${entry.total}`, entry);
+
+    void listBrainAssessmentAttempts(90)
+      .then((cloudEntries) => {
+        if (cancelled) return;
+        if (cloudEntries === null) {
+          setHistorySyncStatus("local");
+          return;
+        }
+        const unique = new Map<string, AttemptHistoryEntry>();
+        [...cloudEntries, ...localEntries].forEach((entry) => {
+          unique.set(`${entry.date}|${entry.score}|${entry.total}`, entry);
+        });
+        const merged = [...unique.values()]
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+          .slice(0, 90);
+        setAttemptHistory(merged);
+        setHistorySyncStatus("synced");
+        try {
+          window.localStorage.setItem("sahadhyayi-iq-test-history", JSON.stringify(merged));
+        } catch {
+          /* storage may be unavailable */
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setHistorySyncStatus("local");
       });
-      const merged = [...unique.values()].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 90);
-      setAttemptHistory(merged);
-      setHistorySyncStatus("synced");
-      try { window.localStorage.setItem("sahadhyayi-iq-test-history", JSON.stringify(merged)); } catch { /* storage may be unavailable */ }
-    }).catch(() => {
-      if (!cancelled) setHistorySyncStatus("local");
-    });
-    return () => { cancelled = true; };
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
     if (!finished || !attemptQuestions) return;
-    const entry: AttemptHistoryEntry = { date: new Date().toISOString(), score, total: questions.length, mode: dailyMode ? "Daily" : practiceMode ? `Practice · ${selectedDomain} · ${selectedDifficulty}` : `Test · ${selectedDifficulty}`, domains: domainScores, durationSeconds: dailyMode ? 0 : TEST_SECONDS - seconds };
+    const entry: AttemptHistoryEntry = {
+      date: new Date().toISOString(),
+      score,
+      total: questions.length,
+      mode: dailyMode
+        ? "Daily"
+        : practiceMode
+          ? `Practice · ${selectedDomain} · ${selectedDifficulty}`
+          : `Test · ${selectedDifficulty}`,
+      domains: domainScores,
+      durationSeconds: dailyMode ? 0 : TEST_SECONDS - seconds,
+    };
     setAttemptHistory((previous) => {
       const next = [entry, ...previous].slice(0, 90);
-      try { window.localStorage.setItem("sahadhyayi-iq-test-history", JSON.stringify(next)); } catch { /* storage may be unavailable */ }
+      try {
+        window.localStorage.setItem("sahadhyayi-iq-test-history", JSON.stringify(next));
+      } catch {
+        /* storage may be unavailable */
+      }
       return next;
     });
+
     void saveBrainAssessmentAttempt({
       mode: dailyMode ? "daily" : practiceMode ? "practice" : "general",
       difficulty: dailyMode ? null : selectedDifficulty,
@@ -244,41 +460,844 @@ export default function BrainIQTest() {
       durationSeconds: entry.durationSeconds ?? 0,
       domainScores,
       completedAt: entry.date,
-    }).then((saved) => {
-      if (saved) {
-        setHistorySyncStatus("synced");
-        setAttemptHistory((previous) => {
-          const unique = new Map(previous.map((item) => [`${item.date}|${item.mode}|${item.score}|${item.total}`, item]));
-          unique.set(`${saved.date}|${saved.score}|${saved.total}`, saved);
-          return [...unique.values()].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 90);
-        });
-      }
-    }).catch(() => setHistorySyncStatus("local"));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    })
+      .then((saved) => {
+        if (saved) {
+          setHistorySyncStatus("synced");
+          setAttemptHistory((previous) => {
+            const unique = new Map(
+              previous.map((item) => [`${item.date}|${item.mode}|${item.score}|${item.total}`, item]),
+            );
+            unique.set(`${saved.date}|${saved.score}|${saved.total}`, saved);
+            return [...unique.values()]
+              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+              .slice(0, 90);
+          });
+        }
+      })
+      .catch(() => setHistorySyncStatus("local"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished]);
 
   useEffect(() => {
     if (!started || finished || dailyMode) return;
-    const timer = window.setInterval(() => setSeconds((value) => {
-      if (value <= 1) { window.clearInterval(timer); setFinished(true); return 0; }
-      return value - 1;
-    }), 1000);
+    const timer = window.setInterval(() => {
+      setSeconds((value) => {
+        if (value <= 1) {
+          window.clearInterval(timer);
+          setFinished(true);
+          return 0;
+        }
+        return value - 1;
+      });
+    }, 1000);
     return () => window.clearInterval(timer);
   }, [started, finished, dailyMode]);
 
   const beginAssessment = () => {
-    // Daily challenge stays repeatable; other attempts receive a shuffled order.
-    setAttemptQuestions(dailyMode ? baseQuestions : createAttempt(baseQuestions, selectedDifficulty, plannedMatrixCount));
+    setAttemptQuestions(
+      dailyMode ? baseQuestions : createAttempt(baseQuestions, selectedDifficulty, plannedMatrixCount),
+    );
     setStarted(true);
   };
-  const reset = () => { setStarted(false); setFinished(false); setIndex(0); setAnswers({}); setSeconds(TEST_SECONDS); setAttemptQuestions(null); };
 
-  return <main className="min-h-[calc(100vh-4rem)] bg-background text-foreground"><SEO title="IQ Test Practice | Sahadhyayi" description="Practice original visual, logical, numerical, verbal and spatial reasoning questions with explanations." /><div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-    <Link to="/brain" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Back to IQ Test</Link>
-    <div className="mt-5 flex items-center gap-3"><div className="rounded-xl bg-violet-500/10 p-3 text-violet-500"><BrainCircuit className="h-6 w-6" /></div><div><Badge variant="secondary">PRACTICE ASSESSMENT</Badge><h1 className="mt-1 text-2xl font-bold sm:text-3xl">{dailyMode ? "Daily brain challenge" : practiceMode ? "Skill practice" : "Reasoning test"}</h1></div></div>
-    {attemptHistory.length > 0 && !started && <Card className="mt-6"><CardHeader className="pb-3"><div className="flex items-center justify-between gap-3"><div><CardTitle className="text-lg">Your practice consistency</CardTitle><CardDescription>Activity saved privately · {historySyncStatus === "synced" ? "synced to your account" : historySyncStatus === "loading" ? "checking your history" : "stored on this device"}</CardDescription></div><div className="text-right"><p className="text-2xl font-bold tabular-nums">{currentStreak}</p><p className="text-xs text-muted-foreground">day streak</p></div></div></CardHeader><CardContent><div className="grid grid-cols-7 gap-2">{activityCalendar.map((day) => <div key={day.key} title={day.key} className="flex flex-col items-center gap-1"><span className="text-[10px] text-muted-foreground">{day.label}</span><div aria-label={day.completed ? `Practice completed on ${day.key}` : `No practice on ${day.key}`} className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-medium ${day.completed ? "bg-violet-500 text-white" : "bg-muted text-muted-foreground"} ${day.isToday ? "ring-2 ring-violet-500 ring-offset-2 ring-offset-background" : ""}`}>{day.dayNumber}</div></div>)}</div><div className="mt-3 flex items-center justify-between text-xs text-muted-foreground"><span>{activeDaysInWindow} active days</span><span>Last 28 days</span></div></CardContent></Card>}
-    {!started && !finished && <Card className="mt-6"><CardHeader><CardTitle>Before you begin</CardTitle><CardDescription>This practice assessment uses original sample questions across visual patterns, logic, number patterns, verbal and spatial reasoning.</CardDescription></CardHeader><CardContent className="space-y-4"><div className="grid gap-3 sm:grid-cols-3"><div className="rounded-xl bg-muted/50 p-3"><Clock3 className="mb-2 h-4 w-4 text-violet-500"/><p className="font-medium">{dailyMode ? "3 questions" : `${baseQuestions.length + plannedMatrixCount} questions`}</p><p className="text-xs text-muted-foreground">{dailyMode ? "Quick challenge" : `${selectedDifficulty} level`}</p></div><div className="rounded-xl bg-muted/50 p-3"><Sparkles className="mb-2 h-4 w-4 text-violet-500"/><p className="font-medium">{dailyMode ? "Untimed" : "20 minutes"}</p><p className="text-xs text-muted-foreground">No penalty for skips</p></div><div className="rounded-xl bg-muted/50 p-3"><CheckCircle2 className="mb-2 h-4 w-4 text-violet-500"/><p className="font-medium">Answer review</p><p className="text-xs text-muted-foreground">Explanations at the end</p></div></div>{practiceMode && <div className="space-y-2"><p className="text-sm font-medium">Focus area</p><div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{(["All areas", "Visual patterns", "Logic", "Number patterns", "Verbal reasoning", "Spatial reasoning"] as const).map((domain) => <Button key={domain} type="button" variant={selectedDomain === domain ? "default" : "outline"} size="sm" onClick={() => setSelectedDomain(domain)} className="w-full whitespace-normal">{domain}</Button>)}</div><p className="text-xs text-muted-foreground">Choose one reasoning area to practise, or keep all areas selected.</p></div>}{!dailyMode && <div className="space-y-2"><p className="text-sm font-medium">Choose difficulty</p><div className="grid grid-cols-3 gap-2">{(["Easy", "Medium", "Hard"] as const).map((level) => <Button key={level} type="button" variant={selectedDifficulty === level ? "default" : "outline"} onClick={() => setSelectedDifficulty(level)} className="w-full">{level}<span className="ml-1 text-xs opacity-75">({QUESTION_BANK.filter((question) => DIFFICULTY_BY_ID[question.id] === level).length})</span></Button>)}</div><p className="text-xs text-muted-foreground">{selectedDifficulty === "Easy" ? "Build confidence with direct patterns and foundational reasoning." : selectedDifficulty === "Medium" ? "Mix multi-step patterns, deductions and verbal relationships." : "Try more demanding sequences, deductions and less familiar patterns."}</p></div>}<p className="text-sm leading-6 text-muted-foreground">This is a learning and puzzle experience—not a standardized, professionally normed IQ test. Your score reflects only this question set.</p><Button size="lg" onClick={beginAssessment} className="w-full">Begin assessment <ArrowRight className="ml-2 h-4 w-4"/></Button></CardContent></Card>}
-    {started && !finished && current && <Card className="mt-6"><CardHeader><div className="flex items-center justify-between gap-3"><div className="flex items-center gap-2"><Badge variant="outline">{current.domain}</Badge>{!dailyMode && <Badge variant="secondary">{selectedDifficulty}</Badge>}</div>{!dailyMode && <span className="inline-flex items-center gap-1.5 text-sm tabular-nums text-muted-foreground"><Clock3 className="h-4 w-4"/>{formatTime(seconds)}</span>}</div><div className="mt-3 flex items-center justify-between text-xs text-muted-foreground"><span>Question progress</span><span>{Object.keys(answers).length} of {questions.length} answered</span></div><Progress value={Object.keys(answers).length / questions.length * 100} className="mt-2"/><CardDescription>Question {index + 1} of {questions.length} · {questions.length - Object.keys(answers).length} unanswered</CardDescription><CardTitle className="pt-2 text-xl leading-7">{current.prompt}</CardTitle></CardHeader><CardContent className="space-y-3">{current.matrixPuzzle && <div className="mx-auto grid max-w-[510px] grid-cols-3 gap-2 rounded-xl border border-border bg-muted/20 p-3 sm:gap-3 sm:p-5" role="group" aria-label="Visual matrix puzzle">{current.matrixPuzzle.cells.map((cell, tileIndex) => <div key={tileIndex} className={`flex aspect-square items-center justify-center rounded-lg border p-2 ${cell ? "border-border bg-card" : "border-2 border-dashed border-violet-500 bg-violet-500/5"}`}>{cell ? <MatrixTile cell={cell} className="h-full w-full max-h-24 max-w-24 text-foreground" /> : <span className="text-3xl font-semibold text-violet-500" aria-label="Missing tile">?</span>}</div>)}</div>}{current.visual && <div aria-label={current.visual.join(" ")} className="grid grid-cols-3 gap-2 rounded-xl border border-border bg-muted/20 p-3 sm:gap-3 sm:p-5">{current.visual.map((tile, tileIndex) => <div key={tileIndex} className="flex aspect-square items-center justify-center rounded-lg border border-border bg-card text-2xl font-semibold sm:text-4xl">{tileIndex === 8 ? "?" : tile}</div>)}</div>}{current.options.map((option, optionIndex) => <button key={option} type="button" onClick={() => setAnswers((prev) => ({ ...prev, [current.id]: optionIndex }))} aria-pressed={answers[current.id] === optionIndex} className={`flex min-h-14 w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors ${answers[current.id] === optionIndex ? "border-violet-500 bg-violet-500/10 ring-1 ring-violet-500" : "border-border hover:bg-muted/60"} ${current.matrixPuzzle ? "min-h-24 justify-center sm:min-h-28" : ""}`}><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold">{String.fromCharCode(65 + optionIndex)}</span>{current.matrixPuzzle ? <MatrixTile cell={current.matrixPuzzle.options[optionIndex]} className="h-16 w-16 text-foreground sm:h-20 sm:w-20" /> : <span>{option}</span>}</button>)}<div className="rounded-xl border border-border p-3"><div className="mb-2 flex items-center justify-between gap-2"><p className="text-sm font-medium">Question navigator</p><p className="text-xs text-muted-foreground">{Object.keys(answers).length}/{questions.length} answered</p></div><div className="grid grid-cols-5 gap-2 sm:grid-cols-8">{questions.map((question, questionIndex) => { const answered = answers[question.id] !== undefined; const active = questionIndex === index; return <button key={question.id} type="button" onClick={() => setIndex(questionIndex)} aria-label={`Go to question ${questionIndex + 1}${answered ? ", answered" : ", unanswered"}${active ? ", current question" : ""}`} aria-current={active ? "step" : undefined} className={`flex h-9 items-center justify-center rounded-lg border text-sm font-medium transition-colors ${active ? "border-violet-500 bg-violet-500 text-white" : answered ? "border-emerald-500/40 bg-emerald-500/10 text-foreground" : "border-border bg-muted/40 text-muted-foreground hover:bg-muted"}`}>{questionIndex + 1}</button>; })}</div><div className="mt-2 flex flex-wrap gap-3 text-[11px] text-muted-foreground"><span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-violet-500"/>Current</span><span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-500"/>Answered</span><span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-muted-foreground"/>Unanswered</span></div></div><div className="flex flex-wrap justify-between gap-3 pt-3"><Button variant="outline" onClick={() => setIndex((i) => Math.max(0, i - 1))} disabled={index === 0}><ArrowLeft className="mr-2 h-4 w-4"/>Previous</Button><Button onClick={() => index === questions.length - 1 ? setFinished(true) : setIndex((i) => i + 1)}>{index === questions.length - 1 ? "Finish test" : "Next question"}<ArrowRight className="ml-2 h-4 w-4"/></Button></div><Button variant="ghost" size="sm" className="w-full text-muted-foreground" onClick={() => setFinished(true)}>End assessment early</Button></CardContent></Card>}
-    {finished && <Card className="mt-6"><CardHeader className="text-center"><div className="mx-auto rounded-full bg-emerald-500/10 p-4 text-emerald-600"><CheckCircle2 className="h-9 w-9"/></div><CardTitle className="text-2xl">Your practice results</CardTitle><CardDescription>Here is how you did on this question set.</CardDescription></CardHeader><CardContent><div className="rounded-2xl bg-muted/50 p-6 text-center"><p className="text-sm text-muted-foreground">Correct answers</p><p className="mt-1 text-4xl font-bold tabular-nums">{score}<span className="text-xl text-muted-foreground"> / {questions.length}</span></p><Progress value={score / questions.length * 100} className="mt-4"/></div>{attemptHistory.length > 0 && <div className="mt-5 space-y-5 rounded-xl border border-border p-4"><div><h3 className="font-semibold">Progress over time</h3><p className="mt-1 text-xs text-muted-foreground">Your latest {Math.min(attemptHistory.length, 8)} saved attempts · stored privately on this device</p><div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3"><div className="rounded-lg bg-muted/50 p-3"><p className="text-xs text-muted-foreground">Average</p><p className="mt-1 text-xl font-semibold tabular-nums">{Math.round(attemptHistory.slice(0, 8).reduce((sum, item) => sum + item.score / item.total, 0) / Math.min(attemptHistory.length, 8) * 100)}%</p></div><div className="rounded-lg bg-muted/50 p-3"><p className="text-xs text-muted-foreground">Best attempt</p><p className="mt-1 text-xl font-semibold tabular-nums">{Math.round(Math.max(...attemptHistory.slice(0, 8).map((item) => item.score / item.total)) * 100)}%</p></div><div className="col-span-2 rounded-lg bg-muted/50 p-3 sm:col-span-1"><p className="text-xs text-muted-foreground">Attempts saved</p><p className="mt-1 text-xl font-semibold tabular-nums">{attemptHistory.length}</p></div></div><div className="mt-4 flex h-32 items-end gap-2" role="img" aria-label="Score percentage trend across recent attempts, newest first">{[...attemptHistory].slice(0, 8).reverse().map((attempt, attemptIndex) => { const percentage = Math.round(attempt.score / attempt.total * 100); return <div key={attempt.date + attemptIndex} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1"><span className="text-[10px] tabular-nums text-muted-foreground">{percentage}%</span><div className="w-full max-w-10 rounded-t-md bg-violet-500/80" style={{ height: `${Math.max(percentage, 4)}%` }} /><span className="text-[10px] text-muted-foreground">{new Date(attempt.date).toLocaleDateString(undefined, { day: "numeric", month: "short" })}</span></div>; })}</div><p className="text-[11px] text-muted-foreground">Bars are shown oldest to newest. Percentages compare only the questions in each attempt.</p></div><div><h3 className="font-semibold">Reasoning area progress</h3><p className="mt-1 text-xs text-muted-foreground">Combined accuracy from saved attempts that include area-level results.</p><div className="mt-3 space-y-3">{Object.entries(attemptHistory.slice(0, 8).reduce<Record<string, { correct: number; total: number }>>((totals, attempt) => { Object.entries(attempt.domains ?? {}).forEach(([domain, result]) => { const current = totals[domain] ?? { correct: 0, total: 0 }; current.correct += result.correct; current.total += result.total; totals[domain] = current; }); return totals; }, {})).map(([domain, result]) => <div key={domain}><div className="mb-1 flex items-center justify-between gap-3 text-sm"><span>{domain}</span><span className="tabular-nums text-muted-foreground">{result.correct}/{result.total} · {Math.round(result.correct / result.total * 100)}%</span></div><Progress value={result.total ? result.correct / result.total * 100 : 0} /></div>)}</div></div></div>}{attemptHistory.length > 1 && <div className="mt-5 rounded-xl border border-border p-4"><h3 className="font-semibold">Recent attempts</h3><p className="mt-1 text-xs text-muted-foreground">Private history · {historySyncStatus === "synced" ? "synced to your account" : "stored on this device"} · latest 90 attempts</p><div className="mt-3 space-y-2">{attemptHistory.slice(1, 6).map((attempt, attemptIndex) => <div key={attempt.date + attemptIndex} className="flex items-center justify-between gap-3 text-sm"><span className="text-muted-foreground">{new Date(attempt.date).toLocaleDateString()} · {attempt.mode}</span><Badge variant="secondary">{attempt.score}/{attempt.total} · {Math.round(attempt.score / attempt.total * 100)}%</Badge></div>)}</div></div>}<div className="mt-5 space-y-3"><h3 className="font-semibold">By reasoning area</h3>{Object.entries(domainScores).map(([domain, value])=><div key={domain} className="flex items-center justify-between rounded-lg border border-border p-3 text-sm"><span>{domain}</span><Badge variant="secondary">{value.correct}/{value.total} · {Math.round(value.correct / value.total * 100)}%</Badge></div>)}</div><div className="mt-6 space-y-4"><h3 className="font-semibold">Answer explanations</h3>{questions.map((q,i)=><div key={q.id} className="rounded-xl border border-border p-4"><div className="flex items-start justify-between gap-3"><p className="font-medium">{i+1}. {q.prompt}</p><Badge variant={answers[q.id]===q.answer?"default":"destructive"}>{answers[q.id]===q.answer?"Correct":"Review"}</Badge></div><p className="mt-2 text-sm text-muted-foreground">{q.explanation}</p><p className="mt-2 text-sm"><span className="text-muted-foreground">Your answer: </span>{answers[q.id] === undefined ? <span className="font-medium">Skipped</span> : <span className="font-medium">{q.options[answers[q.id]]}</span>}</p><p className="mt-1 text-sm"><span className="text-muted-foreground">Correct answer: </span><span className="font-medium">{q.options[q.answer]}</span></p></div>)}</div><p className="mt-5 text-xs leading-5 text-muted-foreground">This is not a certified IQ score, percentile or clinical assessment. No population norm has been applied.</p><div className="mt-6 flex flex-col gap-3 sm:flex-row"><Button onClick={reset} className="flex-1"><RotateCcw className="mr-2 h-4 w-4"/>Try again</Button><Button asChild variant="outline" className="flex-1"><Link to="/brain">Back to IQ Test</Link></Button></div></CardContent></Card>}
-  </div></main>;
+  const reset = () => {
+    setStarted(false);
+    setFinished(false);
+    setIndex(0);
+    setAnswers({});
+    setFlaggedIds(new Set());
+    setReviewFilter("all");
+    setSeconds(TEST_SECONDS);
+    setAttemptQuestions(null);
+  };
+
+  const scorePercentage = questions.length ? Math.round((score / questions.length) * 100) : 0;
+  const masteryTier = getMasteryTier(scorePercentage);
+
+  const filteredReviewQuestions = useMemo(() => {
+    return questions.map((q, qIndex) => ({ q, originalIndex: qIndex })).filter(({ q }) => {
+      if (reviewFilter === "incorrect") {
+        return answers[q.id] !== q.answer;
+      }
+      if (reviewFilter === "flagged") {
+        return flaggedIds.has(q.id);
+      }
+      return true;
+    });
+  }, [questions, answers, flaggedIds, reviewFilter]);
+
+  return (
+    <main className="min-h-[calc(100vh-4rem)] bg-background text-foreground">
+      <SEO
+        title="IQ Test Practice & Cognitive Reasoning | Sahadhyayi"
+        description="Practice original visual, logical, numerical, verbal and spatial reasoning questions with step-by-step verified explanations."
+      />
+
+      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
+        {/* Navigation link back */}
+        <Link
+          to="/brain"
+          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to IQ Test
+        </Link>
+
+        {/* Page Hero Header */}
+        <div className="mt-5 flex items-center gap-3.5">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-600/10 text-violet-600 ring-1 ring-violet-500/30 dark:text-violet-400">
+            <BrainCircuit className="h-6 w-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="font-semibold tracking-wider uppercase text-[10px]">
+                {dailyMode ? "Daily Challenge" : practiceMode ? "Skill Practice" : "Standard Assessment"}
+              </Badge>
+              {flaggedIds.size > 0 && started && !finished && (
+                <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400">
+                  <Flag className="mr-1 h-3 w-3 fill-amber-500/30" />
+                  {flaggedIds.size} flagged
+                </Badge>
+              )}
+            </div>
+            <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
+              {dailyMode ? "Daily brain challenge" : practiceMode ? "Skill practice" : "Reasoning test"}
+            </h1>
+          </div>
+        </div>
+
+        {/* Practice Streak & Consistency Card (shown prior to starting) */}
+        {attemptHistory.length > 0 && !started && (
+          <Card className="mt-6 border-border/80 bg-card/60 backdrop-blur-sm shadow-sm">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <CardTitle className="text-lg">Your practice consistency</CardTitle>
+                  <CardDescription>
+                    Activity saved privately ·{" "}
+                    {historySyncStatus === "synced"
+                      ? "synced to your account"
+                      : historySyncStatus === "loading"
+                        ? "checking your history"
+                        : "stored on this device"}
+                  </CardDescription>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold tabular-nums text-violet-600 dark:text-violet-400">{currentStreak}</p>
+                  <p className="text-xs text-muted-foreground">day streak</p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-7 gap-2">
+                {activityCalendar.map((day) => (
+                  <div key={day.key} title={day.key} className="flex flex-col items-center gap-1">
+                    <span className="text-[10px] text-muted-foreground">{day.label}</span>
+                    <div
+                      aria-label={
+                        day.completed ? `Practice completed on ${day.key}` : `No practice on ${day.key}`
+                      }
+                      className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-medium transition-all ${
+                        day.completed
+                          ? "bg-violet-600 text-white shadow-sm"
+                          : "bg-muted text-muted-foreground"
+                      } ${day.isToday ? "ring-2 ring-violet-500 ring-offset-2 ring-offset-background" : ""}`}
+                    >
+                      {day.dayNumber}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+                <span>{activeDaysInWindow} active days</span>
+                <span>Last 28 days</span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Intro / Setup Card */}
+        {!started && !finished && (
+          <Card className="mt-6 border-border/80 bg-card shadow-sm">
+            <CardHeader>
+              <CardTitle>Before you begin</CardTitle>
+              <CardDescription>
+                This practice assessment uses original sample questions across visual patterns, logic, number
+                patterns, verbal and spatial reasoning.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-xl border border-border/60 bg-muted/40 p-3.5 transition-colors">
+                  <Clock3 className="mb-2 h-4 w-4 text-violet-500" />
+                  <p className="font-medium text-foreground">
+                    {dailyMode ? "3 questions" : `${baseQuestions.length + plannedMatrixCount} questions`}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {dailyMode ? "Quick challenge" : `${selectedDifficulty} level`}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-border/60 bg-muted/40 p-3.5 transition-colors">
+                  <Sparkles className="mb-2 h-4 w-4 text-violet-500" />
+                  <p className="font-medium text-foreground">{dailyMode ? "Untimed" : "20 minutes"}</p>
+                  <p className="text-xs text-muted-foreground">No penalty for skips</p>
+                </div>
+                <div className="rounded-xl border border-border/60 bg-muted/40 p-3.5 transition-colors">
+                  <CheckCircle2 className="mb-2 h-4 w-4 text-violet-500" />
+                  <p className="font-medium text-foreground">Answer review</p>
+                  <p className="text-xs text-muted-foreground">Explanations at the end</p>
+                </div>
+              </div>
+
+              {practiceMode && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Focus area</p>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {(
+                      [
+                        "All areas",
+                        "Visual patterns",
+                        "Logic",
+                        "Number patterns",
+                        "Verbal reasoning",
+                        "Spatial reasoning",
+                      ] as const
+                    ).map((domain) => (
+                      <Button
+                        key={domain}
+                        type="button"
+                        variant={selectedDomain === domain ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setSelectedDomain(domain)}
+                        className="w-full whitespace-normal"
+                      >
+                        {domain}
+                      </Button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Choose one reasoning area to practise, or keep all areas selected.
+                  </p>
+                </div>
+              )}
+
+              {!dailyMode && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Choose difficulty</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(["Easy", "Medium", "Hard"] as const).map((level) => (
+                      <Button
+                        key={level}
+                        type="button"
+                        variant={selectedDifficulty === level ? "default" : "outline"}
+                        onClick={() => setSelectedDifficulty(level)}
+                        className="w-full"
+                      >
+                        {level}
+                        <span className="ml-1 text-xs opacity-75">
+                          ({QUESTION_BANK.filter((question) => DIFFICULTY_BY_ID[question.id] === level).length})
+                        </span>
+                      </Button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedDifficulty === "Easy"
+                      ? "Build confidence with direct patterns and foundational reasoning."
+                      : selectedDifficulty === "Medium"
+                        ? "Mix multi-step patterns, deductions and verbal relationships."
+                        : "Try more demanding sequences, deductions and less familiar patterns."}
+                  </p>
+                </div>
+              )}
+
+              <p className="text-sm leading-6 text-muted-foreground">
+                This is a learning and puzzle experience—not a standardized, professionally normed IQ test. Your
+                score reflects only this question set.
+              </p>
+
+              <Button size="lg" onClick={beginAssessment} className="w-full shadow-sm">
+                Begin assessment <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Test In Progress View */}
+        {started && !finished && current && (
+          <Card className="mt-6 border-border/80 bg-card shadow-sm">
+            <CardHeader className="space-y-3 pb-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="outline" className="border-violet-500/30 text-violet-600 dark:text-violet-400">
+                    {current.domain}
+                  </Badge>
+                  {!dailyMode && <Badge variant="secondary">{selectedDifficulty}</Badge>}
+                  {flaggedIds.has(current.id) && (
+                    <Badge variant="outline" className="border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                      Flagged
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant={flaggedIds.has(current.id) ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => toggleFlag(current.id)}
+                    className={`h-8 gap-1.5 px-2.5 text-xs transition-colors ${
+                      flaggedIds.has(current.id)
+                        ? "bg-amber-600 hover:bg-amber-700 text-white"
+                        : "text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400"
+                    }`}
+                    title="Bookmark or flag this question to review later (Shortcut: F)"
+                  >
+                    <Flag className={`h-3.5 w-3.5 ${flaggedIds.has(current.id) ? "fill-white" : ""}`} />
+                    <span>{flaggedIds.has(current.id) ? "Flagged" : "Flag"}</span>
+                  </Button>
+
+                  {!dailyMode && (
+                    <span className="inline-flex items-center gap-1.5 rounded-md bg-muted/60 px-2.5 py-1 text-xs font-semibold tabular-nums text-foreground">
+                      <Clock3 className="h-3.5 w-3.5 text-violet-500" />
+                      {formatTime(seconds)}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Question progress</span>
+                  <span>
+                    {Object.keys(answers).length} of {questions.length} answered
+                  </span>
+                </div>
+                <Progress value={(Object.keys(answers).length / questions.length) * 100} className="mt-1.5 h-2" />
+              </div>
+
+              <div className="pt-1">
+                <CardDescription className="text-xs">
+                  Question {index + 1} of {questions.length} · {questions.length - Object.keys(answers).length} unanswered
+                </CardDescription>
+                <CardTitle className="pt-1 text-xl font-semibold leading-7 tracking-tight">
+                  {current.prompt}
+                </CardTitle>
+              </div>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+              {/* Visual Matrix Puzzle Rendering */}
+              {current.matrixPuzzle && (
+                <div
+                  className="mx-auto grid max-w-[510px] grid-cols-3 gap-2 rounded-2xl border border-border/80 bg-muted/30 p-3 sm:gap-3 sm:p-5"
+                  role="group"
+                  aria-label="Visual matrix puzzle"
+                >
+                  {current.matrixPuzzle.cells.map((cell, tileIndex) => (
+                    <div
+                      key={tileIndex}
+                      className={`flex aspect-square items-center justify-center rounded-xl border p-2 shadow-2xs transition-all ${
+                        cell
+                          ? "border-border bg-card"
+                          : "border-2 border-dashed border-violet-500 bg-violet-500/5 ring-4 ring-violet-500/10"
+                      }`}
+                    >
+                      {cell ? (
+                        <MatrixTile cell={cell} className="h-full w-full max-h-24 max-w-24 text-foreground" />
+                      ) : (
+                        <span className="text-3xl font-bold text-violet-600 dark:text-violet-400" aria-label="Missing tile">
+                          ?
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Standard Visual Sequence Grid */}
+              {current.visual && (
+                <div
+                  aria-label={current.visual.join(" ")}
+                  className="mx-auto grid max-w-[510px] grid-cols-3 gap-2 rounded-2xl border border-border/80 bg-muted/30 p-3 sm:gap-3 sm:p-5"
+                >
+                  {current.visual.map((tile, tileIndex) => (
+                    <div
+                      key={tileIndex}
+                      className="flex aspect-square items-center justify-center rounded-xl border border-border bg-card text-2xl font-bold shadow-2xs sm:text-4xl"
+                    >
+                      {tileIndex === 8 ? (
+                        <span className="text-violet-600 dark:text-violet-400">?</span>
+                      ) : (
+                        tile
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Question Options */}
+              <div className="space-y-2.5 pt-1">
+                {current.options.map((option, optionIndex) => {
+                  const isSelected = answers[current.id] === optionIndex;
+                  const keyShortcut = String.fromCharCode(65 + optionIndex);
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => selectOption(optionIndex)}
+                      aria-pressed={isSelected}
+                      className={`group flex min-h-14 w-full items-center gap-3.5 rounded-xl border p-3.5 text-left transition-all ${
+                        isSelected
+                          ? "border-violet-500 bg-violet-500/10 ring-1 ring-violet-500 shadow-sm"
+                          : "border-border/80 bg-card hover:border-border hover:bg-muted/50"
+                      } ${current.matrixPuzzle ? "min-h-24 justify-center sm:min-h-28" : ""}`}
+                    >
+                      <span
+                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border text-xs font-semibold transition-colors ${
+                          isSelected
+                            ? "border-violet-500 bg-violet-600 text-white"
+                            : "border-border/80 bg-muted/50 text-muted-foreground group-hover:border-foreground/30"
+                        }`}
+                      >
+                        {keyShortcut}
+                      </span>
+                      {current.matrixPuzzle ? (
+                        <MatrixTile
+                          cell={current.matrixPuzzle.options[optionIndex]}
+                          className="h-16 w-16 text-foreground sm:h-20 sm:w-20"
+                        />
+                      ) : (
+                        <span className="text-sm font-medium leading-relaxed sm:text-base text-foreground">
+                          {option}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Keyboard navigation helper */}
+              <div className="flex items-center justify-center gap-2 pt-1 text-[11px] text-muted-foreground">
+                <span className="inline-flex items-center gap-1 font-mono">
+                  <kbd className="rounded border bg-muted px-1.5 py-0.5 text-[10px]">1</kbd>–
+                  <kbd className="rounded border bg-muted px-1.5 py-0.5 text-[10px]">4</kbd> select
+                </span>
+                <span>·</span>
+                <span className="inline-flex items-center gap-1 font-mono">
+                  <kbd className="rounded border bg-muted px-1.5 py-0.5 text-[10px]">←</kbd>
+                  <kbd className="rounded border bg-muted px-1.5 py-0.5 text-[10px]">→</kbd> navigate
+                </span>
+                <span>·</span>
+                <span className="inline-flex items-center gap-1 font-mono">
+                  <kbd className="rounded border bg-muted px-1.5 py-0.5 text-[10px]">F</kbd> flag
+                </span>
+              </div>
+
+              {/* Question Navigator */}
+              <div className="rounded-2xl border border-border/80 bg-card/60 p-3.5 backdrop-blur-xs">
+                <div className="mb-2.5 flex items-center justify-between gap-2">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Question navigator
+                  </p>
+                  <p className="text-xs tabular-nums text-muted-foreground">
+                    {Object.keys(answers).length}/{questions.length} answered
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-5 gap-2 sm:grid-cols-8">
+                  {questions.map((question, questionIndex) => {
+                    const answered = answers[question.id] !== undefined;
+                    const active = questionIndex === index;
+                    const isFlagged = flaggedIds.has(question.id);
+
+                    return (
+                      <button
+                        key={question.id}
+                        type="button"
+                        onClick={() => setIndex(questionIndex)}
+                        aria-label={`Go to question ${questionIndex + 1}${
+                          answered ? ", answered" : ", unanswered"
+                        }${active ? ", current question" : ""}${isFlagged ? ", flagged for review" : ""}`}
+                        aria-current={active ? "step" : undefined}
+                        className={`relative flex h-9 items-center justify-center rounded-lg border text-xs font-semibold transition-all ${
+                          active
+                            ? "border-violet-600 bg-violet-600 text-white shadow-sm ring-2 ring-violet-500/30"
+                            : answered
+                              ? "border-emerald-500/40 bg-emerald-500/10 text-foreground hover:bg-emerald-500/20"
+                              : "border-border bg-muted/30 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                        }`}
+                      >
+                        {questionIndex + 1}
+                        {isFlagged && (
+                          <span
+                            className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-amber-500 text-[8px] text-white shadow-xs"
+                            title="Flagged"
+                          >
+                            •
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-3 flex flex-wrap items-center gap-4 text-[11px] text-muted-foreground">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-violet-600" />
+                    Current
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                    Answered
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-muted-foreground/40" />
+                    Unanswered
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-amber-500" />
+                    Flagged
+                  </span>
+                </div>
+              </div>
+
+              {/* Navigation controls */}
+              <div className="flex flex-wrap justify-between gap-3 pt-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setIndex((i) => Math.max(0, i - 1))}
+                  disabled={index === 0}
+                  className="border-border/80"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Previous
+                </Button>
+
+                <Button
+                  onClick={() => (index === questions.length - 1 ? setFinished(true) : setIndex((i) => i + 1))}
+                  className="shadow-sm"
+                >
+                  {index === questions.length - 1 ? "Finish test" : "Next question"}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-xs text-muted-foreground hover:text-destructive"
+                onClick={() => setFinished(true)}
+              >
+                End assessment early
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Finished / Results View */}
+        {finished && (
+          <Card className="mt-6 border-border/80 bg-card shadow-sm">
+            <CardHeader className="text-center pb-4">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 text-emerald-600 ring-1 ring-emerald-500/30 dark:text-emerald-400">
+                <CheckCircle2 className="h-8 w-8" />
+              </div>
+              <CardTitle className="mt-2 text-2xl font-bold tracking-tight">Your practice results</CardTitle>
+              <CardDescription>
+                Comprehensive breakdown of cognitive performance across each tested reasoning domain.
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-6">
+              {/* Score Meter & Mastery Card */}
+              <div className="rounded-2xl border border-border/80 bg-muted/30 p-6 text-center">
+                <Badge variant="outline" className={`mb-3 px-3 py-1 font-semibold text-xs border ${masteryTier.badgeClass}`}>
+                  <Award className="mr-1.5 h-3.5 w-3.5" />
+                  {masteryTier.label}
+                </Badge>
+                <p className="text-sm font-medium text-muted-foreground">Overall Score</p>
+                <p className="mt-1 text-5xl font-extrabold tracking-tight tabular-nums text-foreground">
+                  {score}
+                  <span className="text-2xl font-semibold text-muted-foreground"> / {questions.length}</span>
+                </p>
+                <p className="mt-1 text-sm font-medium text-violet-600 dark:text-violet-400">
+                  {scorePercentage}% accuracy
+                </p>
+
+                <Progress value={scorePercentage} className="mt-4 h-2.5" />
+
+                <p className="mt-3 text-xs leading-relaxed text-muted-foreground max-w-lg mx-auto">
+                  {masteryTier.description}
+                </p>
+              </div>
+
+              {/* Progress Over Time & Consistency History */}
+              {attemptHistory.length > 0 && (
+                <div className="space-y-5 rounded-2xl border border-border/80 bg-card/60 p-4 sm:p-5">
+                  <div>
+                    <h3 className="font-semibold text-foreground">Progress over time</h3>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      Your latest {Math.min(attemptHistory.length, 8)} saved attempts · stored privately on this device
+                    </p>
+
+                    <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                      <div className="rounded-xl border border-border/60 bg-muted/40 p-3">
+                        <p className="text-xs text-muted-foreground">Average</p>
+                        <p className="mt-1 text-xl font-bold tabular-nums">
+                          {Math.round(
+                            (attemptHistory.slice(0, 8).reduce((sum, item) => sum + item.score / item.total, 0) /
+                              Math.min(attemptHistory.length, 8)) *
+                              100,
+                          )}
+                          %
+                        </p>
+                      </div>
+                      <div className="rounded-xl border border-border/60 bg-muted/40 p-3">
+                        <p className="text-xs text-muted-foreground">Best attempt</p>
+                        <p className="mt-1 text-xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+                          {Math.round(
+                            Math.max(...attemptHistory.slice(0, 8).map((item) => item.score / item.total)) * 100,
+                          )}
+                          %
+                        </p>
+                      </div>
+                      <div className="col-span-2 rounded-xl border border-border/60 bg-muted/40 p-3 sm:col-span-1">
+                        <p className="text-xs text-muted-foreground">Attempts saved</p>
+                        <p className="mt-1 text-xl font-bold tabular-nums">{attemptHistory.length}</p>
+                      </div>
+                    </div>
+
+                    <div
+                      className="mt-4 flex h-32 items-end gap-2"
+                      role="img"
+                      aria-label="Score percentage trend across recent attempts, newest first"
+                    >
+                      {[...attemptHistory]
+                        .slice(0, 8)
+                        .reverse()
+                        .map((attempt, attemptIndex) => {
+                          const percentage = Math.round((attempt.score / attempt.total) * 100);
+                          return (
+                            <div
+                              key={attempt.date + attemptIndex}
+                              className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1"
+                            >
+                              <span className="text-[10px] tabular-nums font-semibold text-muted-foreground">
+                                {percentage}%
+                              </span>
+                              <div
+                                className="w-full max-w-10 rounded-t-md bg-violet-600/80 transition-all hover:bg-violet-600"
+                                style={{ height: `${Math.max(percentage, 6)}%` }}
+                              />
+                              <span className="text-[10px] text-muted-foreground truncate max-w-full">
+                                {new Date(attempt.date).toLocaleDateString(undefined, {
+                                  day: "numeric",
+                                  month: "short",
+                                })}
+                              </span>
+                            </div>
+                          );
+                        })}
+                    </div>
+                    <p className="mt-1 text-[11px] text-muted-foreground">
+                      Bars are shown oldest to newest. Percentages compare only the questions in each attempt.
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold text-foreground">Reasoning area progress</h3>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      Combined accuracy from saved attempts that include area-level results.
+                    </p>
+                    <div className="mt-3 space-y-3">
+                      {Object.entries(
+                        attemptHistory.slice(0, 8).reduce<Record<string, { correct: number; total: number }>>(
+                          (totals, attempt) => {
+                            Object.entries(attempt.domains ?? {}).forEach(([domain, result]) => {
+                              const curr = totals[domain] ?? { correct: 0, total: 0 };
+                              curr.correct += result.correct;
+                              curr.total += result.total;
+                              totals[domain] = curr;
+                            });
+                            return totals;
+                          },
+                          {},
+                        ),
+                      ).map(([domain, result]) => {
+                        const domainPct = result.total ? Math.round((result.correct / result.total) * 100) : 0;
+                        return (
+                          <div key={domain}>
+                            <div className="mb-1 flex items-center justify-between gap-3 text-sm">
+                              <span className="font-medium text-foreground">{domain}</span>
+                              <span className="tabular-nums text-muted-foreground text-xs">
+                                {result.correct}/{result.total} · {domainPct}%
+                              </span>
+                            </div>
+                            <Progress value={domainPct} className="h-1.5" />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* By Reasoning Area on Current Test */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-foreground">Current test by reasoning area</h3>
+                  <span className="text-xs text-muted-foreground">{Object.keys(domainScores).length} domains tested</span>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {Object.entries(domainScores).map(([domain, value]) => {
+                    const domainPct = value.total ? Math.round((value.correct / value.total) * 100) : 0;
+                    return (
+                      <div
+                        key={domain}
+                        className="flex items-center justify-between rounded-xl border border-border/80 bg-card p-3 text-sm shadow-2xs"
+                      >
+                        <span className="font-medium">{domain}</span>
+                        <Badge
+                          variant="secondary"
+                          className={
+                            domainPct >= 80
+                              ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                              : domainPct >= 50
+                                ? "bg-amber-500/15 text-amber-700 dark:text-amber-400"
+                                : "bg-destructive/10 text-destructive"
+                          }
+                        >
+                          {value.correct}/{value.total} · {domainPct}%
+                        </Badge>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Explanations & Review with Filter Tabs */}
+              <div className="space-y-4 pt-2">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h3 className="font-semibold text-foreground">Answer explanations</h3>
+                    <p className="text-xs text-muted-foreground">Step-by-step verified cognitive reasoning steps.</p>
+                  </div>
+                  <div className="flex items-center gap-1.5 rounded-lg border border-border/80 bg-muted/40 p-1">
+                    <Button
+                      type="button"
+                      variant={reviewFilter === "all" ? "secondary" : "ghost"}
+                      size="sm"
+                      onClick={() => setReviewFilter("all")}
+                      className="h-7 px-2.5 text-xs"
+                    >
+                      All ({questions.length})
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={reviewFilter === "incorrect" ? "secondary" : "ghost"}
+                      size="sm"
+                      onClick={() => setReviewFilter("incorrect")}
+                      className="h-7 px-2.5 text-xs"
+                    >
+                      Review ({questions.filter((q) => answers[q.id] !== q.answer).length})
+                    </Button>
+                    {flaggedIds.size > 0 && (
+                      <Button
+                        type="button"
+                        variant={reviewFilter === "flagged" ? "secondary" : "ghost"}
+                        size="sm"
+                        onClick={() => setReviewFilter("flagged")}
+                        className="h-7 px-2.5 text-xs text-amber-600 dark:text-amber-400"
+                      >
+                        Flagged ({flaggedIds.size})
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {filteredReviewQuestions.map(({ q, originalIndex }) => {
+                    const isCorrect = answers[q.id] === q.answer;
+                    const isFlagged = flaggedIds.has(q.id);
+
+                    return (
+                      <div
+                        key={q.id}
+                        className={`rounded-2xl border p-4 sm:p-5 transition-all ${
+                          isCorrect
+                            ? "border-border/80 bg-card"
+                            : "border-destructive/30 bg-destructive/5 dark:bg-destructive/10"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge variant="outline" className="text-[10px]">
+                                {q.domain}
+                              </Badge>
+                              {isFlagged && (
+                                <Badge variant="outline" className="border-amber-500/40 text-[10px] text-amber-600">
+                                  Flagged
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="font-semibold text-foreground pt-1">
+                              {originalIndex + 1}. {q.prompt}
+                            </p>
+                          </div>
+                          <Badge variant={isCorrect ? "default" : "destructive"} className="shrink-0">
+                            {isCorrect ? "Correct" : "Review"}
+                          </Badge>
+                        </div>
+
+                        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{q.explanation}</p>
+
+                        <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1.5 rounded-lg border border-border/60 bg-muted/40 p-3 text-xs sm:text-sm">
+                          <div>
+                            <span className="text-muted-foreground">Your answer: </span>
+                            {answers[q.id] === undefined ? (
+                              <span className="font-semibold text-amber-600 dark:text-amber-400">Skipped</span>
+                            ) : (
+                              <span
+                                className={`font-semibold ${
+                                  isCorrect ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"
+                                }`}
+                              >
+                                {q.options[answers[q.id]]}
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Correct answer: </span>
+                            <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                              {q.options[q.answer]}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Disclaimer */}
+              <p className="text-xs leading-5 text-muted-foreground">
+                This is not a certified IQ score, percentile or clinical assessment. No population norm has been
+                applied. It is designed for cognitive puzzle practice and analytical skill development.
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+                <Button onClick={reset} className="flex-1 shadow-sm">
+                  <RotateCcw className="mr-2 h-4 w-4" /> Try again
+                </Button>
+                <Button asChild variant="outline" className="flex-1 border-border/80">
+                  <Link to="/brain">Back to IQ Test</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </main>
+  );
 }
