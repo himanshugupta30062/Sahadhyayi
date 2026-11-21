@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Clapperboard, Film, Info, ShieldCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import SEO from '@/components/SEO';
+import { buildAdaptationSeoMetadata } from '@/utils/adaptationSeo';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -60,9 +61,22 @@ export default function AdaptationDetail() {
 
   const movie = data.movie || {};
   const title = data.book_title + ' – ' + movie.title;
+  const seo = buildAdaptationSeoMetadata({
+    id,
+    bookTitle: data.book_title,
+    bookAuthor: data.book_author,
+    bookPublicationYear: data.book_publication_year,
+    bookCoverUrl: data.book_cover_url,
+    bookLibraryId: data.book_library_id,
+    bookSynopsis: data.synopsis,
+    movieTitle: movie.title,
+    movieReleaseYear: movie.release_year,
+    moviePosterUrl: movie.poster_url,
+    movieSynopsis: movie.synopsis,
+  });
   const bookUrl = data.book_library_id ? `/book/${data.book_library_id}` : null;
   return <>
-    <SEO title={`${title} | From Page to Screen – Sahadhyayi`} description={data.synopsis || movie.synopsis || `Explore how ${data.book_title} was adapted into ${movie.title}, including character and story differences.`} canonical={`https://sahadhyayi.com/from-page-to-screen/${id}`} url={`https://sahadhyayi.com/from-page-to-screen/${id}`} />
+    <SEO title={seo.title} description={seo.description} canonical={seo.canonical} url={seo.canonical} image={seo.image} type="article" schema={seo.schema} breadcrumbs={seo.breadcrumbs} />
     <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <Link to="/from-page-to-screen" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4"/> All adaptations</Link>
