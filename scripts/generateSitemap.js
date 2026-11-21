@@ -13,7 +13,7 @@ const staticPages = [
   '/social-activists', '/freedom-fighters', '/about', '/social', '/map', '/help-center',
   '/community-guidelines', '/privacy-policy', '/terms-of-service', '/cookie-policy', '/dmca',
   '/events', '/investors', '/publishers', '/news', '/reviewers-critics',
-  '/science-around-you', '/brain', '/reader-map', '/open-source-licenses'
+  '/science-around-you', '/brain', '/open-source-licenses'
 ];
 
 const blogSlugs = [

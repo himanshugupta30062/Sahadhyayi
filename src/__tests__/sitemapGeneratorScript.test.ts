@@ -54,6 +54,7 @@ describe("sitemap generator", () => {
     expect(xml).toContain("<loc>https://sahadhyayi.com/news</loc>");
     expect(xml).toContain("<loc>https://sahadhyayi.com/science-around-you</loc>");
     expect(xml).toContain("<loc>https://sahadhyayi.com/open-source-licenses</loc>");
+    expect(xml).not.toContain("<loc>https://sahadhyayi.com/reader-map</loc>");
     expect(xml).not.toContain("<loc>https://sahadhyayi.com/newsroom</loc>");
     expect(xml).not.toContain("<loc>https://sahadhyayi.com/licenses</loc>");
     expect(xml).not.toContain("<loc>https://sahadhyayi.com/community-stories</loc>");
