@@ -69,8 +69,8 @@ export default function AdaptationDetail() {
         <section className="mt-6 overflow-hidden rounded-3xl bg-[#101711] p-5 text-white sm:p-8">
           <div className="grid gap-7 md:grid-cols-[1fr_1.1fr] md:items-center">
             <div className="grid grid-cols-2 gap-4">
-              <div><DetailArtwork src={data.book_cover_url} alt={data.book_title} kind="book" /><p className="mt-2 text-xs uppercase tracking-wider text-white/60">Original book</p></div>
-              <div><DetailArtwork src={movie.poster_url} alt={movie.title} kind="movie" /><p className="mt-2 text-xs uppercase tracking-wider text-white/60">Screen adaptation</p></div>
+              <div><DetailArtwork key={data.book_cover_url || data.book_title} src={data.book_cover_url} alt={data.book_title} kind="book" /><p className="mt-2 text-xs uppercase tracking-wider text-white/60">Original book</p></div>
+              <div><DetailArtwork key={movie.poster_url || movie.title} src={movie.poster_url} alt={movie.title} kind="movie" /><p className="mt-2 text-xs uppercase tracking-wider text-white/60">Screen adaptation</p></div>
             </div>
             <div>
               <Badge className="border-white/20 bg-white/10 text-amber-200">From Page to Screen</Badge>
