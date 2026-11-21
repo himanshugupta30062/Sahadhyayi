@@ -61,18 +61,22 @@ const fetchAdaptations = async (): Promise<BookMovieAdaptation[]> => {
   return (data || []) as BookMovieAdaptation[];
 };
 
-const Artwork = ({ src, alt, kind }: { src: string | null; alt: string; kind: 'book' | 'movie' }) => (
-  <div className={`relative aspect-[3/4] overflow-hidden rounded-lg bg-gradient-to-br ${kind === 'book' ? 'from-amber-100 via-orange-100 to-rose-200 dark:from-amber-950 dark:via-orange-950 dark:to-rose-950' : 'from-slate-200 via-indigo-200 to-violet-300 dark:from-slate-900 dark:via-indigo-950 dark:to-violet-950'}`}>
-    {src ? (
-      <img src={src} alt={alt} loading="lazy" className="h-full w-full object-cover" onError={(event) => { event.currentTarget.style.display = 'none'; }} />
-    ) : (
-      <div className="flex h-full flex-col items-center justify-center gap-2 p-2 text-center text-foreground/75">
-        {kind === 'book' ? <BookOpen className="h-7 w-7" /> : <Film className="h-7 w-7" />}
-        <span className="line-clamp-3 text-xs font-semibold">{alt}</span>
-      </div>
-    )}
-  </div>
-);
+const Artwork = ({ src, alt, kind }: { src: string | null; alt: string; kind: 'book' | 'movie' }) => {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div className={`relative flex aspect-[3/4] overflow-hidden rounded-lg bg-gradient-to-br ${kind === 'book' ? 'from-amber-100 via-orange-100 to-rose-200 dark:from-amber-950 dark:via-orange-950 dark:to-rose-950' : 'from-slate-200 via-indigo-200 to-violet-300 dark:from-slate-900 dark:via-indigo-950 dark:to-violet-950'}`}>
+      {src && !failed ? (
+        <img src={src} alt={alt} loading="lazy" className="h-full w-full object-cover" onError={() => setFailed(true)} />
+      ) : (
+        <div className="flex h-full w-full flex-col items-center justify-center gap-2 p-3 text-center text-foreground/75">
+          {kind === 'book' ? <BookOpen className="h-7 w-7" /> : <Film className="h-7 w-7" />}
+          <span className="line-clamp-3 text-xs font-semibold">{alt}</span>
+          <span className="text-[9px] font-medium uppercase tracking-wider opacity-60">{kind === 'book' ? 'Book cover' : 'Movie poster'}</span>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const FromPageToScreen = () => {
   const [search, setSearch] = useState('');
