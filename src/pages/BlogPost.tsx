@@ -114,7 +114,6 @@ const BlogPost = () => {
       logo: { '@type': 'ImageObject', url: 'https://sahadhyayi.com/lovable-uploads/sahadhyayi-logo-digital-reading.png' },
     },
     datePublished: publishedDate,
-    dateModified: publishedDate,
     image: socialImage ? [socialImage] : undefined,
     articleSection: post.category,
   };
@@ -130,7 +129,6 @@ const BlogPost = () => {
         image={socialImage}
         author={post.author}
         publishedTime={publishedDate}
-        modifiedTime={publishedDate}
         schema={blogPostSchema}
         breadcrumbs={[
           { name: 'Home', url: 'https://sahadhyayi.com' },
