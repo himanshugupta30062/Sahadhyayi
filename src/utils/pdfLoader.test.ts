@@ -118,4 +118,36 @@ describe('pdfLoader', () => {
     existing.dispatchEvent(new Event('error'));
     await expect(pending).rejects.toThrow('Failed to load PDF.js script from CDN');
   });
+
+  it('resolves immediately when attaching to an existing script if window.pdfjsLib is already set', async () => {
+    const existing = document.createElement('script');
+    existing.src = 'https://cdn.example.test/pdf.min.js';
+    document.head.appendChild(existing);
+
+    const lib = { GlobalWorkerOptions: { workerSrc: '' } };
+    (window as Window & { pdfjsLib?: unknown }).pdfjsLib = lib;
+
+    const loader = await import('./pdfLoader');
+    const result = await loader.loadPdfJs();
+
+    expect(result).toBe(lib);
+    expect(lib.GlobalWorkerOptions.workerSrc).toContain('pdf.worker.min.js');
+  });
+
+  it('resolves via polling when window.pdfjsLib is assigned asynchronously to an existing script', async () => {
+    const existing = document.createElement('script');
+    existing.src = 'https://cdn.example.test/pdf.min.js';
+    document.head.appendChild(existing);
+
+    const loader = await import('./pdfLoader');
+    const pending = loader.loadPdfJs();
+
+    const lib = { GlobalWorkerOptions: { workerSrc: '' } };
+    setTimeout(() => {
+      (window as Window & { pdfjsLib?: unknown }).pdfjsLib = lib;
+    }, 60);
+
+    const result = await pending;
+    expect(result).toBe(lib);
+  });
 });

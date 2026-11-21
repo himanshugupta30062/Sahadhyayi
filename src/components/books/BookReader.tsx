@@ -227,6 +227,13 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     };
   }, [isGoogleBooks, googleBooksId, gbooksRetryCount]);
 
+  // Automatically switch to embed mode for archive.org details or other web pages
+  useEffect(() => {
+    if (urlAnalysis.isArchiveDetails && pdfViewMode === 'canvas') {
+      setPdfViewMode('embed');
+    }
+  }, [urlAnalysis.isArchiveDetails, pdfViewMode]);
+
   // Handle PDF embed timeout detection
   useEffect(() => {
     if (!isPdf || !activeReadUrl) {
@@ -241,24 +248,25 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
     setPdfManualFallback(false);
 
     // In canvas mode, PdfCanvasViewer manages document fetching, range requests,
-    // proxy fallbacks, and error reporting via onBlocked(). An arbitrary 6.5s iframe
-    // timer must NEVER prematurely mark canvas mode as 'blocked'.
-    // In native embed mode ('embed'), a generous 15s timer provides a graceful fallback.
-    if (pdfViewMode === 'embed') {
-      const timer = setTimeout(() => {
-        if (!isCancelled) {
-          setPdfStatus((prev) => (prev === 'loaded' ? 'loaded' : 'blocked'));
-        }
-      }, 15000);
-
-      return () => {
-        isCancelled = true;
-        clearTimeout(timer);
-      };
-    }
+    // proxy fallbacks, and error reporting via onBlocked(). A safety 25s timer
+    // guarantees recovery even if underlying network or script fetches hang.
+    // In native embed mode ('embed'), a 15s timer provides a graceful fallback.
+    const timeoutMs = pdfViewMode === 'embed' ? 15000 : 25000;
+    const timer = setTimeout(() => {
+      if (!isCancelled) {
+        setPdfStatus((prev) => {
+          if (prev !== 'loaded') {
+            setPdfManualFallback(true);
+            return 'blocked';
+          }
+          return prev;
+        });
+      }
+    }, timeoutMs);
 
     return () => {
       isCancelled = true;
+      clearTimeout(timer);
     };
   }, [isPdf, activeReadUrl, currentPage, pdfRetryCount, pdfViewMode]);
 

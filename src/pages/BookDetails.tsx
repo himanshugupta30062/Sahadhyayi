@@ -97,8 +97,14 @@ const BookDetails = () => {
     if (!book?.pdf_url) return false;
     const validation = validateReaderUrl(book.pdf_url);
     // Only consider it valid if it's a proper URL that can be rendered
-    // (Google Books, PDF, or EPUB)
-    return validation.isValid && (validation.isGoogleBooks || validation.isPdf || validation.isEpub);
+    // (Google Books, PDF, EPUB, or Archive.org item)
+    return (
+      validation.isValid &&
+      (validation.isGoogleBooks ||
+        validation.isPdf ||
+        validation.isEpub ||
+        Boolean(validation.isArchiveDetails))
+    );
   }, [book?.pdf_url]);
 
   // Valid tabs include 'read' only if PDF URL is valid

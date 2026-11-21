@@ -419,6 +419,11 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://sahadhyayi.com/authors/john-buchan</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://sahadhyayi.com/authors/paramhansa-yogananda</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -435,6 +440,11 @@
   </url>
   <url>
     <loc>https://sahadhyayi.com/authors/n-p-padhy</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://sahadhyayi.com/authors/arthur-conan-doyle</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -479,12 +489,37 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://sahadhyayi.com/authors/ami-patel</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://sahadhyayi.com/authors/amir-khusraw-dihlavi</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://sahadhyayi.com/authors/vatsya%CC%84yana</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://sahadhyayi.com/authors/stephen-king</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://sahadhyayi.com/authors/c-chandramouli</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://sahadhyayi.com/authors/paul-waters</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://sahadhyayi.com/authors/frances-hodgson-burnett</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -509,6 +544,11 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://sahadhyayi.com/authors/rory-ab-forrest</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://sahadhyayi.com/authors/sukhbir-s-kapoor</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -519,12 +559,37 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://sahadhyayi.com/authors/sonia-gandhi</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://sahadhyayi.com/authors/kahlil-gibran</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://sahadhyayi.com/authors/thomas-brian</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://sahadhyayi.com/authors/rachel-maddow</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://sahadhyayi.com/authors/onaiza-drabu</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://sahadhyayi.com/authors/dhumketu</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://sahadhyayi.com/authors/begum-rokeya</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -944,11 +1009,6 @@
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/authors/niccol%C3%B2-machiavelli</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
     <loc>https://sahadhyayi.com/authors/arthur-c-clarke</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -975,6 +1035,11 @@
   </url>
   <url>
     <loc>https://sahadhyayi.com/authors/tatiana-lungin</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://sahadhyayi.com/authors/niccol%C3%B2-machiavelli</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -1304,11 +1369,6 @@
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/authors/arthur-conan-doyle</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
     <loc>https://sahadhyayi.com/authors/yogi-ramacharaka</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -1589,11 +1649,6 @@
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/authors/mahatma-gandhi</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
     <loc>https://sahadhyayi.com/authors/mr-rohit-manglik</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -1610,6 +1665,11 @@
   </url>
   <url>
     <loc>https://sahadhyayi.com/authors/avul-pakir-jainulabdeen-abdul-kalam</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://sahadhyayi.com/authors/mahatma-gandhi</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -1710,26 +1770,26 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/articles/kya-abhi-present-sach-mein-sabke-liye-ek-jaisa-hai-muegktwg</loc>
-    <lastmod>2026-10-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://sahadhyayi.com/articles/games-reels-aur-kamvasna-dimaag-ka-banaya-ek-jaal-kya-isse-nikla-ja-sakta-hai-muix9ltr</loc>
-    <lastmod>2026-11-15</lastmod>
+    <loc>https://sahadhyayi.com/articles/kya-roots-ka-structure-brain-aur-universe-me-bhi-isi-trah-apply-hota-hai--muad3vx4</loc>
+    <lastmod>2026-11-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://sahadhyayi.com/articles/kya-hota-agar-karn-ke-pass-ye-bhavna-na-hoti-ki-use-sarvasrehtha-aur-arjun-se-ac-mohmpfx5</loc>
-    <lastmod>2026-10-13</lastmod>
+    <lastmod>2026-11-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/articles/kya-roots-ka-structure-brain-aur-universe-me-bhi-isi-trah-apply-hota-hai--muad3vx4</loc>
-    <lastmod>2026-10-17</lastmod>
+    <loc>https://sahadhyayi.com/articles/kya-abhi-present-sach-mein-sabke-liye-ek-jaisa-hai-muegktwg</loc>
+    <lastmod>2026-11-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://sahadhyayi.com/articles/games-reels-aur-kamvasna-dimaag-ka-banaya-ek-jaal-kya-isse-nikla-ja-sakta-hai-muix9ltr</loc>
+    <lastmod>2026-11-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>

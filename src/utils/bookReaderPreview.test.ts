@@ -77,6 +77,18 @@ describe('bookReaderPreview utility', () => {
       ).toBe(false);
     });
 
+    it('differentiates archive.org details pages from direct archive.org PDF downloads', () => {
+      const detailsResult = validateReaderUrl('https://archive.org/details/gunahokadevta');
+      expect(detailsResult.isValid).toBe(true);
+      expect(detailsResult.isPdf).toBe(false);
+      expect(detailsResult.isArchiveDetails).toBe(true);
+
+      const downloadResult = validateReaderUrl('https://archive.org/download/gunahokadevta/gunahokadevta.pdf');
+      expect(downloadResult.isValid).toBe(true);
+      expect(downloadResult.isPdf).toBe(true);
+      expect(downloadResult.isArchiveDetails).toBe(false);
+    });
+
     it('rejects unsafe schemes like javascript: or data:', () => {
       expect(validateReaderUrl('javascript:alert(1)').isValid).toBe(false);
       expect(validateReaderUrl('data:text/html,evil').isValid).toBe(false);
@@ -98,6 +110,10 @@ describe('bookReaderPreview utility', () => {
     it('clamps negative or zero page numbers to 1', () => {
       const embedUrl = buildSafePdfEmbedUrl('https://example.com/book.pdf', 0);
       expect(embedUrl).toContain('#toolbar=1&navpanes=1&scrollbar=1&page=1');
+    });
+
+    it('transforms archive.org details URLs into archive.org embed URLs for iframe viewing', () => {
+      expect(buildSafePdfEmbedUrl('https://archive.org/details/godan_201909')).toBe('https://archive.org/embed/godan_201909');
     });
   });
 

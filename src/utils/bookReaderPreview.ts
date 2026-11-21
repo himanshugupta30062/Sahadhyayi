@@ -53,6 +53,7 @@ export const validateReaderUrl = (rawUrl: string | null | undefined): {
   isGoogleBooks: boolean;
   isPdf: boolean;
   isEpub: boolean;
+  isArchiveDetails?: boolean;
   googleBooksId: string | null;
 } => {
   if (!rawUrl || typeof rawUrl !== 'string') {
@@ -62,6 +63,7 @@ export const validateReaderUrl = (rawUrl: string | null | undefined): {
       isGoogleBooks: false,
       isPdf: false,
       isEpub: false,
+      isArchiveDetails: false,
       googleBooksId: null,
     };
   }
@@ -77,6 +79,7 @@ export const validateReaderUrl = (rawUrl: string | null | undefined): {
       isGoogleBooks: true,
       isPdf: false,
       isEpub: false,
+      isArchiveDetails: false,
       googleBooksId,
     };
   }
@@ -91,6 +94,7 @@ export const validateReaderUrl = (rawUrl: string | null | undefined): {
         isGoogleBooks: false,
         isPdf: false,
         isEpub: false,
+        isArchiveDetails: false,
         googleBooksId: null,
       };
     }
@@ -106,12 +110,20 @@ export const validateReaderUrl = (rawUrl: string | null | undefined): {
     const isExplicitPdfDownload =
       /\/(?:open\/)?download\/?$/i.test(parsed.pathname) &&
       parsed.searchParams.get('type')?.toLowerCase() === 'pdf';
+    const isArchivePdf =
+      hostname.includes('archive.org') &&
+      (/\.pdf($|\?|#)/i.test(trimmed) ||
+        /\/download\/[^/]+\/[^/]+\.pdf/i.test(trimmed) ||
+        /\/stream\/[^/]+\/[^/]+\.pdf/i.test(trimmed));
+    const isArchiveDetails =
+      hostname.includes('archive.org') && /\/details\/[^/]+/i.test(trimmed);
+
     const isPdf =
       !isGoogleBooks &&
       !isEpub &&
       (/\.pdf($|\?|#)/i.test(trimmed) ||
         /\/pdf\//i.test(trimmed) ||
-        hostname.includes('archive.org') ||
+        isArchivePdf ||
         parsed.pathname.includes('/pdf-proxy') ||
         isExplicitPdfDownload);
 
@@ -121,6 +133,7 @@ export const validateReaderUrl = (rawUrl: string | null | undefined): {
       isGoogleBooks,
       isPdf,
       isEpub,
+      isArchiveDetails,
       googleBooksId,
     };
   } catch {
@@ -130,6 +143,7 @@ export const validateReaderUrl = (rawUrl: string | null | undefined): {
       isGoogleBooks: false,
       isPdf: false,
       isEpub: false,
+      isArchiveDetails: false,
       googleBooksId: null,
     };
   }
@@ -153,6 +167,11 @@ export const buildSafePdfEmbedUrl = (rawUrl: string, page = 1): string => {
 
   try {
     const parsed = new URL(rawUrl);
+    // If it's an archive.org details page, convert to archive.org/embed/ for iframe viewing
+    if (parsed.hostname.includes('archive.org') && parsed.pathname.startsWith('/details/')) {
+      const item = parsed.pathname.replace(/^\/details\//, '');
+      return `https://archive.org/embed/${item}`;
+    }
     // Explicitly update only the fragment hash, preserving searchParams completely
     parsed.hash = `toolbar=1&navpanes=1&scrollbar=1&page=${pageNum}`;
     return parsed.toString();
