@@ -3,7 +3,7 @@ import path from 'node:path';
 import { createClient } from '@supabase/supabase-js';
 import { fetchPaginatedRows, slugify } from './seoBuildUtils.mjs';
 import { getPublicSupabaseConfig } from './publicSupabaseConfig.mjs';
-import { getBookSitemapEligibility, getUniqueAuthorSitemapEntries } from './sitemapEligibility.mjs';
+import { calculateBookSeoScore, getUniqueAuthorSitemapEntries } from './bookSeoQualityScore.mjs';
 
 // Public, canonical pages only. Never include authentication, submissions,
 // account pages, or other private/user-specific routes.
@@ -86,11 +86,11 @@ if (SUPABASE_URL && SUPABASE_KEY) {
   });
   const [booksResult, authorsResult, articlesResult] = await Promise.all([
     fetchPaginatedRows(
-supabase.from('books_library').select('id,title,description,author,cover_image_url,created_at').not('id', 'is', null),
+      supabase.from('books_library').select('id,title,description,author,author_id,author_bio,cover_image_url,pdf_url,reader_link_status,genre,language,isbn,publication_year,pages,created_at').not('id', 'is', null),
       'books', 100000, label => console.warn(`[sitemap] Stopped ${label} pagination at 100,000 rows.`)
     ),
     fetchPaginatedRows(
-      supabase.from('authors').select('name').not('name', 'is', null),
+      supabase.from('authors').select('id,name').not('name', 'is', null),
       'authors', 100000, label => console.warn(`[sitemap] Stopped ${label} pagination at 100,000 rows.`)
     ),
     fetchPaginatedRows(
@@ -101,15 +101,26 @@ supabase.from('books_library').select('id,title,description,author,cover_image_u
   if (booksResult.error) {
     console.warn('[sitemap] Could not fetch books:', booksResult.error.message);
   } else {
-    const eligibleBooks = (booksResult.data || []).filter(book => getBookSitemapEligibility(book).eligible);
-    const excludedBooks = (booksResult.data || []).length - eligibleBooks.length;
-    eligibleBooks.forEach(book => {
+    const authorsById = new Map((authorsResult.data || []).filter(a => a.id).map(a => [String(a.id), a]));
+    let eligibleCount = 0;
+    let excludedCount = 0;
+    (booksResult.data || []).forEach(book => {
       const id = String(book.id ?? '').trim();
-      if (!id || id.includes('/') || id === '.' || id === '..') return;
-      // Use updated_at if available, fall back to created_at (updated_at column may not exist in books_library)
-      addUrl('/book/' + encodeURIComponent(id), 'monthly', '0.7', book.cover_image_url, book.updated_at || book.created_at);
+      if (!id || id.includes('/') || id === '.' || id === '..') {
+        excludedCount++;
+        return;
+      }
+      const linkedAuthor = book.author_id ? authorsById.get(String(book.author_id)) : null;
+      const { score, eligibleForSitemap } = calculateBookSeoScore(book, linkedAuthor);
+      if (eligibleForSitemap) {
+        addUrl('/book/' + encodeURIComponent(id), 'monthly', '0.7', book.cover_image_url, book.created_at);
+        eligibleCount++;
+        console.log(`[sitemap] Book ${id} eligible (score: ${score})`);
+      } else {
+        excludedCount++;
+      }
     });
-    console.log(`[sitemap] Books: ${eligibleBooks.length} eligible, ${excludedBooks} excluded by minimum content-quality rules.`);
+    console.log(`[sitemap] Books: ${eligibleCount} eligible (score >= 85), ${excludedCount} excluded by SEO quality score.`);
   }
   if (authorsResult.error) {
     console.warn('[sitemap] Could not fetch authors:', authorsResult.error.message);
