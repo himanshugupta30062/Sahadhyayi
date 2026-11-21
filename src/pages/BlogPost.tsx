@@ -92,7 +92,7 @@ const BlogPost = () => {
     );
   }
 
-  const canonicalUrl = \`https://sahadhyayi.com/blog/\${slug}\`;
+  const canonicalUrl = `https://sahadhyayi.com/blog/${slug}`;
   const pageDescription = toSeoDescription(
     post.description || (slug === 'best-indian-books-to-read'
       ? 'Discover 25 remarkable Indian books across English and Indian-language literary traditions, including classics, regional fiction, mythology, and social thought.'
@@ -121,7 +121,7 @@ const BlogPost = () => {
   return (
     <>
       <SEO
-        title={\`\${post.title} | Sahadhyayi Journal\`}
+        title={`${post.title} | Sahadhyayi Journal`}
         description={pageDescription}
         canonical={canonicalUrl}
         url={canonicalUrl}
