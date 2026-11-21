@@ -53,6 +53,25 @@ const Feedback = () => {
       return;
     }
 
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+    if (!emailRegex.test(email) || email.length > 254) {
+      toast({
+        title: "Invalid Email",
+        description: "Please provide a valid email address.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (name.length > 120 || message.length > 5000) {
+      toast({
+        title: "Input Too Long",
+        description: "Name must be under 120 characters and message under 5000 characters.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {

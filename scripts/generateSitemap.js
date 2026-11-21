@@ -79,7 +79,7 @@ if (SUPABASE_URL && SUPABASE_KEY) {
   });
   const [booksResult, authorsResult, articlesResult] = await Promise.all([
     fetchPaginatedRows(
-      supabase.from('books_library').select('id,cover_image_url,updated_at,created_at').not('id', 'is', null),
+      supabase.from('books_library').select('id,cover_image_url,created_at').not('id', 'is', null),
       'books', 100000, label => console.warn(`[sitemap] Stopped ${label} pagination at 100,000 rows.`)
     ),
     fetchPaginatedRows(
