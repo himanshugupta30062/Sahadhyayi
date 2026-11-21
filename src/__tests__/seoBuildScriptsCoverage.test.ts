@@ -66,7 +66,7 @@ describe('SEO build-script coverage', () => {
     mocks.createClient.mockClear();
     mocks.rows = {
       books_library: [
-        { id: 'book-1', title: 'A <script>alert(1)</script> Book', description: '<p>A &amp; B story</p>', cover_image_url: 'https://images.example/cover.jpg', pdf_url: 'https://archive.org/download/example/book.pdf', author_id: 'author-1', author: 'Munshi Premchand', isbn: '9780000000001', genre: 'Literary fiction', language: 'en', pages: 240, publication_year: 1936 },
+        { id: 'book-1', title: 'A <script>alert(1)</script> Book', description: '<p>A &amp; B story with enough descriptive context for readers to understand the themes and subject of this book before opening the detail page.</p>', cover_image_url: 'https://images.example/cover.jpg', pdf_url: 'https://archive.org/download/example/book.pdf', author_id: 'author-1', author: 'Munshi Premchand', isbn: '9780000000001', genre: 'Literary fiction', language: 'en', pages: 240, publication_year: 1936 },
         { id: 'book-2', title: 'A Related Literary Work', description: 'A Related Literary Work', cover_image_url: null, author: 'Another Author', genre: 'Literary fiction', language: 'en', publication_year: 1940 },
         { id: 'book-3', title: 'Placeholder Example', description: 'Coming soon', cover_image_url: null, author: 'Another Author', genre: 'History' },
         { id: '../unsafe', title: 'Unsafe route', description: null, cover_image_url: null },
@@ -115,6 +115,16 @@ describe('SEO build-script coverage', () => {
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/library</loc>');
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/research-papers/topic/artificial-intelligence</loc>');
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/book/book-1</loc>');
+    expect(sitemap).not.toContain('<loc>https://sahadhyayi.com/book/book-2</loc>');
+    expect(sitemap).not.toContain('<loc>https://sahadhyayi.com/book/book-3</loc>');
+    expect(sitemap).toContain('<loc>https://sahadhyayi.com/stories</loc>');
+    expect(sitemap).toContain('<loc>https://sahadhyayi.com/news</loc>');
+    expect(sitemap).toContain('<loc>https://sahadhyayi.com/science-around-you</loc>');
+    expect(sitemap).toContain('<loc>https://sahadhyayi.com/open-source-licenses</loc>');
+    expect(sitemap).not.toContain('<loc>https://sahadhyayi.com/newsroom</loc>');
+    expect(sitemap).not.toContain('<loc>https://sahadhyayi.com/licenses</loc>');
+    expect(sitemap).not.toContain('<loc>https://sahadhyayi.com/community-stories</loc>');
+    expect(sitemap).not.toContain('<loc>https://sahadhyayi.com/book-search</loc>');
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/authors/munshi-premchand</loc>');
     expect(sitemap).toContain('<loc>https://sahadhyayi.com/articles/useful-reading-guide</loc>');
     expect(sitemap).toContain('<lastmod>2026-11-11</lastmod>');
