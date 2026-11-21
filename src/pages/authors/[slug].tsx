@@ -24,6 +24,7 @@ import { VerificationBadge } from '@/components/authors/VerificationBadge';
 import { generateAuthorSchema, generateBreadcrumbSchema } from '@/utils/schema';
 import Breadcrumb from '@/components/Breadcrumb';
 import { slugify } from '@/utils/slugify';
+import { toSeoDescription } from '@/utils/seoText';
 import SocialShare from '@/components/SocialShare';
 
 // Comprehensive author profile page accessed via /authors/:slug
@@ -56,7 +57,14 @@ const AuthorSlugPage = () => {
 
   const social = (author as any).social_links || {};
 
-  const authorUrl = `https://sahadhyayi.com/authors/${slug}`;
+  const canonicalSlug = slugify(author.name);
+  const authorUrl = `https://sahadhyayi.com/authors/${canonicalSlug}`;
+  const authorDescription = toSeoDescription(
+    author.bio || `Explore ${author.name}'s author profile, biography, published books, and reading work on Sahadhyayi.`,
+  );
+  const sameAs = Object.values(social).filter(
+    (value): value is string => typeof value === 'string' && /^https:\/\//i.test(value.trim()),
+  );
   const breadcrumbItems = [
     { name: 'Home', url: 'https://sahadhyayi.com/' },
     { name: 'Authors', url: 'https://sahadhyayi.com/authors' },
@@ -72,7 +80,8 @@ const AuthorSlugPage = () => {
     name: author.name,
     bio: author.bio || undefined,
     url: authorUrl,
-    image: author.profile_image_url || undefined
+    image: author.profile_image_url || undefined,
+    sameAs
   });
 
   const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
@@ -82,9 +91,9 @@ const AuthorSlugPage = () => {
     <>
       <SEO
         title={`Author Profile - ${author.name} | Sahadhyayi`}
-        description={author.bio || `Learn more about ${author.name}`}
-        canonical={`https://sahadhyayi.com/authors/${slug}`}
-        url={`https://sahadhyayi.com/authors/${slug}`}
+        description={authorDescription}
+        canonical={authorUrl}
+        url={authorUrl}
         type="profile"
         author={author.name}
         schema={combinedSchema}
