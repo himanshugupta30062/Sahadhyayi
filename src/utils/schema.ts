@@ -41,9 +41,12 @@ export const generateBookSchema = (book: BookSchema) => {
     },
     "description": book.description,
     "url": book.url,
-    "bookFormat": "EBook",
-    "inLanguage": book.language || "en"
+
   };
+
+  if (book.language) {
+    schema.inLanguage = book.language;
+  }
 
   if (book.genre) {
     schema.genre = book.genre;
