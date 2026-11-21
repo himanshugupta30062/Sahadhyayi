@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 import { enforceRateLimit, getClientIp } from '../_shared/rateLimit.ts';
+import { isAutomatedCrawler } from '../_shared/botDetection.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,6 +29,13 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
+    // Ignore crawlers before rate limiting, parsing payloads, or writing visit rows.
+    if (isAutomatedCrawler(req.headers.get('user-agent'))) {
+      return new Response(JSON.stringify({ success: true, ignored: true, reason: 'automated_crawler' }), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
+      });
+    }
+
     const ip = getClientIp(req);
     const limited = await enforceRateLimit(req, {
       endpoint: 'website-clicks',
