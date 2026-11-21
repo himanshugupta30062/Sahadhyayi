@@ -50,6 +50,15 @@ describe("sitemap generator", () => {
     expect(xml).toContain("<loc>https://sahadhyayi.com/</loc>");
     expect(xml).toContain("<loc>https://sahadhyayi.com/library</loc>");
     expect(xml).toContain("<loc>https://sahadhyayi.com/articles</loc>");
+    expect(xml).toContain("<loc>https://sahadhyayi.com/stories</loc>");
+    expect(xml).toContain("<loc>https://sahadhyayi.com/news</loc>");
+    expect(xml).toContain("<loc>https://sahadhyayi.com/science-around-you</loc>");
+    expect(xml).toContain("<loc>https://sahadhyayi.com/open-source-licenses</loc>");
+    expect(xml).not.toContain("<loc>https://sahadhyayi.com/reader-map</loc>");
+    expect(xml).not.toContain("<loc>https://sahadhyayi.com/newsroom</loc>");
+    expect(xml).not.toContain("<loc>https://sahadhyayi.com/licenses</loc>");
+    expect(xml).not.toContain("<loc>https://sahadhyayi.com/community-stories</loc>");
+    expect(xml).not.toContain("<loc>https://sahadhyayi.com/book-search</loc>");
     expect(xml).toContain("<loc>https://sahadhyayi.com/blog/what-is-sahadhyayi-meaning-story</loc>");
     expect(xml).toContain("<image:loc>https://sahadhyayi.com/lovable-uploads/sahadhyayi-logo-digital-reading.png</image:loc>");
     expect(xml).not.toContain("<loc>https://sahadhyayi.com/book/");

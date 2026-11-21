@@ -3,16 +3,17 @@ import path from 'node:path';
 import { createClient } from '@supabase/supabase-js';
 import { fetchPaginatedRows, slugify } from './seoBuildUtils.mjs';
 import { getPublicSupabaseConfig } from './publicSupabaseConfig.mjs';
+import { getBookSitemapEligibility, getUniqueAuthorSitemapEntries } from './sitemapEligibility.mjs';
 
 // Public, canonical pages only. Never include authentication, submissions,
 // account pages, or other private/user-specific routes.
 const staticPages = [
   '/library', '/research-papers', '/articles', '/from-page-to-screen', '/authors', '/groups', '/blog',
-  '/discovery', '/scientists', '/games', '/quotes', '/community-stories',
-  '/life-stories', '/social-activists', '/freedom-fighters', '/about',
-  '/social', '/map', '/book-search', '/help-center', '/community-guidelines',
-  '/privacy-policy', '/terms-of-service', '/cookie-policy', '/dmca',
-  '/events', '/investors', '/publishers', '/newsroom', '/licenses', '/reviewers-critics'
+  '/discovery', '/scientists', '/games', '/quotes', '/stories', '/life-stories',
+  '/social-activists', '/freedom-fighters', '/about', '/social', '/map', '/help-center',
+  '/community-guidelines', '/privacy-policy', '/terms-of-service', '/cookie-policy', '/dmca',
+  '/events', '/investors', '/publishers', '/news', '/reviewers-critics',
+  '/science-around-you', '/brain', '/open-source-licenses'
 ];
 
 const blogSlugs = [
@@ -35,11 +36,17 @@ const blogSlugs = [
 const SITE_URL = 'https://sahadhyayi.com';
 const HOME_IMAGE = SITE_URL + '/lovable-uploads/sahadhyayi-logo-digital-reading.png';
 const urls = [];
+const seenCanonicalUrls = new Set();
 const xmlEscape = value => String(value).replace(/[&<>"']/g, character => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;'
 })[character]);
 
 function addUrl(loc, changefreq = 'weekly', priority = '0.6', image, lastmod) {
+  const normalizedPath = loc === '/' ? '/' : String(loc || '').replace(/\/+$/, '');
+  if (!normalizedPath.startsWith('/') || normalizedPath.includes('?') || normalizedPath.includes('#')) return;
+  const canonicalLoc = SITE_URL + normalizedPath;
+  if (seenCanonicalUrls.has(canonicalLoc)) return;
+  seenCanonicalUrls.add(canonicalLoc);
   // Only absolute same-site HTTPS image URLs are eligible for sitemap images.
   const safeImage = typeof image === 'string' && /^https:\/\//i.test(image) && image.trim() === image && !image.includes('<') && !image.includes('>')
     ? image
@@ -48,7 +55,7 @@ function addUrl(loc, changefreq = 'weekly', priority = '0.6', image, lastmod) {
   const safeLastmod = parsedLastmod && Number.isFinite(parsedLastmod.getTime())
     ? parsedLastmod.toISOString().slice(0, 10)
     : undefined;
-  urls.push({ loc: SITE_URL + loc, changefreq, priority, image: safeImage, lastmod: safeLastmod });
+  urls.push({ loc: canonicalLoc, changefreq, priority, image: safeImage, lastmod: safeLastmod });
 }
 
 addUrl('/', 'weekly', '1.0', HOME_IMAGE);
@@ -79,7 +86,7 @@ if (SUPABASE_URL && SUPABASE_KEY) {
   });
   const [booksResult, authorsResult, articlesResult] = await Promise.all([
     fetchPaginatedRows(
-      supabase.from('books_library').select('id,cover_image_url,created_at').not('id', 'is', null),
+      supabase.from('books_library').select('id,title,description,author,cover_image_url,created_at').not('id', 'is', null),
       'books', 100000, label => console.warn(`[sitemap] Stopped ${label} pagination at 100,000 rows.`)
     ),
     fetchPaginatedRows(
@@ -94,17 +101,19 @@ if (SUPABASE_URL && SUPABASE_KEY) {
   if (booksResult.error) {
     console.warn('[sitemap] Could not fetch books:', booksResult.error.message);
   } else {
-    (booksResult.data || []).forEach(book => {
+    const eligibleBooks = (booksResult.data || []).filter(book => getBookSitemapEligibility(book).eligible);
+    const excludedBooks = (booksResult.data || []).length - eligibleBooks.length;
+    eligibleBooks.forEach(book => {
       const id = String(book.id ?? '').trim();
-      if (!id || id.includes('/') || id === '.' || id === '..') return;
       addUrl('/book/' + encodeURIComponent(id), 'monthly', '0.7', book.cover_image_url, book.updated_at || book.created_at);
     });
+    console.log(`[sitemap] Books: ${eligibleBooks.length} eligible, ${excludedBooks} excluded by minimum content-quality rules.`);
   }
   if (authorsResult.error) {
     console.warn('[sitemap] Could not fetch authors:', authorsResult.error.message);
   } else {
-    (authorsResult.data || []).filter(author => author.name).forEach(author =>
-      addUrl('/authors/' + encodeURIComponent(slugify(author.name)), 'monthly', '0.5')
+    getUniqueAuthorSitemapEntries(authorsResult.data || [], slugify).forEach(author =>
+      addUrl('/authors/' + encodeURIComponent(author.slug), 'monthly', '0.5')
     );
   }
   if (articlesResult.error) {

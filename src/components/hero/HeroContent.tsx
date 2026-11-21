@@ -34,7 +34,7 @@ export const HeroContent: React.FC = () => {
 
       {/* Supporting Description */}
       <p className="hero-reveal hero-reveal-3 text-sm sm:text-base md:text-lg text-[#636B65] dark:text-[#A5ADA6] leading-relaxed mb-8 max-w-lg">
-        Keep your books, reviews, and reading moments together. Share ideas, join reading groups, and discover new reads with fellow readers.
+        Discover books and ebooks, explore authors and stories, read articles and research, compare books with movies, and learn through everyday science—all while sharing your reading journey with fellow readers.
       </p>
 
       {/* CTAs */}
