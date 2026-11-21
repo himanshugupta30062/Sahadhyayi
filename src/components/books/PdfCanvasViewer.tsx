@@ -16,6 +16,23 @@ interface PdfCanvasViewerProps {
   onTextSelected?: (text: string) => void;
 }
 
+const DIRECT_LOAD_TIMEOUT_MS = 10000;
+const PROXY_LOAD_TIMEOUT_MS = 12000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, errorMessage: string): Promise<T> {
+  let timer: any = null;
+  const timeoutPromise = new Promise<T>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(errorMessage)), ms);
+  });
+  return Promise.race([
+    promise.then((res) => {
+      if (timer) clearTimeout(timer);
+      return res;
+    }),
+    timeoutPromise,
+  ]);
+}
+
 export const PdfCanvasViewer: React.FC<PdfCanvasViewerProps> = ({
   url,
   currentPage,
@@ -30,14 +47,16 @@ export const PdfCanvasViewer: React.FC<PdfCanvasViewerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const renderTaskRef = useRef<any>(null);
+  const activeLoadingTaskRef = useRef<any>(null);
 
   const [pdfDoc, setPdfDoc] = useState<any>(null);
   const [scale, setScale] = useState<number>(1.15);
   const [renderStatus, setRenderStatus] = useState<'loading' | 'rendering' | 'ready' | 'error'>('loading');
   const [statusMessage, setStatusMessage] = useState<string>('Initializing PDF reader...');
   const [triedProxy, setTriedProxy] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // Load PDF Document via PDF.js with proxy fallback
+  // Load PDF Document via PDF.js with proxy fallback and strict timeouts
   useEffect(() => {
     let isCancelled = false;
     setRenderStatus('loading');
@@ -65,7 +84,12 @@ export const PdfCanvasViewer: React.FC<PdfCanvasViewerProps> = ({
             disableAutoFetch: true,
             rangeChunkSize: 64 * 1024,
           });
-          loadedDoc = await loadingTask.promise;
+          activeLoadingTaskRef.current = loadingTask;
+          loadedDoc = await withTimeout(
+            loadingTask.promise,
+            DIRECT_LOAD_TIMEOUT_MS,
+            'Direct PDF load timed out'
+          );
         } catch (directErr) {
           console.warn('Direct PDF load failed, attempting via Supabase proxy:', directErr);
           const proxiedUrl = getProxiedPdfUrl(url);
@@ -80,7 +104,12 @@ export const PdfCanvasViewer: React.FC<PdfCanvasViewerProps> = ({
               disableAutoFetch: true,
               rangeChunkSize: 64 * 1024,
             });
-            loadedDoc = await proxyTask.promise;
+            activeLoadingTaskRef.current = proxyTask;
+            loadedDoc = await withTimeout(
+              proxyTask.promise,
+              PROXY_LOAD_TIMEOUT_MS,
+              'Proxy streaming request timed out'
+            );
           } else {
             throw directErr;
           }
@@ -100,7 +129,15 @@ export const PdfCanvasViewer: React.FC<PdfCanvasViewerProps> = ({
         if (isCancelled) return;
         console.error('Failed to load PDF document:', err);
         setRenderStatus('error');
-        setStatusMessage(err?.message || 'Unable to open PDF stream.');
+        const readableMessage =
+          err?.name === 'InvalidPDFException'
+            ? 'The file format is invalid or not a valid PDF document.'
+            : err?.message?.includes('timed out')
+            ? 'Connecting to the PDF stream timed out.'
+            : err?.message?.includes('CORS')
+            ? 'The host restricts cross-origin PDF viewing.'
+            : err?.message || 'Unable to open PDF stream.';
+        setStatusMessage(readableMessage);
         onBlocked();
       }
     };
@@ -109,6 +146,15 @@ export const PdfCanvasViewer: React.FC<PdfCanvasViewerProps> = ({
 
     return () => {
       isCancelled = true;
+      if (activeLoadingTaskRef.current) {
+        try {
+          if (typeof activeLoadingTaskRef.current.destroy === 'function') {
+            activeLoadingTaskRef.current.destroy();
+          }
+        } catch {
+          // ignore
+        }
+      }
       if (renderTaskRef.current) {
         try {
           renderTaskRef.current.cancel();
@@ -117,7 +163,7 @@ export const PdfCanvasViewer: React.FC<PdfCanvasViewerProps> = ({
         }
       }
     };
-  }, [url, onTotalPagesDetected, onBlocked, onLoaded]);
+  }, [url, retryCount, onTotalPagesDetected, onBlocked, onLoaded]);
 
   // Render active page onto Canvas
   const renderCurrentPage = useCallback(async () => {
@@ -271,6 +317,50 @@ export const PdfCanvasViewer: React.FC<PdfCanvasViewerProps> = ({
           <Loader2 className="w-8 h-8 text-primary animate-spin mb-2" />
           <p className="text-xs sm:text-sm font-medium">{statusMessage}</p>
           <p className="text-[11px] text-muted-foreground mt-1">Page {currentPage}</p>
+        </div>
+      )}
+
+      {/* Error Fallback with Switch to Native Embed & Retry */}
+      {renderStatus === 'error' && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 bg-background/95 backdrop-blur-sm text-center">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-3">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <h4 className="text-sm sm:text-base font-serif font-bold mb-1">
+            Inline PDF Preview Restricted
+          </h4>
+          <p className="text-xs text-muted-foreground max-w-sm mb-4 leading-relaxed">
+            {statusMessage}
+          </p>
+          <div className="flex flex-wrap gap-2 justify-center">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={onBlocked}
+              className="text-xs"
+            >
+              Switch to Native Embed
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setRetryCount((prev) => prev + 1)}
+              className="text-xs gap-1"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Retry
+            </Button>
+            {url && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+                className="text-xs"
+              >
+                Open in New Window ↗
+              </Button>
+            )}
+          </div>
         </div>
       )}
 
