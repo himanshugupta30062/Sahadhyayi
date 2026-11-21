@@ -15,7 +15,9 @@ describe('pdfProxyHelper', () => {
       expect(isWhitelistedProxyHost('https://files.sahadhyayi.com/book.pdf')).toBe(true);
       expect(isWhitelistedProxyHost('https://hariomgroup.org/data/ashtavakra_gita.pdf')).toBe(true);
       expect(isWhitelistedProxyHost('https://www.hariomgroup.org/data/book.pdf')).toBe(true);
+      expect(isWhitelistedProxyHost('https://campbellmgold.co.uk/archive_vintage/book.pdf')).toBe(true);
       expect(isWhitelistedProxyHost('https://hariomgroup.org.attacker.test/book.pdf')).toBe(false);
+      expect(isWhitelistedProxyHost('https://campbellmgold.co.uk.attacker.test/book.pdf')).toBe(false);
     });
 
     it('accepts educational domains but rejects lookalike suffixes and arbitrary unlisted edu domains', () => {
