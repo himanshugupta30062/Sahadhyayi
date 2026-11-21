@@ -35,7 +35,7 @@ const Index = () => {
     "name": "Sahadhyayi",
     "alternateName": ["Sahadhyayi Reading Community", "Sahadhyayi Digital Library", "Fellow Reader Platform"],
     "url": "https://sahadhyayi.com",
-    "description": "Sahadhyayi means 'fellow reader' in Sanskrit. Join our digital reading community platform connecting readers and authors worldwide for deep reading experiences.",
+    "description": "Discover books, read ebooks, explore authors and stories, share your reading journey, compare books with movies, and learn through science and research on Sahadhyayi.",
     "potentialAction": {
       "@type": "SearchAction",
       "target": "https://sahadhyayi.com/library?search={search_term_string}",
@@ -53,11 +53,11 @@ const Index = () => {
   return (
     <>
       <SEO
-        title="Sahadhyayi - Digital Reading Community & Book Library"
-        description="Sahadhyayi means 'fellow reader' in Sanskrit. Join our reading community, discover books, and connect with fellow readers worldwide."
+        title="Sahadhyayi | Discover Books, Read & Learn Online"
+        description="Discover books, read ebooks, explore authors and stories, share your reading journey, compare books with movies, and learn through science and research on Sahadhyayi."
         canonical="https://sahadhyayi.com/"
         url="https://sahadhyayi.com/"
-        keywords={['Sahadhyayi', 'fellow reader', 'digital reading community', 'book library', 'reading platform', 'book lovers']}
+        keywords={['Sahadhyayi', 'books', 'ebooks', 'online library', 'book discovery', 'authors', 'stories', 'articles', 'research papers', 'science', 'book movie comparisons']}
         schema={structuredData}
       />
 
