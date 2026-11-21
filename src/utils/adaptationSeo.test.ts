@@ -11,20 +11,20 @@ describe('buildAdaptationSeoMetadata', () => {
     });
     expect(result.canonical).toBe('https://sahadhyayi.com/from-page-to-screen/adaptation-123');
     expect(result.image).toBe('https://cdn.example.com/book.jpg');
-    const graph = result.schema['@graph'] as any[];
-    expect(graph[0]).toMatchObject({ '@type': 'Book', name: 'The Godfather', author: { name: 'Mario Puzo' }, datePublished: '1969' });
-    expect(graph[1]).toMatchObject({ '@type': 'Movie', name: 'The Godfather', datePublished: '1972', isBasedOn: { '@id': graph[0]['@id'] } });
-    expect(graph[2]).toMatchObject({ '@type': 'WebPage', url: result.canonical, mainEntity: { '@id': graph[1]['@id'] } });
+    const movie = result.schema.mainEntity as any;
+    expect(result.schema).toMatchObject({ '@type': 'WebPage', url: result.canonical });
+    expect(movie).toMatchObject({ '@type': 'Movie', name: 'The Godfather', datePublished: '1972' });
+    expect(movie.isBasedOn).toMatchObject({ '@type': 'Book', name: 'The Godfather', author: { name: 'Mario Puzo' }, datePublished: '1969' });
     expect(result.breadcrumbs).toHaveLength(3);
   });
   it('uses a useful fallback description and omits unverified image/year fields', () => {
     const result = buildAdaptationSeoMetadata({ id: 'x', bookTitle: 'Book', movieTitle: 'Film' });
     expect(result.description).toContain('Compare Book with its screen adaptation Film');
     expect(result.image).toBeUndefined();
-    const graph = result.schema['@graph'] as any[];
-    expect(graph[0]).not.toHaveProperty('datePublished');
-    expect(graph[0]).not.toHaveProperty('image');
-    expect(graph[1]).not.toHaveProperty('datePublished');
+    const movie = result.schema.mainEntity as any;
+    expect(movie.isBasedOn).not.toHaveProperty('datePublished');
+    expect(movie.isBasedOn).not.toHaveProperty('image');
+    expect(movie).not.toHaveProperty('datePublished');
   });
   it('strips markup from descriptions and ignores non-http image URLs', () => {
     const result = buildAdaptationSeoMetadata({
