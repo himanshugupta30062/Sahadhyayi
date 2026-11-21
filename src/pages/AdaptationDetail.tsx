@@ -18,6 +18,24 @@ const fetchAdaptation = async (id: string) => {
   return data as (AnyRow & { movie: AnyRow }) | null;
 };
 
+const DetailArtwork = ({ src, alt, kind }: { src?: string | null; alt: string; kind: 'book' | 'movie' }) => {
+  const [failed, setFailed] = useState(false);
+  const Icon = kind === 'book' ? BookOpen : Film;
+  return (
+    <div className={`flex aspect-[3/4] items-center justify-center overflow-hidden rounded-xl ${kind === 'book' ? 'bg-gradient-to-br from-amber-200 via-orange-200 to-rose-300 text-amber-950' : 'bg-gradient-to-br from-slate-300 via-indigo-300 to-violet-400 text-slate-950'}`}>
+      {src && !failed ? (
+        <img src={src} alt={alt} loading="eager" className="h-full w-full object-cover" onError={() => setFailed(true)} />
+      ) : (
+        <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-4 text-center">
+          <Icon className="h-10 w-10 opacity-75" />
+          <span className="font-serif text-lg font-bold leading-tight">{alt}</span>
+          <span className="text-[10px] font-semibold uppercase tracking-widest opacity-70">{kind === 'book' ? 'Original book' : 'Screen adaptation'}</span>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function AdaptationDetail() {
   const { id = '' } = useParams();
   const [showSpoilers, setShowSpoilers] = useState(false);
@@ -51,8 +69,8 @@ export default function AdaptationDetail() {
         <section className="mt-6 overflow-hidden rounded-3xl bg-[#101711] p-5 text-white sm:p-8">
           <div className="grid gap-7 md:grid-cols-[1fr_1.1fr] md:items-center">
             <div className="grid grid-cols-2 gap-4">
-              <div><div className="aspect-[3/4] overflow-hidden rounded-xl bg-white/10">{data.book_cover_url && <img src={data.book_cover_url} alt={data.book_title} className="h-full w-full object-cover"/>}</div><p className="mt-2 text-xs uppercase tracking-wider text-white/60">Original book</p></div>
-              <div><div className="aspect-[3/4] overflow-hidden rounded-xl bg-white/10">{movie.poster_url && <img src={movie.poster_url} alt={movie.title} className="h-full w-full object-cover"/>}</div><p className="mt-2 text-xs uppercase tracking-wider text-white/60">Screen adaptation</p></div>
+              <div><DetailArtwork src={data.book_cover_url} alt={data.book_title} kind="book" /><p className="mt-2 text-xs uppercase tracking-wider text-white/60">Original book</p></div>
+              <div><DetailArtwork src={movie.poster_url} alt={movie.title} kind="movie" /><p className="mt-2 text-xs uppercase tracking-wider text-white/60">Screen adaptation</p></div>
             </div>
             <div>
               <Badge className="border-white/20 bg-white/10 text-amber-200">From Page to Screen</Badge>
