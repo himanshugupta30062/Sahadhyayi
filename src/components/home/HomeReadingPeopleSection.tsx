@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   MapPin,
@@ -10,9 +10,124 @@ import {
   ArrowRight,
   BookOpen,
   Sparkles,
+  ShieldCheck,
+  Navigation,
+  MessageCircle,
 } from 'lucide-react';
 import { useMarginNotes, type MarginNote } from '@/hooks/useMarginNotes';
 import { CommunityPulseBar } from './CommunityPulseBar';
+
+interface MapPreviewReader {
+  id: string;
+  name: string;
+  username: string;
+  area: string;
+  distance: string;
+  bookTitle: string;
+  bookAuthor: string;
+  page?: number;
+  progressPercent: number;
+  avatarBg: string;
+  avatarColor: string;
+  initials: string;
+  status: string;
+  compatibility?: string;
+  mode: 'city' | 'book';
+  coords: { x: number; y: number };
+}
+
+const PREVIEW_READERS: MapPreviewReader[] = [
+  {
+    id: 'reader-1',
+    name: 'Aarav Sharma',
+    username: 'aarav_reads',
+    area: 'South Delhi, DL',
+    distance: '3.4 km away',
+    bookTitle: 'Gunaho Ka Devta',
+    bookAuthor: 'Dharamvir Bharati',
+    page: 118,
+    progressPercent: 62,
+    avatarBg: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700',
+    avatarColor: '#10B981',
+    initials: 'AS',
+    status: 'Reading Chapter 7 · 42m streak',
+    compatibility: '94% Literary Taste Match',
+    mode: 'city',
+    coords: { x: 38, y: 32 },
+  },
+  {
+    id: 'reader-2',
+    name: 'Priya Menon',
+    username: 'priya_lit',
+    area: 'Connaught Place, DL',
+    distance: '5.2 km away',
+    bookTitle: 'In Search of Lost Time',
+    bookAuthor: 'Marcel Proust',
+    page: 142,
+    progressPercent: 35,
+    avatarBg: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border-blue-300 dark:border-blue-700',
+    avatarColor: '#3B82F6',
+    initials: 'PM',
+    status: 'Left 3 margin notes today',
+    compatibility: 'Shared 6 favorite authors',
+    mode: 'city',
+    coords: { x: 65, y: 24 },
+  },
+  {
+    id: 'reader-3',
+    name: 'Rohan Verma',
+    username: 'rohan_books',
+    area: 'Bengaluru (Online)',
+    distance: 'Same book mate',
+    bookTitle: 'Gunaho Ka Devta',
+    bookAuthor: 'Dharamvir Bharati',
+    page: 135,
+    progressPercent: 71,
+    avatarBg: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border-amber-300 dark:border-amber-700',
+    avatarColor: '#F59E0B',
+    initials: 'RV',
+    status: 'In Silent Sprint (18m remaining)',
+    compatibility: 'Co-reading right now',
+    mode: 'book',
+    coords: { x: 74, y: 56 },
+  },
+  {
+    id: 'reader-4',
+    name: 'Meera Kulkarni',
+    username: 'meera_reads',
+    area: 'Noida Sector 62',
+    distance: '7.8 km away',
+    bookTitle: 'Atomic Habits',
+    bookAuthor: 'James Clear',
+    page: 94,
+    progressPercent: 45,
+    avatarBg: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border-purple-300 dark:border-purple-700',
+    avatarColor: '#8B5CF6',
+    initials: 'MK',
+    status: 'Reading daily streak: 14 days',
+    compatibility: '88% Book DNA Match',
+    mode: 'city',
+    coords: { x: 24, y: 66 },
+  },
+  {
+    id: 'reader-5',
+    name: 'Vikramaditya Roy',
+    username: 'vikram_roy',
+    area: 'Mumbai (Online)',
+    distance: 'Same book mate',
+    bookTitle: 'Gunaho Ka Devta',
+    bookAuthor: 'Dharamvir Bharati',
+    page: 112,
+    progressPercent: 58,
+    avatarBg: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border-rose-300 dark:border-rose-700',
+    avatarColor: '#F43F5E',
+    initials: 'VR',
+    status: 'Finished Ch. 6 · Shared a quote',
+    compatibility: 'Co-reading right now',
+    mode: 'book',
+    coords: { x: 48, y: 76 },
+  },
+];
 
 const FALLBACK_MARGIN_NOTES: Partial<MarginNote>[] = [
   {
@@ -54,6 +169,15 @@ export const HomeReadingPeopleSection: React.FC = () => {
   const { data: rawMargins = [] } = useMarginNotes({ filter: 'all' });
   const marginNotes: Partial<MarginNote>[] =
     rawMargins && rawMargins.length > 0 ? rawMargins.slice(0, 2) : FALLBACK_MARGIN_NOTES;
+
+  const [mapMode, setMapMode] = useState<'city' | 'book'>('city');
+  const [selectedReaderId, setSelectedReaderId] = useState<string>('reader-1');
+
+  const visibleReaders = PREVIEW_READERS.filter(
+    (reader) => mapMode === 'city' ? reader.mode === 'city' || reader.id === 'reader-1' : reader.mode === 'book' || reader.id === 'reader-1'
+  );
+
+  const activeReader = PREVIEW_READERS.find((r) => r.id === selectedReaderId) || PREVIEW_READERS[0];
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -118,38 +242,298 @@ export const HomeReadingPeopleSection: React.FC = () => {
         <div data-people-reveal className="people-reveal people-reveal-2"><CommunityPulseBar className="mb-8" /></div>
 
         {/* Signature feature: readers map */}
-        <div data-people-reveal className="people-reveal people-reveal-3 group relative mb-8 block overflow-hidden rounded-[2.25rem] border border-[#DFD8CC] bg-gradient-to-br from-[#EEF4ED] via-[#F8F6F0] to-[#E9F1E9] p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-[#243329] dark:from-[#132219] dark:via-[#0F1412] dark:to-[#16201A] sm:p-10 lg:p-12">
+        <div data-people-reveal className="people-reveal people-reveal-3 group relative mb-10 block overflow-hidden rounded-[2.5rem] border border-[#DFD8CC] bg-gradient-to-br from-[#EEF4ED] via-[#F8F6F0] to-[#E9F1E9] p-6 shadow-sm transition-all duration-300 hover:shadow-xl dark:border-[#243329] dark:from-[#132219] dark:via-[#0F1412] dark:to-[#16201A] sm:p-9 lg:p-11">
           <div className="pointer-events-none absolute -right-12 -top-20 h-72 w-72 rounded-full border border-[#5B8064]/20 dark:border-[#A6C9A8]/20" aria-hidden="true"/>
           <div className="pointer-events-none absolute right-8 top-8 h-52 w-52 rounded-full border border-dashed border-[#5B8064]/25 dark:border-[#A6C9A8]/20" aria-hidden="true"/>
-          <div className="relative z-10 grid items-center gap-8 lg:grid-cols-[1.05fr_.95fr]">
+          
+          <div className="relative z-10 grid items-center gap-8 lg:grid-cols-[1.02fr_.98fr] lg:gap-10">
+            {/* Left Content Column */}
             <div className="max-w-xl">
-              <span className="inline-flex items-center gap-2 rounded-full border border-[#C8D9C8] bg-white/85 px-3.5 py-1 text-[10px] font-bold uppercase tracking-[.18em] text-[#315A3D] dark:border-[#36513C] dark:bg-white/[.07] dark:text-[#B8D7B7] shadow-2xs">
-                <MapPin size={13}/> Sahadhyayi signature feature
-              </span>
-              <h3 className="mt-5 font-serif text-3xl font-bold leading-tight text-[#1C3423] dark:text-[#E9F2E7] sm:text-4xl lg:text-5xl">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-[#C8D9C8] bg-white/90 px-3.5 py-1 text-[10px] font-bold uppercase tracking-[.18em] text-[#315A3D] dark:border-[#36513C] dark:bg-white/[.07] dark:text-[#B8D7B7] shadow-2xs">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                  </span>
+                  <MapPin size={12} className="ml-0.5" /> Sahadhyayi signature feature
+                </span>
+                <span className="text-[11px] font-medium text-[#536657] dark:text-[#A8B9AA]">
+                  Live Reader Radar
+                </span>
+              </div>
+
+              <h3 className="mt-4 font-serif text-3xl font-bold leading-tight text-[#1C3423] dark:text-[#E9F2E7] sm:text-4xl lg:text-[2.75rem]">
                 Books connect us.<br/><span className="text-[#315A3D] dark:text-[#B8D7B7]">See readers around you.</span>
               </h3>
-              <p className="mt-4 max-w-lg text-sm leading-7 text-[#536657] dark:text-[#A8B9AA] sm:text-base">
-                Discover fellow readers by city, find people reading the same book, and turn shared shelves into real connections—without revealing anyone’s exact location.
+
+              <p className="mt-3.5 max-w-lg text-sm leading-relaxed text-[#536657] dark:text-[#A8B9AA] sm:text-base">
+                Discover fellow readers in your city, see who is turning the exact same page, and turn shared shelves into real friendships—protected by privacy-first fuzzy geolocation.
               </p>
-              <div className="mt-7 flex flex-wrap gap-3">
-                <Link to="/map" className="inline-flex items-center gap-2 rounded-full bg-[#1C442D] px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-[#143221] hover:shadow-md dark:bg-[#D5B16D] dark:text-stone-950 dark:hover:bg-[#E4C688]">
+
+              {/* 3 Core Functionality Callouts */}
+              <div className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+                <div className="rounded-2xl border border-[#C8D9C8]/80 bg-white/70 p-3 dark:border-[#36513C]/70 dark:bg-white/[.04] shadow-2xs transition-transform hover:scale-[1.02]">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">
+                    <Compass className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> City Radar
+                  </div>
+                  <p className="mt-1 text-[11px] leading-snug text-[#536657] dark:text-[#A8B9AA]">
+                    Spot nearby readers and quiet reading-friendly cafes.
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-[#C8D9C8]/80 bg-white/70 p-3 dark:border-[#36513C]/70 dark:bg-white/[.04] shadow-2xs transition-transform hover:scale-[1.02]">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">
+                    <BookOpen className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" /> Book Mates
+                  </div>
+                  <p className="mt-1 text-[11px] leading-snug text-[#536657] dark:text-[#A8B9AA]">
+                    Find readers on the same chapter across the world.
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-[#C8D9C8]/80 bg-white/70 p-3 dark:border-[#36513C]/70 dark:bg-white/[.04] shadow-2xs transition-transform hover:scale-[1.02]">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-[#1C442D] dark:text-[#D5B16D]">
+                    <ShieldCheck className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" /> Zero Risk
+                  </div>
+                  <p className="mt-1 text-[11px] leading-snug text-[#536657] dark:text-[#A8B9AA]">
+                    Fuzzy 3–5 km radius. Your exact address is never shared.
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <Link
+                  to="/map"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#1C442D] px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-[#143221] hover:shadow-md dark:bg-[#D5B16D] dark:text-stone-950 dark:hover:bg-[#E4C688]"
+                >
                   Explore Readers Map <ArrowRight size={16}/>
                 </Link>
-                <Link to="/reader-map" className="inline-flex items-center gap-2 rounded-full border border-[#C8D9C8] bg-white/85 px-5 py-3 text-sm font-semibold text-[#1C442D] transition-colors hover:bg-white dark:border-[#36513C] dark:bg-white/[.06] dark:text-[#B8D7B7] dark:hover:bg-white/[.1]">
+                <Link
+                  to="/reader-map"
+                  className="inline-flex items-center gap-2 rounded-full border border-[#C8D9C8] bg-white/85 px-5 py-3 text-sm font-semibold text-[#1C442D] transition-colors hover:bg-white dark:border-[#36513C] dark:bg-white/[.06] dark:text-[#B8D7B7] dark:hover:bg-white/[.1]"
+                >
                   Find readers by book <BookOpen size={16}/>
                 </Link>
               </div>
+
+              <p className="mt-3 flex items-center gap-1.5 text-[11px] text-[#536657] dark:text-[#8D9E90]">
+                <ShieldCheck size={13} className="text-emerald-600 dark:text-emerald-400" />
+                <span>Protected by differential privacy · Optional one-click ghost mode</span>
+              </p>
             </div>
-            <div className="relative mx-auto aspect-[4/3] w-full max-w-[520px] overflow-hidden rounded-3xl border border-white/70 bg-[#DCE9DC]/80 shadow-inner dark:border-white/10 dark:bg-[#1B2C20]/60" aria-hidden="true">
-              <div className="absolute inset-0 opacity-50" style={{backgroundImage:"linear-gradient(rgba(75,110,80,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(75,110,80,.12) 1px,transparent 1px)",backgroundSize:"26px 26px"}}/>
-              <svg viewBox="0 0 520 340" className="absolute inset-0 h-full w-full" fill="none">
-                <path d="M-20 90 C80 40 120 145 205 100 S360 45 540 120 M-10 240 C100 190 145 290 250 220 S390 190 530 280 M90 -20 C120 80 60 170 130 360 M340 -20 C300 100 390 180 330 360" stroke="#9AB59C" strokeWidth="2" opacity=".45"/>
-                <path d="M100 95 Q220 55 310 145 T430 245 M125 260 Q230 170 380 95" stroke="#648B6A" strokeDasharray="5 7" strokeWidth="2" opacity=".65"/>
-                {[[100,95],[205,100],[310,145],[430,245],[125,260],[230,205],[380,95]].map(([x,y],i)=><g key={i}><circle cx={x} cy={y} r="18" fill="#6F9875" opacity=".16"/><circle cx={x} cy={y} r="8" fill="#47734F" stroke="#F7FBF5" strokeWidth="3"/><circle cx={x} cy={y} r="3" fill="#F7FBF5"/></g>)}
-                <g transform="translate(252 156)"><rect x="-32" y="-19" width="64" height="38" rx="12" fill="#244B31"/><path d="M-8 -9V9L0 5L8 9V-9" stroke="#F7FBF5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></g>
-              </svg>
-              <div className="absolute bottom-3 left-3 rounded-full border border-white/70 bg-white/85 px-3 py-1.5 text-[10px] font-semibold text-[#47664A] shadow-sm dark:border-white/10 dark:bg-[#101A13]/85 dark:text-[#B8D7B7]">Illustrative map preview · not live user locations</div>
+
+            {/* Right Column: Realistic, Interactive Map Radar Simulator */}
+            <div className="relative mx-auto flex w-full max-w-[540px] flex-col overflow-hidden rounded-3xl border border-white/80 bg-white/60 p-3 shadow-lg backdrop-blur-md dark:border-white/10 dark:bg-[#111A14]/80 sm:p-4">
+              {/* Radar Simulator Top Bar with View Mode Toggles */}
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-black/5 pb-2.5 dark:border-white/10">
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMapMode('city');
+                      setSelectedReaderId('reader-1');
+                    }}
+                    className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
+                      mapMode === 'city'
+                        ? 'bg-[#1C442D] text-white shadow-xs dark:bg-[#D5B16D] dark:text-stone-950'
+                        : 'text-[#536657] hover:bg-black/5 dark:text-[#A8B9AA] dark:hover:bg-white/5'
+                    }`}
+                  >
+                    📍 Readers in City
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMapMode('book');
+                      setSelectedReaderId('reader-3');
+                    }}
+                    className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
+                      mapMode === 'book'
+                        ? 'bg-[#1C442D] text-white shadow-xs dark:bg-[#D5B16D] dark:text-stone-950'
+                        : 'text-[#536657] hover:bg-black/5 dark:text-[#A8B9AA] dark:hover:bg-white/5'
+                    }`}
+                  >
+                    📖 By Book: Gunaho Ka Devta
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-1.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>{mapMode === 'city' ? '4 active nearby' : '3 reading same book'}</span>
+                </div>
+              </div>
+
+              {/* Map Surface View */}
+              <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-black/5 bg-[#E6EFE5] dark:border-white/10 dark:bg-[#0D1610] shadow-inner select-none">
+                {/* Cartographic grid and topographical contours */}
+                <div
+                  className="absolute inset-0 opacity-40 dark:opacity-20"
+                  style={{
+                    backgroundImage:
+                      'linear-gradient(rgba(75,110,80,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(75,110,80,.16) 1px,transparent 1px)',
+                    backgroundSize: '24px 24px',
+                  }}
+                />
+
+                {/* Simulated Geographic Rivers, Greenways, and City Hubs */}
+                <svg viewBox="0 0 540 340" className="absolute inset-0 h-full w-full pointer-events-none" fill="none">
+                  {/* Gentle river curve */}
+                  <path
+                    d="M-20 60 C90 80 150 160 270 140 S410 80 560 110"
+                    stroke="#94B999"
+                    strokeWidth="14"
+                    strokeLinecap="round"
+                    className="opacity-40 dark:opacity-25"
+                  />
+                  {/* Highway transit artery */}
+                  <path
+                    d="M100 -20 Q240 180 340 360 M-20 220 Q200 200 560 260"
+                    stroke="#A8C4AD"
+                    strokeWidth="3"
+                    className="opacity-50 dark:opacity-30"
+                  />
+                  {/* Dashed connectivity bridge */}
+                  <path
+                    d="M150 170 Q280 110 390 190"
+                    stroke="#648B6A"
+                    strokeDasharray="4 6"
+                    strokeWidth="2"
+                    className="opacity-60 dark:opacity-40"
+                  />
+                  {/* Range radar rings centered around "You" */}
+                  <circle cx="270" cy="170" r="75" stroke="#47734F" strokeWidth="1" strokeDasharray="3 4" opacity="0.25" />
+                  <circle cx="270" cy="170" r="140" stroke="#47734F" strokeWidth="1" strokeDasharray="4 6" opacity="0.18" />
+                </svg>
+
+                {/* Center marker: "You" */}
+                <div
+                  className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none"
+                  style={{ left: '50%', top: '50%' }}
+                >
+                  <div className="relative flex h-8 w-8 items-center justify-center">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-40" />
+                    <span className="relative flex h-5 w-5 items-center justify-center rounded-full bg-[#1C442D] text-[9px] font-bold text-white shadow-md ring-2 ring-white dark:ring-stone-900">
+                      You
+                    </span>
+                  </div>
+                  <span className="mt-0.5 rounded-full bg-white/90 px-1.5 py-0.5 text-[9px] font-semibold text-[#1C442D] shadow-xs backdrop-blur dark:bg-stone-900/90 dark:text-[#B8D7B7]">
+                    Current Area
+                  </span>
+                </div>
+
+                {/* Interactive Reader Pins */}
+                {visibleReaders.map((reader) => {
+                  const isSelected = reader.id === activeReader.id;
+                  return (
+                    <button
+                      key={reader.id}
+                      type="button"
+                      onClick={() => setSelectedReaderId(reader.id)}
+                      className={`group absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all focus:outline-none ${
+                        isSelected ? 'z-20 scale-110' : 'z-10 hover:scale-105'
+                      }`}
+                      style={{ left: `${reader.coords.x}%`, top: `${reader.coords.y}%` }}
+                      title={`Click to view ${reader.name}`}
+                    >
+                      <div className="relative flex flex-col items-center">
+                        {/* Glow halo on selection */}
+                        {isSelected && (
+                          <span
+                            className="absolute -inset-1.5 rounded-full animate-pulse opacity-60"
+                            style={{ backgroundColor: reader.avatarColor }}
+                          />
+                        )}
+
+                        {/* Pin Avatar Badge */}
+                        <div
+                          className={`relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full border-2 text-[10px] font-bold shadow-md transition-all ${
+                            isSelected
+                              ? 'border-white bg-[#1C442D] text-white ring-2 ring-[#1C442D] dark:ring-[#D5B16D]'
+                              : 'border-white bg-white/90 text-stone-800 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-200'
+                          }`}
+                        >
+                          {reader.initials}
+                          <span
+                            className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border border-white dark:border-stone-900"
+                            style={{ backgroundColor: reader.avatarColor }}
+                          />
+                        </div>
+
+                        {/* Miniature Title Label under Pin */}
+                        <span
+                          className={`mt-1 whitespace-nowrap rounded-md px-1.5 py-0.5 text-[9px] font-medium shadow-xs transition-colors ${
+                            isSelected
+                              ? 'bg-[#1C442D] text-white dark:bg-[#D5B16D] dark:text-stone-950 font-semibold'
+                              : 'bg-white/80 text-stone-700 backdrop-blur dark:bg-stone-900/80 dark:text-stone-300'
+                          }`}
+                        >
+                          {reader.name.split(' ')[0]} · {mapMode === 'city' ? reader.distance : `p. ${reader.page}`}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+
+                {/* Subtle Interactive Instruction Chip */}
+                <div className="absolute top-2.5 left-2.5 rounded-full border border-white/80 bg-white/85 px-2.5 py-1 text-[9px] font-semibold text-[#47664A] shadow-xs backdrop-blur dark:border-white/10 dark:bg-[#101A13]/90 dark:text-[#B8D7B7]">
+                  👆 Tap any reader pin to preview shelf
+                </div>
+              </div>
+
+              {/* Dynamic Bottom Reader Card Overlay */}
+              <div className="mt-3 rounded-2xl border border-black/5 bg-white/95 p-3.5 shadow-sm dark:border-white/10 dark:bg-[#152119]/95 transition-all">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-xs font-bold shadow-2xs ${activeReader.avatarBg}`}
+                    >
+                      {activeReader.initials}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-bold text-foreground truncate">{activeReader.name}</p>
+                        <span className="rounded-full bg-emerald-500/15 px-1.5 py-0.2 text-[9px] font-medium text-emerald-700 dark:text-emerald-400">
+                          {activeReader.distance}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground truncate">{activeReader.area}</p>
+                    </div>
+                  </div>
+
+                  <span className="rounded-md border border-[#C8D9C8] bg-[#EEF4ED] px-2 py-0.5 text-[10px] font-semibold text-[#1C442D] dark:border-[#36513C] dark:bg-white/[.06] dark:text-[#B8D7B7] shrink-0">
+                    {activeReader.compatibility}
+                  </span>
+                </div>
+
+                {/* Active Book Shelf Detail */}
+                <div className="mt-2.5 rounded-xl border border-black/5 bg-[#F9FAF8] p-2.5 dark:border-white/5 dark:bg-[#1B2920]/60">
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5 truncate">
+                      <BookOpen size={13} className="text-[#1C442D] dark:text-[#D5B16D] shrink-0" />
+                      <span className="font-semibold text-foreground truncate">{activeReader.bookTitle}</span>
+                      <span className="text-[10px] text-muted-foreground truncate">by {activeReader.bookAuthor}</span>
+                    </div>
+                    {activeReader.page && (
+                      <span className="text-[10px] font-medium tabular-nums text-muted-foreground shrink-0 ml-1">
+                        Page {activeReader.page} ({activeReader.progressPercent}%)
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 text-[10px] text-[#536657] dark:text-[#A8B9AA]">{activeReader.status}</p>
+                </div>
+
+                {/* Connect CTA inside card */}
+                <div className="mt-2.5 flex items-center justify-between pt-1 text-[11px]">
+                  <span className="text-[10px] text-muted-foreground">
+                    🔒 Protected approximate location
+                  </span>
+                  <Link
+                    to="/map"
+                    className="inline-flex items-center gap-1 font-semibold text-[#1C442D] hover:underline dark:text-[#D5B16D]"
+                  >
+                    <span>Connect on live map</span>
+                    <ArrowRight size={12} />
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -320,4 +704,3 @@ export const HomeReadingPeopleSection: React.FC = () => {
 };
 
 export default HomeReadingPeopleSection;
-
