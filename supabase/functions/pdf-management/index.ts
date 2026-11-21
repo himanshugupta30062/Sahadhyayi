@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.0";
+import { validatePDFStructure } from "../_shared/pdfVerification.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -34,49 +35,86 @@ async function computeSHA256(blob: Blob): Promise<string> {
 }
 
 /**
- * Validate PDF structure beyond magic bytes - check for proper PDF trailer, xref, and encryption
+ * Run Bouncer malware scan
  */
-async function validatePDFStructure(blob: Blob): Promise<{ valid: boolean; pageCount: number | null; encrypted: boolean; error?: string }> {
+async function runMalwareScan(source: Blob, scannerToken: string, apiBase: string): Promise<{ clean: boolean; verdict: string; details: Record<string, unknown> }> {
+  const timeoutMs = 60000;
+  const deadline = Date.now() + timeoutMs;
+  let scanId = "";
+  let pollPath = "";
+
   try {
-    const headerBuffer = await blob.slice(0, 1024).arrayBuffer();
-    const header = new TextDecoder().decode(new Uint8Array(headerBuffer));
-
-    if (!header.startsWith("%PDF-")) {
-      return { valid: false, pageCount: null, encrypted: false, error: "Missing PDF signature" };
-    }
-
-    const encrypted = header.includes("/Encrypt") || (header.includes("/Filter") && header.includes("/V"));
-
-    const size = blob.size;
-    const trailerStart = Math.max(0, size - 2048);
-    const trailerBuffer = await blob.slice(trailerStart, size).arrayBuffer();
-    const trailer = new TextDecoder().decode(new Uint8Array(trailerBuffer));
-
-    if (!trailer.includes("startxref") || !trailer.includes("%%EOF")) {
-      return { valid: false, pageCount: null, encrypted, error: "Invalid PDF structure: missing trailer/EOF" };
-    }
-
-    const trailerEncrypted = trailer.includes("/Encrypt");
-    const isEncrypted = encrypted || trailerEncrypted;
-
-    let pageCount: number | null = null;
-    const countMatch = trailer.match(/\/Count\s+(\d+)/);
-    if (countMatch) {
-      pageCount = Number.parseInt(countMatch[1], 10);
+    if (source.size <= 4_500_000) {
+      const form = new FormData();
+      form.append("file", source, "submission.pdf");
+      const response = await fetch(`${apiBase}/v1/scan`, {
+        method: "POST",
+        headers: { "X-API-Key": scannerToken },
+        body: form,
+        signal: AbortSignal.timeout(15000),
+      });
+      if (!response.ok) throw new Error(`Bouncer v1 scan creation failed (${response.status})`);
+      const payload = await response.json();
+      scanId = payload?.data?.scan_id;
+      pollPath = payload?.data?.poll_url || (scanId ? `/v1/scan/${encodeURIComponent(scanId)}` : "");
     } else {
-      const contentMatch = header.match(/\/Count\s+(\d+)/);
-      if (contentMatch) {
-        pageCount = Number.parseInt(contentMatch[1], 10);
+      const createResponse = await fetch(`${apiBase}/v2/scan`, {
+        method: "POST",
+        headers: { "X-API-Key": scannerToken, "Content-Type": "application/json" },
+        body: JSON.stringify({ file_name: "submission.pdf", mime_type: "application/pdf" }),
+        signal: AbortSignal.timeout(15000),
+      });
+      if (!createResponse.ok) throw new Error(`Bouncer v2 scan creation failed (${createResponse.status})`);
+      const payload = await createResponse.json();
+      scanId = payload?.data?.scan_id;
+      pollPath = payload?.data?.poll_url || (scanId ? `/v2/scan/${encodeURIComponent(scanId)}` : "");
+      const upload = payload?.data?.upload;
+      if (!scanId || !pollPath || !upload?.url || !upload?.fields || source.size > Number(payload?.data?.max_file_size || 0)) {
+        throw new Error("Bouncer returned an invalid or insufficient upload target");
+      }
+      const uploadForm = new FormData();
+      for (const [key, value] of Object.entries(upload.fields as Record<string, string>)) {
+        uploadForm.append(key, value);
+      }
+      uploadForm.append("file", source, "submission.pdf");
+      const uploadResponse = await fetch(upload.url, {
+        method: "POST",
+        body: uploadForm,
+        signal: AbortSignal.timeout(20000),
+      });
+      if (!uploadResponse.ok) throw new Error("PDF upload to Bouncer failed");
+    }
+
+    if (!scanId || !pollPath || (!pollPath.startsWith("/v1/scan/") && !pollPath.startsWith("/v2/scan/"))) {
+      throw new Error("Bouncer did not return a valid scan identifier");
+    }
+
+    let verdict = "";
+    let scanDetails: Record<string, unknown> = {};
+    const pollInterval = 2000;
+
+    while (Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, pollInterval));
+      const pollResponse = await fetch(new URL(pollPath, apiBase), {
+        headers: { "X-API-Key": scannerToken },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!pollResponse.ok) throw new Error("Bouncer polling failed");
+      const result = await pollResponse.json();
+      const status = result?.data?.status;
+      scanDetails = result?.data || {};
+      if (status === "failed") return { clean: false, verdict: "failed", details: scanDetails };
+      if (status === "completed") {
+        verdict = result?.data?.verdict || "";
+        break;
       }
     }
 
-    if (isEncrypted) {
-      return { valid: false, pageCount, encrypted: true, error: "Encrypted PDFs are not accepted. Please provide an unencrypted PDF." };
-    }
-
-    return { valid: true, pageCount, encrypted: false };
+    if (!verdict) return { clean: false, verdict: "timeout", details: { ...scanDetails, error: "Scan timed out" } };
+    return { clean: verdict === "clean", verdict, details: scanDetails };
   } catch (error) {
-    return { valid: false, pageCount: null, encrypted: false, error: error instanceof Error ? error.message : "PDF structure validation failed" };
+    console.error("Bouncer scan error:", error instanceof Error ? error.message : "unknown");
+    throw error;
   }
 }
 

@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.0";
-import { parseVerificationReport } from "../_shared/pdfVerification.ts";
+import { parseVerificationReport, validatePDFStructure } from "../_shared/pdfVerification.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,59 +21,6 @@ async function computeSHA256(blob: Blob): Promise<string> {
   const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-/**
- * Validate PDF structure beyond magic bytes - check for proper PDF trailer, xref, and encryption
- */
-async function validatePDFStructure(blob: Blob): Promise<{ valid: boolean; pageCount: number | null; encrypted: boolean; error?: string }> {
-  try {
-    // Read first 1KB for header validation
-    const headerBuffer = await blob.slice(0, 1024).arrayBuffer();
-    const header = new TextDecoder().decode(new Uint8Array(headerBuffer));
-
-    if (!header.startsWith("%PDF-")) {
-      return { valid: false, pageCount: null, encrypted: false, error: "Missing PDF signature" };
-    }
-
-    // Check for encryption dictionary in the header portion
-    const encrypted = header.includes("/Encrypt") || header.includes("/Filter") && header.includes("/V");
-
-    // Read last 2KB for trailer validation
-    const size = blob.size;
-    const trailerStart = Math.max(0, size - 2048);
-    const trailerBuffer = await blob.slice(trailerStart, size).arrayBuffer();
-    const trailer = new TextDecoder().decode(new Uint8Array(trailerBuffer));
-
-    if (!trailer.includes("startxref") || !trailer.includes("%%EOF")) {
-      return { valid: false, pageCount: null, encrypted, error: "Invalid PDF structure: missing trailer/EOF" };
-    }
-
-    // Also check trailer for encryption
-    const trailerEncrypted = trailer.includes("/Encrypt");
-    const isEncrypted = encrypted || trailerEncrypted;
-
-    // Extract page count from /Count in the trailer or catalog
-    let pageCount: number | null = null;
-    const countMatch = trailer.match(/\/Count\s+(\d+)/);
-    if (countMatch) {
-      pageCount = Number.parseInt(countMatch[1], 10);
-    } else {
-      // Fallback: scan for /Count in the first portion
-      const contentMatch = header.match(/\/Count\s+(\d+)/);
-      if (contentMatch) {
-        pageCount = Number.parseInt(contentMatch[1], 10);
-      }
-    }
-
-    if (isEncrypted) {
-      return { valid: false, pageCount, encrypted: true, error: "Encrypted PDFs are not accepted. Please provide an unencrypted PDF." };
-    }
-
-    return { valid: true, pageCount, encrypted: false };
-  } catch (error) {
-    return { valid: false, pageCount: null, encrypted: false, error: error instanceof Error ? error.message : "PDF structure validation failed" };
-  }
 }
 
 /**
