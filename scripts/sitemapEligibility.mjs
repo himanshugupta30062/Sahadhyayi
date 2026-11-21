@@ -27,8 +27,7 @@ export function getBookSitemapEligibility(book = {}) {
   const description = plainText(book.description);
   const author = plainText(book.author);
   const cover = String(book.cover_image_url ?? "").trim();
-
-  if (!id || id.includes("/") || id === "." || id === "..') reasons.push("invalid_id");
+  if (!id || id.includes("/") || id === "." || id === "..") reasons.push("invalid_id");
   if (!title) reasons.push("missing_title");
   if (!description || description.length < 45 || PLACEHOLDER_DESCRIPTION.test(description) || description.toLowerCase() === title.toLowerCase()) {
     reasons.push("thin_or_placeholder_description");
