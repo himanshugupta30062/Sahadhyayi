@@ -1495,12 +1495,30 @@
     </image:image>
   </url>
   <url>
+    <loc>https://sahadhyayi.com/book/ff1cd505-2259-43ce-b0bd-0c751875cdaf</loc>
+    <lastmod>2025-08-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://covers.openlibrary.org/b/id/14654118-L.jpg</image:loc>
+    </image:image>
+  </url>
+  <url>
     <loc>https://sahadhyayi.com/book/c162583a-8c0d-4df5-b956-90217b080e62</loc>
     <lastmod>2025-07-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <image:image>
       <image:loc>https://books.google.com/books/content?id=v7IsEAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;edge=curl&amp;source=gbs_api</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://sahadhyayi.com/book/8884ffd5-423a-4923-baf9-238165e32569</loc>
+    <lastmod>2025-08-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://books.google.com/books/content?id=_DqdEAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;edge=curl&amp;source=gbs_api</image:loc>
     </image:image>
   </url>
   <url>
@@ -2917,6 +2935,24 @@
     </image:image>
   </url>
   <url>
+    <loc>https://sahadhyayi.com/book/93033e15-0df5-4bc2-be92-a08393b83b35</loc>
+    <lastmod>2025-08-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://books.google.com/books/content?id=5jqdEAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;edge=curl&amp;source=gbs_api</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://sahadhyayi.com/book/38314211-afdc-40f1-8502-cbe60e30d570</loc>
+    <lastmod>2025-08-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://books.google.com/books/content?id=ADudEAAAQBAJ&amp;printsec=frontcover&amp;img=1&amp;zoom=1&amp;edge=curl&amp;source=gbs_api</image:loc>
+    </image:image>
+  </url>
+  <url>
     <loc>https://sahadhyayi.com/authors/mary-shelley</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -3092,17 +3128,17 @@
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://sahadhyayi.com/authors/stephen-king</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
     <loc>https://sahadhyayi.com/authors/c-chandramouli</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://sahadhyayi.com/authors/paul-waters</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://sahadhyayi.com/authors/stephen-king</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -3243,6 +3279,11 @@
   </url>
   <url>
     <loc>https://sahadhyayi.com/authors/sanjay-sharma</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://sahadhyayi.com/authors/disha-experts</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
