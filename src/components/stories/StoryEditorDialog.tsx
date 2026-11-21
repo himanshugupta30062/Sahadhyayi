@@ -1,4 +1,6 @@
-import React, { useId, useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/authHelpers';
 import {
   Dialog,
   DialogContent,
@@ -28,6 +30,7 @@ import {
   Clock,
   Layers,
   Loader2,
+  ImagePlus,
   Plus,
   Sparkles,
   Trash2,
@@ -59,6 +62,7 @@ export const StoryEditorDialog: React.FC<StoryEditorDialogProps> = ({
   existingParts = [],
 }) => {
   const isEditing = Boolean(existingStory);
+  const { user } = useAuth();
   const createStory = useCreateStory();
   const updateStory = useUpdateStory();
   const createPart = useCreateStoryPart();
@@ -68,6 +72,47 @@ export const StoryEditorDialog: React.FC<StoryEditorDialogProps> = ({
   const [title, setTitle] = useState(existingStory?.title || '');
   const [description, setDescription] = useState(existingStory?.description || '');
   const [coverImageUrl, setCoverImageUrl] = useState(existingStory?.cover_image_url || '');
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(existingStory?.cover_image_url || null);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+
+  useEffect(() => () => {
+    if (coverPreview?.startsWith('blob:')) URL.revokeObjectURL(coverPreview);
+  }, [coverPreview]);
+
+  const handleCoverSelection = (file?: File) => {
+    if (!file) return;
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Please choose a JPG, PNG or WebP image.');
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error('Cover image must be 8 MB or smaller.');
+      return;
+    }
+    setCoverFile(file);
+    setCoverPreview(URL.createObjectURL(file));
+  };
+
+  const uploadStoryCover = async (): Promise<string | null> => {
+    if (!coverFile) return coverImageUrl || null;
+    if (!user?.id) throw new Error('Please sign in again before uploading a cover image.');
+    setIsUploadingCover(true);
+    try {
+      const extension = ({ 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' } as Record<string, string>)[coverFile.type];
+      const path = `user-uploads/${user.id}/story-covers/${crypto.randomUUID()}.${extension}`;
+      const { error } = await supabase.storage.from('books').upload(path, coverFile, {
+        cacheControl: '31536000',
+        contentType: coverFile.type,
+        upsert: false,
+      });
+      if (error) throw error;
+      return supabase.storage.from('books').getPublicUrl(path).data.publicUrl;
+    } finally {
+      setIsUploadingCover(false);
+    }
+  };
   const [genre, setGenre] = useState<StoryGenre>((existingStory?.genre as StoryGenre) || 'General');
   const [tags, setTags] = useState<string[]>(existingStory?.tags || []);
   const [tagInput, setTagInput] = useState('');
@@ -226,13 +271,14 @@ export const StoryEditorDialog: React.FC<StoryEditorDialogProps> = ({
 
     setIsSubmitting(true);
     try {
+      const uploadedCoverUrl = await uploadStoryCover();
       if (isEditing && existingStory) {
         // Update existing story metadata
         await updateStory.mutateAsync({
           storyId: existingStory.id,
           title,
           description,
-          cover_image_url: coverImageUrl || null,
+          cover_image_url: uploadedCoverUrl,
           genre,
           tags,
           status: finalStatus,
@@ -266,7 +312,7 @@ export const StoryEditorDialog: React.FC<StoryEditorDialogProps> = ({
         const newStory = await createStory.mutateAsync({
           title,
           description,
-          cover_image_url: coverImageUrl || null,
+          cover_image_url: uploadedCoverUrl,
           genre,
           tags,
           story_type: storyType,
@@ -513,21 +559,40 @@ export const StoryEditorDialog: React.FC<StoryEditorDialogProps> = ({
               )}
             </div>
 
-            {/* Cover Image URL */}
-            <div className="space-y-1.5">
-              <Label htmlFor="cover-url" className="text-xs font-semibold">
-                Cover Image URL (Optional)
-              </Label>
-              <Input
-                id="cover-url"
-                placeholder="https://images.unsplash.com/photo-..."
-                value={coverImageUrl}
-                onChange={(e) => setCoverImageUrl(e.target.value)}
-                className="h-10 rounded-xl border-[#E8E2D9] dark:border-[#29332D] text-xs"
+            {/* Upload an actual story cover */}
+            <div className="space-y-2 rounded-xl border border-[#E8E2D9] p-3 dark:border-[#29332D]">
+              <div className="space-y-1">
+                <Label htmlFor="story-cover-file" className="text-xs font-semibold">Story Cover Image (Optional)</Label>
+                <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6]">Upload your own artwork. JPG, PNG or WebP · up to 8 MB. Your image will be shown on the story card and reader page.</p>
+              </div>
+              {coverPreview ? (
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <img src={coverPreview} alt="Story cover preview" className="h-36 w-28 rounded-lg border border-[#E8E2D9] object-cover dark:border-[#29332D]" />
+                  <div className="flex flex-wrap gap-2">
+                    <Label htmlFor="story-cover-file" className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg border px-3 text-xs font-medium hover:bg-muted">
+                      <ImagePlus className="h-4 w-4" /> Replace image
+                    </Label>
+                    <Button type="button" size="sm" variant="ghost" onClick={() => { setCoverFile(null); setCoverPreview(null); setCoverImageUrl(''); }} className="h-9 text-xs">
+                      <X className="mr-1 h-3.5 w-3.5" /> Remove
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Label htmlFor="story-cover-file" className="flex min-h-28 cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#D8D1C6] bg-[#FAF7F2] px-4 py-5 text-center text-xs text-[#636B65] hover:border-[#1C442D] dark:border-[#29332D] dark:bg-[#0B0D0C] dark:text-[#A5ADA6]">
+                  <ImagePlus className="h-7 w-7" />
+                  <span className="font-semibold">Choose cover image</span>
+                  <span>or drop your own artwork here</span>
+                </Label>
+              )}
+              <input
+                id="story-cover-file"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="sr-only"
+                onChange={(e) => { handleCoverSelection(e.target.files?.[0]); e.currentTarget.value = ''; }}
               />
-              <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6]">
-                An artistic cover is automatically generated with your story title if omitted.
-              </p>
+              {coverFile && <p className="text-[11px] text-[#636B65] dark:text-[#A5ADA6]">Selected: {coverFile.name} · {(coverFile.size / 1024 / 1024).toFixed(1)} MB</p>}
+              {!coverFile && coverImageUrl && <p className="break-all text-[11px] text-[#636B65] dark:text-[#A5ADA6]">Current cover URL is retained.</p>}
             </div>
 
             <div className="flex justify-end pt-3">
@@ -723,7 +788,7 @@ export const StoryEditorDialog: React.FC<StoryEditorDialogProps> = ({
                 <Button
                   type="button"
                   variant="outline"
-                  disabled={isSubmitting || !title.trim()}
+                  disabled={isSubmitting || isUploadingCover || !title.trim()}
                   onClick={() => void handleSubmit('draft')}
                   className="rounded-xl text-xs h-10 px-4"
                 >
@@ -732,11 +797,11 @@ export const StoryEditorDialog: React.FC<StoryEditorDialogProps> = ({
 
                 <Button
                   type="button"
-                  disabled={isSubmitting || !isFormValid}
+                  disabled={isSubmitting || isUploadingCover || !isFormValid}
                   onClick={() => void handleSubmit('published')}
                   className="gap-2 bg-[#1C442D] text-white hover:bg-[#143221] dark:bg-[#D5B16D] dark:text-[#0B0D0C] dark:hover:bg-[#c49f5c] rounded-xl text-xs h-10 px-6 font-semibold shadow-sm"
                 >
-                  {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                  {isSubmitting || isUploadingCover ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                   {isEditing ? 'Save Changes' : 'Publish Story'}
                 </Button>
               </div>
