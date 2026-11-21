@@ -54,6 +54,13 @@ const ALLOWED_HOST_SUFFIXES = [
   "githubusercontent.com",
   "hariomgroup.org",
   "campbellmgold.co.uk",
+  "r2.dev",
+  "cloudflare.com",
+  "amazonaws.com",
+  "pratham.org",
+  "ignca.gov.in",
+  "dli.ernet.in",
+  "hindisamay.com",
 ] as const;
 
 // Explicitly blocked TLDs and patterns that are commonly abused for SSRF
@@ -106,6 +113,9 @@ function isPrivateOrLoopbackHost(hostname: string): boolean {
 
 function isHostBlocked(hostname: string): boolean {
   const h = hostname.toLowerCase();
+  if (ALLOWED_HOST_SUFFIXES.some((suffix) => h === suffix || h.endsWith("." + suffix))) {
+    return false;
+  }
   return BLOCKED_HOST_PATTERNS.some(
     (pattern) => h === pattern || h.endsWith("." + pattern) || h.includes("." + pattern + "."),
   );

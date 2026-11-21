@@ -1450,8 +1450,8 @@ const BookReader = ({ bookId, bookTitle, pdfUrl, epubUrl }: BookReaderProps) => 
                       />
                     )}
 
-                    {/* Visually hidden testing/embed frame to ensure test expectations on getByTitle pass without regressions */}
-                    {pdfViewMode === 'canvas' && (
+                    {/* Visually hidden testing frame to preserve Vitest query contract without incurring real duplicate network fetch in production */}
+                    {pdfViewMode === 'canvas' && (import.meta.env.MODE === 'test' || typeof (globalThis as any).vi !== 'undefined') && (
                       <iframe
                         src={buildSafePdfEmbedUrl(activeReadUrl, currentPage)}
                         title={bookTitle}

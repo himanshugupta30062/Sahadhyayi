@@ -218,10 +218,10 @@ export const PdfCanvasViewer: React.FC<PdfCanvasViewerProps> = ({
   }, [pdfDoc, currentPage, scale]);
 
   useEffect(() => {
-    if (pdfDoc && renderStatus !== 'loading') {
+    if (pdfDoc) {
       void renderCurrentPage();
     }
-  }, [pdfDoc, currentPage, scale, renderStatus, renderCurrentPage]);
+  }, [pdfDoc, currentPage, scale, renderCurrentPage]);
 
   // Capture text selection for Quotes & Margin notes
   useEffect(() => {
