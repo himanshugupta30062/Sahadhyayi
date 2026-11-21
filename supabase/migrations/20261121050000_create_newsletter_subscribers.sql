@@ -33,5 +33,12 @@ CREATE POLICY "Admins can view newsletter subscribers"
   TO authenticated
   USING (public.is_admin());
 
+-- RLS policies do not grant SQL privileges. Explicitly expose only the
+-- operations needed by the public signup form and the admin subscriber view.
+GRANT INSERT ON public.newsletter_subscribers TO anon, authenticated;
+GRANT SELECT ON public.newsletter_subscribers TO authenticated;
+
 COMMENT ON TABLE public.newsletter_subscribers IS
 'Stores public newsletter subscriptions with email uniqueness and admin-only read access.';
+
+NOTIFY pgrst, 'reload schema';
