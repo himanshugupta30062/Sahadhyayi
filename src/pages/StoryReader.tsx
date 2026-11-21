@@ -349,7 +349,6 @@ export default function StoryReader() {
     datePublished: part.published_at || storyPublishedAt || undefined,
     dateModified: part.updated_at || storyModifiedAt || undefined,
     image: storyImage,
-    inLanguage: story.format || undefined,
     genre: story.genre || undefined,
   };
 
